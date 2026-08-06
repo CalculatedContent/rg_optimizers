@@ -3,6 +3,16 @@
 Experimental optimizer extensions motivated by the WeightWatcher spectral RG
 program.
 
+## Clean optimizer baselines
+
+- [`baseline`](baseline): matched MLP3/MNIST baselines for ordinary SGD with
+  momentum, AdamW, and SGD-momentum plus Muon. These runs contain no RG
+  intervention. Every epoch records full train/test loss and accuracy,
+  layerwise WeightWatcher alpha, the original full-`M` `detX_num`,
+  `num_pl_spikes`, and `ERG_gap`, the original midpoint retained rank and
+  midpoint trace-log coordinate, complete WeightWatcher details, ESDs,
+  effective-rank diagnostics, gradient norms, parameter norms, and timing.
+
 ## Optimizer variants
 
 - [`optimizers/trace_log_tracker`](optimizers/trace_log_tracker): the first
