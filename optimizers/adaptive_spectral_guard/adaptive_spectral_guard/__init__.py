@@ -6,6 +6,7 @@ from .config import (
     LayerPolicy,
     default_layer_policies,
     preset_policies,
+    stabilized_layer_policies,
 )
 from .controller import AdaptiveSpectralController, LayerState
 from .experiment import (
@@ -27,4 +28,5 @@ __all__ = [
     "default_layer_policies",
     "preset_policies",
     "run_mnist_guard_comparison",
+    "stabilized_layer_policies",
 ]
