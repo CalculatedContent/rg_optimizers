@@ -221,7 +221,14 @@ def analyze_weightwatcher_checkpoint(
                 min_decades_for_reliable=float(min_decades_for_reliable),
             )
             alpha = _safe_float(_row_value(row, ["alpha"]))
-            erg_gap = int(m_trace - m_pl)
+            if not np.isfinite(alpha):
+                raise ValueError("WeightWatcher did not return a usable alpha.")
+
+            erg_gap = _safe_int(_row_value(row, ["ERG_gap"]), default=None)
+            if erg_gap is None:
+                raise ValueError(
+                    "WeightWatcher analyze(..., ERG=True) did not return ERG_gap."
+                )
 
             rows.append({
                 "run": str(run_label),
@@ -231,10 +238,12 @@ def analyze_weightwatcher_checkpoint(
                 "layer_name": layer_name,
                 "parameter_name": parameter_name,
                 "alpha": alpha,
+                "alpha_source": "WeightWatcher",
                 "xmin": xmin,
                 "detX_num": int(m_trace),
                 "num_pl_spikes": int(m_pl),
-                "ERG_gap": erg_gap,
+                "ERG_gap": int(erg_gap),
+                "ERG_gap_source": "WeightWatcher",
                 "m_midpoint": int(m_midpoint),
                 "boundary_overlap_ratio": float(min(m_trace, m_pl) / max(m_trace, m_pl)),
                 "trace_boundary_source": trace_source,
