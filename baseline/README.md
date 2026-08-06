@@ -4,13 +4,17 @@ This folder contains **unmodified optimizer baselines** for the RG-optimizer
 experiments. No trace-log projection, self-consistent ECS correction, WW-PGD
 retraction, spectral-flow subtraction, or other RG intervention is applied.
 
-The three notebooks are:
+The notebooks are:
 
 1. `notebooks/MNIST_MLP3_SGD_Momentum_Baseline.ipynb`
 2. `notebooks/MNIST_MLP3_AdamW_Baseline.ipynb`
 3. `notebooks/MNIST_MLP3_SGD_Momentum_Muon_Baseline.ipynb`
+4. `notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`
 
-All runs use the same architecture and preprocessing:
+Run the first three notebooks to produce the persisted optimizer results, then
+run the fourth notebook to validate and compare all three experiments.
+
+All training runs use the same architecture and preprocessing:
 
 ```text
 784 -> 512 -> 512 -> 10
@@ -18,9 +22,32 @@ ReLU after fc1 and fc2
 MNIST normalized by mean 0.1307 and std 0.3081
 ```
 
+## Shared persistent run directory
+
+All four notebooks resolve the same run root:
+
+```text
+RG_BASELINE_RUN_ROOT, when set
+otherwise: baseline/runs/
+```
+
+For a clone at `/tmp/rg_optimizers`, the default is therefore
+`/tmp/rg_optimizers/baseline/runs`. A different shared local directory can be
+selected before starting Jupyter:
+
+```bash
+export RG_BASELINE_RUN_ROOT=/tmp/rg_optimizers_baseline_runs
+```
+
+The MNIST download/cache directory can likewise be overridden with
+`RG_BASELINE_DATA_DIR`; its default remains `baseline/data/`.
+
+The comparison notebook reads only persisted files. It does not depend on a
+live `suite` variable or on running all notebooks in one kernel.
+
 ## Independent replicates and error bars
 
-Each notebook now runs three independent complete training trajectories:
+Each optimizer notebook runs three independent complete training trajectories:
 
 ```python
 SEEDS = (1337, 2027, 31415)
@@ -44,17 +71,14 @@ confidence band, and capped error bars. Summary CSV files record `n`, sample
 standard deviation, standard error, Student-t critical value, interval
 half-width, lower/upper bounds, minimum, and maximum.
 
-The color convention is fixed across all three notebooks:
+The single-optimizer notebooks keep a fixed train/test and layer color scheme.
+The comparison notebook uses a fixed color-blind-safe optimizer mapping:
 
 ```text
-train  blue
-test   vermillion
-FC1    blue
-FC2    orange
-FC3    green
+SGD + momentum          blue
+AdamW                   vermillion
+SGD + momentum + Muon   bluish green
 ```
-
-This prevents colors from changing meaning between optimizers or figures.
 
 ## Baseline definitions
 
@@ -150,47 +174,104 @@ $$
 gap, incomplete epoch/layer, or inconsistent midpoint rather than substituting
 a silent fallback.
 
-## Required aggregate plots
+## Checkpoint and result persistence
 
-Every notebook creates and saves, with individual seed traces and 95% confidence
-intervals:
-
-0. full train/test loss and full train/test accuracy;
-0b. a dedicated test-accuracy figure;
-1. layerwise WeightWatcher `alpha`;
-2. original WeightWatcher `detX_num`, `num_pl_spikes`, and full-`M` `ERG_gap`;
-3. original midpoint retained rank, midpoint trace-log per eigenvalue, and
-   midpoint trace-log total;
-4. effective-rank and retained-energy diagnostics;
-5. gradient, parameter-norm, and timing diagnostics;
-6. spectral scale, midpoint geometric mean, and ESD conditioning.
-
-## Output layout
-
-Each notebook writes to `baseline/runs/<optimizer>/`:
+Every optimizer notebook sets `save_epoch_checkpoints=True`. Each seed folder
+therefore contains both a final state and one complete model/optimizer state
+after every training epoch:
 
 ```text
-performance_by_epoch_and_seed.csv
-spectral_metrics_by_epoch_layer_and_seed.csv
-weightwatcher_details_by_epoch_and_seed.csv
-optimizer_groups_by_epoch_and_seed.csv
-combined_metrics_by_epoch_layer_and_seed.csv
-performance_summary_95ci.csv
-spectral_summary_95ci.csv
-replicate_manifest.json
-plots/
-seeds/
-  seed_1337/
-  seed_2027/
-  seed_31415/
+runs/<optimizer>/
+  performance_by_epoch_and_seed.csv
+  spectral_metrics_by_epoch_layer_and_seed.csv
+  weightwatcher_details_by_epoch_and_seed.csv
+  optimizer_groups_by_epoch_and_seed.csv
+  combined_metrics_by_epoch_layer_and_seed.csv
+  performance_summary_95ci.csv
+  spectral_summary_95ci.csv
+  replicate_manifest.json
+  plots/
+  seeds/
+    seed_1337/
+      performance_by_epoch.csv
+      spectral_metrics_by_epoch_and_layer.csv
+      weightwatcher_details_by_epoch.csv
+      optimizer_groups_by_epoch.csv
+      combined_metrics_by_epoch_and_layer.csv
+      esd_history.npz
+      config.json
+      final_state.pt
+      checkpoints/
+        epoch_001.pt
+        ...
+        epoch_020.pt
+    seed_2027/
+    seed_31415/
 ```
 
-Each seed folder retains its own raw per-epoch CSVs, `esd_history.npz`,
-`config.json`, and `final_state.pt`.
+Each training notebook fails at the end if any aggregate result, final state,
+or requested epoch checkpoint is missing.
 
-## Run
+## Three-optimizer comparison
 
-From the repository root, open any notebook in `baseline/notebooks/`.
+`MNIST_MLP3_Baseline_Comparison.ipynb` validates that all three optimizers have:
+
+- identical seed tuples;
+- identical epoch grids and shared data/evaluation/WeightWatcher settings;
+- complete FC1/FC2/FC3 spectral measurements;
+- `final_state.pt` for every seed;
+- all 20 epoch checkpoints for every seed.
+
+It then produces:
+
+- mean and 95% confidence-interval trajectories for train/test accuracy,
+  train/test loss, classification perplexity, and generalization gaps;
+- layerwise comparisons of `alpha`, `detX_num`, `num_pl_spikes`, `ERG_gap`,
+  midpoint retained rank, midpoint trace-log, and stable rank;
+- final-epoch metric tables;
+- best-achieved test accuracy and convergence-threshold tables;
+- paired seed-level final differences for every optimizer pair;
+- a checkpoint inventory and reproducibility manifest.
+
+Classification perplexity is derived from the saved cross-entropy as
+`exp(cross_entropy)`. For MNIST this is an effective-class-count transform, not
+language-model perplexity.
+
+Comparison outputs are written under:
+
+```text
+runs/comparison/
+  checkpoint_inventory.csv
+  all_optimizers_performance_by_epoch_and_seed.csv
+  all_optimizers_spectral_metrics_by_epoch_layer_and_seed.csv
+  performance_summary_95ci.csv
+  spectral_summary_95ci.csv
+  final_epoch_summary_95ci.csv
+  convergence_by_seed.csv
+  convergence_summary_95ci.csv
+  paired_final_differences_95ci.csv
+  comparison_manifest.json
+  plots/
+```
+
+Paired contrasts are always reported as `optimizer_a - optimizer_b`. Positive
+is favorable for accuracy; negative is favorable for loss and perplexity. With
+only three paired seeds, the notebook reports Student-t intervals and does not
+claim high-powered asymptotic significance tests.
+
+## Run order
+
+From the repository root, open the notebooks in `baseline/notebooks/` and run:
+
+```text
+1. MNIST_MLP3_SGD_Momentum_Baseline.ipynb
+2. MNIST_MLP3_AdamW_Baseline.ipynb
+3. MNIST_MLP3_SGD_Momentum_Muon_Baseline.ipynb
+4. MNIST_MLP3_Baseline_Comparison.ipynb
+```
+
+The first three may be run in any order; the comparison must be run after all
+three have completed under the same run root.
 
 ## Tests
 
