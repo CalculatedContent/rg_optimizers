@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rg-self-consistent-trace-log"
+version = "0.1.0"
+description = "One-sided trace-log RG component removal with a self-consistent adaptive ECS"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.1",
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "torchvision>=0.16",
+]
+
+[project.optional-dependencies]
+experiment = [
+  "matplotlib>=3.7",
+  "weightwatcher>=0.7.7",
+  "jupyter>=1.0",
+]
+
+[tool.setuptools]
+packages = ["rg_sc_trace_log"]
