@@ -20,6 +20,7 @@ class ECSScanResult:
     candidate_rank_count: int
     spectral_count: int
     total_energy: float
+    num_sign_change_brackets: int
 
 
 @dataclass(frozen=True)
@@ -80,7 +81,9 @@ def _orient_tall(matrix: torch.Tensor) -> tuple[torch.Tensor, bool]:
     return matrix.transpose(0, 1), True
 
 
-def _svd_with_cpu_fallback(matrix: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def _svd_with_cpu_fallback(
+    matrix: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     compute = matrix.float() if matrix.dtype in {torch.float16, torch.bfloat16} else matrix
     try:
         return torch.linalg.svd(compute, full_matrices=False)
@@ -104,6 +107,56 @@ def _participation_count(values: torch.Tensor, eps: float) -> float:
     return float(((s1 * s1) / (s2 + eps)).detach().cpu())
 
 
+def _select_candidate_index(
+    ranks: list[int],
+    residuals: list[float],
+    *,
+    numeric_eps: float,
+) -> tuple[int, int, str]:
+    """Match the authoritative self-consistent ECS finite-rank selection rule.
+
+    Every exact zero and every endpoint of every sign-change bracket is a
+    candidate. Among those candidates, choose the smallest absolute residual;
+    break exact ties in favor of the larger retained rank. If no crossing
+    exists, choose the global minimum-absolute-residual candidate.
+    """
+
+    exact = [
+        index
+        for index, residual in enumerate(residuals)
+        if abs(float(residual)) <= float(numeric_eps)
+    ]
+    brackets = [
+        index
+        for index in range(len(residuals) - 1)
+        if float(residuals[index]) * float(residuals[index + 1]) < 0.0
+    ]
+    candidates = set(exact)
+    for index in brackets:
+        candidates.add(index)
+        candidates.add(index + 1)
+
+    if candidates:
+        chosen = min(
+            candidates,
+            key=lambda index: (
+                abs(float(residuals[index])),
+                -int(ranks[index]),
+            ),
+        )
+        status = "sign_change"
+    else:
+        chosen = min(
+            range(len(ranks)),
+            key=lambda index: (
+                abs(float(residuals[index])),
+                -int(ranks[index]),
+            ),
+        )
+        status = "nearest_no_sign_change"
+    return int(chosen), int(len(brackets)), status
+
+
 def select_self_consistent_ecs(
     singular_values: torch.Tensor,
     *,
@@ -123,15 +176,18 @@ def select_self_consistent_ecs(
         F(m) = mean_top_m log(D(m) * lambda_i / sum_j lambda_j),
 
     or the minimum-absolute-residual candidate if a finite spectrum has no
-    crossing.
+    crossing. The selection over multiple crossings matches the authoritative
+    solver in ``self_consistent_trace_log_tracker``.
     """
 
     if not 0.0 <= float(normalization_gamma) <= 1.0:
         raise ValueError("normalization_gamma must lie in [0, 1]")
+    if float(eps) <= 0.0:
+        raise ValueError("eps must be positive")
+
     s = singular_values.detach().float().abs()
     lambdas = s * s
     lambdas = lambdas[torch.isfinite(lambdas) & (lambdas > float(eps))]
-    lambdas = lambdas.clamp_min(eps)
     if lambdas.numel() == 0:
         raise ValueError("no positive singular values available for ECS scan")
     lambdas, _ = torch.sort(lambdas, descending=True)
@@ -139,9 +195,12 @@ def select_self_consistent_ecs(
     lo = max(1, int(min_retained))
     hi = spectral_count if max_retained is None else min(int(max_retained), spectral_count)
     if hi < lo:
-        raise ValueError("not enough singular values for requested retained rank")
+        raise ValueError("not enough positive singular values for requested retained rank")
 
-    total = torch.sum(lambdas).clamp_min(eps)
+    total = torch.sum(lambdas)
+    if not torch.isfinite(total) or float(total.detach().cpu()) <= float(eps):
+        raise ValueError("positive spectrum has non-finite or negligible total energy")
+
     gamma = float(normalization_gamma)
     candidates: list[tuple[int, float, float, float]] = []
     for rank in range(lo, hi + 1):
@@ -154,23 +213,14 @@ def select_self_consistent_ecs(
         trace_log = torch.mean(torch.log((dimension * retained / total).clamp_min(eps)))
         candidates.append((rank, dimension, r_bulk, float(trace_log.detach().cpu())))
 
-    exact = [item for item in candidates if abs(item[3]) <= eps]
-    if exact:
-        selected = min(exact, key=lambda item: item[0])
-        status = "exact_zero"
-    else:
-        bracket_endpoints: list[tuple[int, float, float, float]] = []
-        for left, right in zip(candidates[:-1], candidates[1:]):
-            if left[3] * right[3] < 0.0:
-                bracket_endpoints.extend((left, right))
-        if bracket_endpoints:
-            selected = min(bracket_endpoints, key=lambda item: (abs(item[3]), item[0]))
-            status = "zero_crossing"
-        else:
-            selected = min(candidates, key=lambda item: (abs(item[3]), item[0]))
-            status = "min_abs_residual"
-
-    rank, dimension, r_bulk, trace_log = selected
+    ranks = [item[0] for item in candidates]
+    residuals = [item[3] for item in candidates]
+    selected_index, bracket_count, status = _select_candidate_index(
+        ranks,
+        residuals,
+        numeric_eps=float(eps),
+    )
+    rank, dimension, r_bulk, trace_log = candidates[selected_index]
     return ECSScanResult(
         rank=int(rank),
         normalization_dimension=float(dimension),
@@ -180,6 +230,7 @@ def select_self_consistent_ecs(
         candidate_rank_count=len(candidates),
         spectral_count=spectral_count,
         total_energy=float(total.detach().cpu()),
+        num_sign_change_brackets=bracket_count,
     )
 
 
@@ -194,7 +245,7 @@ def local_ecs_geometry(
     """Return the ECS basis with the same tall orientation as TraceLogRG.
 
     For an original tall/square matrix the ECS acts on the right and the
-    retained update is ``Delta @ P_R``.  For an original wide matrix, the layer
+    retained update is ``Delta @ P_R``. For an original wide matrix, the layer
     is transposed before forming ``X = W^T W/N``; after mapping back, the ECS
     acts on the left and the retained update is ``P_R @ Delta``.
     """
@@ -211,7 +262,9 @@ def local_ecs_geometry(
         normalization_gamma=normalization_gamma,
         eps=eps,
     )
-    basis = vh[: scan.rank].transpose(0, 1).to(device=weight.device, dtype=weight.dtype)
+    basis = vh[: scan.rank].transpose(0, 1).to(
+        device=weight.device, dtype=weight.dtype
+    )
     return LocalECSGeometry(
         basis=basis,
         scan=scan,
@@ -231,6 +284,8 @@ def split_delta_by_ecs(
     original_shape = delta.shape
     matrix = _as_matrix(delta)
     oriented = matrix.transpose(0, 1) if geometry.transposed else matrix
+    if int(oriented.shape[1]) != int(geometry.basis.shape[0]):
+        raise ValueError("delta shape is incompatible with the supplied ECS geometry")
     basis = geometry.basis.to(device=oriented.device, dtype=oriented.dtype)
     retained_oriented = (oriented @ basis) @ basis.transpose(0, 1)
     orthogonal_oriented = oriented - retained_oriented
@@ -296,9 +351,13 @@ def damp_delta_outside_ecs(
         observed_damping = expected_damping
         damping_error = 0.0
 
-    pythagorean_error = abs(base_norm**2 - ecs_norm**2 - orth_norm**2) / max(base_norm**2, float(eps))
+    pythagorean_error = abs(base_norm**2 - ecs_norm**2 - orth_norm**2) / max(
+        base_norm**2, float(eps)
+    )
     identity_target = delta - frac * delta_orth
-    identity_error = float(torch.linalg.vector_norm((corrected - identity_target).float()).detach().cpu()) / denom
+    identity_error = float(
+        torch.linalg.vector_norm((corrected - identity_target).float()).detach().cpu()
+    ) / denom
 
     scan = geometry.scan
     return LocalDeltaCorrectionResult(
