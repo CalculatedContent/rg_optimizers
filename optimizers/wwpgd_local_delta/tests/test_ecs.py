@@ -18,6 +18,24 @@ class ECSTests(unittest.TestCase):
         self.assertLessEqual(scan.rank, 5)
         self.assertGreaterEqual(scan.normalization_dimension, scan.rank)
 
+    def test_multiple_crossings_choose_best_residual_not_first_crossing(self):
+        # This finite spectrum has three sign-change brackets. The first bracket
+        # would select rank 3, but the authoritative self-consistent rule
+        # selects rank 4 because its absolute trace-log residual is smaller.
+        singular_values = torch.tensor(
+            [2.44694667, 1.25455523, 1.23229509, 1.20845956, 0.24713784]
+        )
+        scan = select_self_consistent_ecs(singular_values, min_retained=2)
+        self.assertEqual(scan.num_sign_change_brackets, 3)
+        self.assertEqual(scan.rank, 4)
+        self.assertLess(abs(scan.trace_log_per_eval), 0.01)
+
+    def test_zero_singular_values_are_not_artificial_positive_modes(self):
+        singular_values = torch.tensor([3.0, 1.0, 0.0, 0.0])
+        scan = select_self_consistent_ecs(singular_values, min_retained=1)
+        self.assertEqual(scan.spectral_count, 2)
+        self.assertLessEqual(scan.rank, 2)
+
     def test_fraction_zero_is_identity(self):
         torch.manual_seed(0)
         w = torch.randn(6, 5)
