@@ -13,13 +13,15 @@ OptimizerKind = Literal["adamw", "sgd_momentum"]
 class LocalDeltaECSConfig:
     """Configuration for epoch-boundary local-delta ECS damping.
 
-    The correction is
+    The completed epoch displacement is decomposed in the oriented layer
+    coordinates used by the trace-log/ECS construction. If ``Delta_perp`` is
+    the component outside the retained ECS, the applied displacement is
 
-        Delta_new = Delta - correction_fraction * Delta_perp,
+        Delta_new = Delta - correction_fraction * Delta_perp.
 
-    where Delta is the completed epoch displacement and Delta_perp is the
-    component orthogonal to the right-singular-vector ECS of the reference
-    layer matrix.
+    ``reference='epoch_end'`` is the default because the requested operation is
+    to project the completed optimizer displacement into the new/current ECS of
+    the proposed endpoint. ``epoch_start`` remains available as an ablation.
     """
 
     correction_fraction: float = 0.25
@@ -28,8 +30,7 @@ class LocalDeltaECSConfig:
     min_retained: int = 3
     max_retained: Optional[int] = None
     normalization_gamma: float = 0.0
-    reference: ECSReference = "epoch_start"
-    include_bias: bool = False
+    reference: ECSReference = "epoch_end"
     parameter_name_filter: Optional[tuple[str, ...]] = None
     eps: float = 1e-12
 
@@ -54,7 +55,7 @@ class LocalDeltaECSConfig:
 
 @dataclass(frozen=True)
 class MNISTRunConfig:
-    """Default MLP3-MNIST experiment settings used by the notebooks."""
+    """MLP3-MNIST experiment settings used by the notebooks."""
 
     optimizer_kind: OptimizerKind = "adamw"
     epochs: int = 10
@@ -71,10 +72,14 @@ class MNISTRunConfig:
     apply_every_epochs: int = 1
     warmup_epochs: int = 0
     normalization_gamma: float = 0.0
+    ecs_reference: ECSReference = "epoch_end"
+    corrected_parameters: Optional[tuple[str, ...]] = None
     train_limit: Optional[int] = None
     test_limit: Optional[int] = None
     ww_enabled: bool = True
+    ww_required: bool = True
     ww_min_evals: int = 8
+    ww_svd_method: str = "accurate"
     data_dir: str = "./data"
     output_dir: str = "./runs_local_delta_ecs"
     seeds: tuple[int, ...] = field(
