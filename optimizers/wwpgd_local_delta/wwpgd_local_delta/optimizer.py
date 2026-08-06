@@ -14,9 +14,14 @@ from .ecs import damp_delta_outside_ecs
 class LocalDeltaECSOptimizer:
     """Wrap AdamW, SGD+momentum, or another PyTorch optimizer.
 
-    The base optimizer performs ordinary minibatch steps. At epoch boundaries,
-    call ``apply_epoch_delta_correction`` to replace each selected matrix
-    parameter by ``W_epoch_start + corrected_epoch_delta``.
+    The base optimizer performs ordinary minibatch steps. At an epoch boundary,
+    ``apply_epoch_delta_correction`` replaces each selected matrix parameter by
+
+        W_start + Delta_ECS + (1-eta) Delta_perp.
+
+    The optimizer's internal first/second-moment state is deliberately left
+    unchanged in this first experiment, so the causal intervention is isolated
+    to the realized weight displacement. This is logged explicitly.
     """
 
     def __init__(
@@ -64,13 +69,11 @@ class LocalDeltaECSOptimizer:
         selected: dict[str, torch.nn.Parameter] = {}
         filters = self.config.parameter_name_filter
         for name, parameter in self.named_parameters.items():
-            if not parameter.requires_grad:
+            if not parameter.requires_grad or parameter.ndim != 2:
                 continue
-            if parameter.ndim != 2:
-                continue
-            if not self.config.include_bias and name.endswith("bias"):
-                continue
-            if filters is not None and not any(token in name for token in filters):
+            if filters is not None and name not in filters and not any(
+                name.endswith(token) for token in filters
+            ):
                 continue
             selected[name] = parameter
         return selected
@@ -93,13 +96,14 @@ class LocalDeltaECSOptimizer:
             and (current_epoch + 1) % int(self.config.apply_every_epochs) == 0
         )
         if not due:
+            self._epoch_start = {}
             self.epoch_index = current_epoch + 1
             return []
         if not self._epoch_start:
-            self.begin_epoch()
             self._last_epoch_stats.append(
                 {
                     "epoch": current_epoch,
+                    "global_step": self.global_step,
                     "status": "skipped",
                     "reason": "missing epoch-start snapshot",
                 }
@@ -133,9 +137,11 @@ class LocalDeltaECSOptimizer:
                         "parameter": name,
                         "status": "geometry_failed",
                         "reason": str(exc),
+                        "reference": self.config.reference,
                     }
                 )
                 continue
+
             parameter.copy_(before + result.corrected_delta.to(parameter.device, parameter.dtype))
             self._last_epoch_stats.append(
                 {
@@ -146,19 +152,32 @@ class LocalDeltaECSOptimizer:
                     "reason": "applied",
                     "correction_fraction": result.correction_fraction,
                     "ecs_rank": result.ecs_rank,
+                    "ecs_fraction": result.ecs_fraction,
                     "normalization_dimension": result.normalization_dimension,
                     "bulk_effective_count": result.bulk_effective_count,
                     "trace_log_per_eval": result.trace_log_per_eval,
                     "solver_status": result.status,
+                    "transposed": result.transposed,
+                    "projection_side": result.projection_side,
                     "base_delta_norm": result.base_delta_norm,
                     "ecs_delta_norm": result.ecs_delta_norm,
                     "orthogonal_delta_norm": result.orthogonal_delta_norm,
+                    "post_orthogonal_delta_norm": result.post_orthogonal_delta_norm,
                     "removed_delta_norm": result.removed_delta_norm,
                     "orthogonal_fraction": result.orthogonal_fraction,
+                    "post_orthogonal_fraction": result.post_orthogonal_fraction,
                     "removed_fraction_of_base": result.removed_fraction_of_base,
+                    "observed_orthogonal_damping": result.observed_orthogonal_damping,
+                    "expected_orthogonal_damping": result.expected_orthogonal_damping,
+                    "damping_error": result.damping_error,
+                    "pythagorean_error": result.pythagorean_error,
+                    "correction_identity_error": result.correction_identity_error,
                     "reference": self.config.reference,
+                    "optimizer_state_adjusted": False,
                 }
             )
+
+        self._epoch_start = {}
         self.epoch_index = current_epoch + 1
         return list(self._last_epoch_stats)
 
