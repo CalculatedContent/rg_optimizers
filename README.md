@@ -23,5 +23,12 @@ program.
   full-`M` `detX_num`. The optimizer then removes contracting flow along the
   resulting adaptive trace-log normal.
 
+- [`optimizers/wwpgd_local_delta`](optimizers/wwpgd_local_delta): an update-space
+  WW-PGD variant. At epoch boundaries it saves the completed AdamW or
+  SGD+momentum epoch displacement, computes a local self-consistent ECS from the
+  layer spectrum, and fractionally damps only the component of that displacement
+  outside the retained right-ECS subspace. This modifies the update, not the
+  full weight-matrix spectrum.
+
 Each optimizer is kept in its own folder so implementations, notebooks, and
 tests can evolve independently.
