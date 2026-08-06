@@ -13,6 +13,7 @@ dependencies = [
   "numpy",
   "pandas",
   "matplotlib",
+  "weightwatcher>=0.7.7",
 ]
 
 [tool.setuptools]
