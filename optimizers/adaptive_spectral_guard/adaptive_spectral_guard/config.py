@@ -26,6 +26,7 @@ class LayerPolicy:
 
     shape_scale: float = 0.20
     shape_max_ratio: Optional[float] = 0.04
+    shape_beta_deadband: float = 0.0
 
     combined_max_ratio: Optional[float] = 0.15
 
@@ -47,6 +48,7 @@ class LayerPolicy:
         for name, value in (
             ("volume_scale", self.volume_scale),
             ("shape_scale", self.shape_scale),
+            ("shape_beta_deadband", self.shape_beta_deadband),
             ("allowed_task_conflict_ratio", self.allowed_task_conflict_ratio),
         ):
             if value < 0.0:
@@ -81,8 +83,19 @@ class ControllerConfig:
     support_change_scale: float = 0.20
     erg_gap_ratio_scale: float = 0.30
 
+    # Backward-compatible by default: decay=0 uses the current checkpoint only,
+    # and separate_channel_confidence=False retains the original all-or-nothing
+    # confidence gate.
+    confidence_ema_decay: float = 0.0
+    separate_channel_confidence: bool = False
+    volume_confidence_floor_below_boundary: float = 0.0
+    volume_confidence_floor_alpha: float = 2.0
+    shape_min_confidence: float = 0.20
+    shape_raw_confidence_floor: float = 0.0
+
     beta_on: float = 0.05
     shape_alpha_on: float = 2.05
+    shape_requires_alpha_boundary: bool = False
 
     task_conflict_ema_decay: float = 0.80
     task_conflict_penalty: float = 2.0
@@ -93,16 +106,26 @@ class ControllerConfig:
             raise ValueError("Require alpha_strong <= alpha_on < alpha_off")
         if self.off_patience < 1:
             raise ValueError("off_patience must be positive")
-        if not 0.0 <= self.min_confidence <= 1.0:
-            raise ValueError("min_confidence must lie in [0, 1]")
+        for name, value in (
+            ("min_confidence", self.min_confidence),
+            (
+                "volume_confidence_floor_below_boundary",
+                self.volume_confidence_floor_below_boundary,
+            ),
+            ("shape_min_confidence", self.shape_min_confidence),
+            ("shape_raw_confidence_floor", self.shape_raw_confidence_floor),
+            ("minimum_task_throttle", self.minimum_task_throttle),
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must lie in [0, 1]")
+        if not 0.0 <= self.confidence_ema_decay < 1.0:
+            raise ValueError("confidence_ema_decay must lie in [0, 1)")
         if self.support_change_scale <= 0.0 or self.erg_gap_ratio_scale <= 0.0:
             raise ValueError("confidence scales must be positive")
         if not 0.0 <= self.task_conflict_ema_decay < 1.0:
             raise ValueError("task_conflict_ema_decay must lie in [0, 1)")
         if self.task_conflict_penalty < 0.0:
             raise ValueError("task_conflict_penalty must be non-negative")
-        if not 0.0 <= self.minimum_task_throttle <= 1.0:
-            raise ValueError("minimum_task_throttle must lie in [0, 1]")
 
 
 @dataclass(frozen=True)
@@ -144,12 +167,7 @@ class GuardConfig:
 
 
 def default_layer_policies() -> dict[str, LayerPolicy]:
-    """Conservative defaults motivated by the first TraceLogRG experiment.
-
-    FC1 keeps frequent branch protection and a small beta-shape channel.
-    FC2 is much weaker and less frequent because every-step projection slowed
-    its convergence. FC3 is disabled because it has only ten singular values.
-    """
+    """Original conservative defaults from the first adaptive run."""
 
     return {
         "fc1.weight": LayerPolicy(
@@ -188,10 +206,60 @@ def default_layer_policies() -> dict[str, LayerPolicy]:
     }
 
 
+def stabilized_layer_policies() -> dict[str, LayerPolicy]:
+    """V2 policies motivated by the first eight-epoch adaptive run.
+
+    The first run showed that the beta channel sat on its cap whenever active.
+    V2 lowers both the beta scale and cap, adds a beta deadband, leaves FC2
+    conservative, and retains stronger FC1 trace-log protection.
+    """
+
+    return {
+        "fc1.weight": LayerPolicy(
+            enabled=True,
+            cadence=2,
+            weak_gain=0.45,
+            strong_gain=0.90,
+            volume_scale=1.0,
+            volume_max_ratio=0.12,
+            shape_scale=0.08,
+            shape_max_ratio=0.02,
+            shape_beta_deadband=0.05,
+            combined_max_ratio=0.13,
+            min_retained=5,
+            min_shape_retained=20,
+            n_shape_shells=5,
+            min_shape_decades=0.50,
+            loss_neutral=True,
+        ),
+        "fc2.weight": LayerPolicy(
+            enabled=True,
+            cadence=10,
+            weak_gain=0.10,
+            strong_gain=0.25,
+            volume_scale=0.65,
+            volume_max_ratio=0.04,
+            shape_scale=0.03,
+            shape_max_ratio=0.0075,
+            shape_beta_deadband=0.05,
+            combined_max_ratio=0.045,
+            min_retained=5,
+            min_shape_retained=20,
+            n_shape_shells=5,
+            min_shape_decades=0.50,
+            loss_neutral=True,
+        ),
+        "fc3.weight": LayerPolicy(enabled=False),
+    }
+
+
 def preset_policies(name: str) -> dict[str, LayerPolicy]:
-    """Return an explicit ablation preset."""
-    policies = default_layer_policies()
+    """Return an explicit experiment or ablation preset."""
     key = name.strip().lower()
+    if key in {"stabilized", "stable", "v2"}:
+        return stabilized_layer_policies()
+
+    policies = default_layer_policies()
     if key in {"adaptive", "fc1_fc2", "full"}:
         return policies
     if key == "fc1_only":
@@ -202,13 +270,23 @@ def preset_policies(name: str) -> dict[str, LayerPolicy]:
         policies["fc1.weight"] = replace(policies["fc1.weight"], enabled=False)
         policies["fc3.weight"] = replace(policies["fc3.weight"], enabled=False)
         return policies
+    if key in {"stabilized_fc1_only", "v2_fc1_only"}:
+        policies = stabilized_layer_policies()
+        policies["fc2.weight"] = replace(policies["fc2.weight"], enabled=False)
+        return policies
+    if key in {"stabilized_fc2_only", "v2_fc2_only"}:
+        policies = stabilized_layer_policies()
+        policies["fc1.weight"] = replace(policies["fc1.weight"], enabled=False)
+        return policies
     if key in {"off", "baseline"}:
         return {
             parameter: replace(policy, enabled=False)
             for parameter, policy in policies.items()
         }
     raise ValueError(
-        f"Unknown preset {name!r}; expected adaptive, fc1_only, fc2_only, or off"
+        "Unknown preset "
+        f"{name!r}; expected adaptive, stabilized, fc1_only, fc2_only, "
+        "stabilized_fc1_only, stabilized_fc2_only, or off"
     )
 
 

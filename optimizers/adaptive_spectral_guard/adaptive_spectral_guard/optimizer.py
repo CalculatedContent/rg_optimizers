@@ -81,6 +81,17 @@ class AdaptiveSpectralGuard:
         self._last_step_stats = []
         return rows
 
+    @staticmethod
+    def _channel_gains(state) -> tuple[float, float]:
+        """Return backward-compatible volume and shape gains."""
+        volume = float(
+            getattr(state, "volume_effective_gain", state.effective_gain)
+        )
+        shape = float(
+            getattr(state, "shape_effective_gain", state.effective_gain)
+        )
+        return volume, shape
+
     def _prepare(self, next_step: int) -> dict[
         str, tuple[torch.Tensor, torch.Tensor, SpectralGeometry]
     ]:
@@ -90,10 +101,11 @@ class AdaptiveSpectralGuard:
                 continue
             policy = self.config.policy_for(name)
             state = self.controller.get_state(name)
+            volume_gain, shape_gain = self._channel_gains(state)
             if (
                 not policy.enabled
                 or state.regime == "off"
-                or state.effective_gain <= 0.0
+                or max(volume_gain, shape_gain) <= 0.0
                 or next_step % policy.cadence != 0
             ):
                 continue
@@ -169,6 +181,14 @@ class AdaptiveSpectralGuard:
         drift_value = float(drift.detach().cpu())
         norm_value = float(grad_norm_sq.detach().cpu())
 
+        if gain <= 0.0:
+            return self._zero_like(delta), {
+                "volume_applied": False,
+                "volume_reason": "volume gain is zero",
+                "base_trace_log_drift": drift_value,
+                "volume_correction_ratio": 0.0,
+                "volume_capped": False,
+            }
         if norm_value <= self.config.eps or not math.isfinite(norm_value):
             return self._zero_like(delta), {
                 "volume_applied": False,
@@ -209,8 +229,10 @@ class AdaptiveSpectralGuard:
         gain: float,
         scale: float,
         max_ratio: Optional[float],
+        beta_deadband: float,
     ) -> tuple[torch.Tensor, dict[str, Any]]:
         beta = float(geometry.beta_E.detach().float().cpu())
+        beta_excess = max(beta - float(beta_deadband), 0.0)
         grad = geometry.beta_gradient.to(
             device=delta.device,
             dtype=delta.dtype,
@@ -218,40 +240,53 @@ class AdaptiveSpectralGuard:
         grad_norm_sq = torch.sum(grad.float().square())
         norm_value = float(grad_norm_sq.detach().cpu())
 
+        base_stats = {
+            "beta_E_local": beta,
+            "beta_E_deadband": float(beta_deadband),
+            "beta_E_excess": beta_excess,
+        }
         if not active:
             return self._zero_like(delta), {
+                **base_stats,
                 "shape_applied": False,
                 "shape_reason": "shape gate off",
-                "beta_E_local": beta,
+                "shape_correction_ratio": 0.0,
+                "shape_capped": False,
+            }
+        if gain <= 0.0:
+            return self._zero_like(delta), {
+                **base_stats,
+                "shape_applied": False,
+                "shape_reason": "shape gain is zero",
                 "shape_correction_ratio": 0.0,
                 "shape_capped": False,
             }
         if not geometry.beta_reliable:
             return self._zero_like(delta), {
+                **base_stats,
                 "shape_applied": False,
                 "shape_reason": "beta geometry unreliable",
-                "beta_E_local": beta,
                 "shape_correction_ratio": 0.0,
                 "shape_capped": False,
             }
-        if beta <= 0.0:
+        if beta_excess <= 0.0:
             return self._zero_like(delta), {
+                **base_stats,
                 "shape_applied": False,
-                "shape_reason": "beta_E is not on the alpha<2 side",
-                "beta_E_local": beta,
+                "shape_reason": "beta_E is inside the deadband",
                 "shape_correction_ratio": 0.0,
                 "shape_capped": False,
             }
         if norm_value <= self.config.eps or not math.isfinite(norm_value):
             return self._zero_like(delta), {
+                **base_stats,
                 "shape_applied": False,
                 "shape_reason": "singular beta gradient",
-                "beta_E_local": beta,
                 "shape_correction_ratio": 0.0,
                 "shape_capped": False,
             }
 
-        coefficient = beta / norm_value
+        coefficient = beta_excess / norm_value
         correction = -float(gain) * float(scale) * coefficient * grad
         correction, ratio, capped = relative_cap(
             correction,
@@ -260,12 +295,12 @@ class AdaptiveSpectralGuard:
             eps=self.config.eps,
         )
         return correction, {
+            **base_stats,
             "shape_applied": bool(
                 torch.linalg.vector_norm(correction.float()).item()
                 > self.config.eps
             ),
             "shape_reason": "applied",
-            "beta_E_local": beta,
             "shape_coefficient": coefficient,
             "shape_correction_ratio": ratio,
             "shape_capped": capped,
@@ -285,11 +320,12 @@ class AdaptiveSpectralGuard:
                 delta_base = parameter.detach() - before
                 policy = self.config.policy_for(name)
                 state = self.controller.get_state(name)
+                volume_gain, shape_gain = self._channel_gains(state)
 
                 volume, volume_stats = self._volume_correction(
                     delta_base,
                     geometry,
-                    gain=state.effective_gain,
+                    gain=volume_gain,
                     scale=policy.volume_scale,
                     max_ratio=policy.volume_max_ratio,
                 )
@@ -297,9 +333,10 @@ class AdaptiveSpectralGuard:
                     delta_base,
                     geometry,
                     active=state.shape_active,
-                    gain=state.effective_gain,
+                    gain=shape_gain,
                     scale=policy.shape_scale,
                     max_ratio=policy.shape_max_ratio,
+                    beta_deadband=policy.shape_beta_deadband,
                 )
                 attempted = volume + shape
 
@@ -367,9 +404,23 @@ class AdaptiveSpectralGuard:
                     "alpha": state.alpha,
                     "alpha_trend": state.alpha_trend,
                     "ERG_gap": state.erg_gap,
+                    "raw_confidence": getattr(
+                        state, "raw_confidence", state.confidence
+                    ),
+                    "smoothed_confidence": getattr(
+                        state, "smoothed_confidence", state.confidence
+                    ),
                     "confidence": state.confidence,
+                    "volume_confidence": getattr(
+                        state, "volume_confidence", state.confidence
+                    ),
+                    "shape_confidence": getattr(
+                        state, "shape_confidence", state.confidence
+                    ),
                     "task_throttle": state.task_throttle,
                     "base_gain": state.base_gain,
+                    "volume_effective_gain": volume_gain,
+                    "shape_effective_gain": shape_gain,
                     "effective_gain": state.effective_gain,
                     "shape_active": state.shape_active,
                     "volume_rank": geometry.volume_rank,

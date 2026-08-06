@@ -33,7 +33,14 @@ class LayerState:
     boundary_overlap_ratio: float = 0.0
     support_change_ratio: float = math.nan
     erg_gap_ratio: float = math.nan
+
+    # ``confidence`` remains the compatibility name and equals the smoothed
+    # confidence in the stabilized controller.
+    raw_confidence: float = math.nan
+    smoothed_confidence: float = math.nan
     confidence: float = 0.0
+    volume_confidence: float = 0.0
+    shape_confidence: float = 0.0
 
     beta_E: float = math.nan
     beta_reliable: bool = False
@@ -43,6 +50,8 @@ class LayerState:
     task_throttle: float = 1.0
 
     base_gain: float = 0.0
+    volume_effective_gain: float = 0.0
+    shape_effective_gain: float = 0.0
     effective_gain: float = 0.0
     shape_active: bool = False
 
@@ -96,7 +105,7 @@ class AdaptiveSpectralController:
         ]
         return matches[0] if len(matches) == 1 else None
 
-    def _confidence(
+    def _raw_confidence(
         self,
         *,
         overlap: float,
@@ -115,6 +124,25 @@ class AdaptiveSpectralController:
         )
         return float(np.clip(overlap * support_factor * gap_factor, 0.0, 1.0))
 
+    def _smooth_confidence(
+        self,
+        raw: float,
+        previous: LayerState,
+    ) -> float:
+        decay = self.config.controller.confidence_ema_decay
+        previous_value = previous.smoothed_confidence
+        if not math.isfinite(previous_value) and previous.epoch >= 0:
+            previous_value = previous.confidence
+        if not math.isfinite(previous_value):
+            return float(raw)
+        return float(
+            np.clip(
+                decay * previous_value + (1.0 - decay) * raw,
+                0.0,
+                1.0,
+            )
+        )
+
     def _transition(
         self,
         state: LayerState,
@@ -125,7 +153,14 @@ class AdaptiveSpectralController:
             return "off", 0, "policy disabled"
         if not math.isfinite(state.alpha):
             return "off", 0, "missing alpha"
-        if state.confidence < c.min_confidence:
+
+        # The original controller remains the default. V2 applies confidence
+        # separately to the volume and shape channels instead of turning the
+        # entire layer off.
+        if (
+            not c.separate_channel_confidence
+            and state.confidence < c.min_confidence
+        ):
             return "off", 0, "low ECS confidence"
 
         falling_fast = (
@@ -159,6 +194,52 @@ class AdaptiveSpectralController:
             return "off", safe_epochs, "safe for off-patience window"
 
         return "off", 0, "alpha safely above boundary"
+
+    def _channel_confidences(
+        self,
+        state: LayerState,
+    ) -> tuple[float, float]:
+        c = self.config.controller
+        if not c.separate_channel_confidence:
+            value = float(np.clip(state.confidence, 0.0, 1.0))
+            return value, value
+
+        volume = float(np.clip(state.smoothed_confidence, 0.0, 1.0))
+        if (
+            state.regime != "off"
+            and state.alpha <= c.volume_confidence_floor_alpha
+        ):
+            volume = max(
+                volume,
+                c.volume_confidence_floor_below_boundary,
+            )
+
+        shape = float(np.clip(state.smoothed_confidence, 0.0, 1.0))
+        if (
+            shape < c.shape_min_confidence
+            or state.raw_confidence < c.shape_raw_confidence_floor
+        ):
+            shape = 0.0
+        return volume, shape
+
+    def _refresh_effective_gains(
+        self,
+        state: LayerState,
+    ) -> None:
+        state.volume_effective_gain = (
+            state.base_gain
+            * state.volume_confidence
+            * state.task_throttle
+        )
+        state.shape_effective_gain = (
+            state.base_gain
+            * state.shape_confidence
+            * state.task_throttle
+        )
+        state.effective_gain = max(
+            state.volume_effective_gain,
+            state.shape_effective_gain,
+        )
 
     def update_from_weightwatcher(
         self,
@@ -225,10 +306,14 @@ class AdaptiveSpectralController:
                     1.0,
                 )
             )
-            confidence = self._confidence(
+            raw_confidence = self._raw_confidence(
                 overlap=overlap,
                 support_change=support_change,
                 erg_gap_ratio=gap_ratio,
+            )
+            smoothed_confidence = self._smooth_confidence(
+                raw_confidence,
+                previous,
             )
 
             state = LayerState(
@@ -251,9 +336,15 @@ class AdaptiveSpectralController:
                 boundary_overlap_ratio=overlap,
                 support_change_ratio=support_change,
                 erg_gap_ratio=gap_ratio,
-                confidence=confidence,
-                beta_E=self._safe_float(row.get("beta_E_midpoint", math.nan)),
-                beta_reliable=bool(row.get("scale_balance_reliable", False)),
+                raw_confidence=raw_confidence,
+                smoothed_confidence=smoothed_confidence,
+                confidence=smoothed_confidence,
+                beta_E=self._safe_float(
+                    row.get("beta_E_midpoint", math.nan)
+                ),
+                beta_reliable=bool(
+                    row.get("scale_balance_reliable", False)
+                ),
                 task_conflict_ema=previous.task_conflict_ema,
                 task_harmful_fraction=previous.task_harmful_fraction,
                 task_throttle=previous.task_throttle,
@@ -265,28 +356,35 @@ class AdaptiveSpectralController:
             state.reason = reason
 
             if regime == "strong":
-                base_gain = policy.strong_gain
+                state.base_gain = policy.strong_gain
             elif regime == "weak":
-                base_gain = policy.weak_gain
+                state.base_gain = policy.weak_gain
             else:
-                base_gain = 0.0
+                state.base_gain = 0.0
 
-            state.base_gain = base_gain
-            state.effective_gain = (
-                base_gain * state.confidence * state.task_throttle
-            )
+            (
+                state.volume_confidence,
+                state.shape_confidence,
+            ) = self._channel_confidences(state)
+            self._refresh_effective_gains(state)
+
             c = self.config.controller
+            beta_trigger = bool(
+                state.beta_reliable
+                and math.isfinite(state.beta_E)
+                and state.beta_E >= c.beta_on
+            )
+            alpha_trigger = bool(state.alpha <= c.shape_alpha_on)
+            if c.shape_requires_alpha_boundary:
+                shape_trigger = beta_trigger and alpha_trigger
+            else:
+                shape_trigger = beta_trigger or alpha_trigger
             state.shape_active = bool(
                 regime != "off"
-                and (
-                    alpha <= c.shape_alpha_on
-                    or (
-                        state.beta_reliable
-                        and math.isfinite(state.beta_E)
-                        and state.beta_E >= c.beta_on
-                    )
-                )
+                and state.shape_confidence > 0.0
+                and shape_trigger
             )
+
             self.states[parameter] = state
             updated.append(state.to_dict())
 
@@ -330,9 +428,7 @@ class AdaptiveSpectralController:
             state.task_conflict_ema = ema
             state.task_harmful_fraction = harmful_fraction
             state.task_throttle = throttle
-            state.effective_gain = (
-                state.base_gain * state.confidence * state.task_throttle
-            )
+            self._refresh_effective_gains(state)
             rows.append(state.to_dict())
         return pd.DataFrame(rows)
 
