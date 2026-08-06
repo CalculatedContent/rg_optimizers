@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wwpgd-local-delta"
+version = "0.1.0"
+description = "Local-delta ECS update-space WW-PGD experiments"
+requires-python = ">=3.10"
+dependencies = [
+  "torch",
+  "torchvision",
+  "numpy",
+  "pandas",
+  "matplotlib",
+]
+
+[tool.setuptools]
+packages = ["wwpgd_local_delta"]
