@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from wwpgd_local_delta import LocalDeltaECSConfig, LocalDeltaECSOptimizer
-from wwpgd_local_delta.ecs import _select_candidate_index
+from wwpgd_local_delta.ecs import _select_candidate_index, select_self_consistent_ecs
 
 
 class TinyMLP(nn.Module):
@@ -29,6 +29,20 @@ def one_step(model: nn.Module, optimizer: LocalDeltaECSOptimizer) -> None:
 
 
 class HardeningTests(unittest.TestCase):
+
+    def test_ecs_scan_is_invariant_under_global_rescaling(self):
+        singular_values = torch.tensor([5.0, 3.0, 2.0, 1.0, 0.5], dtype=torch.float64)
+        baseline = select_self_consistent_ecs(singular_values, min_retained=2)
+        scaled = select_self_consistent_ecs(1e-12 * singular_values, min_retained=2)
+        self.assertEqual(scaled.spectral_count, baseline.spectral_count)
+        self.assertEqual(scaled.rank, baseline.rank)
+        self.assertAlmostEqual(
+            scaled.normalization_dimension, baseline.normalization_dimension, places=10
+        )
+        self.assertAlmostEqual(
+            scaled.trace_log_per_eval, baseline.trace_log_per_eval, places=10
+        )
+
     def test_module_name_filter_resolves_weight_parameter(self):
         model = TinyMLP()
         base = torch.optim.AdamW(model.parameters(), lr=1e-3)

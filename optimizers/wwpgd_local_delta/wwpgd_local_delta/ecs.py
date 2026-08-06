@@ -104,7 +104,7 @@ def _participation_count(values: torch.Tensor, eps: float) -> float:
         return 0.0
     s1 = torch.sum(values)
     s2 = torch.sum(values * values)
-    if float(s1.detach().cpu()) <= eps or float(s2.detach().cpu()) <= eps:
+    if float(s1.detach().cpu()) <= 0.0 or float(s2.detach().cpu()) <= 0.0:
         return 0.0
     return float(((s1 * s1) / s2).detach().cpu())
 
@@ -175,9 +175,11 @@ def select_self_consistent_ecs(
     if float(eps) <= 0.0:
         raise ValueError("eps must be positive")
 
-    s = singular_values.detach().float().abs()
+    # The ECS equation is invariant under global rescaling.  Do not use the
+    # numerical residual tolerance as an absolute spectral-energy cutoff.
+    s = singular_values.detach().double().abs()
     lambdas = s * s
-    lambdas = lambdas[torch.isfinite(lambdas) & (lambdas > float(eps))]
+    lambdas = lambdas[torch.isfinite(lambdas) & (lambdas > 0.0)]
     if lambdas.numel() == 0:
         raise ValueError("no positive singular values available for ECS scan")
     lambdas, _ = torch.sort(lambdas, descending=True)
@@ -188,8 +190,8 @@ def select_self_consistent_ecs(
         raise ValueError("not enough positive singular values for requested retained rank")
 
     total = torch.sum(lambdas)
-    if not torch.isfinite(total) or float(total.detach().cpu()) <= float(eps):
-        raise ValueError("positive spectrum has non-finite or negligible total energy")
+    if not torch.isfinite(total) or float(total.detach().cpu()) <= 0.0:
+        raise ValueError("positive spectrum has non-finite or non-positive total energy")
 
     normalized_reference = None
     if reference_rank is not None:
@@ -204,7 +206,10 @@ def select_self_consistent_ecs(
         bulk_count = float(max(0, spectral_count - rank))
         dimension = float(rank) + r_bulk + gamma * (bulk_count - r_bulk)
         dimension = max(float(rank), min(float(spectral_count), dimension))
-        trace_log = torch.mean(torch.log((dimension * retained / total).clamp_min(eps)))
+        normalized = dimension * retained / total
+        if not torch.isfinite(normalized).all() or not bool((normalized > 0.0).all()):
+            raise ValueError("normalized retained spectrum is not finite and positive")
+        trace_log = torch.mean(torch.log(normalized))
         candidates.append((rank, dimension, r_bulk, float(trace_log.detach().cpu())))
 
     ranks = [item[0] for item in candidates]
