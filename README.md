@@ -23,14 +23,13 @@ program.
   full-`M` `detX_num`. The optimizer then removes contracting flow along the
   resulting adaptive trace-log normal.
 
-- [`optimizers/wwpgd_local_delta`](optimizers/wwpgd_local_delta): an update-space
-  WW-PGD variant. At epoch boundaries it forms the completed AdamW or
-  SGD+momentum epoch displacement, computes the bulk-effective self-consistent
-  ECS of the proposed endpoint, and fractionally damps only the component of
-  that displacement outside the retained ECS. It uses the same tall-matrix
-  orientation as TraceLogRG, so the mapped-back projection acts on the right
-  for tall/square layers and on the left for originally wide layers. This
-  modifies the realized update, not the full weight-matrix spectrum.
+- [`optimizers/spectral_rg_flow_projector`](optimizers/spectral_rg_flow_projector):
+  a separate experiment that acts in centered log-spectrum shape space rather
+  than along the trace-log normal. On the adaptive self-consistent ECS, it
+  estimates a local participation-ratio collapse vector toward the
+  no-extensive-ECS/trivial branch and subtracts only the completed optimizer
+  displacement aligned with that vector. Its matched MNIST suite tests the
+  same projector on AdamW, Adam, and ordinary SGD with classical momentum.
 
 Each optimizer is kept in its own folder so implementations, notebooks, and
 tests can evolve independently.
