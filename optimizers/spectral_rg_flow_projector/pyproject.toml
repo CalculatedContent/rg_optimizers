@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rg-spectral-flow-projector"
+version = "0.1.0"
+description = "One-sided spectral RG-flow projection away from the trivial collapse branch"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.1",
+  "numpy>=1.24",
+  "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+experiment = [
+  "matplotlib>=3.7",
+  "torchvision>=0.16",
+  "weightwatcher>=0.7.7",
+  "jupyter>=1.0",
+]
+
+[tool.setuptools]
+packages = ["rg_spectral_flow"]

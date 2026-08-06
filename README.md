@@ -23,5 +23,13 @@ program.
   full-`M` `detX_num`. The optimizer then removes contracting flow along the
   resulting adaptive trace-log normal.
 
+- [`optimizers/spectral_rg_flow_projector`](optimizers/spectral_rg_flow_projector):
+  a separate experiment that acts in centered log-spectrum shape space rather
+  than along the trace-log normal. On the adaptive self-consistent ECS, it
+  estimates a local participation-ratio collapse vector toward the
+  no-extensive-ECS/trivial branch and subtracts only the completed optimizer
+  displacement aligned with that vector. Its matched MNIST suite tests the
+  same projector on AdamW, Adam, and ordinary SGD with classical momentum.
+
 Each optimizer is kept in its own folder so implementations, notebooks, and
 tests can evolve independently.
