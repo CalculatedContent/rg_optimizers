@@ -25,6 +25,10 @@ class NotebookTests(unittest.TestCase):
             self.assertIn("ww_required=True", joined)
             self.assertIn("damping_error", joined)
             self.assertIn("initial_state_checksum", joined)
+            self.assertIn("required_ww_columns", joined)
+            self.assertIn(
+                '("D", "WeightWatcher power-law KS distance"', joined
+            )
 
 
 if __name__ == "__main__":
