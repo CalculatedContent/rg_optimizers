@@ -21,6 +21,7 @@ class ECSScanResult:
     spectral_count: int
     total_energy: float
     num_sign_change_brackets: int
+    reference_rank: Optional[int] = None
 
 
 @dataclass(frozen=True)
@@ -62,6 +63,7 @@ class LocalDeltaCorrectionResult:
     pythagorean_error: float
     correction_identity_error: float
     correction_fraction: float
+    reference_rank: Optional[int]
 
 
 def _as_matrix(weight: torch.Tensor) -> torch.Tensor:
@@ -104,7 +106,7 @@ def _participation_count(values: torch.Tensor, eps: float) -> float:
     s2 = torch.sum(values * values)
     if float(s1.detach().cpu()) <= eps or float(s2.detach().cpu()) <= eps:
         return 0.0
-    return float(((s1 * s1) / (s2 + eps)).detach().cpu())
+    return float(((s1 * s1) / s2).detach().cpu())
 
 
 def _select_candidate_index(
@@ -112,13 +114,13 @@ def _select_candidate_index(
     residuals: list[float],
     *,
     numeric_eps: float,
+    reference_rank: Optional[int] = None,
 ) -> tuple[int, int, str]:
-    """Match the authoritative self-consistent ECS finite-rank selection rule.
+    """Select the finite-rank ECS candidate using the authoritative rule.
 
-    Every exact zero and every endpoint of every sign-change bracket is a
-    candidate. Among those candidates, choose the smallest absolute residual;
-    break exact ties in favor of the larger retained rank. If no crossing
-    exists, choose the global minimum-absolute-residual candidate.
+    Exact zeros and both endpoints of every sign-change bracket are candidates.
+    The primary criterion is absolute trace-log residual. A previous rank is
+    used only as a continuity tie-breaker, followed by the larger retained rank.
     """
 
     exact = [
@@ -136,23 +138,23 @@ def _select_candidate_index(
         candidates.add(index)
         candidates.add(index + 1)
 
+    def score(index: int) -> tuple[float, float, int]:
+        continuity = (
+            abs(float(ranks[index]) - float(reference_rank))
+            if reference_rank is not None
+            else 0.0
+        )
+        return (
+            abs(float(residuals[index])),
+            continuity,
+            -int(ranks[index]),
+        )
+
     if candidates:
-        chosen = min(
-            candidates,
-            key=lambda index: (
-                abs(float(residuals[index])),
-                -int(ranks[index]),
-            ),
-        )
-        status = "sign_change"
+        chosen = min(candidates, key=score)
+        status = "exact_zero" if chosen in exact else "sign_change"
     else:
-        chosen = min(
-            range(len(ranks)),
-            key=lambda index: (
-                abs(float(residuals[index])),
-                -int(ranks[index]),
-            ),
-        )
+        chosen = min(range(len(ranks)), key=score)
         status = "nearest_no_sign_change"
     return int(chosen), int(len(brackets)), status
 
@@ -163,22 +165,10 @@ def select_self_consistent_ecs(
     min_retained: int = 3,
     max_retained: Optional[int] = None,
     normalization_gamma: float = 0.0,
+    reference_rank: Optional[int] = None,
     eps: float = 1e-12,
 ) -> ECSScanResult:
-    """Select an ECS rank using the bulk-effective trace-log scan.
-
-    For candidate retained rank ``m`` the adaptive normalization dimension is
-
-        D(m) = m + r_bulk(m) + gamma * ((M-m) - r_bulk(m)),
-
-    and the selected rank is adjacent to a zero crossing of
-
-        F(m) = mean_top_m log(D(m) * lambda_i / sum_j lambda_j),
-
-    or the minimum-absolute-residual candidate if a finite spectrum has no
-    crossing. The selection over multiple crossings matches the authoritative
-    solver in ``self_consistent_trace_log_tracker``.
-    """
+    """Select an ECS rank using the bulk-effective trace-log scan."""
 
     if not 0.0 <= float(normalization_gamma) <= 1.0:
         raise ValueError("normalization_gamma must lie in [0, 1]")
@@ -201,6 +191,10 @@ def select_self_consistent_ecs(
     if not torch.isfinite(total) or float(total.detach().cpu()) <= float(eps):
         raise ValueError("positive spectrum has non-finite or negligible total energy")
 
+    normalized_reference = None
+    if reference_rank is not None:
+        normalized_reference = int(max(lo, min(int(reference_rank), hi)))
+
     gamma = float(normalization_gamma)
     candidates: list[tuple[int, float, float, float]] = []
     for rank in range(lo, hi + 1):
@@ -219,6 +213,7 @@ def select_self_consistent_ecs(
         ranks,
         residuals,
         numeric_eps=float(eps),
+        reference_rank=normalized_reference,
     )
     rank, dimension, r_bulk, trace_log = candidates[selected_index]
     return ECSScanResult(
@@ -231,6 +226,7 @@ def select_self_consistent_ecs(
         spectral_count=spectral_count,
         total_energy=float(total.detach().cpu()),
         num_sign_change_brackets=bracket_count,
+        reference_rank=normalized_reference,
     )
 
 
@@ -240,19 +236,16 @@ def local_ecs_geometry(
     min_retained: int = 3,
     max_retained: Optional[int] = None,
     normalization_gamma: float = 0.0,
+    reference_rank: Optional[int] = None,
     eps: float = 1e-12,
 ) -> LocalECSGeometry:
-    """Return the ECS basis with the same tall orientation as TraceLogRG.
-
-    For an original tall/square matrix the ECS acts on the right and the
-    retained update is ``Delta @ P_R``. For an original wide matrix, the layer
-    is transposed before forming ``X = W^T W/N``; after mapping back, the ECS
-    acts on the left and the retained update is ``P_R @ Delta``.
-    """
+    """Return the ECS basis with the same tall orientation as TraceLogRG."""
 
     matrix = _as_matrix(weight).detach()
     if matrix.numel() == 0:
         raise ValueError("empty weight matrix")
+    if not torch.isfinite(matrix).all():
+        raise ValueError("reference weight contains non-finite values")
     oriented, transposed = _orient_tall(matrix)
     _, singular_values, vh = _svd_with_cpu_fallback(oriented)
     scan = select_self_consistent_ecs(
@@ -260,6 +253,7 @@ def local_ecs_geometry(
         min_retained=min_retained,
         max_retained=max_retained,
         normalization_gamma=normalization_gamma,
+        reference_rank=reference_rank,
         eps=eps,
     )
     basis = vh[: scan.rank].transpose(0, 1).to(
@@ -298,33 +292,21 @@ def split_delta_by_ecs(
     return retained.reshape(original_shape), orthogonal.reshape(original_shape)
 
 
-def damp_delta_outside_ecs(
+def damp_delta_with_geometry(
     delta: torch.Tensor,
-    reference_weight: torch.Tensor,
+    geometry: LocalECSGeometry,
     *,
     correction_fraction: float,
-    min_retained: int = 3,
-    max_retained: Optional[int] = None,
-    normalization_gamma: float = 0.0,
     eps: float = 1e-12,
 ) -> LocalDeltaCorrectionResult:
-    """Fractionally damp the completed displacement outside the local ECS."""
+    """Fractionally damp a displacement using a precomputed ECS geometry."""
 
     frac = float(correction_fraction)
     if not 0.0 <= frac <= 1.0:
         raise ValueError("correction_fraction must lie in [0, 1]")
-    delta_matrix = _as_matrix(delta)
-    ref_matrix = _as_matrix(reference_weight)
-    if delta_matrix.shape != ref_matrix.shape:
-        raise ValueError("delta and reference_weight must have compatible matrix shapes")
+    if not torch.isfinite(delta).all():
+        raise ValueError("delta contains non-finite values")
 
-    geometry = local_ecs_geometry(
-        ref_matrix,
-        min_retained=min_retained,
-        max_retained=max_retained,
-        normalization_gamma=normalization_gamma,
-        eps=eps,
-    )
     delta_ecs, delta_orth = split_delta_by_ecs(delta, geometry)
     corrected = delta_ecs + (1.0 - frac) * delta_orth
     _, post_orth = split_delta_by_ecs(corrected, geometry)
@@ -359,6 +341,9 @@ def damp_delta_outside_ecs(
         torch.linalg.vector_norm((corrected - identity_target).float()).detach().cpu()
     ) / denom
 
+    if not torch.isfinite(corrected).all():
+        raise ValueError("corrected delta contains non-finite values")
+
     scan = geometry.scan
     return LocalDeltaCorrectionResult(
         corrected_delta=corrected,
@@ -384,4 +369,38 @@ def damp_delta_outside_ecs(
         pythagorean_error=pythagorean_error,
         correction_identity_error=identity_error,
         correction_fraction=frac,
+        reference_rank=scan.reference_rank,
+    )
+
+
+def damp_delta_outside_ecs(
+    delta: torch.Tensor,
+    reference_weight: torch.Tensor,
+    *,
+    correction_fraction: float,
+    min_retained: int = 3,
+    max_retained: Optional[int] = None,
+    normalization_gamma: float = 0.0,
+    reference_rank: Optional[int] = None,
+    eps: float = 1e-12,
+) -> LocalDeltaCorrectionResult:
+    """Build the local ECS and fractionally damp the completed displacement."""
+
+    delta_matrix = _as_matrix(delta)
+    ref_matrix = _as_matrix(reference_weight)
+    if delta_matrix.shape != ref_matrix.shape:
+        raise ValueError("delta and reference_weight must have compatible matrix shapes")
+    geometry = local_ecs_geometry(
+        ref_matrix,
+        min_retained=min_retained,
+        max_retained=max_retained,
+        normalization_gamma=normalization_gamma,
+        reference_rank=reference_rank,
+        eps=eps,
+    )
+    return damp_delta_with_geometry(
+        delta,
+        geometry,
+        correction_fraction=correction_fraction,
+        eps=eps,
     )
