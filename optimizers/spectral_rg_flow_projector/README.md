@@ -1,7 +1,7 @@
 # Spectral RG-flow projector
 
 This folder contains a new optimizer experiment for the RG-optimizers
-repository.  It is deliberately separate from both:
+repository. It is deliberately separate from both:
 
 - `trace_log_tracker`, which projects the completed optimizer displacement
   against a trace-log normal; and
@@ -9,16 +9,16 @@ repository.  It is deliberately separate from both:
   still removes a trace-log-normal component.
 
 The motivation is the observed failure of the adaptive trace-log tracker to
-prevent FC1 from crossing into the `alpha < 2` regime.  The trace-log condition
+prevent FC1 from crossing into the `alpha < 2` regime. The trace-log condition
 fixes one retained-volume coordinate, but a large physical **shape flow can
-remain tangent to that gauge slice**.  This experiment therefore works in
+remain tangent to that gauge slice**. This experiment therefore works in
 spectral-shape coordinates rather than projecting against the trace-log normal.
 
 ## What is source-derived and what is experimental
 
 The RG draft identifies the weak-tail/trivial branch as the branch on which no
 extensive retained ECS survives, while the correlated candidate fixed point has
-nonzero retained spectral gain, `alpha ~= 2`, and ECS/PL alignment.  The draft
+nonzero retained spectral gain, `alpha ~= 2`, and ECS/PL alignment. The draft
 does not provide a unique differentiable local vector pointing toward the
 trivial branch.
 
@@ -37,7 +37,7 @@ WeightWatcher remains the source of:
 - the fitted PL retained count `num_pl_spikes`.
 
 The ECS is recomputed with the bulk-effective self-consistent normalization
-introduced in the preceding experiment.  For candidate retained rank `m`, the
+introduced in the preceding experiment. For candidate retained rank `m`, the
 discarded bulk participation-ratio count is
 
 $$
@@ -56,7 +56,7 @@ m+r_{\mathrm{bulk}}(m)
 +\gamma\left[(M-m)-r_{\mathrm{bulk}}(m)\right].
 $$
 
-The default is `gamma=0`.  The self-consistent ECS is selected from a zero of
+The default is `gamma=0`. The self-consistent ECS is selected from a zero of
 
 $$
 F(m)
@@ -111,7 +111,7 @@ r_{\mathrm{PR}}
 \frac{1}{\sum_i p_i^2}.
 $$
 
-A rank-one collapse has `r_PR = 1`.  The default collapse potential is
+A rank-one collapse has `r_PR = 1`. The default collapse potential is
 
 $$
 C_{F_0}(z)
@@ -133,13 +133,13 @@ v_{F_0}
 \right).
 $$
 
-This vector also sums to zero.  It is therefore a **shape direction tangent to
+This vector also sums to zero. It is therefore a **shape direction tangent to
 the trace-log gauge**, not the trace-log normal used by the preceding
 optimizers.
 
 ## One-sided spectral-flow subtraction
 
-The base optimizer first produces its complete matrix proposal.  From the
+The base optimizer first produces its complete matrix proposal. From the
 spectra before and after that proposal, compute
 
 $$
@@ -166,7 +166,7 @@ $$
 \Delta z-a_0^+v_{F_0}.
 $$
 
-Only positive alignment is removed.  A base step that increases retained
+Only positive alignment is removed. A base step that increases retained
 effective rank or moves orthogonally to this vector is unchanged.
 
 The correction is implemented as a finite multiplicative change to the base
@@ -179,29 +179,70 @@ s_i^{\mathrm{base}}
 \exp\left[-\frac12 a_0^+v_{F_0,i}\right].
 $$
 
-The base proposal's singular vectors are retained.  A common rescaling restores
-its Frobenius norm without changing the centered log-spectrum.  A correction
-norm cap keeps the intervention subordinate to AdamW/SGD.
+The base proposal's singular vectors are retained. A common rescaling restores
+its Frobenius norm without changing the centered log-spectrum. A correction
+norm cap keeps the intervention subordinate to the completed base optimizer
+step.
 
 ## Why this differs from the previous optimizer
 
 The previous adaptive trace-log tracker removes a component normal to one
-scalar retained-volume coordinate.  The new optimizer instead removes a
-component in the `(m-1)`-dimensional spectral-shape tangent space.  It is not a
+scalar retained-volume coordinate. The new optimizer instead removes a
+component in the `(m-1)`-dimensional spectral-shape tangent space. It is not a
 trace-log regularizer, not an alpha penalty, and not the WW-PGD rank-order
 retraction.
+
+## Matched optimizer notebook suite
+
+The same projector is now tested on three distinct completed optimizer
+trajectories:
+
+1. AdamW versus AdamW + SpectralRGFlow.
+2. Adam versus Adam + SpectralRGFlow.
+3. SGD with classical momentum versus SGD with classical momentum +
+   SpectralRGFlow.
+
+The SGD notebook uses ordinary
+
+```python
+torch.optim.SGD(
+    ...,
+    lr=0.05,
+    momentum=0.9,
+    dampening=0.0,
+    nesterov=False,
+)
+```
+
+It does **not** use Muon, polar orthogonalization, or Newton--Schulz. In every
+notebook, the baseline and wrapped models start from the same state and consume
+the same minibatches. The base optimizer hyperparameters are identical within
+each pair; the spectral projector is the only intervention.
+
+Each notebook tracks:
+
+- train/test loss and accuracy;
+- layerwise WeightWatcher `alpha`;
+- WeightWatcher and self-consistent ERG gaps;
+- the adaptive ECS/PL working support;
+- the measured base and corrected flow components;
+- retained participation-ratio effective rank; and
+- correction frequency and correction-size caps.
 
 ## Package layout
 
 ```text
 rg_spectral_flow/
-  ecs.py              adaptive self-consistent ECS
-  flow.py             spectral coordinate, F0 vector, finite projection
-  wrapper.py          post-AdamW/SGD optimizer wrapper
-  weightwatcher.py    WeightWatcher + adaptive-ECS outer loop
-  mnist_experiment.py paired MNIST experiment
+  ecs.py                    adaptive self-consistent ECS
+  flow.py                   spectral coordinate, F0 vector, finite projection
+  wrapper.py                post-optimizer spectral-flow wrapper
+  weightwatcher.py          WeightWatcher + adaptive-ECS outer loop
+  mnist_experiment.py       original paired AdamW experiment
+  optimizer_benchmarks.py   AdamW, Adam, and SGD+momentum matched runner
 notebooks/
   MNIST_MLP3_AdamW_vs_SpectralRGFlowProjector.ipynb
+  MNIST_MLP3_Adam_vs_SpectralRGFlowProjector.ipynb
+  MNIST_MLP3_SGD_Momentum_vs_SpectralRGFlowProjector.ipynb
 tests/
 ```
 
@@ -215,7 +256,13 @@ from rg_spectral_flow import (
     analyze_weightwatcher_checkpoint,
 )
 
-base = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+base = torch.optim.SGD(
+    model.parameters(),
+    lr=0.05,
+    momentum=0.9,
+    nesterov=False,
+    weight_decay=1e-4,
+)
 optimizer = SpectralRGFlowProjector(
     base,
     model.named_parameters(),
@@ -229,7 +276,7 @@ optimizer = SpectralRGFlowProjector(
 
 checkpoint = analyze_weightwatcher_checkpoint(
     model,
-    run_label="SpectralRGFlow",
+    run_label="SGD + momentum + SpectralRGFlow",
     epoch=0,
 )
 optimizer.set_support_states(checkpoint.supports, replace=True)
@@ -241,15 +288,18 @@ Refresh the support states after each slower WeightWatcher checkpoint.
 
 The experiment should be judged primarily on FC1:
 
-1. Does the new optimizer keep FC1 closer to `alpha = 2` than matched AdamW?
+1. Does the wrapped optimizer keep FC1 closer to `alpha = 2` than its matched
+   unwrapped base optimizer?
 2. Does `ERG_gap_SC` remain coherent?
-3. When a correction is applied, does
-   `corrected_flow_component` move toward zero?
+3. When a correction is applied, does `corrected_flow_component` move toward
+   zero?
 4. Does the intervention preserve test accuracy and remain small relative to
-   the completed AdamW step?
+   the completed base step?
 
 If FC1 still falls below two while the measured F0 component is removed, this
-participation-ratio collapse vector is not the missing RG direction.
+participation-ratio collapse vector is not the missing RG direction. The
+notebooks report this as a failed scientific hypothesis rather than hiding it
+behind aggregate accuracy.
 
 ## Tests
 
