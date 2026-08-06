@@ -13,13 +13,12 @@ outer-loop structure:
 
 1. Save the selected layer matrices at the start of an epoch, `W_start`.
 2. Let AdamW or SGD with momentum run normally for the entire epoch.
-3. Form the completed epoch displacement
-   `Delta = W_end - W_start`.
+3. Form the completed epoch displacement `Delta = W_end - W_start`.
 4. Orient the proposed endpoint as `N x M` with `N >= M`, exactly as in the
    TraceLogRG geometry, and compute the bulk-effective self-consistent ECS of
    the proposed endpoint `W_end`.
-5. Decompose the completed displacement into retained and orthogonal pieces and
-   damp only a fraction of the orthogonal piece:
+5. Decompose the completed displacement and fractionally damp only the part
+   outside the ECS:
 
 \[
 \Delta_{\mathrm{new}}
@@ -30,15 +29,14 @@ outer-loop structure:
 \qquad 0\leq\eta\leq1.
 \]
 
-For an originally tall or square layer, the ECS acts on the right:
+For an originally tall or square layer, the ECS acts on the right,
 
 \[
-\Delta_{\mathrm{ECS}}=\Delta P_R.
+\Delta_{\mathrm{ECS}}=\Delta P_R,
 \]
 
-For an originally wide layer, the layer is transposed before constructing
-`X = W^T W/N`. Mapping the oriented projection back to the original matrix
-therefore gives a left action:
+while an originally wide layer is transposed into the common tall convention,
+so mapping back gives a left action,
 
 \[
 \Delta_{\mathrm{ECS}}=P_R\Delta.
@@ -52,10 +50,37 @@ a soft local-delta correction. For `eta=1`, it becomes a hard projection of the
 completed epoch displacement into the current ECS. The notebooks use
 `eta=0.25` and the **epoch-end ECS** by default.
 
-The implementation modifies the realized weight displacement only. AdamW and
-SGD momentum state are deliberately left unchanged in this first causal
-experiment; the correction logs this fact explicitly. State-consistent momentum
-filtering should be treated as a separate ablation.
+## Lifecycle and state behavior
+
+The wrapper now enforces an explicit epoch lifecycle:
+
+```python
+optimizer.begin_epoch()
+# ordinary minibatch optimizer steps
+optimizer.apply_epoch_delta_correction(epoch=epoch)
+```
+
+Calling `begin_epoch()` twice, or applying a correction without an active epoch
+snapshot, raises by default instead of silently changing the experiment. The
+wrapper `state_dict()` includes the active epoch-start snapshot and cached ECS
+ranks, so a checkpoint saved in the middle of an epoch can be restored and
+corrected correctly.
+
+Parameter filters accept both module names and parameter names. For example,
+`parameter_name_filter=("fc1",)` resolves to `fc1.weight`. Unknown or ambiguous
+filters fail fast.
+
+By default the correction changes only the realized weight displacement. Set
+`synchronize_optimizer_state=True` for a separate state-consistent ablation:
+
+- SGD: apply the same fractional ECS damping to `momentum_buffer`;
+- AdamW: apply it to `exp_avg`;
+- AdamW `exp_avg_sq` remains unchanged because it is an elementwise second
+  moment, not a matrix displacement.
+
+The previously selected ECS rank is used only as a continuity tie-breaker when
+multiple finite trace-log crossings are equally good. The new ECS is still
+computed from the current endpoint every epoch.
 
 ## Contents
 
@@ -100,10 +125,10 @@ for epoch in range(10):
 
 ## Notebooks
 
-Both notebooks run the standard
-`784 -> 512 -> 512 -> 10` MLP3-MNIST experiment for ten epochs. Each uses five
-paired baseline seeds and five paired local-delta seeds, with identical initial
-weights and minibatch order within each pair.
+Both notebooks run the standard `784 -> 512 -> 512 -> 10` MLP3-MNIST
+experiment for ten epochs. Each uses five paired baseline seeds and five paired
+local-delta seeds, with identical initial weights and minibatch order within each
+pair.
 
 They record and plot:
 

@@ -19,9 +19,8 @@ class LocalDeltaECSConfig:
 
         Delta_new = Delta - correction_fraction * Delta_perp.
 
-    ``reference='epoch_end'`` is the default because the requested operation is
-    to project the completed optimizer displacement into the new/current ECS of
-    the proposed endpoint. ``epoch_start`` remains available as an ablation.
+    ``reference='epoch_end'`` projects the completed optimizer displacement
+    relative to the new/current ECS of the proposed endpoint.
     """
 
     correction_fraction: float = 0.25
@@ -32,6 +31,20 @@ class LocalDeltaECSConfig:
     normalization_gamma: float = 0.0
     reference: ECSReference = "epoch_end"
     parameter_name_filter: Optional[tuple[str, ...]] = None
+
+    # Preserve support continuity when several valid finite-rank crossings exist.
+    use_previous_rank_as_reference: bool = True
+
+    # Optional state-consistent ablation. For SGD this damps momentum_buffer; for
+    # AdamW this damps exp_avg. Elementwise exp_avg_sq is intentionally untouched.
+    synchronize_optimizer_state: bool = False
+
+    # Fail fast on lifecycle misuse and failed numerical identities.
+    strict_epoch_lifecycle: bool = True
+    strict_numerics: bool = True
+    max_damping_error: float = 1e-4
+    max_pythagorean_error: float = 1e-4
+    max_identity_error: float = 1e-6
     eps: float = 1e-12
 
     def validate(self) -> None:
@@ -49,6 +62,13 @@ class LocalDeltaECSConfig:
             raise ValueError("normalization_gamma must lie in [0, 1].")
         if self.reference not in {"epoch_start", "epoch_end"}:
             raise ValueError("reference must be 'epoch_start' or 'epoch_end'.")
+        for name, value in (
+            ("max_damping_error", self.max_damping_error),
+            ("max_pythagorean_error", self.max_pythagorean_error),
+            ("max_identity_error", self.max_identity_error),
+        ):
+            if float(value) < 0.0:
+                raise ValueError(f"{name} must be non-negative.")
         if self.eps <= 0.0:
             raise ValueError("eps must be positive.")
 

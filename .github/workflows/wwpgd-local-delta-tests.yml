@@ -3,11 +3,14 @@ name: WWPGD local-delta tests
 on:
   push:
     branches:
-      - agent/local-delta-ecs-wwpgd
+      - main
+      - "agent/**"
     paths:
       - "optimizers/wwpgd_local_delta/**"
       - ".github/workflows/wwpgd-local-delta-tests.yml"
   pull_request:
+    branches:
+      - main
     paths:
       - "optimizers/wwpgd_local_delta/**"
       - ".github/workflows/wwpgd-local-delta-tests.yml"
@@ -16,9 +19,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: wwpgd-local-delta-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit-and-smoke-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -37,8 +45,10 @@ jobs:
           python -m pip install numpy pandas matplotlib
           python -m pip install --no-deps -e optimizers/wwpgd_local_delta
 
-      - name: Compile package and notebook code cells
+      - name: Compile package and run tests
         run: |
-          python -m compileall -q optimizers/wwpgd_local_delta/wwpgd_local_delta
+          python -m compileall -q \
+            optimizers/wwpgd_local_delta/wwpgd_local_delta \
+            optimizers/wwpgd_local_delta/tests
           PYTHONPATH=optimizers/wwpgd_local_delta \
             python -m unittest discover -s optimizers/wwpgd_local_delta/tests -v
