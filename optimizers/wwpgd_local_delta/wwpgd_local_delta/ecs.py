@@ -129,8 +129,9 @@ def select_self_consistent_ecs(
     if not 0.0 <= float(normalization_gamma) <= 1.0:
         raise ValueError("normalization_gamma must lie in [0, 1]")
     s = singular_values.detach().float().abs()
-    lambdas = (s * s).clamp_min(eps)
-    lambdas = lambdas[torch.isfinite(lambdas)]
+    lambdas = s * s
+    lambdas = lambdas[torch.isfinite(lambdas) & (lambdas > float(eps))]
+    lambdas = lambdas.clamp_min(eps)
     if lambdas.numel() == 0:
         raise ValueError("no positive singular values available for ECS scan")
     lambdas, _ = torch.sort(lambdas, descending=True)
@@ -153,19 +154,21 @@ def select_self_consistent_ecs(
         trace_log = torch.mean(torch.log((dimension * retained / total).clamp_min(eps)))
         candidates.append((rank, dimension, r_bulk, float(trace_log.detach().cpu())))
 
-    selected = min(candidates, key=lambda item: abs(item[3]))
-    status = "min_abs_residual"
-    for left, right in zip(candidates[:-1], candidates[1:]):
-        f_left = left[3]
-        f_right = right[3]
-        if abs(f_left) <= eps:
-            selected = left
-            status = "exact_zero"
-            break
-        if f_left * f_right <= 0.0:
-            selected = left if abs(f_left) <= abs(f_right) else right
+    exact = [item for item in candidates if abs(item[3]) <= eps]
+    if exact:
+        selected = min(exact, key=lambda item: item[0])
+        status = "exact_zero"
+    else:
+        bracket_endpoints: list[tuple[int, float, float, float]] = []
+        for left, right in zip(candidates[:-1], candidates[1:]):
+            if left[3] * right[3] < 0.0:
+                bracket_endpoints.extend((left, right))
+        if bracket_endpoints:
+            selected = min(bracket_endpoints, key=lambda item: (abs(item[3]), item[0]))
             status = "zero_crossing"
-            break
+        else:
+            selected = min(candidates, key=lambda item: (abs(item[3]), item[0]))
+            status = "min_abs_residual"
 
     rank, dimension, r_bulk, trace_log = selected
     return ECSScanResult(
@@ -191,7 +194,7 @@ def local_ecs_geometry(
     """Return the ECS basis with the same tall orientation as TraceLogRG.
 
     For an original tall/square matrix the ECS acts on the right and the
-    retained update is ``Delta @ P_R``. For an original wide matrix, the layer
+    retained update is ``Delta @ P_R``.  For an original wide matrix, the layer
     is transposed before forming ``X = W^T W/N``; after mapping back, the ECS
     acts on the left and the retained update is ``P_R @ Delta``.
     """
@@ -293,13 +296,9 @@ def damp_delta_outside_ecs(
         observed_damping = expected_damping
         damping_error = 0.0
 
-    pythagorean_error = abs(base_norm**2 - ecs_norm**2 - orth_norm**2) / max(
-        base_norm**2, float(eps)
-    )
+    pythagorean_error = abs(base_norm**2 - ecs_norm**2 - orth_norm**2) / max(base_norm**2, float(eps))
     identity_target = delta - frac * delta_orth
-    identity_error = float(
-        torch.linalg.vector_norm((corrected - identity_target).float()).detach().cpu()
-    ) / denom
+    identity_error = float(torch.linalg.vector_norm((corrected - identity_target).float()).detach().cpu()) / denom
 
     scan = geometry.scan
     return LocalDeltaCorrectionResult(
