@@ -5,11 +5,16 @@ experiments. No trace-log projection, self-consistent ECS correction,
 WW-PGD retraction, spectral-flow subtraction, or other RG intervention is
 applied.
 
-The three notebooks are:
+The four notebooks are:
 
 1. `notebooks/MNIST_MLP3_SGD_Momentum_Baseline.ipynb`
 2. `notebooks/MNIST_MLP3_AdamW_Baseline.ipynb`
 3. `notebooks/MNIST_MLP3_SGD_Momentum_Muon_Baseline.ipynb`
+4. `notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`
+
+The first three notebooks train one optimizer baseline each. The fourth loads
+their saved artifacts, checks the checkpoint inventory, and produces aligned
+comparison tables and plots without retraining.
 
 All runs use the same architecture and data preprocessing:
 
@@ -18,6 +23,38 @@ All runs use the same architecture and data preprocessing:
 ReLU after fc1 and fc2
 MNIST normalized by mean 0.1307 and std 0.3081
 ```
+
+## Shared output location and checkpoints
+
+By default all notebooks use the shared output root `baseline/runs/`. Set the
+environment variable `RG_BASELINE_OUTPUT_ROOT` before starting a notebook
+kernel to redirect every run and the comparison notebook to another location,
+for example:
+
+```bash
+export RG_BASELINE_OUTPUT_ROOT=/tmp/rg_optimizers_baselines
+```
+
+Each training notebook writes to `<output-root>/<optimizer>/` and now enables
+`save_epoch_checkpoints=True`. A 20-epoch run therefore saves:
+
+```text
+checkpoints/epoch_001.pt
+...
+checkpoints/epoch_020.pt
+final_state.pt
+performance_by_epoch.csv
+spectral_metrics_by_epoch_and_layer.csv
+weightwatcher_details_by_epoch.csv
+optimizer_groups_by_epoch.csv
+combined_metrics_by_epoch_and_layer.csv
+esd_history.npz
+config.json
+plots/
+```
+
+The comparison notebook writes merged tables and figures to
+`<output-root>/comparison/`.
 
 ## Baseline definitions
 
@@ -59,20 +96,6 @@ The notebook prints the parameter-to-optimizer assignment before training.
 ## Every metric is measured per epoch
 
 Epoch zero is evaluated as well; it does not contain `NaN` train metrics.
-Every notebook saves:
-
-```text
-performance_by_epoch.csv
-spectral_metrics_by_epoch_and_layer.csv
-weightwatcher_details_by_epoch.csv
-optimizer_groups_by_epoch.csv
-combined_metrics_by_epoch_and_layer.csv
-esd_history.npz
-config.json
-final_state.pt
-plots/
-```
-
 `performance_by_epoch.csv` contains full-train and full-test cross-entropy and
 accuracy, online training statistics, gradient norms, whole-model parameter
 norm, global step, and timing.
@@ -104,9 +127,14 @@ $$
 The full unmodified dataframe returned by `watcher.analyze(ERG=True)` is saved
 separately in `weightwatcher_details_by_epoch.csv`.
 
+The comparison notebook also derives `exp(cross_entropy)` as a descriptive
+perplexity-like quantity. For MNIST, cross-entropy and accuracy remain the
+primary metrics. With one seed per optimizer, the comparison is descriptive;
+proper error bars require repeated seeds.
+
 ## Required plots
 
-Each notebook creates and saves:
+Each training notebook creates and saves:
 
 0. full train/test loss and full train/test accuracy;
 1. layerwise WeightWatcher `alpha`;
@@ -115,14 +143,20 @@ Each notebook creates and saves:
 4. additional effective-rank and retained-energy diagnostics;
 5. gradient, parameter-norm, and timing diagnostics.
 
+The comparison notebook creates aligned optimizer plots for loss, accuracy,
+`exp(cross_entropy)`, generalization gaps, parameter norm, cumulative measured
+time, mean spectral diagnostics, and layerwise `alpha` and `ERG_gap`.
+
 The run fails loudly if a requested layer or epoch is missing, if `ERG_gap` is
 not `detX_num - num_pl_spikes`, or if the midpoint is not the original
 WeightWatcher PL/detX midpoint.
 
-## Run
+## Run order
 
-From the repository root, open any notebook in `baseline/notebooks/`. Results
-are written to `baseline/runs/<optimizer>/`.
+From the repository root, open and run the three optimizer notebooks in
+`baseline/notebooks/`. Then run
+`baseline/notebooks/MNIST_MLP3_Baseline_Comparison.ipynb` using the same output
+root.
 
 ## Tests
 
