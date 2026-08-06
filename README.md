@@ -16,5 +16,12 @@ program.
   task-loss safeguard. It includes 30-epoch MNIST experiments, matched-
   convergence plots, and FC1-only/FC2-only ablation presets.
 
+- [`optimizers/self_consistent_trace_log_tracker`](optimizers/self_consistent_trace_log_tracker):
+  a new version of the original one-sided trace-log branch protector. It gets
+  the ESD, alpha, and PL boundary from WeightWatcher, but recomputes the ECS
+  with the bulk-effective self-consistent normalization instead of using the
+  full-`M` `detX_num`. The optimizer then removes contracting flow along the
+  resulting adaptive trace-log normal.
+
 Each optimizer is kept in its own folder so implementations, notebooks, and
 tests can evolve independently.
