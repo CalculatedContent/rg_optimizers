@@ -3,15 +3,18 @@
 Experimental optimizer extensions motivated by the WeightWatcher spectral RG
 program.
 
-## Clean optimizer baselines
+## Reproducible baselines
 
-- [`baseline`](baseline): matched MLP3/MNIST baselines for ordinary SGD with
-  momentum, AdamW, and SGD-momentum plus Muon. These runs contain no RG
-  intervention. Every epoch records full train/test loss and accuracy,
-  layerwise WeightWatcher alpha, the original full-`M` `detX_num`,
-  `num_pl_spikes`, and `ERG_gap`, the original midpoint retained rank and
-  midpoint trace-log coordinate, complete WeightWatcher details, ESDs,
-  effective-rank diagnostics, gradient norms, parameter norms, and timing.
+[`baseline/`](baseline) contains matched MLP3/MNIST baselines for:
+
+- SGD with momentum;
+- AdamW;
+- SGD with momentum plus Muon.
+
+Each notebook runs three independent seeds and measures full train/test loss
+and accuracy plus original WeightWatcher full-`M` diagnostics at epoch zero and
+every training epoch. Plots use a fixed color-blind-safe palette and two-sided
+95% Student-t confidence intervals across complete training runs.
 
 ## Optimizer variants
 
