@@ -62,10 +62,14 @@ class SGDMomentumMuon(torch.optim.Optimizer):
                 grad=p.grad.detach()
                 if grad.is_sparse: raise RuntimeError("sparse gradients are unsupported")
                 decay=float(group.get("weight_decay",0.0))
-                if decay: p.mul_(max(0.0,1.0-lr*decay))
                 state=self.state[p]
                 buf=state.get("momentum_buffer")
                 if group["kind"]=="muon":
+                    # Muon convention: decoupled matrix weight decay.  The
+                    # default baseline sets this to zero, but preserving the
+                    # conventional behavior makes the option explicit.
+                    if decay:
+                        p.mul_(max(0.0,1.0-lr*decay))
                     if buf is None:
                         buf=torch.zeros_like(grad); state["momentum_buffer"]=buf
                     buf.lerp_(grad,1.0-momentum)
@@ -74,6 +78,11 @@ class SGDMomentumMuon(torch.optim.Optimizer):
                         update, steps=int(group["newton_schulz_steps"]), eps=float(group["eps"]))
                     p.add_(update,alpha=-lr*max(1.0,p.shape[0]/p.shape[1])**0.5)
                 else:
+                    # Match torch.optim.SGD exactly for auxiliary parameters:
+                    # classical L2 weight decay is added to the gradient before
+                    # momentum, rather than applied as decoupled shrinkage.
+                    if decay:
+                        grad=grad.add(p,alpha=decay)
                     damp=float(group.get("dampening",0.0))
                     if momentum:
                         if buf is None:
