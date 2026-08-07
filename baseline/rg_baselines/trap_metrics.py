@@ -49,19 +49,34 @@ def attach_correlation_traps(checkpoint: SpectralCheckpoint) -> SpectralCheckpoi
     if "layer_id" not in details or "layer_id" not in metrics:
         raise RuntimeError("WeightWatcher trap merge requires layer_id")
 
+    valid_metrics = metrics[metrics["status"].astype(str).eq("ok")].copy()
+    required_layer_ids = set(valid_metrics["layer_id"].astype(int))
+    relevant_details = details[
+        details["layer_id"].astype(int).isin(required_layer_ids)
+    ].copy()
+
     trap_rows: list[dict[str, Any]] = []
-    for _, row in details.iterrows():
+    for _, row in relevant_details.iterrows():
         trap_rows.append(
             {
                 "layer_id": int(row["layer_id"]),
                 "num_traps": correlation_trap_count_from_row(row),
             }
         )
-    traps = pd.DataFrame(trap_rows)
+    traps = pd.DataFrame(trap_rows, columns=["layer_id", "num_traps"])
     if traps["layer_id"].duplicated().any():
         raise RuntimeError("WeightWatcher returned duplicate layer_id values")
 
-    details["num_traps"] = details.apply(correlation_trap_count_from_row, axis=1)
+    # Preserve the canonical count in the full details table when it is present,
+    # but do not make a skipped/non-matrix row invalidate otherwise complete FC metrics.
+    details["num_traps"] = details.apply(
+        lambda row: (
+            correlation_trap_count_from_row(row)
+            if int(row["layer_id"]) in required_layer_ids
+            else np.nan
+        ),
+        axis=1,
+    )
     metrics = metrics.drop(columns=["num_traps", "num_traps_source"], errors="ignore")
     metrics = metrics.merge(traps, on="layer_id", how="left", validate="many_to_one")
     metrics["num_traps_source"] = (
