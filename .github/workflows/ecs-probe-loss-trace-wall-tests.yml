@@ -1,0 +1,55 @@
+name: ECS probe-loss TraceWall tests
+
+on:
+  push:
+    branches:
+      - main
+      - "agent/**"
+    paths:
+      - "optimizers/ecs_probe_loss_trace_wall/**"
+      - ".github/workflows/ecs-probe-loss-trace-wall-tests.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "optimizers/ecs_probe_loss_trace_wall/**"
+      - ".github/workflows/ecs-probe-loss-trace-wall-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ecs-probe-loss-trace-wall-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-and-smoke-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: optimizers/ecs_probe_loss_trace_wall/pyproject.toml
+
+      - name: Install CPU PyTorch and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install numpy pandas scipy matplotlib nbformat
+          python -m pip install --no-deps -e optimizers/ecs_probe_loss_trace_wall
+
+      - name: Compile package and run tests
+        run: |
+          python -m compileall -q \
+            optimizers/ecs_probe_loss_trace_wall/ecs_trace_wall \
+            optimizers/ecs_probe_loss_trace_wall/tests
+          PYTHONPATH=optimizers/ecs_probe_loss_trace_wall \
+            python -m unittest discover \
+              -s optimizers/ecs_probe_loss_trace_wall/tests -v
