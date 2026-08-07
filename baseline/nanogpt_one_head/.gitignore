@@ -1,0 +1,9 @@
+.venv-one-head/
+__pycache__/
+.pytest_cache/
+*.pyc
+runs/
+data/
+plots/
+*.log
+.ipynb_checkpoints/

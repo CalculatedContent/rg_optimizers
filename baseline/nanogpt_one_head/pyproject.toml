@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rg-nanogpt-one-head"
+version = "0.1.0"
+description = "Matched one-head nanoGPT optimizer baselines on pinned FineWeb-Edu"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.2",
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "matplotlib>=3.7",
+  "pyyaml>=6.0",
+  "datasets>=2.19",
+  "tiktoken>=0.7",
+  "sacrebleu>=2.4",
+  "weightwatcher>=0.7.7",
+  "jupyter>=1.0",
+  "ipykernel>=6.29",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "nbformat>=5.10",
+]
+
+[project.scripts]
+rg-onehead-prepare = "rg_nanogpt_one_head.data:main"
+rg-onehead-train = "rg_nanogpt_one_head.training:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
