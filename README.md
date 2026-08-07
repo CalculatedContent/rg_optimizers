@@ -44,5 +44,15 @@ every training epoch. Plots use a fixed color-blind-safe palette and two-sided
   displacement aligned with that vector. Its matched MNIST suite tests the
   same projector on AdamW, Adam, and ordinary SGD with classical momentum.
 
+- [`optimizers/ecs_probe_loss_trace_wall`](optimizers/ecs_probe_loss_trace_wall):
+  a task-directed TraceWall variant. At each correction it recomputes the
+  self-consistent ECS, truncates all selected matrices to that support, measures
+  cross-entropy on a rotating random subset of the training set, projects the
+  probe gradient back into the ECS, and adds a line-searched loss-decreasing
+  component to the completed AdamW or SGD-momentum update. Its paired notebooks
+  include a clean baseline in the same run, matched warmup/cosine schedules,
+  three-seed error bars, WeightWatcher diagnostics, and complete checkpoints.
+  The official test set is used only for evaluation, never for optimization.
+
 Each optimizer is kept in its own folder so implementations, notebooks, and
 tests can evolve independently.
