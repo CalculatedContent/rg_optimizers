@@ -1,0 +1,37 @@
+name: Baseline source syntax
+
+on:
+  pull_request:
+    paths:
+      - "baseline/**"
+      - ".github/workflows/baseline-source-syntax.yml"
+  push:
+    branches:
+      - main
+      - "agent/**"
+    paths:
+      - "baseline/**"
+      - ".github/workflows/baseline-source-syntax.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: baseline-source-syntax-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Compile baseline package and parse notebook cells
+        run: python -m unittest baseline.tests.test_source_syntax -v
