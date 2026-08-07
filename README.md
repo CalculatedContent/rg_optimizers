@@ -13,6 +13,7 @@ architectures and modalities rather than against a single toy model.
 | --- | --- | --- | --- |
 | **MLP3 / MNIST** | `784 -> 512 -> 512 -> 10` MLP on MNIST | SGD + momentum, AdamW, SGD + momentum + Muon | Cheap, tightly controlled optimizer and spectral debugging |
 | **Small ViT / CIFAR-10** | 6-block, 192-wide Vision Transformer with 4x4 patches | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Transformer optimization on vision data with residual/attention structure |
+| **One-head nanoGPT / FineWeb-Edu** | 1 block, 1 attention head, width 128, context 256 on a pinned document-disjoint FineWeb-Edu corpus | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Smallest realistic language-model optimizer baseline with MPS restart support and per-epoch spectral diagnostics |
 | **nanochat d12** | 12-layer, 768-wide, 2048-context nanochat language model | Native nanochat Muon + AdamW recipe | Modern small-LLM reference baseline with tuned initialization, parameter groups, scaling rules, and schedules |
 
 ### MLP3 / MNIST
@@ -37,6 +38,23 @@ auxiliary AdamW. It uses three seeds, optimizer-specific tuned hyperparameters,
 warmup/cosine schedules, CIFAR-10 augmentation, checkpoint persistence, and
 WeightWatcher spectral diagnostics.
 
+### One-head nanoGPT / FineWeb-Edu
+
+[`baseline/nanogpt_one_head/`](baseline/nanogpt_one_head) contains the smallest
+realistic language-model control. It trains a one-block, one-attention-head
+nanoGPT on a pinned FineWeb-Edu `sample-10BT` stream rather than Tiny
+Shakespeare. Exact document-disjoint 10M/1M/1M-token train/validation/test
+splits are shared across SGD + Nesterov, AdamW, and Muon + auxiliary AdamW.
+
+The suite uses optimizer-specific warmup/cosine schedules, three independent
+seeds, restartable full checkpoints, Apple-MPS execution, per-epoch
+train/validation/test loss, next-token accuracy and perplexity, fixed held-out
+continuation BLEU, and WeightWatcher calls with `ERG=True` and
+`randomize=True`. Raw per-matrix `alpha`, `ERG_gap`, and `num_traps` are
+retained without fallbacks or proxy counts. Four notebooks produce run-level
+95% Student-t confidence intervals and a fixed color map for the six
+transformer matrices.
+
 ### nanochat d12
 
 `baseline/notebooks/NanoChat_D12_Reference_Baseline.ipynb` is the modern
@@ -58,8 +76,8 @@ The reusable runner lives at:
 
 - `baseline/rg_baselines/nanochat_reference.py`
 
-See [`baseline/README.md`](baseline/README.md) for detailed run instructions,
-output layouts, metrics, and reproducibility conventions.
+See [`baseline/README.md`](baseline/README.md) for the shared baseline
+conventions and the experiment-specific READMEs for exact run instructions.
 
 ## Optimizer variants
 
