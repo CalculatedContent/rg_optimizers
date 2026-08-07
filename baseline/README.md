@@ -1,30 +1,32 @@
-# MLP3/MNIST optimizer baselines
+# RG optimizer baselines
 
-This folder contains **unmodified optimizer baselines** for the RG-optimizer
+This folder contains **unmodified optimizer/model baselines** for the RG-optimizer
 experiments. No trace-log projection, self-consistent ECS correction, WW-PGD
 retraction, spectral-flow subtraction, or other RG intervention is applied.
 
-The notebooks are:
+The baseline suite currently includes:
+
+| Baseline | Dataset / corpus | Model | Purpose |
+|---|---|---|---|
+| MNIST / MLP3 | MNIST | 784 -> 512 -> 512 -> 10 MLP | Fast dense-network optimizer debugging and spectral diagnostics |
+| CIFAR-10 / small ViT | CIFAR-10 | 4x4 patches, width 192, 6 transformer blocks, 3 heads | Vision-transformer optimizer comparison under fixed architecture/data |
+| nanochat d12 | nanochat miniseries corpus | 12-layer, 768-wide, 2048-context decoder transformer | Modern small-LLM reference baseline using nanochat's tuned initialization, scaling rules, hybrid Muon+AdamW optimizer, and schedules |
+
+The MNIST notebooks are:
 
 1. `notebooks/MNIST_MLP3_SGD_Momentum_Baseline.ipynb`
 2. `notebooks/MNIST_MLP3_AdamW_Baseline.ipynb`
 3. `notebooks/MNIST_MLP3_SGD_Momentum_Muon_Baseline.ipynb`
 4. `notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`
 
-Run the first three notebooks to produce the persisted optimizer results, then
-run the fourth notebook to validate and compare all three experiments.
+The additional architecture baselines are:
 
-All training runs use the same architecture and preprocessing:
-
-```text
-784 -> 512 -> 512 -> 10
-ReLU after fc1 and fc2
-MNIST normalized by mean 0.1307 and std 0.3081
-```
+5. `notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb`
+6. `notebooks/NanoChat_D12_Reference_Baseline.ipynb`
 
 ## Shared persistent run directory
 
-All four notebooks resolve the same run root:
+All baseline notebooks resolve the same run root:
 
 ```text
 RG_BASELINE_RUN_ROOT, when set
@@ -39,13 +41,20 @@ selected before starting Jupyter:
 export RG_BASELINE_RUN_ROOT=/tmp/rg_optimizers_baseline_runs
 ```
 
-The MNIST download/cache directory can likewise be overridden with
+The MNIST/CIFAR data directory can likewise be overridden with
 `RG_BASELINE_DATA_DIR`; its default remains `baseline/data/`.
 
-The comparison notebook reads only persisted files. It does not depend on a
-live `suite` variable or on running all notebooks in one kernel.
+## MNIST / MLP3 baseline
 
-## Independent replicates and error bars
+All MNIST runs use the same architecture and preprocessing:
+
+```text
+784 -> 512 -> 512 -> 10
+ReLU after fc1 and fc2
+MNIST normalized by mean 0.1307 and std 0.3081
+```
+
+### Independent replicates and error bars
 
 Each optimizer notebook runs three independent complete training trajectories:
 
@@ -71,18 +80,9 @@ confidence band, and capped error bars. Summary CSV files record `n`, sample
 standard deviation, standard error, Student-t critical value, interval
 half-width, lower/upper bounds, minimum, and maximum.
 
-The single-optimizer notebooks keep a fixed train/test and layer color scheme.
-The comparison notebook uses a fixed color-blind-safe optimizer mapping:
+### Baseline definitions
 
-```text
-SGD + momentum          blue
-AdamW                   vermillion
-SGD + momentum + Muon   bluish green
-```
-
-## Baseline definitions
-
-### SGD + momentum
+#### SGD + momentum
 
 ```python
 torch.optim.SGD(
@@ -95,7 +95,7 @@ torch.optim.SGD(
 )
 ```
 
-### AdamW
+#### AdamW
 
 ```python
 torch.optim.AdamW(
@@ -107,7 +107,7 @@ torch.optim.AdamW(
 )
 ```
 
-### SGD + momentum + Muon
+#### SGD + momentum + Muon
 
 Muon is applied to `fc1.weight` and `fc2.weight`. It first forms a momentum
 update and replaces that matrix update by its approximate polar factor using
@@ -118,150 +118,185 @@ an **SGD-auxiliary** Muon baseline rather than `MuonWithAuxAdam`.
 The Muon notebook prints and asserts the parameter-to-optimizer assignment
 before training.
 
-## Every metric is measured per epoch
+### MNIST metrics
 
-Epoch zero is evaluated as well; it contains complete train and test metrics.
-For every seed and every epoch, the framework records:
+Epoch zero is evaluated as well. For every seed and epoch, the framework records
+train/test loss and accuracy, online train metrics, gradient norms, parameter
+norm, global step, training/evaluation time, and WeightWatcher time.
 
-```text
-train_loss
-test_loss
-train_accuracy
-test_accuracy
-online_train_loss
-online_train_accuracy
-mean_gradient_norm_before_clip
-median_gradient_norm_before_clip
-max_gradient_norm_before_clip
-parameter_l2_norm
-global_step
-train_time_sec
-evaluation_time_sec
-weightwatcher_time_sec
-epoch_total_time_sec
-```
-
-The train and test loss/accuracy values are full-dataset evaluations unless
-`train_eval_max_batches` is explicitly changed.
-
-For every layer and epoch, `spectral_metrics_by_epoch_layer_and_seed.csv`
-contains:
-
-- WeightWatcher `alpha`;
-- original WeightWatcher `detX_num`;
-- original WeightWatcher `num_pl_spikes`;
-- original full-`M` `ERG_gap`;
-- the original midpoint retained rank
-
-$$
-m_{\mathrm{mid}}
-=
-\left\lfloor
-\frac{m_{\mathrm{detX}}+m_{\mathrm{PL}}}{2}
-\right\rfloor;
-$$
-
-- midpoint trace-log total and trace-log per retained eigenvalue;
-- geometric mean of midpoint rescaled eigenvalues;
-- boundary overlap ratio;
-- Frobenius norm, spectral norm, stable rank, participation-ratio rank, and
-  entropy effective rank;
-- top-one, PL, detX, and midpoint energy fractions;
-- ESD condition number and normalization audits.
+For every layer and epoch, the spectral CSV contains WeightWatcher `alpha`,
+`detX_num`, `num_pl_spikes`, `ERG_gap`, midpoint retained rank, midpoint
+trace-log, geometric-mean diagnostics, effective-rank measures, energy
+fractions, condition number, and normalization audits.
 
 `alpha`, `detX_num`, `num_pl_spikes`, and `ERG_gap` come directly from
 `watcher.analyze(ERG=True)`. The code rejects a missing boundary, inconsistent
 gap, incomplete epoch/layer, or inconsistent midpoint rather than substituting
 a silent fallback.
 
-## Checkpoint and result persistence
+### MNIST checkpoint and result persistence
 
 Every optimizer notebook sets `save_epoch_checkpoints=True`. Each seed folder
-therefore contains both a final state and one complete model/optimizer state
-after every training epoch:
+contains both a final state and a complete model/optimizer state after every
+training epoch. The comparison notebook validates all persisted artifacts and
+produces mean/95% CI trajectories, layerwise WeightWatcher comparisons,
+final-epoch tables, convergence summaries, paired seed-level differences, and a
+reproducibility manifest.
+
+## CIFAR-10 / small ViT baseline
+
+Run:
 
 ```text
-runs/<optimizer>/
-  performance_by_epoch_and_seed.csv
-  spectral_metrics_by_epoch_layer_and_seed.csv
-  weightwatcher_details_by_epoch_and_seed.csv
-  optimizer_groups_by_epoch_and_seed.csv
-  combined_metrics_by_epoch_layer_and_seed.csv
-  performance_summary_95ci.csv
-  spectral_summary_95ci.csv
-  replicate_manifest.json
-  plots/
-  seeds/
-    seed_1337/
-      performance_by_epoch.csv
-      spectral_metrics_by_epoch_and_layer.csv
-      weightwatcher_details_by_epoch.csv
-      optimizer_groups_by_epoch.csv
-      combined_metrics_by_epoch_and_layer.csv
-      esd_history.npz
-      config.json
-      final_state.pt
-      checkpoints/
-        epoch_001.pt
-        ...
-        epoch_020.pt
-    seed_2027/
-    seed_31415/
+notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb
 ```
 
-Each training notebook fails at the end if any aggregate result, final state,
-or requested epoch checkpoint is missing.
+This notebook trains the same small Vision Transformer from scratch on CIFAR-10
+with three optimizer baselines: SGD + Nesterov momentum, AdamW, and Muon with an
+auxiliary optimizer for parameters that should not receive Muon updates.
 
-## Three-optimizer comparison
-
-`MNIST_MLP3_Baseline_Comparison.ipynb` validates that all three optimizers have:
-
-- identical seed tuples;
-- identical epoch grids and shared data/evaluation/WeightWatcher settings;
-- complete FC1/FC2/FC3 spectral measurements;
-- `final_state.pt` for every seed;
-- all 20 epoch checkpoints for every seed.
-
-It then produces:
-
-- mean and 95% confidence-interval trajectories for train/test accuracy,
-  train/test loss, classification perplexity, and generalization gaps;
-- layerwise comparisons of `alpha`, `detX_num`, `num_pl_spikes`, `ERG_gap`,
-  midpoint retained rank, midpoint trace-log, and stable rank;
-- final-epoch metric tables;
-- best-achieved test accuracy and convergence-threshold tables;
-- paired seed-level final differences for every optimizer pair;
-- a checkpoint inventory and reproducibility manifest.
-
-Classification perplexity is derived from the saved cross-entropy as
-`exp(cross_entropy)`. For MNIST this is an effective-class-count transform, not
-language-model perplexity.
-
-Comparison outputs are written under:
+The committed reference architecture is:
 
 ```text
-runs/comparison/
-  checkpoint_inventory.csv
-  all_optimizers_performance_by_epoch_and_seed.csv
-  all_optimizers_spectral_metrics_by_epoch_layer_and_seed.csv
-  performance_summary_95ci.csv
-  spectral_summary_95ci.csv
-  final_epoch_summary_95ci.csv
-  convergence_by_seed.csv
-  convergence_summary_95ci.csv
-  paired_final_differences_95ci.csv
-  comparison_manifest.json
-  plots/
+input: 32x32 RGB
+patch size: 4x4
+embedding width: 192
+transformer blocks: 6
+attention heads: 3
+MLP ratio: 4
+training budget: 120 epochs
+replicates: 3 seeds
 ```
 
-Paired contrasts are always reported as `optimizer_a - optimizer_b`. Positive
-is favorable for accuracy; negative is favorable for loss and perplexity. With
-only three paired seeds, the notebook reports Student-t intervals and does not
-claim high-powered asymptotic significance tests.
+Training uses random crop, horizontal flip, RandAugment, mixup, label smoothing,
+gradient clipping, linear warmup, and cosine decay. It persists train/test
+metrics, checkpoints, WeightWatcher diagnostics, aggregate CSVs, and 95%
+confidence intervals.
+
+## nanochat d12 reference baseline
+
+Run:
+
+```text
+notebooks/NanoChat_D12_Reference_Baseline.ipynb
+```
+
+This is the modern small-LLM reference baseline. It deliberately **does not
+reimplement nanochat training inside RG Optimizers**. Instead,
+`rg_baselines/nanochat_reference.py` checks out a pinned upstream nanochat
+revision and runs nanochat's own training code so that the initialization,
+architecture, optimizer grouping, scaling rules, and schedules remain the
+reference implementation.
+
+Pinned upstream revision:
+
+```text
+karpathy/nanochat
+commit 92d63d4e8bb4df75c3b71618f31ddde2378b2bcd
+```
+
+The only runtime source patch replaces nanochat's hard-coded seed with an
+environment-controlled seed so that three independent full training replicates
+can be run without changing the optimization recipe.
+
+### Reference model scale
+
+The committed baseline uses nanochat **d12**:
+
+```text
+layers: 12
+model width: 768
+context length: 2048
+training target: 12 tokens per scaling parameter
+replicates: seeds 17, 29, 43
+```
+
+nanochat computes the appropriate batch size and training horizon from its own
+scaling rules rather than using an arbitrary fixed step count.
+
+### Initialization and optimizer recipe
+
+The baseline preserves nanochat's native initialization and parameter grouping.
+Transformer matrix parameters use **Muon**, while embeddings, unembedding,
+learned scalars, and other non-Muon parameters use their native AdamW groups.
+The upstream reference values before nanochat's model/batch scaling rules are:
+
+```text
+embedding LR:     0.30
+unembedding LR:   0.008
+matrix LR:        0.020
+scalar LR:        0.50
+Muon weight decay: 0.28
+```
+
+The schedule is also left upstream and intact:
+
+```text
+LR warmup:             40 steps
+main phase:            plateau
+warmdown:              final 65% of training
+final LR fraction:     0.05
+Muon momentum:         scheduled warmup/warmdown
+Muon weight decay:     cosine decay toward zero
+```
+
+This matters for optimizer experiments: the nanochat reference should be a
+strong baseline, not a generic GPT trained with guessed AdamW hyperparameters.
+
+### nanochat data and evaluation
+
+The notebook uses nanochat's own miniseries data/tokenizer preparation and runs
+the upstream base-training evaluation path. It saves validation results and
+checkpoints periodically and runs the nanochat CORE evaluation at the end.
+
+The RG wrapper parses the upstream logs into tidy CSV files for comparison with
+other experiments. WeightWatcher analysis is performed **offline on saved
+checkpoints** so spectral diagnostics do not perturb timed nanochat training.
+This produces layerwise spectral measurements suitable for comparison against
+RG optimizer runs, including available WeightWatcher `alpha`, ERG, and
+correlation-trap diagnostics.
+
+Typical nanochat outputs live below:
+
+```text
+runs/nanochat_d12/
+  seed_17/
+  seed_29/
+  seed_43/
+  performance_all_runs.csv
+  final_summary_95ci.csv
+  weightwatcher/
+```
+
+The exact checkpoint/log substructure follows the pinned nanochat revision.
+
+## Recommended benchmark suite
+
+For serious optimizer comparisons, use the baselines as a progression in model
+complexity:
+
+```text
+1. MNIST / MLP3
+   - cheapest debugging baseline
+   - dense matrices and detailed per-epoch spectral diagnostics
+
+2. CIFAR-10 / small ViT
+   - image classification
+   - transformer architecture with a modest compute budget
+
+3. nanochat d12
+   - modern autoregressive language-model training
+   - strong native initialization and tuned hybrid Muon+AdamW recipe
+   - scaling-law-derived batch/training horizon
+```
+
+A new RG optimizer should be compared against the appropriate strong baseline
+for each model rather than against one universal set of optimizer
+hyperparameters.
 
 ## Run order
 
-From the repository root, open the notebooks in `baseline/notebooks/` and run:
+For the MNIST suite, run:
 
 ```text
 1. MNIST_MLP3_SGD_Momentum_Baseline.ipynb
@@ -270,8 +305,9 @@ From the repository root, open the notebooks in `baseline/notebooks/` and run:
 4. MNIST_MLP3_Baseline_Comparison.ipynb
 ```
 
-The first three may be run in any order; the comparison must be run after all
-three have completed under the same run root.
+The CIFAR-10 ViT and nanochat notebooks are independent architecture baselines
+and can be run separately once their respective data/runtime requirements are
+available.
 
 ## Tests
 

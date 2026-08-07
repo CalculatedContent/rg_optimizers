@@ -5,16 +5,61 @@ program.
 
 ## Reproducible baselines
 
-[`baseline/`](baseline) contains matched MLP3/MNIST baselines for:
+[`baseline/`](baseline) contains the reference experiments used to evaluate the
+RG optimizer variants. The goal is to test optimizer behavior across several
+architectures and modalities rather than against a single toy model.
 
-- SGD with momentum;
-- AdamW;
-- SGD with momentum plus Muon.
+| Baseline | Model / data | Reference optimizers | Primary purpose |
+| --- | --- | --- | --- |
+| **MLP3 / MNIST** | `784 -> 512 -> 512 -> 10` MLP on MNIST | SGD + momentum, AdamW, SGD + momentum + Muon | Cheap, tightly controlled optimizer and spectral debugging |
+| **Small ViT / CIFAR-10** | 6-block, 192-wide Vision Transformer with 4x4 patches | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Transformer optimization on vision data with residual/attention structure |
+| **nanochat d12** | 12-layer, 768-wide, 2048-context nanochat language model | Native nanochat Muon + AdamW recipe | Modern small-LLM reference baseline with tuned initialization, parameter groups, scaling rules, and schedules |
 
-Each notebook runs three independent seeds and measures full train/test loss
-and accuracy plus original WeightWatcher full-`M` diagnostics at epoch zero and
-every training epoch. Plots use a fixed color-blind-safe palette and two-sided
-95% Student-t confidence intervals across complete training runs.
+### MLP3 / MNIST
+
+The MNIST suite runs three independent seeds for each optimizer and records full
+train/test loss and accuracy, checkpoints, and WeightWatcher diagnostics at
+epoch zero and every training epoch. The comparison notebook reports
+run-level two-sided 95% Student-t confidence intervals.
+
+Notebooks:
+
+- `baseline/notebooks/MNIST_MLP3_SGD_Momentum_Baseline.ipynb`
+- `baseline/notebooks/MNIST_MLP3_AdamW_Baseline.ipynb`
+- `baseline/notebooks/MNIST_MLP3_SGD_Momentum_Muon_Baseline.ipynb`
+- `baseline/notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`
+
+### Small ViT / CIFAR-10
+
+`baseline/notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb` trains the same
+small Vision Transformer from scratch with SGD + Nesterov, AdamW, and Muon +
+auxiliary AdamW. It uses three seeds, optimizer-specific tuned hyperparameters,
+warmup/cosine schedules, CIFAR-10 augmentation, checkpoint persistence, and
+WeightWatcher spectral diagnostics.
+
+### nanochat d12
+
+`baseline/notebooks/NanoChat_D12_Reference_Baseline.ipynb` is the modern
+language-model reference baseline. It pins upstream nanochat commit
+`92d63d4e8bb4df75c3b71618f31ddde2378b2bcd` and deliberately keeps nanochat's
+training recipe intact rather than replacing it with a generic GPT/AdamW
+configuration.
+
+The d12 reference uses 12 transformer layers, width 768, and context length
+2048. It preserves nanochat's native initialization, Muon/AdamW parameter
+partitioning, separate embedding/unembedding/matrix/scalar learning rates,
+depth- and batch-aware scaling rules, 40-step warmup, long linear warmdown,
+Muon momentum schedule, and cautious cosine-decayed weight decay. The wrapper
+adds reproducible independent seeds, periodic checkpoints and validation,
+final CORE evaluation, tidy CSV logs, and offline WeightWatcher analysis so
+spectral diagnostics do not perturb timed training.
+
+The reusable runner lives at:
+
+- `baseline/rg_baselines/nanochat_reference.py`
+
+See [`baseline/README.md`](baseline/README.md) for detailed run instructions,
+output layouts, metrics, and reproducibility conventions.
 
 ## Optimizer variants
 
