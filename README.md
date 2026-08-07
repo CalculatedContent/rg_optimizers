@@ -55,6 +55,29 @@ retained without fallbacks or proxy counts. Four notebooks produce run-level
 95% Student-t confidence intervals and a fixed color map for the six
 transformer matrices.
 
+MacBook quick start:
+
+```bash
+cd baseline/nanogpt_one_head
+bash scripts/setup_mac.sh
+bash scripts/prepare_data.sh
+bash scripts/smoke_test.sh
+
+export RG_NANOGPT_ONE_HEAD_ROOT="$HOME/rg-nanogpt-one-head"
+caffeinate -dimsu bash scripts/run_all_baselines.sh \
+  2>&1 | tee "$RG_NANOGPT_ONE_HEAD_ROOT/run_all.log"
+```
+
+After the nine runs complete, open:
+
+```text
+baseline/nanogpt_one_head/notebooks/04_compare_baselines.ipynb
+```
+
+The complete protocol, hyperparameters, output schema, restart behavior, and
+troubleshooting instructions are documented in
+[`baseline/nanogpt_one_head/README.md`](baseline/nanogpt_one_head/README.md).
+
 ### nanochat d12
 
 `baseline/notebooks/NanoChat_D12_Reference_Baseline.ipynb` is the modern
