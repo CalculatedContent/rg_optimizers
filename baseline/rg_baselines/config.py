@@ -10,12 +10,7 @@ OptimizerName = Literal["sgd_momentum", "adamw", "sgd_momentum_muon"]
 
 @dataclass(frozen=True)
 class BaselineConfig:
-    """Complete configuration for one MLP3/MNIST baseline run.
-
-    The three supported baselines are deliberately independent of every RG
-    correction.  They exist to establish the unmodified optimizer trajectories
-    before another optimizer extension is evaluated.
-    """
+    """Complete configuration for one MLP3/MNIST baseline run."""
 
     optimizer: OptimizerName
     seed: int = 1337
@@ -40,10 +35,7 @@ class BaselineConfig:
     adamw_weight_decay: float = 1e-2
     adamw_amsgrad: bool = False
 
-    # Muon is SGD-momentum followed by Newton--Schulz orthogonalization on
-    # hidden matrix updates.  The final classifier and all biases use ordinary
-    # SGD + momentum in this baseline, matching the requested
-    # "SGD+momentum+Muon" construction rather than auxiliary AdamW.
+    # Muon on hidden matrix updates; auxiliary parameters use SGD + momentum.
     muon_parameter_names: tuple[str, ...] = ("fc1.weight", "fc2.weight")
     muon_learning_rate: float = 2e-2
     muon_momentum: float = 0.95
@@ -57,22 +49,18 @@ class BaselineConfig:
     muon_aux_nesterov: bool = False
     muon_aux_weight_decay: float = 1e-4
 
-    # WeightWatcher checkpoint analysis.  Alpha and all three ERG boundary
-    # columns must come from analyze(ERG=True); no fallback boundary is used.
+    # WeightWatcher checkpoint analysis. ERG metrics come from ERG=True.
+    # Correlation traps come from the randomized MP analysis in randomize=True.
     ww_min_evals: int = 8
     ww_max_evals: Optional[int] = None
     ww_svd_method: str = "accurate"
-    ww_randomize: bool = False
+    ww_randomize: bool = True
 
     save_epoch_checkpoints: bool = False
     strict_metrics: bool = True
 
     def validate(self) -> None:
-        if self.optimizer not in {
-            "sgd_momentum",
-            "adamw",
-            "sgd_momentum_muon",
-        }:
+        if self.optimizer not in {"sgd_momentum", "adamw", "sgd_momentum_muon"}:
             raise ValueError(f"Unknown optimizer: {self.optimizer!r}")
         if self.epochs < 1:
             raise ValueError("epochs must be positive")
@@ -107,24 +95,23 @@ class BaselineConfig:
                 raise ValueError(f"{name} must lie in [0, 1)")
         if self.sgd_dampening < 0.0 or self.muon_aux_dampening < 0.0:
             raise ValueError("dampening must be non-negative")
-        if self.sgd_nesterov and (
-            self.sgd_momentum <= 0.0 or self.sgd_dampening != 0.0
-        ):
-            raise ValueError(
-                "Nesterov SGD requires positive momentum and zero dampening"
-            )
+        if self.sgd_nesterov and (self.sgd_momentum <= 0.0 or self.sgd_dampening != 0.0):
+            raise ValueError("Nesterov SGD requires positive momentum and zero dampening")
         if self.muon_aux_nesterov and (
             self.muon_aux_momentum <= 0.0 or self.muon_aux_dampening != 0.0
         ):
-            raise ValueError(
-                "Nesterov auxiliary SGD requires positive momentum and zero dampening"
-            )
+            raise ValueError("Nesterov auxiliary SGD requires positive momentum and zero dampening")
         if self.muon_newton_schulz_steps < 1:
             raise ValueError("muon_newton_schulz_steps must be positive")
         if self.muon_eps <= 0.0 or self.adamw_eps <= 0.0:
             raise ValueError("optimizer eps values must be positive")
         if self.ww_min_evals < 2:
             raise ValueError("ww_min_evals must be at least two")
+        if not self.ww_randomize:
+            raise ValueError(
+                "ww_randomize must be True because num_traps from "
+                "WeightWatcher analyze(randomize=True) is a required baseline metric"
+            )
 
     @property
     def optimizer_label(self) -> str:
