@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 import pandas as pd
 
 from rg_baselines.config import BaselineConfig
@@ -56,6 +57,32 @@ class CorrelationTrapTests(unittest.TestCase):
         result = attach_correlation_traps(checkpoint)
         self.assertEqual(result.metrics["num_traps"].tolist(), [0, 2, 1])
         self.assertTrue(result.metrics["num_traps_source"].str.contains("randomize=True").all())
+
+    def test_skipped_detail_row_without_traps_is_ignored(self):
+        checkpoint = SpectralCheckpoint(
+            details=pd.DataFrame(
+                {
+                    "layer_id": [1, 2, 99],
+                    "num_traps": [0, 2, np.nan],
+                }
+            ),
+            metrics=pd.DataFrame(
+                {
+                    "layer_id": [1, 2, 99],
+                    "status": ["ok", "ok", "skipped"],
+                    "layer": ["fc1", "fc2", "embedding"],
+                }
+            ),
+            esd_arrays={},
+        )
+        result = attach_correlation_traps(checkpoint)
+        self.assertEqual(
+            result.metrics.loc[result.metrics["status"].eq("ok"), "num_traps"].tolist(),
+            [0.0, 2.0],
+        )
+        self.assertTrue(
+            result.metrics.loc[result.metrics["status"].eq("skipped"), "num_traps"].isna().all()
+        )
 
 
 if __name__ == "__main__":
