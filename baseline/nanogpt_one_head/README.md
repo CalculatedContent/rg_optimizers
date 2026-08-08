@@ -24,7 +24,7 @@ and tokenizes them with GPT-2 BPE.
 | Dataset | `HuggingFaceFW/fineweb-edu`, `sample-10BT` |
 | Dataset revision | `593b3a867298afb8ce42625a270ef20ddcad28f9` |
 | Tokenizer | GPT-2 BPE, vocabulary 50,257 |
-| Training split | 10,000,000 tokens |
+| Training split | **80,000,000 tokens** |
 | Validation split | 1,000,000 tokens |
 | Test split | 1,000,000 tokens |
 | Split construction | Document-disjoint |
@@ -39,8 +39,9 @@ and tokenizes them with GPT-2 BPE.
 | Micro-batch | 4 sequences |
 | Gradient accumulation | 8 |
 | Tokens per optimizer step | 8,192 |
-| Target training horizon | **8 passes / approximately 80M tokens** |
+| Target training budget | **about 80M sampled tokens** |
 | Optimizer steps | **9,766** |
+| Reporting / WW checkpoints | 0, 0.125, ..., 1.0 corpus-equivalent budget |
 | Validation probe | 64 common fixed batches |
 | Test probe | 64 common fixed batches |
 | BLEU probe | 64 common held-out continuations |
@@ -48,11 +49,16 @@ and tokenizes them with GPT-2 BPE.
 | Preferred device | Apple MPS |
 | Numerical precision | float32 |
 
-The eight-pass horizon is approximately the 12-tokens-per-scaling-parameter
-regime for the tied 50,257 x 128 vocabulary head plus the six hidden
-transformer matrices. Validation loss still selects the best checkpoint, so the
-longer horizon provides room to converge without forcing the final checkpoint
-to be reported.
+The model has roughly 6.6 million scaling parameters when the tied vocabulary
+embedding/head is counted once. An approximately 80M-token budget is therefore
+close to a 12-tokens-per-parameter reference regime. The training sampler draws
+random contiguous windows from an 80M-token corpus, so `1.0` is a
+**corpus-equivalent token budget**, not a claim that every token is visited
+exactly once. This is stronger than repeatedly sampling an undersized 10M-token
+corpus to manufacture the same processed-token count.
+
+Validation loss selects the best checkpoint, so the full horizon provides room
+to converge without forcing the final checkpoint to be reported.
 
 The model uses nanoGPT-style `N(0, 0.02)` initialization and scales the two
 residual-output matrices by `1/sqrt(2 * n_layer)`. With one block, WeightWatcher
@@ -78,9 +84,9 @@ The preparation step writes exact split sizes and records, for every token file:
 - SHA-256.
 
 Every training run verifies all of those fields before opening the memory maps.
-A modified, truncated, old hashless, or otherwise corrupt cache fails visibly;
-it is never silently reused. Recreate such a cache explicitly with the data
-preparation command and `--force`.
+A modified, truncated, old hashless, undersized, or otherwise incompatible
+cache fails visibly; it is never silently reused. Recreate such a cache
+explicitly with the data-preparation command and `--force`.
 
 ## Optimizer profiles
 
@@ -128,8 +134,8 @@ validation or test examples on which that run is measured.
 
 ## WeightWatcher contract
 
-At epoch zero and every nominal epoch, the code copies the six transformer
-matrices to CPU and calls:
+At the initial state and at eight evenly spaced corpus-equivalent checkpoints,
+the code copies the six transformer matrices to CPU and calls:
 
 ```python
 watcher.analyze(
@@ -155,7 +161,7 @@ restored after randomized analysis.
 
 ## Metrics and plots
 
-Each nominal epoch records:
+Each nominal reporting checkpoint records:
 
 ```text
 train / validation / test cross-entropy
@@ -287,8 +293,8 @@ Run one seed:
 bash scripts/smoke_test.sh
 ```
 
-The test suite checks the architecture, all optimizer update paths, common probe
-identity, exact split-writing and cache corruption detection, checkpoint
-round-tripping, LR logging semantics, Student-t intervals, direct
-`ERG_gap`/`num_traps` handling, tiny CPU training, and notebook structure. The
-same tests run in the repository's baseline CI.
+The test suite checks the architecture, 80M-token corpus contract, all optimizer
+update paths, common probe identity, exact split-writing and cache corruption
+detection, checkpoint round-tripping, LR logging semantics, Student-t
+intervals, direct `ERG_gap`/`num_traps` handling, tiny CPU training, and
+notebook structure. The same tests run in the repository's baseline CI.
