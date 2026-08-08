@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 from rg_baselines.config import BaselineConfig
 from rg_baselines.diagnostics import SpectralCheckpoint
-from rg_baselines.runner import run_baseline
+from rg_baselines.mnist_runtime import run_baseline
 
 
 class FakeMNIST(Dataset):
@@ -61,15 +61,15 @@ def fake_weightwatcher(model, *, run_label, epoch, global_step, **kwargs):
         details=details,
         metrics=frame,
         esd_arrays={
-            f"epoch_{epoch:03d}_{layer}": np.asarray([1.0, 2.0])
+            f"epoch_{epoch:03d}__{layer}__raw_ascending": np.asarray([1.0, 2.0])
             for layer in ("fc1", "fc2", "fc3")
         },
     )
 
 
 class MNISTRunnerTests(unittest.TestCase):
-    def test_two_epoch_run_writes_validation_selected_restart_artifacts(self):
-        config = BaselineConfig(
+    def _config(self) -> BaselineConfig:
+        return BaselineConfig(
             optimizer="adamw",
             epochs=2,
             batch_size=40,
@@ -77,23 +77,30 @@ class MNISTRunnerTests(unittest.TestCase):
             adamw_warmup_epochs=1,
             save_epoch_checkpoints=True,
         )
+
+    def _patches(self):
+        return (
+            mock.patch(
+                "rg_baselines.runner.datasets.MNIST",
+                side_effect=fake_mnist_factory,
+            ),
+            mock.patch(
+                "rg_baselines.runner.measure_weightwatcher_checkpoint",
+                side_effect=fake_weightwatcher,
+            ),
+            mock.patch(
+                "rg_baselines.runner.attach_correlation_traps",
+                side_effect=lambda checkpoint: checkpoint,
+            ),
+        )
+
+    def test_two_epoch_run_writes_validation_selected_restart_artifacts(self):
+        config = self._config()
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             run_dir = root / "run"
-            with (
-                mock.patch(
-                    "rg_baselines.runner.datasets.MNIST",
-                    side_effect=fake_mnist_factory,
-                ),
-                mock.patch(
-                    "rg_baselines.runner.measure_weightwatcher_checkpoint",
-                    side_effect=fake_weightwatcher,
-                ),
-                mock.patch(
-                    "rg_baselines.runner.attach_correlation_traps",
-                    side_effect=lambda checkpoint: checkpoint,
-                ),
-            ):
+            patch_dataset, patch_ww, patch_traps = self._patches()
+            with patch_dataset, patch_ww, patch_traps:
                 result = run_baseline(
                     config,
                     data_dir=root / "data",
@@ -106,18 +113,23 @@ class MNISTRunnerTests(unittest.TestCase):
                 self.assertTrue(
                     result.performance["test_monitoring_only"].eq(1).all()
                 )
-                self.assertTrue((run_dir / "checkpoint_latest.pt").is_file())
-                self.assertTrue((run_dir / "checkpoint_best.pt").is_file())
-                self.assertTrue((run_dir / "run_complete.json").is_file())
-                self.assertTrue((run_dir / "test_results.json").is_file())
+                for filename in (
+                    "checkpoint_latest.pt",
+                    "checkpoint_best.pt",
+                    "run_complete.json",
+                    "test_results.json",
+                    "final_state.pt",
+                ):
+                    self.assertTrue((run_dir / filename).is_file(), filename)
                 completion = json.loads(
                     (run_dir / "run_complete.json").read_text()
                 )
                 self.assertTrue(completion["completed"])
                 self.assertIn(completion["best_validation_epoch"], (0, 1, 2))
 
-                # Removing only completion/final markers exercises the
-                # compatible latest-checkpoint resume path without retraining.
+                # Removing terminal products exercises compatible rollback to
+                # checkpoint_latest.pt. Tables and ESD history are truncated to
+                # the checkpoint epoch before the core runner is re-entered.
                 (run_dir / "run_complete.json").unlink()
                 (run_dir / "final_state.pt").unlink()
                 resumed = run_baseline(
@@ -131,6 +143,23 @@ class MNISTRunnerTests(unittest.TestCase):
                 self.assertEqual(resumed.performance["epoch"].tolist(), [0, 1, 2])
                 self.assertTrue((run_dir / "run_complete.json").is_file())
                 self.assertTrue((run_dir / "final_state.pt").is_file())
+
+    def test_partial_artifacts_without_latest_checkpoint_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run_dir = Path(temporary) / "run"
+            run_dir.mkdir()
+            pd.DataFrame([{"epoch": 0, "train_loss": 1.0}]).to_csv(
+                run_dir / "performance_by_epoch.csv", index=False
+            )
+            with self.assertRaises(FileNotFoundError):
+                run_baseline(
+                    self._config(),
+                    data_dir=Path(temporary) / "data",
+                    device=torch.device("cpu"),
+                    output_dir=run_dir,
+                    progress=False,
+                    resume=True,
+                )
 
 
 if __name__ == "__main__":
