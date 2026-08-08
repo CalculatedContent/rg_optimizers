@@ -11,7 +11,10 @@ from rg_baselines.vit_analysis import (
     validation_selected_rows,
 )
 from rg_baselines.vit_cifar10 import ViTBaselineConfig
-from rg_baselines.vit_runtime import _ensure_best_checkpoint
+from rg_baselines.vit_runtime import (
+    _ensure_best_checkpoint,
+    _runtime_fingerprint,
+)
 
 
 class ViTAnalysisTests(unittest.TestCase):
@@ -130,9 +133,7 @@ class ViTAnalysisTests(unittest.TestCase):
             self.assertAlmostEqual(float(payload["best_validation_loss"]), 0.5)
             self.assertEqual(
                 payload["fingerprint"],
-                __import__("rg_baselines.vit_cifar10", fromlist=["_fingerprint"])._fingerprint(
-                    "adamw", 17, config
-                ),
+                _runtime_fingerprint("adamw", 17, config),
             )
 
 
