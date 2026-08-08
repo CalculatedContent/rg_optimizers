@@ -119,11 +119,24 @@ and nanoGPT initialization remain correct.
 
 ## nanochat
 
-### Result
+### Technical discrepancy found
+
+The pinned trainer correctly falls back from Flash Attention to PyTorch SDPA on
+MPS and CPU, but it called `torch.compile(model, dynamic=False)` unconditionally.
+That is the canonical CUDA/server path, not a dependable portable contract for
+Apple MPS or generic CPU execution.
+
+### Corrections and result
 
 The canonical d12 profile remains accepted as a pinned native upstream
-reference. The wrapper does not reimplement its architecture or optimizer. The
-pinned trainer derives:
+reference. CUDA keeps upstream `torch.compile`. The separate `mac_d4` and CPU
+profiles run the identical pinned model, initialization, optimizer, data path,
+and schedules in eager mode. A versioned `runtime_policy.json` records device,
+process count, profile, and compile policy, and an incompatible run directory is
+rejected instead of silently reused.
+
+The wrapper still does not reimplement the architecture or optimizer. The pinned
+trainer derives:
 
 - the target token horizon;
 - total token batch;
@@ -140,8 +153,9 @@ quality or scale.
 
 An actual MPS smoke run is still required on the target Mac to establish local
 runtime throughput and memory headroom. Linux CPU CI cannot prove Apple GPU
-performance, although it does test command construction, one-process policy,
-checkpoint-shard completeness, seed patching, and resumed-log handling.
+performance, although it tests the exact compile patch, runtime-policy lock,
+command construction, one-process policy, checkpoint-shard completeness, seed
+patch, and resumed-log handling.
 
 ## WeightWatcher contract
 
