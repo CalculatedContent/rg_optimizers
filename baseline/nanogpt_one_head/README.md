@@ -20,10 +20,11 @@ and tokenizes them with GPT-2 BPE.
 
 | Component | Value |
 |---|---:|
+| Protocol version | 3 |
 | Dataset | `HuggingFaceFW/fineweb-edu`, `sample-10BT` |
 | Dataset revision | `593b3a867298afb8ce42625a270ef20ddcad28f9` |
 | Tokenizer | GPT-2 BPE, vocabulary 50,257 |
-| Training split | 10,000,000 tokens |
+| Training split | **80,000,000 tokens** |
 | Validation split | 1,000,000 tokens |
 | Test split | 1,000,000 tokens |
 | Split construction | Document-disjoint |
@@ -38,11 +39,26 @@ and tokenizes them with GPT-2 BPE.
 | Micro-batch | 4 sequences |
 | Gradient accumulation | 8 |
 | Tokens per optimizer step | 8,192 |
-| Target training horizon | 5 passes over the fixed train split |
-| Optimizer steps | 6,104 |
+| Target training budget | **about 80M sampled tokens** |
+| Optimizer steps | **9,766** |
+| Reporting / WW checkpoints | 0, 0.125, ..., 1.0 corpus-equivalent budget |
+| Validation probe | 64 common fixed batches |
+| Test probe | 64 common fixed batches |
+| BLEU probe | 64 common held-out continuations |
 | Seeds | 1337, 2027, 4099 |
 | Preferred device | Apple MPS |
 | Numerical precision | float32 |
+
+The model has roughly 6.6 million scaling parameters when the tied vocabulary
+embedding/head is counted once. An approximately 80M-token budget is therefore
+close to a 12-tokens-per-parameter reference regime. The training sampler draws
+random contiguous windows from an 80M-token corpus, so `1.0` is a
+**corpus-equivalent token budget**, not a claim that every token is visited
+exactly once. This is stronger than repeatedly sampling an undersized 10M-token
+corpus to manufacture the same processed-token count.
+
+Validation loss selects the best checkpoint, so the full horizon provides room
+to converge without forcing the final checkpoint to be reported.
 
 The model uses nanoGPT-style `N(0, 0.02)` initialization and scales the two
 residual-output matrices by `1/sqrt(2 * n_layer)`. With one block, WeightWatcher
@@ -68,9 +84,9 @@ The preparation step writes exact split sizes and records, for every token file:
 - SHA-256.
 
 Every training run verifies all of those fields before opening the memory maps.
-A modified, truncated, old hashless, or otherwise corrupt cache fails visibly;
-it is never silently reused. Recreate such a cache explicitly with the data
-preparation command and `--force`.
+A modified, truncated, old hashless, undersized, or otherwise incompatible
+cache fails visibly; it is never silently reused. Recreate such a cache
+explicitly with the data-preparation command and `--force`.
 
 ## Optimizer profiles
 
@@ -79,21 +95,47 @@ learning rate across SGD, AdamW, and Muon would not be a meaningful control.
 
 | Optimizer | Peak LR | LR floor | Warm-up | Schedule | Decay / momentum |
 |---|---:|---:|---:|---|---|
-| SGD + Nesterov | 0.05 | 0.005 | 10% | step-level linear warm-up + cosine decay | momentum 0.90, weight decay 0.01 |
-| AdamW | 6e-4 | 6e-5 | 1% | step-level linear warm-up + cosine decay | betas (0.90, 0.95), weight decay 0.10 |
-| Muon matrices | 0.02 | 0.002 | 5% | step-level linear warm-up + cosine decay | momentum 0.95, Nesterov, 5 Newton-Schulz steps, weight decay 0.01 |
+| SGD + Nesterov | 0.05 | 0.005 | 10% | update-level linear warm-up + cosine decay | momentum 0.90, weight decay 0.01 |
+| AdamW | 6e-4 | 6e-5 | 1% | update-level linear warm-up + cosine decay | betas (0.90, 0.95), weight decay 0.10 |
+| Muon matrices | 0.02 | 0.002 | 5% | update-level linear warm-up + cosine decay | momentum 0.95, Nesterov, 5 Newton-Schulz steps, weight decay 0.01 |
 | Muon auxiliary AdamW | 3e-4 | 3e-5 | 5% | same progress as Muon | betas (0.90, 0.95), weight decay 0.01 |
 
 AdamW follows the canonical nanoGPT pretraining values. Muon follows the
 reference partition: only hidden two-dimensional transformer matrices use
 Muon; embeddings, tied output parameters, normalization gains, and other
-non-Muon parameters use AdamW. These are strong preregistered reference
-settings, not a claim that a finite grid search proves global optimality.
+non-Muon parameters use AdamW.
+
+The CSV `primary_lr` and `auxiliary_lr` values are the learning rates used by
+the update that produced the recorded checkpoint. At step zero they are zero,
+because no optimizer update has yet occurred. The console also displays the LR
+prepared for the next update, preventing an off-by-one interpretation of the
+warm-up curve.
+
+These settings are the committed centers of the bounded validation search in
+[`../FINAL_BASELINE_QUALIFICATION.md`](../FINAL_BASELINE_QUALIFICATION.md). They
+become the frozen best baseline only after validation qualification; protected
+test metrics never choose a candidate.
+
+## Common evaluation probes
+
+All optimizer arms and all training seeds use the exact same preregistered probe
+windows:
+
+```text
+train probe seed:       21001
+validation probe seed:  22001
+test probe seed:        23001
+BLEU probe seed:        24001
+```
+
+This removes evaluation-sample drift from paired optimizer comparisons. A model
+seed changes initialization and training batches; it does not change the
+validation or test examples on which that run is measured.
 
 ## WeightWatcher contract
 
-At epoch zero and every nominal epoch, the code copies the six transformer
-matrices to CPU and calls:
+At the initial state and at eight evenly spaced corpus-equivalent checkpoints,
+the code copies the six transformer matrices to CPU and calls:
 
 ```python
 watcher.analyze(
@@ -113,12 +155,13 @@ The raw result is saved. Required direct outputs include:
   spectral/log norms, entropy, and all other returned WeightWatcher columns.
 
 There is no fallback alpha, proxy trap count, or synthesized ERG gap. A
-WeightWatcher version that does not return `alpha`, `ERG_gap`, and `num_traps`
-fails visibly.
+WeightWatcher version that does not return finite `alpha`, `ERG_gap`, and
+`num_traps` fails visibly. Python, NumPy, CPU Torch, CUDA, and MPS RNG state are
+restored after randomized analysis.
 
 ## Metrics and plots
 
-Each nominal epoch records:
+Each nominal reporting checkpoint records:
 
 ```text
 train / validation / test cross-entropy
@@ -132,7 +175,7 @@ weight norm and update-to-weight ratio
 MPS memory usage
 ```
 
-BLEU is a deterministic secondary diagnostic. For 16 fixed held-out test
+BLEU is a deterministic secondary diagnostic. For 64 fixed held-out test
 segments, the model receives a 64-token prompt and greedily predicts the next
 32 tokens. Corpus BLEU compares those continuations with the exact held-out
 continuations. It is **not** a translation benchmark and does not replace
@@ -250,7 +293,8 @@ Run one seed:
 bash scripts/smoke_test.sh
 ```
 
-The test suite checks the architecture, all optimizer update paths, exact
-split-writing and cache corruption detection, checkpoint round-tripping,
-Student-t intervals, direct `ERG_gap`/`num_traps` handling, tiny CPU training,
-and notebook structure. The same tests run in the repository's baseline CI.
+The test suite checks the architecture, 80M-token corpus contract, all optimizer
+update paths, common probe identity, exact split-writing and cache corruption
+detection, checkpoint round-tripping, LR logging semantics, Student-t
+intervals, direct `ERG_gap`/`num_traps` handling, tiny CPU training, and
+notebook structure. The same tests run in the repository's baseline CI.

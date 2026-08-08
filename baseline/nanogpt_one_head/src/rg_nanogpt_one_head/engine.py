@@ -18,7 +18,7 @@ from .config import (
     warmup_steps,
 )
 from .data import load_memmaps
-from .evaluation import evaluate_bleu, fixed_bleu_probe, fixed_probe
+from .evaluation import fixed_bleu_probe, fixed_probe
 from .model import GPT, GPTConfig
 from .optimizers import make_optimizer_handles
 from .run_utils import (
@@ -31,7 +31,6 @@ from .run_utils import (
     write_manifest,
 )
 from .runtime import choose_device, configure_runtime, seed_everything
-from .spectral import run_weightwatcher
 from .train_loop import execute_training_loop
 
 
@@ -59,12 +58,16 @@ def run_one(
     completion_path = run_dir / "run_complete.json"
     if completion_path.is_file() and not overwrite:
         if progress:
-            print(f"[one-head-train] skip completed {optimizer_name} seed={seed}")
+            print(
+                f"[one-head-train] skip completed {optimizer_name} seed={seed}"
+            )
         return run_dir
     if run_dir.exists() and overwrite:
         shutil.rmtree(run_dir)
     if run_dir.exists() and not resume:
-        raise FileExistsError(f"incomplete run exists: {run_dir}; enable resume or overwrite")
+        raise FileExistsError(
+            f"incomplete run exists: {run_dir}; enable resume or overwrite"
+        )
     run_dir.mkdir(parents=True, exist_ok=True)
 
     resolved_device = choose_device(device)
@@ -89,25 +92,38 @@ def run_one(
     eval_batches = int(cfg["training"]["eval_batches"])
     block_size = int(cfg["model"]["block_size"])
     epoch_steps = epoch_step_map(cfg, train_tokens)
+    eval_cfg = cfg["evaluation"]
+
+    # Evaluation examples are deliberately independent of the training seed.
+    # This makes paired optimizer comparisons and across-seed uncertainty use
+    # the same train/validation/test probe windows in every complete run.
     train_probe = fixed_probe(
-        arrays["train"], batch_size=batch_size, block_size=block_size,
-        n_batches=eval_batches, seed=int(seed) + 1_001,
+        arrays["train"],
+        batch_size=batch_size,
+        block_size=block_size,
+        n_batches=eval_batches,
+        seed=int(eval_cfg["train_probe_seed"]),
     )
     val_probe = fixed_probe(
-        arrays["val"], batch_size=batch_size, block_size=block_size,
-        n_batches=eval_batches, seed=int(seed) + 2_001,
+        arrays["val"],
+        batch_size=batch_size,
+        block_size=block_size,
+        n_batches=eval_batches,
+        seed=int(eval_cfg["validation_probe_seed"]),
     )
     test_probe = fixed_probe(
-        arrays["test"], batch_size=batch_size, block_size=block_size,
-        n_batches=eval_batches, seed=int(seed) + 3_001,
+        arrays["test"],
+        batch_size=batch_size,
+        block_size=block_size,
+        n_batches=eval_batches,
+        seed=int(eval_cfg["test_probe_seed"]),
     )
-    eval_cfg = cfg["evaluation"]
     bleu_probe = fixed_bleu_probe(
         arrays["test"],
         examples=int(eval_cfg["bleu_examples"]),
         prompt_tokens=int(eval_cfg["bleu_prompt_tokens"]),
         continuation_tokens=int(eval_cfg["bleu_continuation_tokens"]),
-        seed=int(seed) + 4_001,
+        seed=int(eval_cfg["bleu_probe_seed"]),
     )
 
     start_step = 0
@@ -118,7 +134,12 @@ def run_one(
     best_checkpoint = run_dir / "checkpoint_best.pt"
     final_checkpoint = run_dir / "checkpoint_final.pt"
     if resume and latest_checkpoint.is_file():
-        start_step, best_validation_loss, best_validation_step, elapsed_offset = load_training_checkpoint(
+        (
+            start_step,
+            best_validation_loss,
+            best_validation_step,
+            elapsed_offset,
+        ) = load_training_checkpoint(
             latest_checkpoint,
             model=model,
             handles=handles,
@@ -128,11 +149,18 @@ def run_one(
         model.to(resolved_device)
         truncate_spectral_after(run_dir, start_step)
         if progress:
-            print(f"[one-head-train] resume {optimizer_name} seed={seed} step={start_step}")
+            print(
+                f"[one-head-train] resume {optimizer_name} "
+                f"seed={seed} step={start_step}"
+            )
     elif run_dir.exists() and any(run_dir.iterdir()) and resume:
-        nontrivial = [path for path in run_dir.iterdir() if path.name != "manifest.json"]
+        nontrivial = [
+            path for path in run_dir.iterdir() if path.name != "manifest.json"
+        ]
         if nontrivial and not latest_checkpoint.is_file():
-            raise FileNotFoundError(f"cannot resume {run_dir}: checkpoint_latest.pt is missing")
+            raise FileNotFoundError(
+                f"cannot resume {run_dir}: checkpoint_latest.pt is missing"
+            )
 
     write_manifest(
         run_dir,
@@ -150,42 +178,58 @@ def run_one(
 
     metrics_path = run_dir / "metrics.csv"
     epoch_metrics_path = run_dir / "epoch_metrics.csv"
-    prepare_csv(metrics_path, METRIC_FIELDS, start_step if start_step else None)
-    prepare_csv(epoch_metrics_path, EPOCH_FIELDS, start_step if start_step else None)
+    prepare_csv(
+        metrics_path,
+        METRIC_FIELDS,
+        start_step if start_step else None,
+    )
+    prepare_csv(
+        epoch_metrics_path,
+        EPOCH_FIELDS,
+        start_step if start_step else None,
+    )
     with (
         metrics_path.open("a", newline="", encoding="utf-8") as metrics_handle,
-        epoch_metrics_path.open("a", newline="", encoding="utf-8") as epoch_handle,
+        epoch_metrics_path.open(
+            "a", newline="", encoding="utf-8"
+        ) as epoch_handle,
     ):
-        best_validation_loss, best_validation_step, elapsed_total = execute_training_loop(
-            cfg=cfg,
-            model=model,
-            handles=handles,
-            arrays=arrays,
-            train_probe=train_probe,
-            val_probe=val_probe,
-            test_probe=test_probe,
-            bleu_probe=bleu_probe,
-            device=resolved_device,
-            optimizer_name=optimizer_name,
-            seed=int(seed),
-            train_tokens=train_tokens,
-            total_steps=total_steps,
-            warmup=warmup,
-            start_step=start_step,
-            best_validation_loss=best_validation_loss,
-            best_validation_step=best_validation_step,
-            elapsed_offset=elapsed_offset,
-            fingerprint=fingerprint,
-            train_generator=train_generator,
-            epoch_steps=epoch_steps,
-            metrics_writer=csv.DictWriter(metrics_handle, fieldnames=METRIC_FIELDS),
-            metrics_handle=metrics_handle,
-            epoch_writer=csv.DictWriter(epoch_handle, fieldnames=EPOCH_FIELDS),
-            epoch_handle=epoch_handle,
-            run_dir=run_dir,
-            latest_checkpoint=latest_checkpoint,
-            best_checkpoint=best_checkpoint,
-            progress=progress,
+        best_validation_loss, best_validation_step, elapsed_total = (
+            execute_training_loop(
+                cfg=cfg,
+                model=model,
+                handles=handles,
+                arrays=arrays,
+                train_probe=train_probe,
+                val_probe=val_probe,
+                test_probe=test_probe,
+                bleu_probe=bleu_probe,
+                device=resolved_device,
+                optimizer_name=optimizer_name,
+                seed=int(seed),
+                train_tokens=train_tokens,
+                total_steps=total_steps,
+                warmup=warmup,
+                start_step=start_step,
+                best_validation_loss=best_validation_loss,
+                best_validation_step=best_validation_step,
+                elapsed_offset=elapsed_offset,
+                fingerprint=fingerprint,
+                train_generator=train_generator,
+                epoch_steps=epoch_steps,
+                metrics_writer=csv.DictWriter(
+                    metrics_handle, fieldnames=METRIC_FIELDS
+                ),
+                metrics_handle=metrics_handle,
+                epoch_writer=csv.DictWriter(
+                    epoch_handle, fieldnames=EPOCH_FIELDS
+                ),
+                epoch_handle=epoch_handle,
+                run_dir=run_dir,
+                latest_checkpoint=latest_checkpoint,
+                best_checkpoint=best_checkpoint,
+                progress=progress,
+            )
         )
 
     for checkpoint in (final_checkpoint, latest_checkpoint):
@@ -204,7 +248,11 @@ def run_one(
             train_generator=train_generator,
         )
 
-    final_state = torch.load(final_checkpoint, map_location="cpu", weights_only=False)["model"]
+    final_state = torch.load(
+        final_checkpoint,
+        map_location="cpu",
+        weights_only=False,
+    )["model"]
     final_test = checkpoint_eval(
         final_checkpoint,
         model=model,
@@ -225,19 +273,25 @@ def run_one(
     model.to(resolved_device)
 
     test_results = {
-        "policy": "test is monitoring-only; validation loss selects checkpoint_best.pt",
+        "policy": (
+            "test is monitoring-only; validation loss selects "
+            "checkpoint_best.pt"
+        ),
         "final": final_test,
         "validation_selected": best_test,
     }
     (run_dir / "test_results.json").write_text(
-        json.dumps(test_results, indent=2, sort_keys=True), encoding="utf-8"
+        json.dumps(test_results, indent=2, sort_keys=True),
+        encoding="utf-8",
     )
     completion = {
         "completed": True,
         "optimizer": optimizer_name,
         "seed": int(seed),
         "optimizer_steps": int(total_steps),
-        "train_epochs": float(total_steps * tokens_per_step(cfg) / train_tokens),
+        "train_epochs": float(
+            total_steps * tokens_per_step(cfg) / train_tokens
+        ),
         "elapsed_seconds": float(elapsed_total),
         "best_validation_step": int(best_validation_step),
         "best_validation_loss": float(best_validation_loss),
@@ -249,9 +303,12 @@ def run_one(
     }
     temporary = run_dir / "run_complete.json.tmp"
     temporary.write_text(
-        json.dumps(completion, indent=2, sort_keys=True), encoding="utf-8"
+        json.dumps(completion, indent=2, sort_keys=True),
+        encoding="utf-8",
     )
     temporary.replace(completion_path)
     if progress:
-        print(f"[one-head-train] complete {optimizer_name} seed={seed}: {run_dir}")
+        print(
+            f"[one-head-train] complete {optimizer_name} seed={seed}: {run_dir}"
+        )
     return run_dir

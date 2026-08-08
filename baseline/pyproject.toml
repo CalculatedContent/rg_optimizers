@@ -17,7 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 experiment = [
   "matplotlib>=3.7",
-  "weightwatcher>=0.7.7",
+  "weightwatcher==0.7.7",
   "jupyter>=1.0",
 ]
 
