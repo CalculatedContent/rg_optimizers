@@ -54,11 +54,16 @@ def fake_weightwatcher(model, *, run_label, epoch, global_step, **kwargs):
             }
         )
     frame = pd.DataFrame(rows)
-    details = frame[["layer_id", "num_traps"]].copy()
+    details = frame[
+        ["run", "epoch", "global_step", "layer_id", "layer", "num_traps"]
+    ].copy()
     return SpectralCheckpoint(
         details=details,
         metrics=frame,
-        esd_arrays={f"epoch_{epoch:03d}_{layer}": np.asarray([1.0, 2.0]) for layer in ("fc1", "fc2", "fc3")},
+        esd_arrays={
+            f"epoch_{epoch:03d}_{layer}": np.asarray([1.0, 2.0])
+            for layer in ("fc1", "fc2", "fc3")
+        },
     )
 
 
@@ -76,9 +81,18 @@ class MNISTRunnerTests(unittest.TestCase):
             root = Path(temporary)
             run_dir = root / "run"
             with (
-                mock.patch("rg_baselines.runner.datasets.MNIST", side_effect=fake_mnist_factory),
-                mock.patch("rg_baselines.runner.measure_weightwatcher_checkpoint", side_effect=fake_weightwatcher),
-                mock.patch("rg_baselines.runner.attach_correlation_traps", side_effect=lambda checkpoint: checkpoint),
+                mock.patch(
+                    "rg_baselines.runner.datasets.MNIST",
+                    side_effect=fake_mnist_factory,
+                ),
+                mock.patch(
+                    "rg_baselines.runner.measure_weightwatcher_checkpoint",
+                    side_effect=fake_weightwatcher,
+                ),
+                mock.patch(
+                    "rg_baselines.runner.attach_correlation_traps",
+                    side_effect=lambda checkpoint: checkpoint,
+                ),
             ):
                 result = run_baseline(
                     config,
@@ -89,16 +103,20 @@ class MNISTRunnerTests(unittest.TestCase):
                 )
                 self.assertEqual(result.performance["epoch"].tolist(), [0, 1, 2])
                 self.assertIn("validation_loss", result.performance)
-                self.assertTrue(result.performance["test_monitoring_only"].eq(1).all())
+                self.assertTrue(
+                    result.performance["test_monitoring_only"].eq(1).all()
+                )
                 self.assertTrue((run_dir / "checkpoint_latest.pt").is_file())
                 self.assertTrue((run_dir / "checkpoint_best.pt").is_file())
                 self.assertTrue((run_dir / "run_complete.json").is_file())
                 self.assertTrue((run_dir / "test_results.json").is_file())
-                completion = json.loads((run_dir / "run_complete.json").read_text())
+                completion = json.loads(
+                    (run_dir / "run_complete.json").read_text()
+                )
                 self.assertTrue(completion["completed"])
                 self.assertIn(completion["best_validation_epoch"], (0, 1, 2))
 
-                # Removing only the completion/final markers exercises the
+                # Removing only completion/final markers exercises the
                 # compatible latest-checkpoint resume path without retraining.
                 (run_dir / "run_complete.json").unlink()
                 (run_dir / "final_state.pt").unlink()
