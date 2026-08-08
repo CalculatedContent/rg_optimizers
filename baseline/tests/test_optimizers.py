@@ -62,11 +62,19 @@ class OptimizerTests(unittest.TestCase):
         reference = torch.optim.AdamW(
             [
                 {
-                    "params": [parameter for _, parameter in auxiliary_named if parameter.ndim >= 2],
+                    "params": [
+                        parameter
+                        for _, parameter in auxiliary_named
+                        if parameter.ndim >= 2
+                    ],
                     "weight_decay": 0.01,
                 },
                 {
-                    "params": [parameter for _, parameter in auxiliary_named if parameter.ndim < 2],
+                    "params": [
+                        parameter
+                        for _, parameter in auxiliary_named
+                        if parameter.ndim < 2
+                    ],
                     "weight_decay": 0.0,
                 },
             ],
@@ -85,30 +93,44 @@ class OptimizerTests(unittest.TestCase):
         reference.step()
         for name in ("fc3.weight", "fc1.bias", "fc2.bias", "fc3.bias"):
             self.assertTrue(
-                torch.allclose(custom_named[name], reference_named[name], atol=2e-7, rtol=2e-6),
+                torch.allclose(
+                    custom_named[name],
+                    reference_named[name],
+                    atol=2e-7,
+                    rtol=2e-6,
+                ),
                 name,
             )
 
-    def test_warmup_cosine_has_peak_and_nonzero_floor(self) -> None:
+    def test_step_level_warmup_cosine_reaches_peak_and_floor(self) -> None:
+        total_steps = 300
+        warmup_steps = 20
         values = [
             warmup_cosine_learning_rate(
                 index,
-                total_epochs=30,
-                warmup_epochs=2,
+                total_steps=total_steps,
+                warmup_steps=warmup_steps,
                 peak_lr=0.05,
                 min_lr=5e-4,
             )
-            for index in range(30)
+            for index in range(total_steps)
         ]
-        self.assertAlmostEqual(values[0], 0.025)
-        self.assertAlmostEqual(values[1], 0.05)
+        self.assertAlmostEqual(values[0], 0.05 / warmup_steps)
+        self.assertAlmostEqual(values[warmup_steps - 1], 0.05)
         self.assertAlmostEqual(values[-1], 5e-4)
         self.assertTrue(all(value > 0 for value in values))
 
     def test_profiles_have_distinct_source_backed_schedules(self) -> None:
-        sgd = scheduled_learning_rates(BaselineConfig(optimizer="sgd_momentum"), epoch_index=0)
-        adamw = scheduled_learning_rates(BaselineConfig(optimizer="adamw"), epoch_index=0)
-        muon = scheduled_learning_rates(BaselineConfig(optimizer="sgd_momentum_muon"), epoch_index=0)
+        kwargs = {"update_index": 0, "total_steps": 300, "steps_per_epoch": 10}
+        sgd = scheduled_learning_rates(
+            BaselineConfig(optimizer="sgd_momentum"), **kwargs
+        )
+        adamw = scheduled_learning_rates(
+            BaselineConfig(optimizer="adamw"), **kwargs
+        )
+        muon = scheduled_learning_rates(
+            BaselineConfig(optimizer="sgd_momentum_muon"), **kwargs
+        )
         self.assertEqual(set(sgd), {"primary"})
         self.assertEqual(set(adamw), {"primary"})
         self.assertEqual(set(muon), {"primary", "auxiliary"})
