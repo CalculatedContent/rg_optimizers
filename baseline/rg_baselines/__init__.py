@@ -1,4 +1,8 @@
-"""Clean optimizer/model baselines for RG optimizer experiments."""
+"""Clean optimizer/model baselines for RG optimizer experiments.
+
+Plotting is imported lazily so the numerical package and its tests do not
+require Matplotlib until a notebook actually requests a figure.
+"""
 
 from .config import BaselineConfig
 from .diagnostics import (
@@ -19,7 +23,6 @@ from .optimizers import (
     set_scheduled_learning_rates,
     warmup_cosine_learning_rate,
 )
-from .plotting import plot_all, plot_all_replicates
 from .replicates import (
     DEFAULT_BASELINE_SEEDS,
     BaselineReplicateResult,
@@ -29,6 +32,19 @@ from .replicates import (
 from .results import BaselineResult, validate_result
 from .runner import run_baseline
 from .statistics import student_t_critical_95, summarize_numeric_metrics
+
+
+def plot_all(*args, **kwargs):
+    from .plotting import plot_all as implementation
+
+    return implementation(*args, **kwargs)
+
+
+def plot_all_replicates(*args, **kwargs):
+    from .plotting import plot_all_replicates as implementation
+
+    return implementation(*args, **kwargs)
+
 
 __all__ = [
     "BaselineConfig",
