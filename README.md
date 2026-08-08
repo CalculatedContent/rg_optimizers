@@ -6,13 +6,16 @@ program.
 ## Reproducible baselines
 
 [`baseline/`](baseline) contains the unmodified reference experiments used to
-evaluate RG optimizer variants. Each reference has been reviewed at two levels:
+evaluate RG optimizer variants. Each reference has been reviewed at three
+levels:
 
 - [`baseline/BASELINE_RECIPE_AUDIT.md`](baseline/BASELINE_RECIPE_AUDIT.md):
   data, model, initialization, optimizer, and schedule choices;
 - [`baseline/BASELINE_EXECUTION_REVIEW.md`](baseline/BASELINE_EXECUTION_REVIEW.md):
   notebook execution, restart state, RNG isolation, checkpoint selection,
-  uncertainty, and automated tests.
+  uncertainty, and automated tests;
+- [`baseline/FINAL_BASELINE_QUALIFICATION.md`](baseline/FINAL_BASELINE_QUALIFICATION.md):
+  bounded validation-only hyperparameter search and configuration freezing.
 
 | Baseline | Model / data | Reference optimizers | Primary purpose |
 | --- | --- | --- | --- |
@@ -27,6 +30,11 @@ select hyperparameters and best checkpoints. Protected test measurements never
 change optimization, schedules, stopping, or checkpoint selection. Three-seed
 intervals are two-sided 95% Student-t intervals across runs; layers, matrices,
 checkpoints, and fit points are not counted as extra replicates.
+
+A committed hyperparameter point is the source-backed center of a bounded
+candidate neighborhood. It is called the **best baseline for the selected
+architecture and data** only after `rg_baselines.qualification` ranks complete
+runs by validation loss and writes a lock file before protected test comparison.
 
 Strict spectral measurements preserve direct output from:
 
@@ -59,12 +67,11 @@ the implementation is **Muon + auxiliary AdamW**.
 
 ### Small ViT / CIFAR-10
 
-`baseline/notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb` trains the same small
-Vision Transformer with SGD + Nesterov, AdamW, and Muon + auxiliary AdamW. The
-reference uses 300 epochs, stochastic depth, RandAugment, color jitter, random
-erasing, mixup, CutMix, label smoothing, gradient clipping, optimizer-specific
-warm-up/cosine schedules, validation-selected checkpoints, and restartable
-state.
+`baseline/notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb` imports the final
+reference runtime from `rg_baselines.vit_final`. In addition to the 300-epoch
+augmentation and regularization stack, it uses LayerNorm epsilon `1e-6`, fan-in
+patch-projection initialization, an explicit low-LR warm-up, cosine decay, and a
+10-epoch cooldown at the non-zero LR floor.
 
 The analysis gives every physical transformer matrix its own trajectory and
 computes each uncertainty interval from exactly the three complete runs.
@@ -78,10 +85,12 @@ Shakespeare. Exact document-disjoint 10M/1M/1M-token train/validation/test
 splits are shared across all optimizers. Dataset identity, revision, byte count,
 and SHA-256 are verified before cached data are reused.
 
-The suite records train/validation/test next-token loss, accuracy, perplexity,
-held-out continuation BLEU, learning-rate trajectories, and direct per-matrix
-`alpha`, `ERG_gap`, and `num_traps`. Full restart checkpoints include MPS RNG
-state where supported.
+Protocol v3 uses an eight-pass horizon, 64 common fixed validation/test batches,
+64 common held-out BLEU continuations, update-level warm-up/cosine schedules,
+and LR logging aligned with the update that produced each checkpoint. The suite
+records train/validation/test loss, accuracy, perplexity, BLEU, and direct
+per-matrix `alpha`, `ERG_gap`, and `num_traps`. Full restart checkpoints and
+randomized diagnostics preserve MPS RNG state where supported.
 
 MacBook quick start:
 
@@ -115,10 +124,10 @@ six principal hidden matrices in each block.
 ## Automated validation
 
 `.github/workflows/baseline-tests.yml` runs executable core-baseline and
-one-head nanoGPT tests on CPU. The existing source workflow compiles Python and
-parses notebook code cells. These bounded tests cover optimizer updates,
-schedules, parameter partitions, data integrity, restart state, validation-only
-selection, and statistical invariants. They do not replace the full
+one-head nanoGPT tests on CPU. The source workflow compiles Python and parses
+notebook code cells. These bounded tests cover optimizer updates, schedules,
+parameter partitions, data integrity, restart state, validation-only selection,
+qualification locks, and statistical invariants. They do not replace the full
 long-horizon target-hardware campaigns.
 
 ## Optimizer variants
