@@ -1,12 +1,17 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 import pandas as pd
+import torch
 
 from rg_baselines.vit_analysis import (
     summarize_layer_metric,
     terminal_summary,
     validation_selected_rows,
 )
+from rg_baselines.vit_cifar10 import ViTBaselineConfig
+from rg_baselines.vit_runtime import _ensure_best_checkpoint
 
 
 class ViTAnalysisTests(unittest.TestCase):
@@ -82,6 +87,53 @@ class ViTAnalysisTests(unittest.TestCase):
         ]
         self.assertAlmostEqual(float(selected_accuracy.iloc[0]["mean"]), 0.5)
         self.assertEqual(int(selected_accuracy.iloc[0]["n"]), 3)
+
+    def test_epoch_zero_validation_optimum_gets_a_real_best_checkpoint(self):
+        config = ViTBaselineConfig(
+            epochs=2,
+            validation_size=100,
+            embed_dim=16,
+            depth=1,
+            num_heads=1,
+            sgd_warmup_epochs=1,
+            adamw_warmup_epochs=1,
+            muon_warmup_epochs=1,
+            ww_min_evals=2,
+        )
+        history = pd.DataFrame(
+            [
+                {
+                    "epoch": 0,
+                    "validation_loss": 0.5,
+                    "test_loss": 0.6,
+                    "test_accuracy": 0.2,
+                },
+                {
+                    "epoch": 1,
+                    "validation_loss": 0.7,
+                    "test_loss": 0.8,
+                    "test_accuracy": 0.1,
+                },
+            ]
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            run_dir = Path(temporary)
+            path = _ensure_best_checkpoint(
+                run_dir,
+                history,
+                optimizer_name="adamw",
+                seed=17,
+                config=config,
+            )
+            payload = torch.load(path, map_location="cpu", weights_only=False)
+            self.assertEqual(int(payload["epoch"]), 0)
+            self.assertAlmostEqual(float(payload["best_validation_loss"]), 0.5)
+            self.assertEqual(
+                payload["fingerprint"],
+                __import__("rg_baselines.vit_cifar10", fromlist=["_fingerprint"])._fingerprint(
+                    "adamw", 17, config
+                ),
+            )
 
 
 if __name__ == "__main__":
