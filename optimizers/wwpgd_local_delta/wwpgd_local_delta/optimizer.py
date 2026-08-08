@@ -118,6 +118,12 @@ class LocalDeltaECSOptimizer:
             "optimizer_state_adjusted": bool(adjusted),
             "optimizer_state_adjusted_keys": adjusted,
             "optimizer_state_orthogonal_fractions": state_fractions,
+            # Provenance / dose identity (logging only; defaults unchanged).
+            "actuator_id": "wwpgd_local_delta",
+            "ecs_backend": "self_consistent_local_geometry",
+            "dose_definition": "removed_fraction_of_base_epoch_delta_outside_ecs",
+            "dose_value": float(result.removed_fraction_of_base),
+            "is_first_apply": int(epoch) == int(self.config.warmup_epochs),
         }
         for key in (
             "correction_fraction", "ecs_rank", "ecs_fraction", "normalization_dimension",

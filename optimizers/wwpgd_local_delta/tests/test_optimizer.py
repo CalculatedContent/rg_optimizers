@@ -47,6 +47,14 @@ class WrapperTests(unittest.TestCase):
             self.assertLess(row["damping_error"], 1e-5)
             self.assertLess(row["pythagorean_error"], 1e-5)
             self.assertFalse(row["optimizer_state_adjusted"])
+            self.assertEqual(row["actuator_id"], "wwpgd_local_delta")
+            self.assertEqual(row["ecs_backend"], "self_consistent_local_geometry")
+            self.assertEqual(
+                row["dose_definition"],
+                "removed_fraction_of_base_epoch_delta_outside_ecs",
+            )
+            self.assertEqual(row["dose_value"], row["removed_fraction_of_base"])
+            self.assertIn("is_first_apply", row)
 
     def test_adamw_wrapper(self):
         self._run_once(
