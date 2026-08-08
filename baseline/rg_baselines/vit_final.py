@@ -203,6 +203,9 @@ def _validation_selected_epoch(history: pd.DataFrame) -> int:
     return int(candidates.iloc[0]["epoch"])
 
 
+_ORIGINAL_ENSURE_BEST = hardened._ensure_best_checkpoint
+
+
 def _ensure_validation_best(
     run_dir: Path,
     history: pd.DataFrame,
@@ -211,7 +214,13 @@ def _ensure_validation_best(
     seed: int,
     config: ViTBaselineConfig,
 ) -> Path:
-    """Repair the epoch-zero edge case before delegating to the hardened check."""
+    """Repair and verify the validation-selected checkpoint.
+
+    The function is independently correct when called by tests or tools outside
+    ``run_vit_baseline``: reconstruction is forced through the final model and
+    schedule even when the lower-level compatibility modules are not already
+    patched.
+    """
 
     selected_epoch = _validation_selected_epoch(history)
     best_path = Path(run_dir) / "checkpoint_best.pt"
@@ -219,16 +228,22 @@ def _ensure_validation_best(
         payload = torch.load(best_path, map_location="cpu", weights_only=False)
         if int(payload.get("epoch", -1)) != 0:
             best_path.unlink()
-    return _ORIGINAL_ENSURE_BEST(
-        run_dir,
-        history,
-        optimizer_name=optimizer_name,
-        seed=seed,
-        config=config,
-    )
 
-
-_ORIGINAL_ENSURE_BEST = hardened._ensure_best_checkpoint
+    original_model = core.SmallViT
+    original_schedule = core.set_learning_rates
+    core.SmallViT = SmallViT
+    core.set_learning_rates = set_learning_rates
+    try:
+        return _ORIGINAL_ENSURE_BEST(
+            run_dir,
+            history,
+            optimizer_name=optimizer_name,
+            seed=seed,
+            config=config,
+        )
+    finally:
+        core.SmallViT = original_model
+        core.set_learning_rates = original_schedule
 
 
 def run_vit_baseline(
