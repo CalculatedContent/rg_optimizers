@@ -30,6 +30,7 @@ from . import nanochat_reference as reference
 
 NANOCHAT_RUNTIME_PATCH_VERSION = 3
 DISABLE_COMPILE_ENV = "NANOCHAT_DISABLE_COMPILE"
+MPS_FALLBACK_ENV = "PYTORCH_ENABLE_MPS_FALLBACK"
 _COMPILE_HELPER = "_nanochat_compile_if_enabled"
 
 
@@ -126,6 +127,7 @@ def _runtime_policy(
         "nproc_per_node": int(nproc_per_node),
         "model_compile_enabled": compile_enabled,
         "optimizer_kernel_compile_enabled": compile_enabled,
+        "mps_cpu_fallback_enabled": str(device_type) == "mps",
         "architecture_modified": False,
         "optimizer_math_modified": False,
     }
@@ -179,10 +181,16 @@ def run_seed(
     policy_path = seed_dir / "runtime_policy.json"
     _write_or_validate_policy(policy_path, policy)
 
-    previous = os.environ.get(DISABLE_COMPILE_ENV)
+    previous_compile = os.environ.get(DISABLE_COMPILE_ENV)
+    previous_fallback = os.environ.get(MPS_FALLBACK_ENV)
     os.environ[DISABLE_COMPILE_ENV] = (
         "0" if policy["model_compile_enabled"] else "1"
     )
+    if resolved == "mps":
+        # This is read by the fresh training subprocess before PyTorch import.
+        # Native MPS kernels remain preferred; unsupported individual operations
+        # may fall back to CPU instead of terminating a long reference run.
+        os.environ[MPS_FALLBACK_ENV] = "1"
     try:
         return reference.run_seed(
             Path(checkout_dir),
@@ -195,10 +203,14 @@ def run_seed(
             resume=resume,
         )
     finally:
-        if previous is None:
+        if previous_compile is None:
             os.environ.pop(DISABLE_COMPILE_ENV, None)
         else:
-            os.environ[DISABLE_COMPILE_ENV] = previous
+            os.environ[DISABLE_COMPILE_ENV] = previous_compile
+        if previous_fallback is None:
+            os.environ.pop(MPS_FALLBACK_ENV, None)
+        else:
+            os.environ[MPS_FALLBACK_ENV] = previous_fallback
 
 
 def _capture_rng_state() -> dict[str, Any]:
