@@ -31,6 +31,7 @@ from rg_nanogpt_one_head.data import (
     validate_prepared_data,
     write_token_splits,
 )
+from rg_nanogpt_one_head.evaluation import fixed_probe
 from rg_nanogpt_one_head.model import GPT, GPTConfig, transformer_matrix_items
 from rg_nanogpt_one_head.optimizers import make_optimizer_handles, optimizer_step
 from rg_nanogpt_one_head.spectral import summarize_spectral_frame
@@ -143,13 +144,57 @@ def write_tiny_data(path: Path, cfg: dict) -> None:
 
 def test_reference_protocol_is_one_block_one_head_and_has_required_ww_flags():
     cfg = reference_config()
+    assert cfg["protocol"]["version"] == 3
     assert cfg["model"]["n_layer"] == 1
     assert cfg["model"]["n_head"] == 1
     assert cfg["dataset"]["name"] == "HuggingFaceFW/fineweb-edu"
     assert cfg["weightwatcher"]["ERG"] is True
     assert cfg["weightwatcher"]["randomize"] is True
-    assert max_steps(cfg) == 6104
-    assert list(epoch_step_map(cfg).values()) == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+    assert cfg["training"]["target_epochs"] == 8.0
+    assert cfg["training"]["eval_batches"] == 64
+    assert cfg["evaluation"]["bleu_examples"] == 64
+    assert max_steps(cfg) == 9766
+    assert list(epoch_step_map(cfg).values()) == [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+    ]
+
+
+def test_probe_identity_is_fixed_across_training_seeds(tmp_path):
+    data = np.memmap(
+        tmp_path / "probe.bin",
+        dtype=np.uint16,
+        mode="w+",
+        shape=(1024,),
+    )
+    data[:] = np.arange(1024, dtype=np.uint16)
+    data.flush()
+    cfg = reference_config()
+    probe_seed = int(cfg["evaluation"]["validation_probe_seed"])
+    left = fixed_probe(
+        data,
+        batch_size=4,
+        block_size=16,
+        n_batches=4,
+        seed=probe_seed,
+    )
+    right = fixed_probe(
+        data,
+        batch_size=4,
+        block_size=16,
+        n_batches=4,
+        seed=probe_seed,
+    )
+    for (left_x, left_y), (right_x, right_y) in zip(left, right, strict=True):
+        assert torch.equal(left_x, right_x)
+        assert torch.equal(left_y, right_y)
 
 
 def test_model_inventory_and_all_optimizer_updates_are_finite():
@@ -217,7 +262,12 @@ def test_document_disjoint_writer_produces_exact_verified_splits(tmp_path):
     assert metadata["splits"] == {"train": 4, "val": 3, "test": 2}
     cfg = tiny_config("adamw")
     cfg["dataset"].update(
-        {"train_tokens": 4, "val_tokens": 3, "test_tokens": 2, "revision": "unit"}
+        {
+            "train_tokens": 4,
+            "val_tokens": 3,
+            "test_tokens": 2,
+            "revision": "unit",
+        }
     )
     validate_prepared_data(tmp_path, cfg)
 
@@ -252,7 +302,8 @@ def test_checkpoint_roundtrip_restores_optimizer_and_generator(tmp_path):
     loss.backward()
     optimizer_step(handles)
     before = {
-        name: tensor.detach().clone() for name, tensor in model.state_dict().items()
+        name: tensor.detach().clone()
+        for name, tensor in model.state_dict().items()
     }
     path = save_training_checkpoint(
         tmp_path / "checkpoint.pt",
@@ -291,7 +342,10 @@ def test_spectral_summary_keeps_direct_trap_and_erg_fields():
         }
     )
     summary = summarize_spectral_frame(
-        frame, step=10, tokens_seen=80, epoch=0.5
+        frame,
+        step=10,
+        tokens_seen=80,
+        epoch=0.5,
     )
     assert summary["alpha_median"] == pytest.approx(2.2)
     assert summary["ERG_gap_mean"] == pytest.approx(1.0)
@@ -309,7 +363,9 @@ def test_student_t_interval_is_run_level():
 
 @pytest.mark.parametrize("optimizer_name", ["sgd_momentum", "adamw", "muon"])
 def test_tiny_cpu_training_writes_restart_and_epoch_artifacts(
-    tmp_path, monkeypatch, optimizer_name
+    tmp_path,
+    monkeypatch,
+    optimizer_name,
 ):
     cfg = tiny_config(optimizer_name)
     data_root = tmp_path / "data"
@@ -350,7 +406,10 @@ def test_tiny_cpu_training_writes_restart_and_epoch_artifacts(
     epoch_metrics = pd.read_csv(run_dir / "epoch_metrics.csv")
     assert len(epoch_metrics) >= 1
     assert epoch_metrics["test_monitoring_only"].eq(1).all()
-    assert all(Path(path).is_file() for path in epoch_metrics["checkpoint_path"])
+    assert float(epoch_metrics.iloc[0]["primary_lr"]) == 0.0
+    assert all(
+        Path(path).is_file() for path in epoch_metrics["checkpoint_path"]
+    )
 
 
 def test_notebooks_are_valid_and_expose_requested_metrics():
