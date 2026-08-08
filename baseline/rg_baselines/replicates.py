@@ -20,12 +20,20 @@ DEFAULT_BASELINE_SEEDS: tuple[int, ...] = (1337, 2027, 31415)
 
 REQUIRED_PERFORMANCE_METRICS: tuple[str, ...] = (
     "train_loss",
+    "validation_loss",
     "test_loss",
     "train_accuracy",
+    "validation_accuracy",
     "test_accuracy",
+    "primary_lr",
 )
 PERFORMANCE_METRICS: tuple[str, ...] = (
     *REQUIRED_PERFORMANCE_METRICS,
+    "auxiliary_lr",
+    "validation_loss_gap",
+    "test_loss_gap",
+    "validation_accuracy_gap",
+    "test_accuracy_gap",
     "online_train_loss",
     "online_train_accuracy",
     "mean_gradient_norm_before_clip",
@@ -98,37 +106,28 @@ class BaselineReplicateResult:
         return len(self.seeds)
 
     def save(self, output_dir: str | Path) -> None:
-        """Save all seed-level rows plus aggregate 95% confidence intervals."""
-
         output = Path(output_dir)
         output.mkdir(parents=True, exist_ok=True)
         self.performance.to_csv(
-            output / "performance_by_epoch_and_seed.csv",
-            index=False,
+            output / "performance_by_epoch_and_seed.csv", index=False
         )
         self.spectral_metrics.to_csv(
-            output / "spectral_metrics_by_epoch_layer_and_seed.csv",
-            index=False,
+            output / "spectral_metrics_by_epoch_layer_and_seed.csv", index=False
         )
         self.weightwatcher_details.to_csv(
-            output / "weightwatcher_details_by_epoch_and_seed.csv",
-            index=False,
+            output / "weightwatcher_details_by_epoch_and_seed.csv", index=False
         )
         self.optimizer_groups.to_csv(
-            output / "optimizer_groups_by_epoch_and_seed.csv",
-            index=False,
+            output / "optimizer_groups_by_epoch_and_seed.csv", index=False
         )
         self.combined_metrics.to_csv(
-            output / "combined_metrics_by_epoch_layer_and_seed.csv",
-            index=False,
+            output / "combined_metrics_by_epoch_layer_and_seed.csv", index=False
         )
         self.performance_summary.to_csv(
-            output / "performance_summary_95ci.csv",
-            index=False,
+            output / "performance_summary_95ci.csv", index=False
         )
         self.spectral_summary.to_csv(
-            output / "spectral_summary_95ci.csv",
-            index=False,
+            output / "spectral_summary_95ci.csv", index=False
         )
         manifest = {
             "optimizer": self.config_template.optimizer,
@@ -137,14 +136,17 @@ class BaselineReplicateResult:
             "replicate_count": self.replicate_count,
             "confidence": self.confidence,
             "error_bar_definition": (
-                "two-sided 95% Student-t confidence interval across independent "
-                "complete training runs"
+                "two-sided 95% Student-t confidence interval across "
+                "independent complete training runs"
+            ),
+            "selection_policy": (
+                "validation loss selects checkpoint_best.pt; official test "
+                "metrics are monitoring-only"
             ),
             "config_template": asdict(self.config_template),
         }
         (output / "replicate_manifest.json").write_text(
-            json.dumps(manifest, indent=2),
-            encoding="utf-8",
+            json.dumps(manifest, indent=2), encoding="utf-8"
         )
 
 
@@ -163,8 +165,6 @@ def _tag_frame(
 
 
 def validate_replicate_result(result: BaselineReplicateResult) -> None:
-    """Require every epoch/layer/metric to contain every requested seed."""
-
     expected_seeds = set(result.seeds)
     if len(expected_seeds) != result.replicate_count:
         raise RuntimeError("replicate seeds are not unique")
@@ -176,12 +176,13 @@ def validate_replicate_result(result: BaselineReplicateResult) -> None:
     for epoch in expected_epochs:
         present = set(
             performance.loc[
-                performance["epoch"].astype(int).eq(epoch),
-                "seed",
+                performance["epoch"].astype(int).eq(epoch), "seed"
             ].astype(int)
         )
         if present != expected_seeds:
             raise RuntimeError(f"epoch {epoch} is missing performance seeds")
+    if not performance["test_monitoring_only"].astype(int).eq(1).all():
+        raise RuntimeError("MNIST test rows must be monitoring-only")
 
     spectral = result.spectral_metrics[
         result.spectral_metrics["status"].astype(str).eq("ok")
@@ -225,8 +226,10 @@ def run_baseline_replicates(
     output_dir: Optional[str | Path] = None,
     progress: bool = True,
     confidence: float = 0.95,
+    resume: bool = True,
+    overwrite: bool = False,
 ) -> BaselineReplicateResult:
-    """Run one optimizer baseline over independent seeds."""
+    """Run one optimizer baseline over independent complete trajectories."""
 
     ordered_seeds = tuple(int(seed) for seed in seeds)
     if len(ordered_seeds) < 2:
@@ -245,9 +248,7 @@ def run_baseline_replicates(
     for replicate_index, seed in enumerate(ordered_seeds):
         run_config = replace(config, seed=seed)
         seed_output = (
-            root / "seeds" / f"seed_{seed}"
-            if root is not None
-            else None
+            root / "seeds" / f"seed_{seed}" if root is not None else None
         )
         if progress:
             print(
@@ -260,6 +261,8 @@ def run_baseline_replicates(
             device=device,
             output_dir=seed_output,
             progress=progress,
+            resume=resume,
+            overwrite=overwrite,
         )
         results.append(run)
         performance_frames.append(
