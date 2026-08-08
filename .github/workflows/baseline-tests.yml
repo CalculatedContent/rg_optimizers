@@ -22,7 +22,7 @@ concurrency:
 jobs:
   core-baselines:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,19 +32,21 @@ jobs:
           cache-dependency-path: |
             baseline/pyproject.toml
             baseline/requirements.txt
-      - name: Install core baseline package and test dependencies
+      - name: Install CPU PyTorch and the complete baseline test environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ./baseline
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e './baseline[experiment]'
           python -m pip install nbformat
       - name: Run core baseline tests
         env:
           PYTHONPATH: baseline
+          MPLBACKEND: Agg
         run: python -m unittest discover -s baseline/tests -v
 
   one-head-nanogpt:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,11 +54,13 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: baseline/nanogpt_one_head/pyproject.toml
-      - name: Install one-head package and test dependencies
+      - name: Install CPU PyTorch and one-head test dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e './baseline/nanogpt_one_head[dev]'
       - name: Run one-head tests
         env:
           PYTHONPATH: baseline/nanogpt_one_head/src
+          MPLBACKEND: Agg
         run: pytest -q baseline/nanogpt_one_head/tests
