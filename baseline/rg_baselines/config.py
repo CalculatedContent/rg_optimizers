@@ -123,15 +123,15 @@ class BaselineConfig:
                     f"{name} peak/floor learning rates are inconsistent"
                 )
 
-        for name, value in {
-            "sgd_warmup_epochs": self.sgd_warmup_epochs,
-            "adamw_warmup_epochs": self.adamw_warmup_epochs,
-            "muon_warmup_epochs": self.muon_warmup_epochs,
-        }.items():
-            if value < 0 or value >= self.epochs:
-                raise ValueError(
-                    f"{name} must satisfy 0 <= warmup < epochs"
-                )
+        # Only the selected optimizer's warm-up constrains this run. Keeping
+        # unused profile defaults in the same dataclass lets bounded smoke tests
+        # shorten the horizon without rewriting unrelated optimizer fields.
+        selected_warmup = self.warmup_epochs
+        if selected_warmup < 0 or selected_warmup >= self.epochs:
+            raise ValueError(
+                "the selected optimizer warm-up must satisfy "
+                "0 <= warmup < epochs"
+            )
 
         for name, value in {
             "sgd_weight_decay": self.sgd_weight_decay,
