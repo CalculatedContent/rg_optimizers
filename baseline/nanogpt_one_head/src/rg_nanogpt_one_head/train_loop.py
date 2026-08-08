@@ -66,9 +66,24 @@ def execute_training_loop(
     last_clipped = False
     started = time.time()
 
+    # CSV rows describe the model state at `completed_steps`, so the recorded
+    # LR must be the LR used by the update that produced that state. At step
+    # zero there has been no update. On resume, optimizer state carries the LR
+    # used by the most recently completed update.
+    last_update_lrs = {
+        "primary": 0.0,
+        "auxiliary": (
+            0.0 if any(handle.role == "auxiliary" for handle in handles)
+            else float("nan")
+        ),
+    }
+    if start_step > 0:
+        for handle in handles:
+            last_update_lrs[handle.role] = float(handle.lr)
+
     for completed_steps in range(start_step, total_steps + 1):
         schedule_index = min(completed_steps, total_steps - 1)
-        lrs = set_learning_rates(
+        next_update_lrs = set_learning_rates(
             handles,
             update_index=schedule_index,
             total_steps=total_steps,
@@ -76,7 +91,9 @@ def execute_training_loop(
         )
         epoch_due = completed_steps in epoch_steps
         evaluation_due = (
-            completed_steps % int(cfg["training"]["eval_interval_steps"]) == 0
+            completed_steps
+            % int(cfg["training"]["eval_interval_steps"])
+            == 0
             or epoch_due
             or completed_steps == total_steps
         )
@@ -132,8 +149,12 @@ def execute_training_loop(
                 "epoch": float(actual_epoch),
                 "elapsed_sec": float(elapsed),
                 "tokens_per_sec": tokens_seen / max(elapsed, 1e-9),
-                "primary_lr": float(lrs.get("primary", float("nan"))),
-                "auxiliary_lr": float(lrs.get("auxiliary", float("nan"))),
+                "primary_lr": float(
+                    last_update_lrs.get("primary", float("nan"))
+                ),
+                "auxiliary_lr": float(
+                    last_update_lrs.get("auxiliary", float("nan"))
+                ),
                 "train_loss": float(train_metrics["loss"]),
                 "train_perplexity": float(train_metrics["perplexity"]),
                 "train_accuracy": float(train_metrics["accuracy"]),
@@ -144,14 +165,20 @@ def execute_training_loop(
                 "test_perplexity": float(test_metrics["perplexity"]),
                 "test_accuracy": float(test_metrics["accuracy"]),
                 "test_bleu": float(bleu_metrics["bleu"]),
-                "val_generalization_gap": float(val_metrics["loss"] - train_metrics["loss"]),
-                "test_generalization_gap": float(test_metrics["loss"] - train_metrics["loss"]),
+                "val_generalization_gap": float(
+                    val_metrics["loss"] - train_metrics["loss"]
+                ),
+                "test_generalization_gap": float(
+                    test_metrics["loss"] - train_metrics["loss"]
+                ),
                 "grad_norm_pre_clip": float(last_grad_pre),
                 "grad_norm_post_clip": float(last_grad_post),
                 "gradient_clipped": int(last_clipped),
                 "weight_norm": float(weight_norm),
                 "update_norm_since_eval": float(delta_norm),
-                "update_to_weight_ratio": float(delta_norm / max(weight_norm, 1e-30)),
+                "update_to_weight_ratio": float(
+                    delta_norm / max(weight_norm, 1e-30)
+                ),
                 "mps_current_allocated_mb": float(current_mps),
                 "mps_driver_allocated_mb": float(driver_mps),
             }
@@ -193,27 +220,41 @@ def execute_training_loop(
                 if progress:
                     print(
                         "[one-head-ww] "
-                        f"optimizer={optimizer_name} seed={seed} epoch={nominal_epoch:.1f} "
+                        f"optimizer={optimizer_name} seed={seed} "
+                        f"epoch={nominal_epoch:.1f} "
                         f"alpha={ww_summary.get('alpha_median', float('nan')):.3f} "
                         f"ERG_gap={ww_summary.get('ERG_gap_median', float('nan')):.3f} "
                         f"num_traps={ww_summary.get('num_traps_mean', float('nan')):.2f}",
                         flush=True,
                     )
-                if bool(cfg["runtime"].get("empty_mps_cache_after_weightwatcher", True)):
+                if bool(
+                    cfg["runtime"].get(
+                        "empty_mps_cache_after_weightwatcher", True
+                    )
+                ):
                     empty_mps_cache(device)
 
             if progress:
                 remaining = total_steps - completed_steps
                 rate = completed_steps / max(elapsed, 1e-9)
                 eta = remaining / rate if rate > 0 else float("nan")
-                eta_text = "unknown" if not math.isfinite(eta) else f"{eta/60:.1f}m"
+                eta_text = (
+                    "unknown"
+                    if not math.isfinite(eta)
+                    else f"{eta / 60:.1f}m"
+                )
                 print(
                     "[one-head-train] "
-                    f"optimizer={optimizer_name} seed={seed} step={completed_steps}/{total_steps} "
-                    f"epoch={actual_epoch:.3f} lr={lrs.get('primary', float('nan')):.3e} "
-                    f"train_loss={train_metrics['loss']:.4f} val_loss={val_metrics['loss']:.4f} "
+                    f"optimizer={optimizer_name} seed={seed} "
+                    f"step={completed_steps}/{total_steps} "
+                    f"epoch={actual_epoch:.3f} "
+                    f"last_lr={last_update_lrs.get('primary', float('nan')):.3e} "
+                    f"next_lr={next_update_lrs.get('primary', float('nan')):.3e} "
+                    f"train_loss={train_metrics['loss']:.4f} "
+                    f"val_loss={val_metrics['loss']:.4f} "
                     f"val_ppl={val_metrics['perplexity']:.2f} "
-                    f"val_acc={100*val_metrics['accuracy']:.2f}% eta={eta_text}",
+                    f"val_acc={100 * val_metrics['accuracy']:.2f}% "
+                    f"eta={eta_text}",
                     flush=True,
                 )
 
@@ -244,10 +285,13 @@ def execute_training_loop(
         last_grad_post = float(grad_post_tensor.detach().cpu())
         last_clipped = bool(last_grad_pre > clip) if clip > 0 else False
         optimizer_step(handles)
+        last_update_lrs = dict(next_update_lrs)
 
         new_step = completed_steps + 1
         checkpoint_due = (
-            new_step % int(cfg["training"]["checkpoint_interval_steps"]) == 0
+            new_step
+            % int(cfg["training"]["checkpoint_interval_steps"])
+            == 0
             or new_step in epoch_steps
             or new_step == total_steps
         )
