@@ -148,22 +148,24 @@ def test_reference_protocol_is_one_block_one_head_and_has_required_ww_flags():
     assert cfg["model"]["n_layer"] == 1
     assert cfg["model"]["n_head"] == 1
     assert cfg["dataset"]["name"] == "HuggingFaceFW/fineweb-edu"
+    assert cfg["dataset"]["train_tokens"] == 80_000_000
     assert cfg["weightwatcher"]["ERG"] is True
     assert cfg["weightwatcher"]["randomize"] is True
-    assert cfg["training"]["target_epochs"] == 8.0
+    assert cfg["training"]["target_epochs"] == 1.0
+    assert cfg["training"]["epoch_interval"] == 0.125
     assert cfg["training"]["eval_batches"] == 64
     assert cfg["evaluation"]["bleu_examples"] == 64
     assert max_steps(cfg) == 9766
     assert list(epoch_step_map(cfg).values()) == [
         0.0,
+        0.125,
+        0.25,
+        0.375,
+        0.5,
+        0.625,
+        0.75,
+        0.875,
         1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
     ]
 
 
