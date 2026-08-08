@@ -2,6 +2,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from rg_baselines.nanochat_portable import (
+    _install_compile_policy_patch,
+    _write_or_validate_policy,
+    compile_enabled_for_device,
+)
 from rg_baselines.nanochat_reference import (
     NanoChatD12Config,
     NanoChatMacConfig,
@@ -22,10 +27,23 @@ class NanoChatReferenceTests(unittest.TestCase):
         return checkout
 
     def test_auto_profile_separates_canonical_and_mac_baselines(self):
-        self.assertIsInstance(resolve_profile("auto", device_type="cuda"), NanoChatD12Config)
-        self.assertIsInstance(resolve_profile("auto", device_type="mps"), NanoChatMacConfig)
-        self.assertEqual(resolve_profile("mac", device_type="mps").window_pattern, "L")
+        self.assertIsInstance(
+            resolve_profile("auto", device_type="cuda"), NanoChatD12Config
+        )
+        self.assertIsInstance(
+            resolve_profile("auto", device_type="mps"), NanoChatMacConfig
+        )
+        self.assertEqual(
+            resolve_profile("mac", device_type="mps").window_pattern, "L"
+        )
         self.assertEqual(resolve_profile("d12", device_type="cuda").depth, 12)
+
+    def test_compile_policy_keeps_cuda_and_disables_non_cuda(self):
+        self.assertTrue(compile_enabled_for_device("cuda"))
+        self.assertFalse(compile_enabled_for_device("mps"))
+        self.assertFalse(compile_enabled_for_device("cpu"))
+        with self.assertRaises(ValueError):
+            compile_enabled_for_device("xpu")
 
     def test_mps_command_is_single_process_and_uses_native_profile(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -38,7 +56,9 @@ class NanoChatReferenceTests(unittest.TestCase):
                 device_type="mps",
                 nproc_per_node=1,
             )
-            self.assertEqual(command[0], str(checkout / ".venv" / "bin" / "python"))
+            self.assertEqual(
+                command[0], str(checkout / ".venv" / "bin" / "python")
+            )
             joined = " ".join(command)
             self.assertIn("--device-type=mps", joined)
             self.assertIn("--depth=4", joined)
@@ -64,7 +84,9 @@ class NanoChatReferenceTests(unittest.TestCase):
                 nproc_per_node=8,
                 resume_from_step=250,
             )
-            self.assertEqual(command[0], str(checkout / ".venv" / "bin" / "torchrun"))
+            self.assertEqual(
+                command[0], str(checkout / ".venv" / "bin" / "torchrun")
+            )
             joined = " ".join(command)
             self.assertIn("--nproc_per_node=8", joined)
             self.assertIn("--depth=12", joined)
@@ -74,16 +96,14 @@ class NanoChatReferenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             config = NanoChatD12Config()
-            directory = (
-                root
-                / "base_checkpoints"
-                / "rg_d12_seed17"
-            )
+            directory = root / "base_checkpoints" / "rg_d12_seed17"
             directory.mkdir(parents=True)
             (directory / "model_000250.pt").write_bytes(b"model")
             (directory / "meta_000250.json").write_text("{}")
             for rank in range(7):
-                (directory / f"optim_000250_rank{rank}.pt").write_bytes(b"optim")
+                (directory / f"optim_000250_rank{rank}.pt").write_bytes(
+                    b"optim"
+                )
             self.assertIsNone(
                 find_resume_step(
                     root,
@@ -120,6 +140,39 @@ class NanoChatReferenceTests(unittest.TestCase):
             self.assertIn("NANOCHAT_SEED", text)
             self.assertIn("torch.mps.manual_seed(seed)", text)
 
+    def test_compile_patch_is_exact_idempotent_and_keeps_cuda_path(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            checkout = Path(temporary)
+            trainer = checkout / "scripts" / "base_train.py"
+            trainer.parent.mkdir(parents=True)
+            trainer.write_text(
+                "import os\nimport torch\n"
+                "orig_model = model # original, uncompiled model, for saving raw model state_dict and for inference/evaluation (because the shapes may change shape)\n"
+                "model = torch.compile(model, dynamic=False) # the inputs to model will never change shape so dynamic=False is safe\n"
+            )
+            _install_compile_policy_patch(checkout)
+            first = trainer.read_text()
+            _install_compile_policy_patch(checkout)
+            second = trainer.read_text()
+            self.assertEqual(first, second)
+            self.assertIn("NANOCHAT_DISABLE_COMPILE", first)
+            self.assertIn("model = orig_model", first)
+            self.assertIn("torch.compile(model, dynamic=False)", first)
+
+    def test_runtime_policy_rejects_silent_compile_policy_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "runtime_policy.json"
+            policy = {
+                "runtime_patch_version": 2,
+                "device_type": "mps",
+                "torch_compile_enabled": False,
+            }
+            _write_or_validate_policy(path, policy)
+            _write_or_validate_policy(path, policy)
+            changed = {**policy, "torch_compile_enabled": True}
+            with self.assertRaisesRegex(RuntimeError, "different runtime policy"):
+                _write_or_validate_policy(path, changed)
+
     def test_resumed_log_is_deduplicated_by_step(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "training.log"
@@ -136,7 +189,9 @@ class NanoChatReferenceTests(unittest.TestCase):
             metrics = collect_metrics([(17, path)], profile_name="mac_d4")
             self.assertEqual(metrics["step"].tolist(), [10, 11])
             self.assertAlmostEqual(float(metrics.iloc[0]["train_loss"]), 2.9)
-            self.assertAlmostEqual(float(metrics.iloc[0]["validation_bpb"]), 2.0)
+            self.assertAlmostEqual(
+                float(metrics.iloc[0]["validation_bpb"]), 2.0
+            )
 
 
 if __name__ == "__main__":
