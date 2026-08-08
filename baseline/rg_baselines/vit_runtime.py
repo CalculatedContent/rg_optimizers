@@ -2,8 +2,9 @@
 
 This wrapper preserves the audited training recipe while adding accelerator RNG
 state to checkpoints, isolating randomized WeightWatcher diagnostics from the
-training trajectory, skipping completed compatible runs, and writing explicit
-final versus validation-selected test summaries.
+training trajectory, skipping completed compatible runs, repairing the valid
+edge case in which the untrained epoch-zero model is validation-best, and
+writing explicit final versus validation-selected test summaries.
 """
 
 from __future__ import annotations
@@ -83,13 +84,27 @@ def _atomic_resave(payload: dict[str, Any], path: Path) -> None:
     temporary.replace(path)
 
 
-def _write_test_results(run_dir: Path, history: pd.DataFrame) -> None:
+def _add_accelerator_rng_to_checkpoint(path: Path) -> None:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    payload.update(_accelerator_rng_payload())
+    payload["schema_version"] = 2
+    _atomic_resave(payload, path)
+
+
+def _validation_selected_row(history: pd.DataFrame) -> pd.Series:
     if history.empty:
-        raise RuntimeError("cannot summarize an empty ViT history")
-    final = history.sort_values("epoch").iloc[-1]
-    selected = history.dropna(subset=["validation_loss"]).sort_values(
+        raise RuntimeError("cannot select a checkpoint from an empty ViT history")
+    candidates = history.dropna(subset=["validation_loss"]).sort_values(
         ["validation_loss", "epoch"], ascending=[True, True]
-    ).iloc[0]
+    )
+    if candidates.empty:
+        raise RuntimeError("ViT history has no finite validation loss")
+    return candidates.iloc[0]
+
+
+def _write_test_results(run_dir: Path, history: pd.DataFrame) -> None:
+    final = history.sort_values("epoch").iloc[-1]
+    selected = _validation_selected_row(history)
     payload = {
         "policy": (
             "validation loss selects checkpoint_best.pt; the official "
@@ -133,6 +148,63 @@ def _write_test_results(run_dir: Path, history: pd.DataFrame) -> None:
     temporary.replace(completion_path)
 
 
+def _ensure_best_checkpoint(
+    run_dir: Path,
+    history: pd.DataFrame,
+    *,
+    optimizer_name: str,
+    seed: int,
+    config: core.ViTBaselineConfig,
+) -> Path:
+    """Ensure `checkpoint_best.pt` represents the validation-selected epoch.
+
+    The core runner saves every post-training validation improvement. The only
+    unsaved candidate is epoch zero, because no optimizer update has occurred.
+    If epoch zero is genuinely best, reconstructing it is exact: the model is
+    initialized on CPU immediately after `set_seed(seed)`, and the data-loader
+    generator has not yet been consumed.
+    """
+
+    best_path = run_dir / "checkpoint_best.pt"
+    selected = _validation_selected_row(history)
+    selected_epoch = int(selected["epoch"])
+    if best_path.is_file():
+        payload = torch.load(best_path, map_location="cpu", weights_only=False)
+        if int(payload.get("epoch", -1)) != selected_epoch:
+            raise RuntimeError(
+                "checkpoint_best.pt does not match the validation-selected epoch"
+            )
+        return best_path
+    if selected_epoch != 0:
+        raise RuntimeError(
+            "checkpoint_best.pt is missing for a post-training validation optimum"
+        )
+
+    state = _capture_rng_state()
+    try:
+        core.set_seed(int(seed))
+        model = core.SmallViT(config)
+        optimizer = core.build_optimizer(model, optimizer_name, config)
+        core.set_learning_rates(optimizer, optimizer_name, config, 0)
+        train_generator = torch.Generator(device="cpu").manual_seed(int(seed))
+        core._save_checkpoint(
+            best_path,
+            epoch=0,
+            model=model,
+            optimizer=optimizer,
+            train_generator=train_generator,
+            config=config,
+            optimizer_name=optimizer_name,
+            seed=int(seed),
+            best_validation_loss=float(selected["validation_loss"]),
+            fingerprint=core._fingerprint(optimizer_name, int(seed), config),
+        )
+        _add_accelerator_rng_to_checkpoint(best_path)
+    finally:
+        _restore_rng_state(state)
+    return best_path
+
+
 def run_vit_baseline(
     optimizer_name: str,
     seed: int,
@@ -162,6 +234,15 @@ def run_vit_baseline(
             print(f"[vit-baseline] loading completed run: {run_dir}")
         history = pd.read_csv(history_path)
         spectral = pd.read_csv(spectral_path)
+        _ensure_best_checkpoint(
+            run_dir,
+            history,
+            optimizer_name=optimizer_name,
+            seed=int(seed),
+            config=config,
+        )
+        if not (run_dir / "checkpoint_latest.pt").is_file():
+            raise RuntimeError("completed ViT run is missing checkpoint_latest.pt")
         _write_test_results(run_dir, history)
         return history, spectral
 
@@ -179,10 +260,7 @@ def run_vit_baseline(
 
     def checkpoint_with_accelerator_rng(path, **kwargs):
         original_save(path, **kwargs)
-        payload = torch.load(path, map_location="cpu", weights_only=False)
-        payload.update(_accelerator_rng_payload())
-        payload["schema_version"] = 2
-        _atomic_resave(payload, path)
+        _add_accelerator_rng_to_checkpoint(path)
 
     def load_with_accelerator_rng(path, **kwargs):
         result = original_load(path, **kwargs)
@@ -209,9 +287,14 @@ def run_vit_baseline(
         core._save_checkpoint = original_save
         core._load_checkpoint = original_load
 
+    _ensure_best_checkpoint(
+        run_dir,
+        history,
+        optimizer_name=optimizer_name,
+        seed=int(seed),
+        config=config,
+    )
     _write_test_results(run_dir, history)
-    if not (run_dir / "checkpoint_best.pt").is_file():
-        raise RuntimeError("ViT run completed without checkpoint_best.pt")
     if not (run_dir / "checkpoint_latest.pt").is_file():
         raise RuntimeError("ViT run completed without checkpoint_latest.pt")
     return history, spectral
