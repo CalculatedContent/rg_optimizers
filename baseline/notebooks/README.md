@@ -54,11 +54,13 @@ The notebook has two explicit profiles from the pinned upstream implementation:
 - `d12`: canonical CUDA/server reference;
 - `mac_d4`: separate Apple-MPS development baseline.
 
-`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. The
-notebook creates the platform-correct environment, uses one process on MPS/CPU,
-resumes from complete model/metadata/optimizer-shard checkpoints, keeps profile
-caches separate, and performs offline WeightWatcher analysis only on principal
-hidden matrices.
+`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. CUDA
+retains the pinned trainer's `torch.compile` path; MPS/CPU runs the same model,
+initialization, optimizer, and schedules in eager mode. The notebook creates the
+platform-correct environment, uses one process on MPS/CPU, resumes from complete
+model/metadata/optimizer-shard checkpoints, locks the device/compile policy in
+`runtime_policy.json`, keeps profile caches separate, and performs offline
+WeightWatcher analysis only on principal hidden matrices.
 
 ## One-head nanoGPT
 
