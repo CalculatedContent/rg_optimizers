@@ -14,7 +14,7 @@ class BaselineConfig:
 
     The official 60,000-example MNIST training set is deterministically split
     into 55,000 optimization examples and 5,000 validation examples. The
-    official test set is monitoring-only. Every optimizer uses step-level
+    official test set is monitoring-only. Every optimizer uses update-level
     linear warm-up followed by cosine decay to a non-zero floor.
 
     ``sgd_momentum_muon`` remains the historical result-directory key; its
@@ -22,6 +22,8 @@ class BaselineConfig:
     """
 
     optimizer: OptimizerName
+    recipe_version: int = 3
+    initialization: str = "kaiming_uniform_relu_hidden_xavier_uniform_head_v1"
     seed: int = 1337
     epochs: int = 30
     batch_size: int = 128
@@ -87,6 +89,12 @@ class BaselineConfig:
             "sgd_momentum_muon",
         }:
             raise ValueError(f"Unknown optimizer: {self.optimizer!r}")
+        if self.recipe_version < 1:
+            raise ValueError("recipe_version must be positive")
+        if self.initialization != (
+            "kaiming_uniform_relu_hidden_xavier_uniform_head_v1"
+        ):
+            raise ValueError("unsupported MLP3 initialization contract")
         if self.epochs < 2:
             raise ValueError(
                 "epochs must be at least two for warm-up/cosine schedules"
