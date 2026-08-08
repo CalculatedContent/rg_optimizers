@@ -109,7 +109,8 @@ def summarize_across_seeds(
         observed = tuple(sorted(group["seed"].astype(int).unique()))
         if observed != tuple(sorted(expected)):
             raise RuntimeError(
-                f"incomplete seed set for group {key_tuple}: {observed} != {expected}"
+                f"incomplete seed set for group {key_tuple}: "
+                f"{observed} != {expected}"
             )
         row = dict(zip(group_columns, key_tuple, strict=True))
         row.update(_mean_ci95(group[value]))
@@ -137,7 +138,7 @@ def summarize_layer_metric(
     *,
     expected_seeds: Sequence[int] = DEFAULT_VIT_SEEDS,
 ) -> pd.DataFrame:
-    """Return one CI per physical matrix, never one CI per matrix type pool."""
+    """Return one CI per physical matrix, never one CI per matrix-type pool."""
 
     return summarize_across_seeds(
         spectral,
@@ -156,14 +157,16 @@ def summarize_layer_metric(
 def validation_selected_rows(history: pd.DataFrame) -> pd.DataFrame:
     """Select one row per optimizer/seed using validation loss only."""
 
-    required = {"optimizer", "seed", "epoch", "val_loss"}
+    required = {"optimizer", "seed", "epoch", "validation_loss"}
     missing = required.difference(history.columns)
     if missing:
-        raise KeyError(f"missing columns for checkpoint selection: {sorted(missing)}")
+        raise KeyError(
+            f"missing columns for checkpoint selection: {sorted(missing)}"
+        )
     rows = []
     for (_, _), run in history.groupby(["optimizer", "seed"], sort=True):
-        candidate = run.dropna(subset=["val_loss"]).sort_values(
-            ["val_loss", "epoch"], ascending=[True, True]
+        candidate = run.dropna(subset=["validation_loss"]).sort_values(
+            ["validation_loss", "epoch"], ascending=[True, True]
         )
         if candidate.empty:
             raise RuntimeError("run has no finite validation loss")
@@ -188,8 +191,8 @@ def terminal_summary(
     metrics: Sequence[str] = (
         "test_loss",
         "test_accuracy",
-        "val_loss",
-        "val_accuracy",
+        "validation_loss",
+        "validation_accuracy",
     ),
     expected_seeds: Sequence[int] = DEFAULT_VIT_SEEDS,
 ) -> pd.DataFrame:
@@ -300,7 +303,7 @@ def plot_layer_metric(
     output_dir: str | Path | None = None,
     expected_seeds: Sequence[int] = DEFAULT_VIT_SEEDS,
 ) -> list[Path]:
-    """Plot one figure per block so every band has exactly three run replicates."""
+    """Plot one figure per block so each band has exactly three runs."""
 
     summary = summarize_layer_metric(
         spectral, metric, expected_seeds=expected_seeds
