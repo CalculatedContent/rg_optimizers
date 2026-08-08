@@ -6,7 +6,7 @@ program.
 ## Reproducible baselines
 
 [`baseline/`](baseline) contains the unmodified reference experiments used to
-evaluate RG optimizer variants. Each reference has been reviewed at three
+evaluate RG optimizer variants. Each reference has been reviewed at four
 levels:
 
 - [`baseline/BASELINE_RECIPE_AUDIT.md`](baseline/BASELINE_RECIPE_AUDIT.md):
@@ -14,14 +14,16 @@ levels:
 - [`baseline/BASELINE_EXECUTION_REVIEW.md`](baseline/BASELINE_EXECUTION_REVIEW.md):
   notebook execution, restart state, RNG isolation, checkpoint selection,
   uncertainty, and automated tests;
+- [`baseline/FINAL_TECHNICAL_AUDIT.md`](baseline/FINAL_TECHNICAL_AUDIT.md):
+  remaining defects found in the second pass and their corrections;
 - [`baseline/FINAL_BASELINE_QUALIFICATION.md`](baseline/FINAL_BASELINE_QUALIFICATION.md):
   bounded validation-only hyperparameter search and configuration freezing.
 
 | Baseline | Model / data | Reference optimizers | Primary purpose |
 | --- | --- | --- | --- |
-| **MLP3 / MNIST** | `784 -> 512 -> 512 -> 10` MLP; fixed 55k/5k optimization/validation split; official test monitoring-only | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Cheap, tightly controlled optimizer and spectral debugging |
+| **MLP3 / MNIST** | `784 -> 512 -> 512 -> 10` ReLU MLP; fixed 55k/5k optimization/validation split; official test monitoring-only | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Cheap, tightly controlled optimizer and spectral debugging |
 | **Small ViT / CIFAR-10** | 6-block, width-192 ViT with 4x4 patches; fixed 45k/5k optimization/validation split; official test monitoring-only | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Transformer optimization on vision data with strong DeiT-style regularization |
-| **One-head nanoGPT / FineWeb-Edu** | 1 block, 1 head, width 128, context 256; pinned document-disjoint FineWeb-Edu corpus | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Smallest realistic language-model optimizer control with MPS restart support |
+| **One-head nanoGPT / FineWeb-Edu** | 1 block, 1 head, width 128, context 256; pinned document-disjoint 80M/1M/1M FineWeb-Edu corpus | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | Smallest realistic language-model optimizer control with MPS restart support |
 | **nanochat d12** | 12 layers, width 768, context 2048; native pinned nanochat data/tokenizer pipeline | Native nanochat Muon + AdamW recipe | Canonical modern small-LLM reference for CUDA/server hardware |
 | **nanochat mac_d4** | 4 layers, width 256, context 512; separately cached reduced upstream preparation | Same pinned upstream Muon + AdamW logic | Explicit Apple-MPS development reference; never reported as d12 |
 
@@ -48,12 +50,13 @@ accepted.
 ### MLP3 / MNIST
 
 The three optimizer notebooks use the identical deterministic 55k/5k split,
-three seeds, 30-epoch budget, gradient clipping, step-level linear warm-up and
+three seeds, 30-epoch budget, gradient clipping, update-level linear warm-up and
 cosine decay, validation-selected best checkpoints, and epoch-zero/per-epoch
-WeightWatcher diagnostics. Latest, best, final, and per-epoch checkpoints save
-model, optimizer, data-loader generator, Python/NumPy/Torch/CUDA/MPS RNG state,
-and a protocol fingerprint. Randomized diagnostics preserve the training RNG
-stream.
+WeightWatcher diagnostics. The hidden ReLU layers use fan-in Kaiming-uniform
+initialization, the classifier uses Xavier-uniform initialization, and all
+biases start at zero. Latest, best, final, and per-epoch checkpoints save model,
+optimizer, data-loader generator, Python/NumPy/Torch/CUDA/MPS RNG state, and a
+protocol fingerprint. Randomized diagnostics preserve the training RNG stream.
 
 Notebooks:
 
@@ -81,13 +84,15 @@ Transformer blocks are repeated measurements, not additional replicates.
 
 [`baseline/nanogpt_one_head/`](baseline/nanogpt_one_head) trains a one-block,
 one-head nanoGPT on a pinned FineWeb-Edu `sample-10BT` stream rather than Tiny
-Shakespeare. Exact document-disjoint 10M/1M/1M-token train/validation/test
+Shakespeare. Exact document-disjoint 80M/1M/1M-token train/validation/test
 splits are shared across all optimizers. Dataset identity, revision, byte count,
 and SHA-256 are verified before cached data are reused.
 
-Protocol v3 uses an eight-pass horizon, 64 common fixed validation/test batches,
-64 common held-out BLEU continuations, update-level warm-up/cosine schedules,
-and LR logging aligned with the update that produced each checkpoint. The suite
+Protocol v3 uses approximately 80M sampled training tokens, close to a
+12-tokens-per-scaling-parameter budget, with eight evenly spaced reporting and
+WeightWatcher checkpoints. It uses 64 common fixed validation/test batches, 64
+common held-out BLEU continuations, update-level warm-up/cosine schedules, and
+LR logging aligned with the update that produced each checkpoint. The suite
 records train/validation/test loss, accuracy, perplexity, BLEU, and direct
 per-matrix `alpha`, `ERG_gap`, and `num_traps`. Full restart checkpoints and
 randomized diagnostics preserve MPS RNG state where supported.
@@ -115,21 +120,26 @@ initialization, Muon/AdamW groups, separate learning rates, scaling rules,
 40-step warm-up, long warmdown, momentum schedule, and weight-decay schedule.
 
 `RG_NANOCHAT_PROFILE=auto` selects canonical d12 on CUDA and separately labeled
-mac_d4 on MPS/CPU. CUDA keeps upstream `torch.compile`; MPS/CPU uses the same
-pinned model and optimizer in eager mode. The wrapper creates the platform-
-correct environment, forces one process on MPS/CPU, resumes only from checkpoints
-containing model, metadata, and every optimizer shard, appends/deduplicates
-logs, fingerprints profile/process/device/compile policy, keeps profile caches
-separate, and analyzes only the six principal hidden matrices in each block.
+mac_d4 on MPS/CPU. CUDA keeps upstream compilation for both the model and fused
+optimizer kernels; MPS/CPU uses the same pinned model and optimizer mathematics
+in eager mode and enables CPU fallback for isolated unsupported MPS operations.
+The wrapper creates the platform-correct environment, forces one process on
+MPS/CPU, resumes only from checkpoints containing model, metadata, and every
+optimizer shard, appends/deduplicates logs, fingerprints
+profile/process/device/compile/fallback policy, keeps profile caches separate,
+and analyzes only the six principal hidden matrices in each block. A pinned
+one-step model/optimizer preflight runs before a long target-device campaign.
 
 ## Automated validation
 
 `.github/workflows/baseline-tests.yml` runs executable core-baseline and
 one-head nanoGPT tests on CPU. The source workflow compiles Python and parses
-notebook code cells. These bounded tests cover optimizer updates, schedules,
-parameter partitions, data integrity, restart state, validation-only selection,
-qualification locks, platform runtime policy, and statistical invariants. They
-do not replace the full long-horizon target-hardware campaigns.
+notebook code cells. CI also clones the pinned nanochat commit and executes a
+real model forward/backward plus native combined Muon/AdamW optimizer step.
+These bounded tests cover optimizer updates, schedules, parameter partitions,
+data integrity, restart state, validation-only selection, qualification locks,
+platform runtime policy, and statistical invariants. They do not replace the
+full long-horizon target-hardware campaigns.
 
 ## Optimizer variants
 
