@@ -28,25 +28,29 @@ rg_baselines/qualification.py
 6. Only after the lock file exists may final protected-test comparisons be
    interpreted.
 7. A change to architecture, dataset identity, split, tokenizer, initialization,
-   optimizer implementation, schedule implementation, or upstream commit creates
-   a new baseline version and invalidates the old lock.
+   optimizer implementation, schedule implementation, precision policy,
+   upstream commit, or device/compile policy creates a new baseline version and
+   invalidates the old lock.
 
 ## Qualification stages
 
 ### Stage A — bounded screening
 
 Use one preregistered seed and the exact optimization/validation split.
-WeightWatcher may run only at epoch zero and the final screening checkpoint to
+WeightWatcher may run only at the initial and final screening checkpoints to
 avoid making the search prohibitively expensive; it is restored to the full
 reference cadence for final runs.
 
 - **MNIST / MLP3:** run every candidate for the full 30 epochs.
 - **CIFAR-10 / small ViT:** successive halving at 100 and 200 epochs; the top two
   candidates per optimizer continue to the full 300 epochs.
-- **One-head nanoGPT:** run every candidate through the full eight-pass horizon.
+- **One-head nanoGPT:** run every candidate through the full approximately
+  80M-sampled-token budget on the fixed 80M-token training corpus.
 - **nanochat d12:** keep the pinned upstream recipe; it already computes the
   training horizon, batch, LR scaling, and weight-decay scaling from the model.
   Any local alternative is a new profile rather than an informal tweak.
+- **nanochat mac_d4:** pass the pinned one-step MPS model/optimizer preflight
+  before beginning a long qualification run.
 
 Stage A may eliminate only clearly inferior or unstable candidates. It is not
 used to report test performance.
@@ -57,13 +61,13 @@ Run the top two candidates for each optimizer using all three canonical seeds.
 Each candidate must have the same:
 
 ```text
-architecture
+architecture and initialization
 optimization and validation examples
 token budget or epoch budget
 evaluation probes
 checkpoint cadence
 metric definitions
-hardware precision policy
+hardware precision and runtime policy
 ```
 
 Create one row per candidate and seed at the checkpoint chosen by minimum
@@ -117,8 +121,9 @@ mistuning.
 - AdamW: peak LR, matrix weight decay, and warm-up/no-warm-up.
 - Muon: matrix LR, matrix weight decay, and auxiliary AdamW LR.
 
-The architecture, split, 30-epoch budget, gradient clipping, and optimizer
-parameter partition remain fixed.
+The architecture, explicit Kaiming-ReLU/Xavier initialization, fixed split,
+30-epoch budget, gradient clipping, and optimizer parameter partition remain
+fixed.
 
 ### CIFAR-10 / small ViT
 
@@ -127,10 +132,10 @@ parameter partition remain fixed.
   unscaled reference value, plus weight decay.
 - Muon: matrix LR, matrix decay, and auxiliary AdamW LR.
 
-The selected model remains six blocks, width 192, three heads, 4x4 patches. The
-final recipe fixes LayerNorm epsilon at 1e-6, restores fan-in initialization for
-the patch projection, begins warm-up from a small explicit LR, performs cosine
-decay, and holds a non-zero LR floor for the final ten epochs.
+The selected model remains six blocks, width 192, three heads, and 4x4 patches.
+The final recipe fixes LayerNorm epsilon at 1e-6, restores fan-in initialization
+for the patch projection, begins warm-up from a small explicit LR, performs
+cosine decay, and holds a non-zero LR floor for the final ten epochs.
 
 ### One-head nanoGPT / FineWeb-Edu
 
@@ -138,19 +143,23 @@ decay, and holds a non-zero LR floor for the final ten epochs.
 - AdamW: peak LR and weight decay around the nanoGPT reference.
 - Muon: matrix LR, matrix decay, and auxiliary AdamW LR.
 
-The final horizon is eight passes over the 10M-token training split. This is
-approximately the 12-tokens-per-scaling-parameter regime for the tied 50,257 x
-128 language head plus the six hidden transformer matrices. Validation probes
-are common across every optimizer and training seed, use 64 fixed batches, and
-BLEU uses 64 common held-out continuations.
+The final reference prepares an 80M-token document-disjoint training corpus and
+uses approximately 80M sampled training tokens. This is close to a
+12-tokens-per-scaling-parameter regime for the tied 50,257 x 128 language head
+plus the six hidden transformer matrices. Because training draws random
+contiguous windows, the budget is corpus-equivalent rather than an assertion of
+exact sequential token coverage. Validation probes are common across every
+optimizer and training seed, use 64 fixed batches, and BLEU uses 64 common
+held-out continuations.
 
 ### nanochat
 
 The canonical d12 baseline remains the pinned native upstream recipe. Its
 upstream trainer determines the target token horizon, batch scaling, LR scaling,
-weight-decay scaling, warm-up, warmdown, and Muon momentum schedule. The
-`mac_d4` profile is a separately labeled development baseline and must never be
-reported as d12 evidence.
+weight-decay scaling, warm-up, warmdown, and Muon momentum schedule. CUDA d12
+retains upstream compilation. The separately labeled `mac_d4` profile uses the
+same pinned model and optimizer mathematics in eager mode, with MPS fallback
+recorded in `runtime_policy.json`; it must never be reported as d12 evidence.
 
 ## What “best baseline” means here
 
@@ -158,7 +167,8 @@ After qualification, “best baseline” means:
 
 > the best validation-selected configuration in the preregistered, source-backed
 > candidate neighborhood for this exact architecture, dataset identity, split,
-> training budget, optimizer implementation, and precision policy.
+> training budget, optimizer implementation, initialization, and precision /
+> runtime policy.
 
 It does not mean that every real-valued hyperparameter in an unbounded search
 space has been mathematically optimized. That stronger claim would not be
