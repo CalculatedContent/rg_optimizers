@@ -10,6 +10,7 @@ from .diagnostics import (
     measure_weightwatcher_checkpoint,
     spectral_metrics_from_esd,
 )
+from .mnist_runtime import run_baseline
 from .model import MLP3
 from .muon import (
     MuonWithAuxAdamW,
@@ -30,7 +31,6 @@ from .replicates import (
     validate_replicate_result,
 )
 from .results import BaselineResult, validate_result
-from .runner import run_baseline
 from .statistics import student_t_critical_95, summarize_numeric_metrics
 
 
