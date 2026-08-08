@@ -1,7 +1,7 @@
 protocol:
   name: rg_nanogpt_one_head_fineweb_baselines
-  version: 1
-  description: Matched one-block, one-head nanoGPT baselines on a pinned FineWeb-Edu corpus.
+  version: 2
+  description: Matched one-block, one-head nanoGPT baselines with verified pinned FineWeb-Edu data and accelerator-complete restart state.
 
 dataset:
   name: HuggingFaceFW/fineweb-edu
