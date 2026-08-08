@@ -1,7 +1,7 @@
 protocol:
   name: rg_nanogpt_one_head_fineweb_baselines
   version: 3
-  description: Matched one-block, one-head nanoGPT baselines with verified pinned FineWeb-Edu data, common fixed probes, and accelerator-complete restart state.
+  description: Matched one-block, one-head nanoGPT baselines with an 80M-token pinned FineWeb-Edu training corpus, common fixed probes, and accelerator-complete restart state.
 
 dataset:
   name: HuggingFaceFW/fineweb-edu
@@ -9,7 +9,7 @@ dataset:
   split: train
   revision: 593b3a867298afb8ce42625a270ef20ddcad28f9
   tokenizer: gpt2
-  train_tokens: 10000000
+  train_tokens: 80000000
   val_tokens: 1000000
   test_tokens: 1000000
 
@@ -27,8 +27,8 @@ training:
   seeds: [1337, 2027, 4099]
   batch_size: 4
   grad_accum_steps: 8
-  target_epochs: 8.0
-  epoch_interval: 1.0
+  target_epochs: 1.0
+  epoch_interval: 0.125
   eval_interval_steps: 250
   eval_batches: 64
   checkpoint_interval_steps: 250
