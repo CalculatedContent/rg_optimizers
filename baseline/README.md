@@ -148,15 +148,19 @@ restores CPU, CUDA, and MPS RNG state.
 Run [`NanoChat_D12_Reference_Baseline.ipynb`](notebooks/NanoChat_D12_Reference_Baseline.ipynb).
 
 The wrapper pins upstream commit
-`92d63d4e8bb4df75c3b71618f31ddde2378b2bcd` and changes only the global seed
-source. `RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU.
-Override explicitly with `d12` or `mac`.
+`92d63d4e8bb4df75c3b71618f31ddde2378b2bcd`. It installs two exact,
+pinned-source runtime patches: the hard-coded global seed becomes configurable,
+and `torch.compile` becomes environment-controlled. CUDA d12 retains the native
+compiled path; MPS/CPU runs the identical model and optimizer in eager mode.
+`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. Override
+explicitly with `d12` or `mac`.
 
 The wrapper creates the correct platform environment, forces one process on
 MPS/CPU, resumes only from checkpoints with model/metadata/all optimizer shards,
-appends logs, fingerprints the profile and process count, and analyzes only the
-six principal hidden matrices in every block. d12 and mac_d4 use separate
-caches and result roots.
+appends logs, fingerprints profile/process/device/compile policy, and analyzes
+only the six principal hidden matrices in every block. d12 and mac_d4 use
+separate caches and result roots. A mismatched `runtime_policy.json` fails rather
+than silently reusing incompatible results.
 
 The canonical d12 recipe remains native upstream because nanochat itself derives
 the token horizon, total batch size, LR scaling, weight-decay scaling, warm-up,
