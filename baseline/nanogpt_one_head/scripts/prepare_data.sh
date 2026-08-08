@@ -21,6 +21,12 @@ fi
 export PYTORCH_ENABLE_MPS_FALLBACK="${PYTORCH_ENABLE_MPS_FALLBACK:-1}"
 export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
 
+EXTRA_ARGS=()
+if [[ "${RG_ONE_HEAD_FORCE_DATA:-0}" == "1" ]]; then
+  EXTRA_ARGS+=(--force)
+fi
+
 "$PYTHON_BIN" -m rg_nanogpt_one_head.data \
   --config "$EXPERIMENT_ROOT/configs/reference.yaml" \
-  --output-dir "$DATA_ROOT"
+  --output-dir "$DATA_ROOT" \
+  "${EXTRA_ARGS[@]}"
