@@ -1,10 +1,18 @@
+import random
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
+
+import numpy as np
+import pandas as pd
+import torch
 
 from rg_baselines.nanochat_portable import (
     _install_compile_policy_patch,
+    _runtime_policy,
     _write_or_validate_policy,
+    analyze_weightwatcher_checkpoints,
     compile_enabled_for_device,
 )
 from rg_baselines.nanochat_reference import (
@@ -140,7 +148,7 @@ class NanoChatReferenceTests(unittest.TestCase):
             self.assertIn("NANOCHAT_SEED", text)
             self.assertIn("torch.mps.manual_seed(seed)", text)
 
-    def test_compile_patch_is_exact_idempotent_and_keeps_cuda_path(self):
+    def test_compile_patch_covers_model_and_two_optimizer_kernels(self):
         with tempfile.TemporaryDirectory() as temporary:
             checkout = Path(temporary)
             trainer = checkout / "scripts" / "base_train.py"
@@ -150,28 +158,96 @@ class NanoChatReferenceTests(unittest.TestCase):
                 "orig_model = model # original, uncompiled model, for saving raw model state_dict and for inference/evaluation (because the shapes may change shape)\n"
                 "model = torch.compile(model, dynamic=False) # the inputs to model will never change shape so dynamic=False is safe\n"
             )
+            optimizer = checkout / "nanochat" / "optim.py"
+            optimizer.parent.mkdir(parents=True)
+            optimizer.write_text(
+                "import torch\n"
+                "import torch.distributed as dist\n"
+                "from torch import Tensor\n"
+                "from nanochat.common import COMPUTE_DTYPE\n\n"
+                "@torch.compile(dynamic=False, fullgraph=True)\n"
+                "def adamw_step_fused():\n    pass\n\n"
+                "@torch.compile(dynamic=False, fullgraph=True)\n"
+                "def muon_step_fused():\n    pass\n"
+            )
             _install_compile_policy_patch(checkout)
-            first = trainer.read_text()
+            trainer_first = trainer.read_text()
+            optimizer_first = optimizer.read_text()
             _install_compile_policy_patch(checkout)
-            second = trainer.read_text()
-            self.assertEqual(first, second)
-            self.assertIn("NANOCHAT_DISABLE_COMPILE", first)
-            self.assertIn("model = orig_model", first)
-            self.assertIn("torch.compile(model, dynamic=False)", first)
+            self.assertEqual(trainer_first, trainer.read_text())
+            self.assertEqual(optimizer_first, optimizer.read_text())
+            self.assertIn("NANOCHAT_DISABLE_COMPILE", trainer_first)
+            self.assertIn("model = orig_model", trainer_first)
+            self.assertIn("torch.compile(model, dynamic=False)", trainer_first)
+            self.assertIn("def _nanochat_compile_if_enabled", optimizer_first)
+            self.assertEqual(
+                optimizer_first.count("@_nanochat_compile_if_enabled"), 2
+            )
+            self.assertIn(
+                "torch.compile(dynamic=False, fullgraph=True)(function)",
+                optimizer_first,
+            )
 
     def test_runtime_policy_rejects_silent_compile_policy_changes(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "runtime_policy.json"
-            policy = {
-                "runtime_patch_version": 2,
-                "device_type": "mps",
-                "torch_compile_enabled": False,
-            }
+            policy = _runtime_policy(
+                config=NanoChatMacConfig(),
+                seed=17,
+                device_type="mps",
+                nproc_per_node=1,
+            )
+            self.assertFalse(policy["model_compile_enabled"])
+            self.assertFalse(policy["optimizer_kernel_compile_enabled"])
+            self.assertFalse(policy["optimizer_math_modified"])
             _write_or_validate_policy(path, policy)
             _write_or_validate_policy(path, policy)
-            changed = {**policy, "torch_compile_enabled": True}
+            changed = {**policy, "model_compile_enabled": True}
             with self.assertRaisesRegex(RuntimeError, "different runtime policy"):
                 _write_or_validate_policy(path, changed)
+
+    def test_offline_weightwatcher_restores_rng_and_records_seed(self):
+        python_state = random.getstate()
+        numpy_state = np.random.get_state()
+        torch_state = torch.random.get_rng_state()
+
+        def fake_analysis(*args, **kwargs):
+            random.random()
+            np.random.random()
+            torch.rand(1)
+            return pd.DataFrame(
+                {
+                    "seed": [17],
+                    "step": [100],
+                    "matrix_name": ["L00_W_Q"],
+                    "alpha": [2.1],
+                    "ERG_gap": [0.0],
+                    "num_traps": [0],
+                }
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "ww.csv"
+            with mock.patch(
+                "rg_baselines.nanochat_portable.reference.analyze_weightwatcher_checkpoints",
+                side_effect=fake_analysis,
+            ):
+                frame = analyze_weightwatcher_checkpoints(
+                    Path(temporary),
+                    Path(temporary),
+                    config=NanoChatMacConfig(),
+                    seed=17,
+                    output_csv=output,
+                )
+            self.assertIn("diagnostic_seed", frame.columns)
+            self.assertTrue(output.is_file())
+
+        self.assertEqual(random.getstate(), python_state)
+        restored_numpy = np.random.get_state()
+        self.assertEqual(restored_numpy[0], numpy_state[0])
+        self.assertTrue(np.array_equal(restored_numpy[1], numpy_state[1]))
+        self.assertEqual(restored_numpy[2:], numpy_state[2:])
+        self.assertTrue(torch.equal(torch.random.get_rng_state(), torch_state))
 
     def test_resumed_log_is_deduplicated_by_step(self):
         with tempfile.TemporaryDirectory() as temporary:
