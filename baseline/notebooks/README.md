@@ -1,8 +1,17 @@
 # Baseline notebooks
 
 These notebooks are the interactive entry points for the audited reference
-experiments. Read both [`../BASELINE_RECIPE_AUDIT.md`](../BASELINE_RECIPE_AUDIT.md)
-and [`../BASELINE_EXECUTION_REVIEW.md`](../BASELINE_EXECUTION_REVIEW.md).
+experiments. Read:
+
+- [`../BASELINE_RECIPE_AUDIT.md`](../BASELINE_RECIPE_AUDIT.md);
+- [`../BASELINE_EXECUTION_REVIEW.md`](../BASELINE_EXECUTION_REVIEW.md);
+- [`../FINAL_TECHNICAL_AUDIT.md`](../FINAL_TECHNICAL_AUDIT.md);
+- [`../FINAL_BASELINE_QUALIFICATION.md`](../FINAL_BASELINE_QUALIFICATION.md).
+
+The first three documents establish and audit implementation correctness. The
+final document defines the validation-only search and lock file required before
+a committed source-backed candidate is described as the best baseline for its
+exact architecture and data.
 
 ## MNIST / MLP3
 
@@ -14,10 +23,10 @@ Run in order:
 4. `MNIST_MLP3_Baseline_Comparison.ipynb`
 
 The three training notebooks use the same deterministic 55k/5k
-optimization/validation split, official monitoring-only test set, MLP, seeds,
-30-epoch budget, step-level warm-up/cosine schedule implementation,
-WeightWatcher cadence, and restart protocol. They differ only in their
-optimizer-specific reference recipe.
+optimization/validation split, official monitoring-only test set, explicit
+Kaiming-ReLU/Xavier initialization, seeds, 30-epoch budget, update-level
+warm-up/cosine schedule implementation, WeightWatcher cadence, and restart
+protocol. They differ only in their optimizer-specific reference recipe.
 
 Every notebook can be rerun safely. Compatible completed seeds are loaded;
 compatible incomplete seeds resume from `checkpoint_latest.pt`; incompatible
@@ -29,10 +38,13 @@ validation-selected checkpoints and never selects on test performance.
 Run `CIFAR10_ViT_Optimizer_Baselines.ipynb`.
 
 The notebook executes three optimizers × three seeds under the fixed 45k/5k
-optimization/validation split and protected official test set. It uses the
-300-epoch DeiT-style regularization recipe and hardened restart runtime. All
-performance bands use the three complete runs. Layer plots give every physical
-matrix its own curve and do not pool transformer blocks as extra replicates.
+optimization/validation split and protected official test set. It imports the
+final public runtime from `rg_baselines.vit_final`, which adds LayerNorm epsilon
+1e-6, fan-in patch initialization, explicit low-LR warm-up, cosine decay, and a
+10-epoch non-zero-LR cooldown to the 300-epoch DeiT-style regularization recipe.
+All performance bands use the three complete runs. Layer plots give every
+physical matrix its own curve and do not pool transformer blocks as extra
+replicates.
 
 ## nanochat
 
@@ -43,18 +55,24 @@ The notebook has two explicit profiles from the pinned upstream implementation:
 - `d12`: canonical CUDA/server reference;
 - `mac_d4`: separate Apple-MPS development baseline.
 
-`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. The
-notebook creates the platform-correct uv environment, uses one process on
-MPS/CPU, resumes from complete model/metadata/optimizer-shard checkpoints,
-keeps profile caches separate, and performs offline WeightWatcher analysis only
+`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. CUDA
+retains compilation for the model and fused optimizer kernels; MPS/CPU runs the
+same model, initialization, optimizer mathematics, and schedules in eager mode.
+The notebook creates the platform-correct environment, runs a real pinned
+one-step model/optimizer preflight, uses one process on MPS/CPU, resumes from
+complete model/metadata/optimizer-shard checkpoints, locks the
+profile/device/compile/fallback policy in `runtime_policy.json`, keeps profile
+caches separate, and performs deterministic offline WeightWatcher analysis only
 on principal hidden matrices.
 
 ## One-head nanoGPT
 
 The one-head FineWeb-Edu notebooks live in `../nanogpt_one_head/notebooks/`.
-See [`../nanogpt_one_head/README.md`](../nanogpt_one_head/README.md). Their
-prepared corpus is verified by identity, exact byte count, and SHA-256 before
-reuse.
+See [`../nanogpt_one_head/README.md`](../nanogpt_one_head/README.md). Protocol v3
+uses an 80M-token document-disjoint training corpus, an approximately 80M-token
+sampled budget, eight evenly spaced reporting/WeightWatcher checkpoints, common
+fixed validation/test probes, 64 BLEU continuations, update-aligned LR logging,
+verified corpus identity, and accelerator-complete restart/diagnostic RNG state.
 
 ## WeightWatcher and uncertainty
 

@@ -5,20 +5,25 @@ RG-motivated optimizer extensions. No trace-log projection, ECS correction,
 WW-PGD retraction, spectral-flow subtraction, or other RG intervention is
 applied in these controls.
 
-Two reviews define the current baseline version:
+Four documents define the current baseline version:
 
 - [`BASELINE_RECIPE_AUDIT.md`](BASELINE_RECIPE_AUDIT.md): data, model,
   initialization, optimizer, and schedule rationale;
 - [`BASELINE_EXECUTION_REVIEW.md`](BASELINE_EXECUTION_REVIEW.md): notebook,
-  restart, RNG, checkpoint-selection, statistical, and executable-test audit.
+  restart, RNG, checkpoint-selection, statistical, and executable-test audit;
+- [`FINAL_TECHNICAL_AUDIT.md`](FINAL_TECHNICAL_AUDIT.md): remaining defects
+  found in the second pass and their corrections;
+- [`FINAL_BASELINE_QUALIFICATION.md`](FINAL_BASELINE_QUALIFICATION.md): bounded
+  validation-only search and configuration-freezing protocol required before a
+  source-backed candidate is called the best baseline for its exact model/data.
 
 ## Baseline suite
 
 | Baseline | Dataset / corpus | Reference model | Optimizer controls | Main entry point |
 |---|---|---|---|---|
-| **MNIST / MLP3** | Fixed 55k/5k split of official MNIST training data; official test monitoring-only | `784 -> 512 -> 512 -> 10` MLP | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`](notebooks/MNIST_MLP3_Baseline_Comparison.ipynb) |
+| **MNIST / MLP3** | Fixed 55k/5k split of official MNIST training data; official test monitoring-only | `784 -> 512 -> 512 -> 10` ReLU MLP | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`](notebooks/MNIST_MLP3_Baseline_Comparison.ipynb) |
 | **CIFAR-10 / small ViT** | Fixed 45k/5k split of official CIFAR-10 training data; official test monitoring-only | 4x4 patches, width 192, 6 blocks, 3 heads | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb`](notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb) |
-| **One-head nanoGPT / FineWeb-Edu** | Pinned FineWeb-Edu `sample-10BT`, document-disjoint 10M/1M/1M GPT-2-BPE splits | 1 block, 1 attention head, width 128, context 256 | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`nanogpt_one_head/README.md`](nanogpt_one_head/README.md) |
+| **One-head nanoGPT / FineWeb-Edu** | Pinned FineWeb-Edu `sample-10BT`, document-disjoint 80M/1M/1M GPT-2-BPE splits | 1 block, 1 attention head, width 128, context 256 | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`nanogpt_one_head/README.md`](nanogpt_one_head/README.md) |
 | **nanochat d12** | Native pinned nanochat data/tokenizer pipeline | 12 layers, width 768, context 2048 | Native nanochat Muon + AdamW recipe | [`notebooks/NanoChat_D12_Reference_Baseline.ipynb`](notebooks/NanoChat_D12_Reference_Baseline.ipynb) |
 | **nanochat mac_d4** | Separately cached reduced nanochat preparation | 4 layers, width 256, context 512 | Same pinned upstream Muon + AdamW logic | Same notebook; selected automatically on MPS/CPU |
 
@@ -40,9 +45,13 @@ result must never be described as a d12 result.
   trap count, or fabricated ERG gap is allowed.
 - Three-seed uncertainty uses two-sided 95% Student-t intervals across complete
   runs. Layers and fit points are repeated measurements, not extra replicates.
-- “Optimized” means a strong, source-backed, internally consistent reference.
-  A global optimum would still require a validation-only search frozen before
-  interpreting the protected test set.
+- “Best” means the validation winner in the preregistered source-backed
+  neighborhood for the exact architecture, data identity, budget, optimizer,
+  and precision policy. It does not mean an unbounded global search has been
+  mathematically solved.
+
+The candidate grids, validation ranking, and lock-file writer are implemented
+in [`rg_baselines/qualification.py`](rg_baselines/qualification.py).
 
 ## Persistent output roots
 
@@ -61,8 +70,10 @@ Run the three optimizer notebooks and then the comparison notebook:
 
 All profiles use 30 epochs, batch size 128, three seeds, gradient clipping, a
 fixed 55k/5k optimization/validation split, and WeightWatcher at epoch zero and
-every epoch. Warm-up and cosine decay are applied **before every optimizer
-step**, not once per epoch.
+every epoch. The two hidden ReLU layers use fan-in Kaiming-uniform
+initialization, the classifier uses Xavier-uniform initialization, and every
+bias starts at zero. Warm-up and cosine decay are applied **before every
+optimizer step**, not once per epoch.
 
 | Optimizer | Peak LR | Floor | Warm-up | Other settings |
 |---|---:|---:|---:|---|
@@ -81,17 +92,27 @@ auxiliary AdamW.
 ## 2. CIFAR-10 / small ViT
 
 Run [`CIFAR10_ViT_Optimizer_Baselines.ipynb`](notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb).
+The notebook imports the final public runtime from `rg_baselines.vit_final`.
 
 The reference uses 300 epochs, dropout 0, stochastic depth 0.10, RandAugment,
 color jitter, random erasing 0.25, mixup 0.8, CutMix 1.0, label smoothing 0.1,
-and gradient clipping. Validation loss selects `checkpoint_best.pt`.
+and gradient clipping. The final model/schedule contract additionally uses:
 
-| Optimizer | Peak LR | Floor | Warm-up |
-|---|---:|---:|---:|
-| SGD + Nesterov | 0.10 | 0.001 | 5 epochs |
-| AdamW | 1.25e-4 | 1e-5 | 5 epochs |
-| Muon matrices | 0.02 | 0.002 | 5 epochs |
-| Muon auxiliary AdamW | 3e-4 | 3e-5 | 5 epochs |
+```text
+LayerNorm epsilon:             1e-6
+patch projection:              Conv2d fan-in initialization
+warm-up:                       explicit low starting LR
+main schedule:                 cosine decay
+cooldown:                      final 10 epochs at non-zero LR floor
+checkpoint selection:          minimum validation loss
+```
+
+| Optimizer | Warm-up start | Peak LR | Floor | Warm-up |
+|---|---:|---:|---:|---:|
+| SGD + Nesterov | 1e-3 | 0.10 | 0.001 | 5 epochs |
+| AdamW | 1e-6 | 1.25e-4 | 1e-5 | 5 epochs |
+| Muon matrices | 2e-4 | 0.02 | 0.002 | 5 epochs |
+| Muon auxiliary AdamW | 3e-6 | 3e-4 | 3e-5 | 5 epochs |
 
 The hardened runtime saves/restores accelerator RNG state, isolates randomized
 WeightWatcher diagnostics, skips completed compatible jobs, and writes explicit
@@ -104,33 +125,59 @@ blocks are never pooled as independent replicates.
 See [`nanogpt_one_head/README.md`](nanogpt_one_head/README.md).
 
 ```text
-train:       10,000,000 tokens
-validation:   1,000,000 tokens
-test:         1,000,000 tokens
-tokenizer: GPT-2 BPE
-model: 1 block, 1 head, width 128, context 256
+train corpus:                   80,000,000 tokens
+validation:                      1,000,000 tokens
+test:                            1,000,000 tokens
+tokenizer:                      GPT-2 BPE
+model:                          1 block, 1 head, width 128, context 256
+training budget:                approximately 80M sampled tokens
+reporting / WW cadence:         0, 0.125, ..., 1.0 corpus-equivalent budget
+validation probe:               64 common fixed batches
+held-out continuation BLEU:     64 common fixed examples
 ```
 
-The exact document-disjoint corpus files are verified by dataset identity,
-pinned revision, byte count, and SHA-256 before reuse. The suite uses
-step-level warm-up/cosine schedules, validation-selected checkpoints, MPS-safe
-restart state, next-token loss/accuracy/perplexity, held-out continuation BLEU,
-and direct six-matrix WeightWatcher diagnostics.
+The approximately 80M-token budget is close to a 12-tokens-per-scaling-parameter
+regime for the tied vocabulary head plus the six hidden matrices. Random windows
+are drawn from an 80M-token corpus; the budget is corpus-equivalent rather than
+a claim of exact sequential coverage. Evaluation probe identities are fixed
+across optimizer arms and training seeds. The exact document-disjoint corpus
+files are verified by dataset identity, pinned revision, byte count, and SHA-256
+before reuse.
+
+The suite uses update-level warm-up/cosine schedules, logs the LR that actually
+produced each checkpoint, validation-selected checkpoints, MPS-safe restart
+state, next-token loss/accuracy/perplexity, held-out continuation BLEU, and
+direct six-matrix WeightWatcher diagnostics. Randomized WeightWatcher analysis
+restores CPU, CUDA, and MPS RNG state.
 
 ## 4. nanochat
 
 Run [`NanoChat_D12_Reference_Baseline.ipynb`](notebooks/NanoChat_D12_Reference_Baseline.ipynb).
 
 The wrapper pins upstream commit
-`92d63d4e8bb4df75c3b71618f31ddde2378b2bcd` and changes only the global seed
-source. `RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU.
-Override explicitly with `d12` or `mac`.
+`92d63d4e8bb4df75c3b71618f31ddde2378b2bcd`. It installs exact,
+pinned-source runtime patches: the hard-coded global seed becomes configurable,
+and compilation becomes environment-controlled for both the model and the two
+fused optimizer kernels. CUDA d12 retains the native compiled path; MPS/CPU runs
+the identical model and optimizer mathematics in eager mode. MPS also enables
+explicit CPU fallback for isolated unsupported operations.
+`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. Override
+explicitly with `d12` or `mac`.
 
 The wrapper creates the correct platform environment, forces one process on
 MPS/CPU, resumes only from checkpoints with model/metadata/all optimizer shards,
-appends logs, fingerprints the profile and process count, and analyzes only the
-six principal hidden matrices in every block. d12 and mac_d4 use separate
-caches and result roots.
+appends logs, fingerprints profile/process/device/compile/fallback policy, and
+analyzes only the six principal hidden matrices in every block. d12 and mac_d4
+use separate caches and result roots. A mismatched `runtime_policy.json` fails
+rather than silently reusing incompatible results.
+
+Before data preparation, run the pinned one-step model/optimizer preflight on
+the target device. It builds a real upstream GPT, executes forward/backward, and
+runs the native combined Muon/AdamW step. The canonical d12 recipe remains native
+upstream because nanochat itself derives the token horizon, total batch size, LR
+scaling, weight-decay scaling, warm-up, warmdown, and Muon momentum schedule from
+the model size. The mac_d4 profile is separate development evidence and requires
+its own validation qualification.
 
 ## Automated tests
 
@@ -143,5 +190,7 @@ PYTHONPATH=src pytest -q
 ```
 
 The same suites run in `.github/workflows/baseline-tests.yml`, alongside source
-and notebook syntax checks. The full long-horizon campaigns remain target-
-hardware experiments and are not replaced by CI smoke tests.
+and notebook syntax checks. CI also executes a real pinned nanochat CPU
+model/optimizer preflight. The full long-horizon campaigns and target-MPS
+preflight remain target-hardware experiments and are not replaced by CI smoke
+tests.
