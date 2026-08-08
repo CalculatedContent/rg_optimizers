@@ -1,0 +1,62 @@
+name: Baseline executable tests
+
+on:
+  pull_request:
+    paths:
+      - "baseline/**"
+      - ".github/workflows/baseline-tests.yml"
+  push:
+    branches:
+      - "agent/**"
+    paths:
+      - "baseline/**"
+      - ".github/workflows/baseline-tests.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: baseline-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-baselines:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            baseline/pyproject.toml
+            baseline/requirements.txt
+      - name: Install core baseline package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ./baseline
+          python -m pip install nbformat
+      - name: Run core baseline tests
+        env:
+          PYTHONPATH: baseline
+        run: python -m unittest discover -s baseline/tests -v
+
+  one-head-nanogpt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: baseline/nanogpt_one_head/pyproject.toml
+      - name: Install one-head package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e './baseline/nanogpt_one_head[dev]'
+      - name: Run one-head tests
+        env:
+          PYTHONPATH: baseline/nanogpt_one_head/src
+        run: pytest -q baseline/nanogpt_one_head/tests
