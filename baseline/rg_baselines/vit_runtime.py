@@ -9,6 +9,7 @@ writing explicit final versus validation-selected test summaries.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import random
@@ -19,6 +20,33 @@ import pandas as pd
 import torch
 
 from . import vit_cifar10 as core
+
+RUNTIME_PROTOCOL_VERSION = 2
+_CORE_FINGERPRINT = core._fingerprint
+
+
+def _runtime_fingerprint(
+    optimizer_name: str,
+    seed: int,
+    config: core.ViTBaselineConfig,
+) -> str:
+    """Version the execution protocol as well as the training recipe.
+
+    This prevents completed runs from the earlier, non-RNG-isolated notebook
+    from being silently accepted merely because their model hyperparameters are
+    identical.
+    """
+
+    base = _CORE_FINGERPRINT(optimizer_name, int(seed), config)
+    payload = {
+        "base_fingerprint": base,
+        "runtime_protocol_version": RUNTIME_PROTOCOL_VERSION,
+        "weightwatcher_rng_isolated": True,
+        "accelerator_rng_checkpointed": True,
+        "test_selection": "validation_loss",
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _capture_rng_state() -> dict[str, Any]:
@@ -88,6 +116,7 @@ def _add_accelerator_rng_to_checkpoint(path: Path) -> None:
     payload = torch.load(path, map_location="cpu", weights_only=False)
     payload.update(_accelerator_rng_payload())
     payload["schema_version"] = 2
+    payload["runtime_protocol_version"] = RUNTIME_PROTOCOL_VERSION
     _atomic_resave(payload, path)
 
 
@@ -135,6 +164,7 @@ def _write_test_results(run_dir: Path, history: pd.DataFrame) -> None:
     completion.update(
         {
             "completed": True,
+            "runtime_protocol_version": RUNTIME_PROTOCOL_VERSION,
             "best_validation_epoch": int(selected["epoch"]),
             "best_validation_loss": float(selected["validation_loss"]),
             "final_test_loss": float(final["test_loss"]),
@@ -174,6 +204,10 @@ def _ensure_best_checkpoint(
             raise RuntimeError(
                 "checkpoint_best.pt does not match the validation-selected epoch"
             )
+        if payload.get("fingerprint") != _runtime_fingerprint(
+            optimizer_name, int(seed), config
+        ):
+            raise RuntimeError("checkpoint_best.pt belongs to an older ViT protocol")
         return best_path
     if selected_epoch != 0:
         raise RuntimeError(
@@ -187,6 +221,9 @@ def _ensure_best_checkpoint(
         optimizer = core.build_optimizer(model, optimizer_name, config)
         core.set_learning_rates(optimizer, optimizer_name, config, 0)
         train_generator = torch.Generator(device="cpu").manual_seed(int(seed))
+        _CORE_FINGERPRINT_VALUE = _runtime_fingerprint(
+            optimizer_name, int(seed), config
+        )
         core._save_checkpoint(
             best_path,
             epoch=0,
@@ -197,7 +234,7 @@ def _ensure_best_checkpoint(
             optimizer_name=optimizer_name,
             seed=int(seed),
             best_validation_loss=float(selected["validation_loss"]),
-            fingerprint=core._fingerprint(optimizer_name, int(seed), config),
+            fingerprint=_CORE_FINGERPRINT_VALUE,
         )
         _add_accelerator_rng_to_checkpoint(best_path)
     finally:
@@ -222,13 +259,13 @@ def run_vit_baseline(
     completion_path = run_dir / "run_complete.json"
     history_path = run_dir / "history.csv"
     spectral_path = run_dir / "weightwatcher_by_epoch_layer.csv"
+    expected = _runtime_fingerprint(optimizer_name, int(seed), config)
     if completion_path.is_file() and history_path.is_file() and spectral_path.is_file():
         completion = json.loads(completion_path.read_text(encoding="utf-8"))
-        expected = core._fingerprint(optimizer_name, int(seed), config)
         if completion.get("fingerprint") != expected:
             raise RuntimeError(
-                "completed ViT run belongs to a different protocol; choose a "
-                "new output directory or remove the incompatible run"
+                "completed ViT run belongs to an older or different protocol; "
+                "choose a new output directory or remove the incompatible run"
             )
         if progress:
             print(f"[vit-baseline] loading completed run: {run_dir}")
@@ -249,6 +286,7 @@ def run_vit_baseline(
     original_snapshot = core._ww_snapshot
     original_save = core._save_checkpoint
     original_load = core._load_checkpoint
+    original_fingerprint = core._fingerprint
 
     def isolated_snapshot(model, epoch, snapshot_config):
         state = _capture_rng_state()
@@ -271,6 +309,7 @@ def run_vit_baseline(
     core._ww_snapshot = isolated_snapshot
     core._save_checkpoint = checkpoint_with_accelerator_rng
     core._load_checkpoint = load_with_accelerator_rng
+    core._fingerprint = _runtime_fingerprint
     try:
         history, spectral = core.run_vit_baseline(
             optimizer_name,
@@ -286,6 +325,7 @@ def run_vit_baseline(
         core._ww_snapshot = original_snapshot
         core._save_checkpoint = original_save
         core._load_checkpoint = original_load
+        core._fingerprint = original_fingerprint
 
     _ensure_best_checkpoint(
         run_dir,
