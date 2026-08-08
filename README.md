@@ -123,6 +123,8 @@ long-horizon target-hardware campaigns.
 
 ## Optimizer variants
 
+**One-page map (dual-label + dose notes):** [`OPTIMIZER_VARIANTS.md`](OPTIMIZER_VARIANTS.md)
+
 - [`optimizers/trace_log_tracker`](optimizers/trace_log_tracker): the first
   implementation. It removes or tracks the trace-log-normal component of a
   completed AdamW/SGD matrix step using a WeightWatcher-selected midpoint ECS.
