@@ -1,15 +1,16 @@
 """Platform-safe execution wrapper for the pinned nanochat baselines.
 
-The pinned upstream trainer calls ``torch.compile`` unconditionally. That is the
-correct canonical path for the CUDA d12 reference, but it is not a reliable
-contract for Apple MPS or generic CPU execution. The upstream attention module
-already falls back to PyTorch SDPA on those devices, so this wrapper makes only
-one additional runtime change: compilation is configurable and disabled on
-non-CUDA devices.
+The pinned upstream trainer compiles both the model and the fused AdamW/Muon
+step functions unconditionally. That is the canonical CUDA d12 path, but it is
+not a reliable contract for Apple MPS or generic CPU execution. The upstream
+attention module already falls back to PyTorch SDPA on those devices, so this
+wrapper makes compilation environment-controlled and disables it on non-CUDA
+devices.
 
-No architecture, initialization, optimizer, scaling law, data loader, or
-learning-rate schedule is changed. A versioned runtime marker prevents a run
-created under a different compile policy from being silently reused.
+No architecture, initialization, optimizer mathematics, scaling law, data
+loader, or learning-rate schedule is changed. A versioned runtime marker
+prevents a run created under a different compile policy from being silently
+reused.
 """
 
 from __future__ import annotations
@@ -18,22 +19,22 @@ from dataclasses import asdict
 import json
 import os
 from pathlib import Path
+import random
 from typing import Any
+
+import numpy as np
+import pandas as pd
+import torch
 
 from . import nanochat_reference as reference
 
-NANOCHAT_RUNTIME_PATCH_VERSION = 2
+NANOCHAT_RUNTIME_PATCH_VERSION = 3
 DISABLE_COMPILE_ENV = "NANOCHAT_DISABLE_COMPILE"
+_COMPILE_HELPER = "_nanochat_compile_if_enabled"
 
 
-def _install_compile_policy_patch(checkout_dir: str | Path) -> Path:
-    """Patch the pinned trainer so compile can be disabled by environment.
-
-    The replacement is exact and pinned-commit-specific. A source mismatch
-    fails rather than guessing how to rewrite an unknown upstream version.
-    """
-
-    path = Path(checkout_dir) / "scripts" / "base_train.py"
+def _patch_model_compile(checkout_dir: Path) -> Path:
+    path = checkout_dir / "scripts" / "base_train.py"
     text = path.read_text(encoding="utf-8")
     if DISABLE_COMPILE_ENV in text:
         return path
@@ -47,6 +48,44 @@ def _install_compile_policy_patch(checkout_dir: str | Path) -> Path:
         )
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
     return path
+
+
+def _patch_optimizer_compile(checkout_dir: Path) -> Path:
+    """Make the two fused optimizer decorators conditional at import time."""
+
+    path = checkout_dir / "nanochat" / "optim.py"
+    text = path.read_text(encoding="utf-8")
+    if _COMPILE_HELPER in text:
+        if text.count("@_nanochat_compile_if_enabled") != 2:
+            raise RuntimeError("nanochat optimizer compile patch is incomplete")
+        return path
+
+    import_block = """import torch\nimport torch.distributed as dist\nfrom torch import Tensor\nfrom nanochat.common import COMPUTE_DTYPE\n"""
+    replacement_import_block = """import os\nimport torch\nimport torch.distributed as dist\nfrom torch import Tensor\nfrom nanochat.common import COMPUTE_DTYPE\n\ndef _nanochat_compile_if_enabled(function):\n    if os.environ.get(\"NANOCHAT_DISABLE_COMPILE\", \"0\") == \"1\":\n        return function\n    return torch.compile(dynamic=False, fullgraph=True)(function)\n"""
+    if import_block not in text:
+        raise RuntimeError(
+            "pinned nanochat optim.py import block no longer matches the "
+            "audited compile-policy patch"
+        )
+    decorator = "@torch.compile(dynamic=False, fullgraph=True)"
+    if text.count(decorator) != 2:
+        raise RuntimeError(
+            "pinned nanochat optim.py does not contain exactly two compiled "
+            "optimizer kernels"
+        )
+    text = text.replace(import_block, replacement_import_block, 1)
+    text = text.replace(decorator, "@_nanochat_compile_if_enabled")
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def _install_compile_policy_patch(checkout_dir: str | Path) -> Path:
+    """Patch model and optimizer compilation using exact pinned-source edits."""
+
+    checkout = Path(checkout_dir)
+    trainer = _patch_model_compile(checkout)
+    _patch_optimizer_compile(checkout)
+    return trainer
 
 
 def ensure_checkout(
@@ -75,6 +114,7 @@ def _runtime_policy(
     device_type: str,
     nproc_per_node: int,
 ) -> dict[str, Any]:
+    compile_enabled = compile_enabled_for_device(device_type)
     return {
         "schema_version": 1,
         "runtime_patch_version": NANOCHAT_RUNTIME_PATCH_VERSION,
@@ -84,8 +124,10 @@ def _runtime_policy(
         "seed": int(seed),
         "device_type": str(device_type),
         "nproc_per_node": int(nproc_per_node),
-        "torch_compile_enabled": compile_enabled_for_device(device_type),
-        "architecture_or_optimizer_modified": False,
+        "model_compile_enabled": compile_enabled,
+        "optimizer_kernel_compile_enabled": compile_enabled,
+        "architecture_modified": False,
+        "optimizer_math_modified": False,
     }
 
 
@@ -139,7 +181,7 @@ def run_seed(
 
     previous = os.environ.get(DISABLE_COMPILE_ENV)
     os.environ[DISABLE_COMPILE_ENV] = (
-        "0" if policy["torch_compile_enabled"] else "1"
+        "0" if policy["model_compile_enabled"] else "1"
     )
     try:
         return reference.run_seed(
@@ -159,12 +201,82 @@ def run_seed(
             os.environ[DISABLE_COMPILE_ENV] = previous
 
 
+def _capture_rng_state() -> dict[str, Any]:
+    state: dict[str, Any] = {
+        "python": random.getstate(),
+        "numpy": np.random.get_state(),
+        "torch": torch.random.get_rng_state(),
+    }
+    if torch.cuda.is_available():
+        state["cuda"] = torch.cuda.get_rng_state_all()
+    if (
+        hasattr(torch, "mps")
+        and hasattr(torch.mps, "get_rng_state")
+        and torch.backends.mps.is_available()
+    ):
+        state["mps"] = torch.mps.get_rng_state()
+    return state
+
+
+def _restore_rng_state(state: dict[str, Any]) -> None:
+    random.setstate(state["python"])
+    np.random.set_state(state["numpy"])
+    torch.random.set_rng_state(state["torch"])
+    if torch.cuda.is_available() and "cuda" in state:
+        torch.cuda.set_rng_state_all(state["cuda"])
+    if (
+        "mps" in state
+        and hasattr(torch, "mps")
+        and hasattr(torch.mps, "set_rng_state")
+        and torch.backends.mps.is_available()
+    ):
+        torch.mps.set_rng_state(state["mps"])
+
+
+def analyze_weightwatcher_checkpoints(
+    checkout_dir: str | Path,
+    cache_dir: str | Path,
+    *,
+    config: reference.NanoChatConfig,
+    seed: int,
+    output_csv: str | Path,
+    min_evals: int = 20,
+) -> pd.DataFrame:
+    """Run deterministic offline WW analysis without compiling optimizer code."""
+
+    state = _capture_rng_state()
+    previous = os.environ.get(DISABLE_COMPILE_ENV)
+    diagnostic_seed = int(seed) + 3_000_017
+    random.seed(diagnostic_seed)
+    np.random.seed(diagnostic_seed % (2**32 - 1))
+    torch.manual_seed(diagnostic_seed)
+    os.environ[DISABLE_COMPILE_ENV] = "1"
+    try:
+        frame = reference.analyze_weightwatcher_checkpoints(
+            Path(checkout_dir),
+            Path(cache_dir),
+            config=config,
+            seed=int(seed),
+            output_csv=Path(output_csv),
+            min_evals=int(min_evals),
+        ).copy()
+        frame["diagnostic_seed"] = int(diagnostic_seed)
+        Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
+        frame.to_csv(output_csv, index=False)
+        return frame
+    finally:
+        _restore_rng_state(state)
+        if previous is None:
+            os.environ.pop(DISABLE_COMPILE_ENV, None)
+        else:
+            os.environ[DISABLE_COMPILE_ENV] = previous
+
+
 # Re-export the rest of the audited public interface for notebook convenience.
 DEFAULT_NANOCHAT_SEEDS = reference.DEFAULT_NANOCHAT_SEEDS
 NANOCHAT_COMMIT = reference.NANOCHAT_COMMIT
 NanoChatD12Config = reference.NanoChatD12Config
 NanoChatMacConfig = reference.NanoChatMacConfig
-analyze_weightwatcher_checkpoints = reference.analyze_weightwatcher_checkpoints
 collect_metrics = reference.collect_metrics
 detect_device_type = reference.detect_device_type
 ensure_environment = reference.ensure_environment
