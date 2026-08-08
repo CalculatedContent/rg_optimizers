@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -25,7 +26,11 @@ from rg_nanogpt_one_head.config import (
     max_steps,
     optimizer_profile,
 )
-from rg_nanogpt_one_head.data import write_token_splits
+from rg_nanogpt_one_head.data import (
+    TOKEN_DTYPE,
+    validate_prepared_data,
+    write_token_splits,
+)
 from rg_nanogpt_one_head.model import GPT, GPTConfig, transformer_matrix_items
 from rg_nanogpt_one_head.optimizers import make_optimizer_handles, optimizer_step
 from rg_nanogpt_one_head.spectral import summarize_spectral_frame
@@ -88,6 +93,12 @@ def tiny_config(optimizer: str) -> dict:
     return cfg
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
 def write_tiny_data(path: Path, cfg: dict) -> None:
     path.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(7)
@@ -97,21 +108,33 @@ def write_tiny_data(path: Path, cfg: dict) -> None:
         "test": int(cfg["dataset"]["test_tokens"]),
     }
     for split, size in splits.items():
-        rng.integers(0, cfg["model"]["vocab_size"], size=size, dtype=np.uint16).tofile(
-            path / f"{split}.bin"
-        )
+        rng.integers(
+            0,
+            cfg["model"]["vocab_size"],
+            size=size,
+            dtype=np.uint16,
+        ).tofile(path / f"{split}.bin")
+    files = {
+        split: {
+            "path": f"{split}.bin",
+            "sha256": _sha256(path / f"{split}.bin"),
+            "bytes": int((path / f"{split}.bin").stat().st_size),
+        }
+        for split in splits
+    }
     (path / "meta.json").write_text(
         json.dumps(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "tokenizer": "gpt2",
                 "vocab_size": cfg["model"]["vocab_size"],
-                "dtype": "uint16",
+                "dtype": TOKEN_DTYPE.name,
                 "splits": splits,
                 "document_disjoint_splits": True,
                 "dataset_name": cfg["dataset"]["name"],
                 "dataset_config": cfg["dataset"]["config"],
                 "dataset_revision": cfg["dataset"]["revision"],
+                "files": files,
             }
         ),
         encoding="utf-8",
@@ -131,25 +154,51 @@ def test_reference_protocol_is_one_block_one_head_and_has_required_ww_flags():
 
 def test_model_inventory_and_all_optimizer_updates_are_finite():
     cfg = reference_config()
-    model = GPT(GPTConfig(vocab_size=64, block_size=8, n_layer=1, n_head=1, n_embd=16))
+    model = GPT(
+        GPTConfig(
+            vocab_size=64,
+            block_size=8,
+            n_layer=1,
+            n_head=1,
+            n_embd=16,
+        )
+    )
     matrices = transformer_matrix_items(model)
     assert len(matrices) == 6
     assert {matrix_type for _, matrix_type, _, _ in matrices} == {
-        "W_Q", "W_K", "W_V", "W_O", "W_MLP_IN", "W_MLP_OUT"
+        "W_Q",
+        "W_K",
+        "W_V",
+        "W_O",
+        "W_MLP_IN",
+        "W_MLP_OUT",
     }
     for optimizer_name in ("sgd_momentum", "adamw", "muon"):
-        candidate = GPT(GPTConfig(vocab_size=64, block_size=8, n_layer=1, n_head=1, n_embd=16))
-        handles = make_optimizer_handles(candidate, optimizer_profile(cfg, optimizer_name))
+        candidate = GPT(
+            GPTConfig(
+                vocab_size=64,
+                block_size=8,
+                n_layer=1,
+                n_head=1,
+                n_embd=16,
+            )
+        )
+        handles = make_optimizer_handles(
+            candidate, optimizer_profile(cfg, optimizer_name)
+        )
         x = torch.randint(0, 64, (2, 8))
         _, loss = candidate(x, x)
         assert loss is not None
         loss.backward()
         optimizer_step(handles)
-        assert all(torch.isfinite(parameter).all() for parameter in candidate.parameters())
+        assert all(
+            torch.isfinite(parameter).all()
+            for parameter in candidate.parameters()
+        )
         assert len(handles) == (2 if optimizer_name == "muon" else 1)
 
 
-def test_document_disjoint_writer_produces_exact_splits(tmp_path):
+def test_document_disjoint_writer_produces_exact_verified_splits(tmp_path):
     metadata = write_token_splits(
         iter(["abcdef", "ghijkl", "mnopqr", "stuvwx"]),
         FakeEncoder(),
@@ -166,14 +215,35 @@ def test_document_disjoint_writer_produces_exact_splits(tmp_path):
     )
     assert metadata["document_disjoint_splits"] is True
     assert metadata["splits"] == {"train": 4, "val": 3, "test": 2}
-    assert np.fromfile(tmp_path / "train.bin", dtype=np.uint16).size == 4
-    assert np.fromfile(tmp_path / "val.bin", dtype=np.uint16).size == 3
-    assert np.fromfile(tmp_path / "test.bin", dtype=np.uint16).size == 2
+    cfg = tiny_config("adamw")
+    cfg["dataset"].update(
+        {"train_tokens": 4, "val_tokens": 3, "test_tokens": 2, "revision": "unit"}
+    )
+    validate_prepared_data(tmp_path, cfg)
+
+
+def test_corrupted_cached_split_is_rejected(tmp_path):
+    cfg = tiny_config("adamw")
+    write_tiny_data(tmp_path, cfg)
+    validate_prepared_data(tmp_path, cfg)
+    with (tmp_path / "train.bin").open("r+b") as handle:
+        handle.seek(0)
+        handle.write(b"\xff\xff")
+    with pytest.raises(RuntimeError, match="SHA-256 mismatch"):
+        validate_prepared_data(tmp_path, cfg)
 
 
 def test_checkpoint_roundtrip_restores_optimizer_and_generator(tmp_path):
     cfg = reference_config()
-    model = GPT(GPTConfig(vocab_size=64, block_size=8, n_layer=1, n_head=1, n_embd=16))
+    model = GPT(
+        GPTConfig(
+            vocab_size=64,
+            block_size=8,
+            n_layer=1,
+            n_head=1,
+            n_embd=16,
+        )
+    )
     handles = make_optimizer_handles(model, optimizer_profile(cfg, "adamw"))
     generator = torch.Generator(device="cpu").manual_seed(99)
     x = torch.randint(0, 64, (2, 8), generator=generator)
@@ -181,7 +251,9 @@ def test_checkpoint_roundtrip_restores_optimizer_and_generator(tmp_path):
     assert loss is not None
     loss.backward()
     optimizer_step(handles)
-    before = {name: tensor.detach().clone() for name, tensor in model.state_dict().items()}
+    before = {
+        name: tensor.detach().clone() for name, tensor in model.state_dict().items()
+    }
     path = save_training_checkpoint(
         tmp_path / "checkpoint.pt",
         model=model,
@@ -218,7 +290,9 @@ def test_spectral_summary_keeps_direct_trap_and_erg_fields():
             "num_traps": [1.0, 3.0, 2.0],
         }
     )
-    summary = summarize_spectral_frame(frame, step=10, tokens_seen=80, epoch=0.5)
+    summary = summarize_spectral_frame(
+        frame, step=10, tokens_seen=80, epoch=0.5
+    )
     assert summary["alpha_median"] == pytest.approx(2.2)
     assert summary["ERG_gap_mean"] == pytest.approx(1.0)
     assert summary["num_traps_mean"] == pytest.approx(2.0)
@@ -228,7 +302,9 @@ def test_student_t_interval_is_run_level():
     result = mean_ci95([1.0, 2.0, 3.0])
     assert result["n"] == 3
     assert result["mean"] == pytest.approx(2.0)
-    assert result["ci95_half_width"] == pytest.approx(4.3026527297 / np.sqrt(3))
+    assert result["ci95_half_width"] == pytest.approx(
+        4.3026527297 / np.sqrt(3)
+    )
 
 
 @pytest.mark.parametrize("optimizer_name", ["sgd_momentum", "adamw", "muon"])
@@ -290,8 +366,15 @@ def test_notebooks_are_valid_and_expose_requested_metrics():
         nbformat.validate(notebook)
         source = "\n".join(cell.source for cell in notebook.cells)
         for required in (
-            "test_accuracy", "train_accuracy", "test_loss", "train_loss",
-            "test_perplexity", "test_bleu", "alpha", "ERG_gap",
-            "num_traps", "95% Student-t",
+            "test_accuracy",
+            "train_accuracy",
+            "test_loss",
+            "train_loss",
+            "test_perplexity",
+            "test_bleu",
+            "alpha",
+            "ERG_gap",
+            "num_traps",
+            "95% Student-t",
         ):
             assert required in source
