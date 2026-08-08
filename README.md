@@ -115,11 +115,12 @@ initialization, Muon/AdamW groups, separate learning rates, scaling rules,
 40-step warm-up, long warmdown, momentum schedule, and weight-decay schedule.
 
 `RG_NANOCHAT_PROFILE=auto` selects canonical d12 on CUDA and separately labeled
-mac_d4 on MPS/CPU. The wrapper creates the platform-correct environment, forces
-one process on MPS/CPU, resumes only from checkpoints containing model,
-metadata, and every optimizer shard, appends/deduplicates logs, fingerprints the
-profile and process count, keeps profile caches separate, and analyzes only the
-six principal hidden matrices in each block.
+mac_d4 on MPS/CPU. CUDA keeps upstream `torch.compile`; MPS/CPU uses the same
+pinned model and optimizer in eager mode. The wrapper creates the platform-
+correct environment, forces one process on MPS/CPU, resumes only from checkpoints
+containing model, metadata, and every optimizer shard, appends/deduplicates
+logs, fingerprints profile/process/device/compile policy, keeps profile caches
+separate, and analyzes only the six principal hidden matrices in each block.
 
 ## Automated validation
 
@@ -127,8 +128,8 @@ six principal hidden matrices in each block.
 one-head nanoGPT tests on CPU. The source workflow compiles Python and parses
 notebook code cells. These bounded tests cover optimizer updates, schedules,
 parameter partitions, data integrity, restart state, validation-only selection,
-qualification locks, and statistical invariants. They do not replace the full
-long-horizon target-hardware campaigns.
+qualification locks, platform runtime policy, and statistical invariants. They
+do not replace the full long-horizon target-hardware campaigns.
 
 ## Optimizer variants
 
