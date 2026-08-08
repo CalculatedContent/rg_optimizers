@@ -45,8 +45,10 @@ class FinalViTRecipeTests(unittest.TestCase):
         self.assertEqual(eps_values, {1e-6})
         # Fan-in Conv2d initialization is substantially wider than the 0.02
         # trunc-normal initialization used for transformer Linear matrices.
-        self.assertGreater(float(model.patch_embed.proj.weight.std()), 0.04)
-        self.assertLess(float(model.blocks[0].attn.qkv.weight.std()), 0.03)
+        patch_std = float(model.patch_embed.proj.weight.detach().std())
+        qkv_std = float(model.blocks[0].attn.qkv.weight.detach().std())
+        self.assertGreater(patch_std, 0.04)
+        self.assertLess(qkv_std, 0.03)
 
     def test_schedule_starts_low_reaches_peak_and_has_cooldown(self):
         config = self.tiny_config()
