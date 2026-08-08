@@ -10,6 +10,8 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
+from .optimizers import set_scheduled_learning_rates
+
 
 def choose_device() -> torch.device:
     if torch.cuda.is_available():
@@ -50,6 +52,7 @@ def evaluate(
     device: torch.device,
     max_batches: Optional[int] = None,
 ) -> dict[str, float | int]:
+    was_training = model.training
     model.eval()
     loss_sum = 0.0
     correct = 0
@@ -63,6 +66,7 @@ def evaluate(
         loss_sum += float(loss.item()) * targets.numel()
         correct += int((logits.argmax(1) == targets).sum())
         seen += targets.numel()
+    model.train(was_training)
     return {
         "loss": loss_sum / max(seen, 1),
         "accuracy": correct / max(seen, 1),
@@ -75,28 +79,49 @@ def train_one_epoch(
     optimizer: torch.optim.Optimizer,
     loader: DataLoader,
     *,
+    config,
     device: torch.device,
     grad_clip_norm: float,
+    global_step: int,
+    total_steps: int,
+    steps_per_epoch: int,
 ) -> dict[str, float | int]:
+    """Train one epoch and update the LR before every optimizer step."""
+
     model.train()
     loss_sum = 0.0
     correct = 0
     seen = 0
-    norms = []
+    norms: list[float] = []
+    last_lrs = {"primary": float("nan"), "auxiliary": float("nan")}
+    completed_step = int(global_step)
+
     for inputs, targets in loader:
+        last_lrs = set_scheduled_learning_rates(
+            optimizer,
+            config,
+            update_index=completed_step,
+            total_steps=total_steps,
+            steps_per_epoch=steps_per_epoch,
+        )
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad(set_to_none=True)
         logits = model(inputs)
         loss = F.cross_entropy(logits, targets)
         loss.backward()
-        norm = torch.nn.utils.clip_grad_norm_(model.parameters(), float(grad_clip_norm))
+        norm = torch.nn.utils.clip_grad_norm_(
+            model.parameters(), float(grad_clip_norm)
+        )
         optimizer.step()
+        completed_step += 1
+
         batch_examples = targets.numel()
         loss_sum += float(loss.item()) * batch_examples
         correct += int((logits.argmax(1) == targets).sum())
         seen += batch_examples
         norms.append(float(torch.as_tensor(norm).detach().cpu()))
-    array = np.asarray(norms, float)
+
+    array = np.asarray(norms, dtype=float)
     return {
         "online_train_loss": loss_sum / max(seen, 1),
         "online_train_accuracy": correct / max(seen, 1),
@@ -104,6 +129,9 @@ def train_one_epoch(
         "median_gradient_norm_before_clip": float(np.median(array)),
         "max_gradient_norm_before_clip": float(array.max()),
         "batches": len(norms),
+        "global_step": completed_step,
+        "primary_lr": float(last_lrs.get("primary", np.nan)),
+        "auxiliary_lr": float(last_lrs.get("auxiliary", np.nan)),
     }
 
 
@@ -113,6 +141,7 @@ def performance_row(
     epoch: int,
     global_step: int,
     train_eval: dict,
+    validation_eval: dict,
     test_eval: dict,
     online: Optional[dict],
     learning_rates: dict[str, float],
@@ -123,30 +152,56 @@ def performance_row(
     device: torch.device,
 ) -> dict:
     online_values = online or {}
+    train_loss = float(train_eval["loss"])
+    validation_loss = float(validation_eval["loss"])
+    test_loss = float(test_eval["loss"])
+    train_accuracy = float(train_eval["accuracy"])
+    validation_accuracy = float(validation_eval["accuracy"])
+    test_accuracy = float(test_eval["accuracy"])
     return {
         "run": config.optimizer_label,
         "optimizer": config.optimizer,
-        "epoch": epoch,
-        "global_step": global_step,
+        "epoch": int(epoch),
+        "global_step": int(global_step),
         "primary_lr": float(learning_rates.get("primary", np.nan)),
         "auxiliary_lr": float(learning_rates.get("auxiliary", np.nan)),
-        "train_loss": float(train_eval["loss"]),
-        "train_accuracy": float(train_eval["accuracy"]),
+        "train_loss": train_loss,
+        "train_accuracy": train_accuracy,
         "train_examples_evaluated": int(train_eval["examples"]),
-        "test_loss": float(test_eval["loss"]),
-        "test_accuracy": float(test_eval["accuracy"]),
+        "validation_loss": validation_loss,
+        "validation_accuracy": validation_accuracy,
+        "validation_examples_evaluated": int(validation_eval["examples"]),
+        "test_loss": test_loss,
+        "test_accuracy": test_accuracy,
         "test_examples_evaluated": int(test_eval["examples"]),
-        "online_train_loss": float(online_values.get("online_train_loss", np.nan)),
-        "online_train_accuracy": float(online_values.get("online_train_accuracy", np.nan)),
-        "mean_gradient_norm_before_clip": float(online_values.get("mean_gradient_norm_before_clip", np.nan)),
-        "median_gradient_norm_before_clip": float(online_values.get("median_gradient_norm_before_clip", np.nan)),
-        "max_gradient_norm_before_clip": float(online_values.get("max_gradient_norm_before_clip", np.nan)),
+        "validation_loss_gap": validation_loss - train_loss,
+        "test_loss_gap": test_loss - train_loss,
+        "validation_accuracy_gap": train_accuracy - validation_accuracy,
+        "test_accuracy_gap": train_accuracy - test_accuracy,
+        "test_monitoring_only": int(bool(config.test_monitoring_only)),
+        "online_train_loss": float(
+            online_values.get("online_train_loss", np.nan)
+        ),
+        "online_train_accuracy": float(
+            online_values.get("online_train_accuracy", np.nan)
+        ),
+        "mean_gradient_norm_before_clip": float(
+            online_values.get("mean_gradient_norm_before_clip", np.nan)
+        ),
+        "median_gradient_norm_before_clip": float(
+            online_values.get("median_gradient_norm_before_clip", np.nan)
+        ),
+        "max_gradient_norm_before_clip": float(
+            online_values.get("max_gradient_norm_before_clip", np.nan)
+        ),
         "batches": int(online_values.get("batches", 0)),
-        "parameter_l2_norm": parameter_norm,
-        "train_time_sec": train_time,
-        "evaluation_time_sec": evaluation_time,
-        "weightwatcher_time_sec": ww_time,
-        "epoch_total_time_sec": train_time + evaluation_time + ww_time,
+        "parameter_l2_norm": float(parameter_norm),
+        "train_time_sec": float(train_time),
+        "evaluation_time_sec": float(evaluation_time),
+        "weightwatcher_time_sec": float(ww_time),
+        "epoch_total_time_sec": float(
+            train_time + evaluation_time + ww_time
+        ),
         "device": str(device),
         "seed": int(config.seed),
     }
