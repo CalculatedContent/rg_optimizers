@@ -12,8 +12,8 @@ import pandas as pd
 import torch
 
 from .config import BaselineConfig
+from .mnist_runtime import run_baseline
 from .results import BaselineResult
-from .runner import run_baseline
 from .statistics import require_complete_summary, summarize_numeric_metrics
 
 DEFAULT_BASELINE_SEEDS: tuple[int, ...] = (1337, 2027, 31415)
