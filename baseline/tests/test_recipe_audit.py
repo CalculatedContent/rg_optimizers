@@ -1,12 +1,16 @@
+import math
 import unittest
 
+import torch
+
 from rg_baselines.config import BaselineConfig
+from rg_baselines.model import MLP3
 from rg_baselines.nanochat_reference import NANOCHAT_COMMIT, NanoChatD12Config
 from rg_baselines.vit_final import ViTBaselineConfig
 
 
 class BaselineRecipeAuditTests(unittest.TestCase):
-    def test_mnist_profiles_have_warmup_decay_and_nonzero_floors(self):
+    def test_mnist_profiles_have_init_warmup_decay_and_nonzero_floors(self):
         for optimizer in (
             "sgd_momentum",
             "adamw",
@@ -14,6 +18,8 @@ class BaselineRecipeAuditTests(unittest.TestCase):
         ):
             config = BaselineConfig(optimizer=optimizer)
             config.validate()
+            self.assertEqual(config.recipe_version, 3)
+            self.assertEqual(config.initialization, MLP3.initialization_name)
             self.assertEqual(config.schedule, "warmup_cosine")
             self.assertGreater(config.warmup_epochs, 0)
         muon = BaselineConfig(optimizer="sgd_momentum_muon")
@@ -22,6 +28,30 @@ class BaselineRecipeAuditTests(unittest.TestCase):
             (muon.muon_aux_beta1, muon.muon_aux_beta2),
             (0.9, 0.95),
         )
+
+    def test_mnist_hidden_layers_use_relu_variance_and_zero_biases(self):
+        torch.manual_seed(11)
+        model = MLP3()
+        expected_fc1_std = math.sqrt(2.0 / 784.0)
+        expected_fc2_std = math.sqrt(2.0 / 512.0)
+        expected_head_std = math.sqrt(2.0 / (512.0 + 10.0))
+        self.assertAlmostEqual(
+            float(model.fc1.weight.detach().std()),
+            expected_fc1_std,
+            delta=0.08 * expected_fc1_std,
+        )
+        self.assertAlmostEqual(
+            float(model.fc2.weight.detach().std()),
+            expected_fc2_std,
+            delta=0.08 * expected_fc2_std,
+        )
+        self.assertAlmostEqual(
+            float(model.fc3.weight.detach().std()),
+            expected_head_std,
+            delta=0.12 * expected_head_std,
+        )
+        for layer in (model.fc1, model.fc2, model.fc3):
+            self.assertTrue(torch.equal(layer.bias, torch.zeros_like(layer.bias)))
 
     def test_vit_recipe_contains_full_regularization_and_schedule_stack(self):
         config = ViTBaselineConfig()
