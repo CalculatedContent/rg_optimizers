@@ -14,6 +14,7 @@ import numpy as np
 from .config import load_config, roots
 
 TOKEN_DTYPE = np.dtype(np.uint16)
+SPLIT_NAMES = ("train", "val", "test")
 
 
 class Encoder(Protocol):
@@ -50,7 +51,8 @@ def write_token_splits(
     dataset_metadata: dict[str, object] | None = None,
     progress_every_documents: int = 2_000,
 ) -> dict[str, object]:
-    """Write exact document-disjoint token splits without loading the corpus in RAM."""
+    """Write exact, document-disjoint splits without loading the corpus in RAM."""
+
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     targets = {
@@ -87,8 +89,8 @@ def write_token_splits(
                 encoded[:take].tofile(handles[split])
                 written[split] += int(take)
                 document_counts[split] += 1
-            # A document remainder is deliberately discarded at split boundaries.
-            # This prevents one source document from appearing in two splits.
+            # Never carry a document remainder into the next split. This is the
+            # invariant that makes train/validation/test document-disjoint.
             if written[split] == targets[split]:
                 split_index += 1
             if progress_every_documents and documents % int(progress_every_documents) == 0:
@@ -97,8 +99,10 @@ def write_token_splits(
                 elapsed = time.monotonic() - started
                 rate = total / max(elapsed, 1e-9)
                 print(
-                    f"[one-head-data] documents={documents:,} tokens={total:,}/{required:,} "
-                    f"({100*total/max(required,1):.1f}%) rate={rate:,.0f} tok/s",
+                    f"[one-head-data] documents={documents:,} "
+                    f"tokens={total:,}/{required:,} "
+                    f"({100 * total / max(required, 1):.1f}%) "
+                    f"rate={rate:,.0f} tok/s",
                     file=sys.stderr,
                     flush=True,
                 )
@@ -111,13 +115,15 @@ def write_token_splits(
     if written != targets:
         for path in partial.values():
             path.unlink(missing_ok=True)
-        raise RuntimeError(f"stream ended before exact splits were filled: {written} != {targets}")
+        raise RuntimeError(
+            f"stream ended before exact splits were filled: {written} != {targets}"
+        )
 
     for name in split_names:
         os.replace(partial[name], final[name])
 
     metadata: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "tokenizer": "gpt2",
         "vocab_size": int(encoder.n_vocab),
         "eot_token": int(encoder.eot_token),
@@ -130,7 +136,7 @@ def write_token_splits(
             name: {
                 "path": final[name].name,
                 "sha256": _sha256(final[name]),
-                "bytes": final[name].stat().st_size,
+                "bytes": int(final[name].stat().st_size),
             }
             for name in split_names
         },
@@ -138,18 +144,70 @@ def write_token_splits(
     if dataset_metadata:
         metadata.update(dataset_metadata)
     temporary = output_dir / "meta.json.tmp"
-    temporary.write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
+    temporary.write_text(
+        json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8"
+    )
     temporary.replace(output_dir / "meta.json")
     return metadata
 
 
-def validate_prepared_data(output_dir: str | Path, cfg: dict) -> dict[str, object]:
+def _validate_file_identity(
+    output_dir: Path,
+    metadata: dict[str, object],
+    expected_splits: dict[str, int],
+) -> None:
+    file_metadata = metadata.get("files")
+    if not isinstance(file_metadata, dict):
+        raise RuntimeError(
+            "prepared corpus metadata does not contain file hashes; "
+            "re-run data preparation with --force"
+        )
+
+    for split in SPLIT_NAMES:
+        record = file_metadata.get(split)
+        if not isinstance(record, dict):
+            raise RuntimeError(f"prepared corpus metadata is missing files.{split}")
+        path = output_dir / str(record.get("path", f"{split}.bin"))
+        if path.name != f"{split}.bin" or not path.is_file():
+            raise RuntimeError(f"prepared {split} file path is invalid: {path}")
+
+        expected_bytes = expected_splits[split] * TOKEN_DTYPE.itemsize
+        recorded_bytes = int(record.get("bytes", -1))
+        actual_bytes = int(path.stat().st_size)
+        if recorded_bytes != expected_bytes or actual_bytes != expected_bytes:
+            raise RuntimeError(
+                f"prepared {split} byte size mismatch: "
+                f"metadata={recorded_bytes}, actual={actual_bytes}, "
+                f"expected={expected_bytes}"
+            )
+
+        recorded_hash = str(record.get("sha256", ""))
+        actual_hash = _sha256(path)
+        if not recorded_hash or actual_hash != recorded_hash:
+            raise RuntimeError(
+                f"prepared {split} SHA-256 mismatch; the cached corpus is corrupt "
+                "or was modified. Re-run data preparation with --force."
+            )
+
+
+def validate_prepared_data(
+    output_dir: str | Path,
+    cfg: dict,
+) -> dict[str, object]:
+    """Validate dataset identity, exact sizes, and every persisted file hash."""
+
     output_dir = Path(output_dir)
     metadata_path = output_dir / "meta.json"
-    required = [metadata_path, *(output_dir / f"{split}.bin" for split in ("train", "val", "test"))]
+    required = [
+        metadata_path,
+        *(output_dir / f"{split}.bin" for split in SPLIT_NAMES),
+    ]
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
-        raise FileNotFoundError("prepared data are incomplete: " + ", ".join(missing))
+        raise FileNotFoundError(
+            "prepared data are incomplete: " + ", ".join(missing)
+        )
+
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     expected_splits = {
         "train": int(cfg["dataset"]["train_tokens"]),
@@ -157,13 +215,24 @@ def validate_prepared_data(output_dir: str | Path, cfg: dict) -> dict[str, objec
         "test": int(cfg["dataset"]["test_tokens"]),
     }
     if metadata.get("splits") != expected_splits:
-        raise RuntimeError(f"prepared split sizes do not match config: {metadata.get('splits')} != {expected_splits}")
+        raise RuntimeError(
+            "prepared split sizes do not match config: "
+            f"{metadata.get('splits')} != {expected_splits}"
+        )
     if metadata.get("dataset_name") != cfg["dataset"]["name"]:
         raise RuntimeError("prepared dataset identity does not match config")
+    if metadata.get("dataset_config") != cfg["dataset"]["config"]:
+        raise RuntimeError("prepared dataset configuration does not match config")
     if metadata.get("dataset_revision") != cfg["dataset"]["revision"]:
         raise RuntimeError("prepared dataset revision does not match config")
     if metadata.get("tokenizer") != "gpt2":
         raise RuntimeError("prepared tokenizer must be GPT-2 BPE")
+    if metadata.get("dtype") != TOKEN_DTYPE.name:
+        raise RuntimeError("prepared token dtype must be uint16")
+    if metadata.get("document_disjoint_splits") is not True:
+        raise RuntimeError("prepared splits are not marked document-disjoint")
+
+    _validate_file_identity(output_dir, metadata, expected_splits)
     return metadata
 
 
@@ -177,7 +246,7 @@ def prepare_fineweb_edu(
     if not force:
         try:
             metadata = validate_prepared_data(output_dir, cfg)
-            print(f"[one-head-data] reusing prepared data at {output_dir}")
+            print(f"[one-head-data] reusing verified data at {output_dir}")
             return metadata
         except FileNotFoundError:
             pass
@@ -187,12 +256,14 @@ def prepare_fineweb_edu(
         from datasets import load_dataset
     except ImportError as exc:
         raise RuntimeError(
-            "data preparation requires datasets and tiktoken; run scripts/setup_mac.sh"
+            "data preparation requires datasets and tiktoken; "
+            "run scripts/setup_mac.sh"
         ) from exc
 
     dataset_cfg = cfg["dataset"]
     print(
-        "[one-head-data] streaming pinned FineWeb-Edu; the first run requires internet access",
+        "[one-head-data] streaming pinned FineWeb-Edu; "
+        "the first run requires internet access",
         flush=True,
     )
     stream = load_dataset(
@@ -217,22 +288,32 @@ def prepare_fineweb_edu(
             "dataset_revision": str(dataset_cfg["revision"]),
         },
     )
-    print(f"[one-head-data] complete: {output_dir}")
+    validate_prepared_data(output_dir, cfg)
+    print(f"[one-head-data] complete and verified: {output_dir}")
     return metadata
 
 
-def load_memmaps(output_dir: str | Path, cfg: dict) -> tuple[dict[str, object], dict[str, np.memmap]]:
+def load_memmaps(
+    output_dir: str | Path,
+    cfg: dict,
+) -> tuple[dict[str, object], dict[str, np.memmap]]:
     output_dir = Path(output_dir)
     metadata = validate_prepared_data(output_dir, cfg)
     arrays = {
-        split: np.memmap(output_dir / f"{split}.bin", dtype=TOKEN_DTYPE, mode="r")
-        for split in ("train", "val", "test")
+        split: np.memmap(
+            output_dir / f"{split}.bin",
+            dtype=TOKEN_DTYPE,
+            mode="r",
+        )
+        for split in SPLIT_NAMES
     }
     return metadata, arrays
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Prepare the pinned FineWeb-Edu one-head baseline corpus")
+    parser = argparse.ArgumentParser(
+        description="Prepare the pinned FineWeb-Edu one-head baseline corpus"
+    )
     parser.add_argument("--config", required=True)
     parser.add_argument("--output-dir")
     parser.add_argument("--force", action="store_true")

@@ -1,11 +1,12 @@
-"""Load, validate, compare, and persist the three clean MNIST baselines."""
+"""Load, validate, compare, and persist the three MNIST reference baselines."""
+
 from __future__ import annotations
 
 import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 import pandas as pd
@@ -15,9 +16,9 @@ from .statistics import student_t_critical_95, summarize_numeric_metrics
 
 OPTIMIZER_ORDER = ("sgd_momentum", "adamw", "sgd_momentum_muon")
 OPTIMIZER_LABELS = {
-    "sgd_momentum": "SGD + momentum",
+    "sgd_momentum": "SGD + Nesterov momentum",
     "adamw": "AdamW",
-    "sgd_momentum_muon": "SGD + momentum + Muon",
+    "sgd_momentum_muon": "Muon + auxiliary AdamW",
 }
 OPTIMIZER_COLORS = {
     "sgd_momentum": "#0072B2",
@@ -35,9 +36,14 @@ REQUIRED_AGGREGATE_FILES = (
 SHARED_CONFIG_KEYS = (
     "epochs",
     "batch_size",
+    "validation_size",
+    "split_seed",
     "num_workers",
     "grad_clip_norm",
     "train_eval_max_batches",
+    "schedule",
+    "checkpoint_every_epochs",
+    "test_monitoring_only",
     "ww_min_evals",
     "ww_max_evals",
     "ww_svd_method",
@@ -47,13 +53,20 @@ SHARED_CONFIG_KEYS = (
 )
 PERFORMANCE_METRICS = (
     "train_loss",
+    "validation_loss",
     "test_loss",
     "train_accuracy",
+    "validation_accuracy",
     "test_accuracy",
     "train_perplexity",
+    "validation_perplexity",
     "test_perplexity",
-    "accuracy_generalization_gap",
-    "loss_generalization_gap",
+    "validation_accuracy_gap",
+    "test_accuracy_gap",
+    "validation_loss_gap",
+    "test_loss_gap",
+    "primary_lr",
+    "auxiliary_lr",
     "mean_gradient_norm_before_clip",
     "max_gradient_norm_before_clip",
     "parameter_l2_norm",
@@ -64,6 +77,7 @@ PERFORMANCE_METRICS = (
 )
 SPECTRAL_METRICS = (
     "alpha",
+    "num_traps",
     "detX_num",
     "num_pl_spikes",
     "ERG_gap",
@@ -83,7 +97,7 @@ SPECTRAL_METRICS = (
     "normalized_lambda_midpoint_cut",
     "eigenvalue_condition_number",
 )
-ACCURACY_THRESHOLDS = (0.90, 0.95, 0.97, 0.98)
+VALIDATION_ACCURACY_THRESHOLDS = (0.90, 0.95, 0.97, 0.98)
 PAIR_ORDER = (
     ("adamw", "sgd_momentum"),
     ("sgd_momentum_muon", "sgd_momentum"),
@@ -92,11 +106,12 @@ PAIR_ORDER = (
 PAIR_METRICS = (
     "test_accuracy",
     "test_loss",
-    "test_perplexity",
+    "validation_accuracy",
+    "validation_loss",
     "train_accuracy",
     "train_loss",
-    "accuracy_generalization_gap",
-    "loss_generalization_gap",
+    "test_accuracy_gap",
+    "test_loss_gap",
 )
 
 
@@ -112,6 +127,8 @@ class BaselineComparisonResult:
     spectral_metrics: pd.DataFrame
     performance_summary: pd.DataFrame
     spectral_summary: pd.DataFrame
+    terminal_by_seed: pd.DataFrame
+    terminal_summary: pd.DataFrame
     final_epoch_summary: pd.DataFrame
     convergence_by_seed: pd.DataFrame
     convergence_summary: pd.DataFrame
@@ -123,6 +140,11 @@ class BaselineComparisonResult:
 def _required_seed_paths(seed_dir: Path, epochs: int) -> list[Path]:
     paths = [
         seed_dir / "final_state.pt",
+        seed_dir / "checkpoint_latest.pt",
+        seed_dir / "checkpoint_best.pt",
+        seed_dir / "run_complete.json",
+        seed_dir / "test_results.json",
+        seed_dir / "manifest.json",
         seed_dir / "config.json",
         seed_dir / "performance_by_epoch.csv",
         seed_dir / "spectral_metrics_by_epoch_and_layer.csv",
@@ -156,11 +178,15 @@ def _load_and_validate(run_root: Path):
         manifests[optimizer] = json.loads(
             (directory / "replicate_manifest.json").read_text(encoding="utf-8")
         )
-        performance = pd.read_csv(directory / "performance_by_epoch_and_seed.csv")
+        performance = pd.read_csv(
+            directory / "performance_by_epoch_and_seed.csv"
+        )
         performance["optimizer"] = optimizer
         performance["optimizer_label"] = OPTIMIZER_LABELS[optimizer]
         performance_frames.append(performance)
-        spectral = pd.read_csv(directory / "spectral_metrics_by_epoch_layer_and_seed.csv")
+        spectral = pd.read_csv(
+            directory / "spectral_metrics_by_epoch_layer_and_seed.csv"
+        )
         spectral["optimizer"] = optimizer
         spectral["optimizer_label"] = OPTIMIZER_LABELS[optimizer]
         spectral_frames.append(spectral)
@@ -170,10 +196,10 @@ def _load_and_validate(run_root: Path):
         for optimizer in OPTIMIZER_ORDER
     }
     if len(set(seed_sets.values())) != 1:
-        raise RuntimeError(f"Optimizer seed tuples differ: {seed_sets}")
+        raise RuntimeError(f"optimizer seed tuples differ: {seed_sets}")
     seeds = seed_sets[OPTIMIZER_ORDER[0]]
     if len(seeds) != 3 or len(set(seeds)) != 3:
-        raise RuntimeError(f"Expected exactly three unique seeds; observed {seeds}")
+        raise RuntimeError(f"expected exactly three unique seeds; observed {seeds}")
 
     for key in SHARED_CONFIG_KEYS:
         values = {
@@ -181,43 +207,52 @@ def _load_and_validate(run_root: Path):
             for optimizer in OPTIMIZER_ORDER
         }
         if len({json.dumps(value, sort_keys=True) for value in values.values()}) != 1:
-            raise RuntimeError(f"Shared configuration key {key!r} differs: {values}")
+            raise RuntimeError(f"shared configuration key {key!r} differs: {values}")
 
     epochs = int(manifests[OPTIMIZER_ORDER[0]]["config_template"]["epochs"])
-    if not all(
-        bool(manifests[optimizer]["config_template"]["save_epoch_checkpoints"])
-        for optimizer in OPTIMIZER_ORDER
-    ):
-        raise RuntimeError("Every baseline must enable save_epoch_checkpoints=True")
-
     inventory_rows = []
     for optimizer in OPTIMIZER_ORDER:
         for seed in seeds:
             seed_dir = run_root / optimizer / "seeds" / f"seed_{seed}"
-            missing = [path for path in _required_seed_paths(seed_dir, epochs) if not path.is_file()]
-            if missing:
+            missing_seed = [
+                path for path in _required_seed_paths(seed_dir, epochs)
+                if not path.is_file()
+            ]
+            if missing_seed:
                 raise RuntimeError(
-                    f"Incomplete persisted artifacts for {optimizer}, seed={seed}:\n"
-                    + "\n".join(f"  - {path}" for path in missing)
+                    f"incomplete artifacts for {optimizer}, seed={seed}:\n"
+                    + "\n".join(f"  - {path}" for path in missing_seed)
                 )
+            completion = json.loads(
+                (seed_dir / "run_complete.json").read_text(encoding="utf-8")
+            )
+            if completion.get("completed") is not True:
+                raise RuntimeError(f"run is not complete: {seed_dir}")
             inventory_rows.append(
                 {
                     "optimizer": optimizer,
                     "optimizer_label": OPTIMIZER_LABELS[optimizer],
                     "seed": seed,
                     "epoch_checkpoints": epochs,
+                    "best_validation_epoch": completion["best_validation_epoch"],
                     "final_state": str(seed_dir / "final_state.pt"),
                 }
             )
 
-    performance = pd.concat(performance_frames, ignore_index=True)
-    spectral = pd.concat(spectral_frames, ignore_index=True)
-    expected_perf = {(seed, epoch) for seed in seeds for epoch in range(epochs + 1)}
+    performance = pd.concat(performance_frames, ignore_index=True, sort=False)
+    spectral = pd.concat(spectral_frames, ignore_index=True, sort=False)
+    expected_perf = {
+        (seed, epoch) for seed in seeds for epoch in range(epochs + 1)
+    }
     for optimizer in OPTIMIZER_ORDER:
         rows = performance.loc[performance["optimizer"].eq(optimizer)]
-        observed = set(zip(rows["seed"].astype(int), rows["epoch"].astype(int)))
+        observed = set(
+            zip(rows["seed"].astype(int), rows["epoch"].astype(int), strict=False)
+        )
         if observed != expected_perf or len(rows) != len(expected_perf):
-            raise RuntimeError(f"Incomplete or duplicate performance grid for {optimizer}")
+            raise RuntimeError(f"incomplete or duplicate performance grid for {optimizer}")
+        if not rows["test_monitoring_only"].astype(int).eq(1).all():
+            raise RuntimeError(f"test policy violation for {optimizer}")
 
     valid = spectral.loc[spectral["status"].astype(str).eq("ok")].copy()
     expected_spectral = {
@@ -233,22 +268,43 @@ def _load_and_validate(run_root: Path):
                 rows["seed"].astype(int),
                 rows["epoch"].astype(int),
                 rows["layer"].astype(str),
+                strict=False,
             )
         )
         if observed != expected_spectral or len(rows) != len(expected_spectral):
-            raise RuntimeError(f"Incomplete or duplicate spectral grid for {optimizer}")
+            raise RuntimeError(f"incomplete or duplicate spectral grid for {optimizer}")
 
     performance["train_perplexity"] = np.exp(performance["train_loss"].astype(float))
+    performance["validation_perplexity"] = np.exp(
+        performance["validation_loss"].astype(float)
+    )
     performance["test_perplexity"] = np.exp(performance["test_loss"].astype(float))
-    performance["accuracy_generalization_gap"] = (
-        performance["train_accuracy"].astype(float)
-        - performance["test_accuracy"].astype(float)
+    return (
+        manifests,
+        seeds,
+        epochs,
+        pd.DataFrame(inventory_rows),
+        performance,
+        spectral,
+        valid,
     )
-    performance["loss_generalization_gap"] = (
-        performance["test_loss"].astype(float)
-        - performance["train_loss"].astype(float)
-    )
-    return manifests, seeds, epochs, pd.DataFrame(inventory_rows), performance, spectral, valid
+
+
+def _terminal_rows(performance: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for (optimizer, seed), run in performance.groupby(
+        ["optimizer", "seed"], sort=True
+    ):
+        ordered = run.sort_values("epoch")
+        final = ordered.iloc[-1].copy()
+        final["checkpoint"] = "final"
+        rows.append(final)
+        selected = ordered.sort_values(
+            ["validation_loss", "epoch"], ascending=[True, True]
+        ).iloc[0].copy()
+        selected["checkpoint"] = "validation_selected"
+        rows.append(selected)
+    return pd.DataFrame(rows).reset_index(drop=True)
 
 
 def _convergence(performance: pd.DataFrame, seeds: tuple[int, ...], epochs: int):
@@ -259,30 +315,34 @@ def _convergence(performance: pd.DataFrame, seeds: tuple[int, ...], epochs: int)
                 performance["optimizer"].eq(optimizer)
                 & performance["seed"].astype(int).eq(seed)
             ].sort_values("epoch")
-            best = float(run["test_accuracy"].max())
+            selected = run.sort_values(
+                ["validation_loss", "epoch"], ascending=[True, True]
+            ).iloc[0]
             final = run.loc[run["epoch"].astype(int).eq(epochs)].iloc[0]
             row = {
                 "optimizer": optimizer,
                 "optimizer_label": OPTIMIZER_LABELS[optimizer],
                 "seed": seed,
-                "best_test_accuracy": best,
-                "best_test_accuracy_epoch": int(
-                    run.loc[run["test_accuracy"].eq(best), "epoch"].min()
-                ),
+                "best_validation_loss": float(selected["validation_loss"]),
+                "best_validation_epoch": int(selected["epoch"]),
+                "validation_selected_test_accuracy": float(selected["test_accuracy"]),
+                "validation_selected_test_loss": float(selected["test_loss"]),
                 "final_test_accuracy": float(final["test_accuracy"]),
                 "final_test_loss": float(final["test_loss"]),
-                "final_test_perplexity": float(final["test_perplexity"]),
-                "mean_test_accuracy_over_epochs": float(run["test_accuracy"].mean()),
-                "mean_test_loss_over_epochs": float(run["test_loss"].mean()),
             }
-            for threshold in ACCURACY_THRESHOLDS:
-                reached = run.loc[run["test_accuracy"].astype(float).ge(threshold), "epoch"]
-                row[f"epoch_to_test_accuracy_{threshold:.2f}"] = (
+            for threshold in VALIDATION_ACCURACY_THRESHOLDS:
+                reached = run.loc[
+                    run["validation_accuracy"].astype(float).ge(threshold), "epoch"
+                ]
+                row[f"epoch_to_validation_accuracy_{threshold:.2f}"] = (
                     float(reached.min()) if not reached.empty else float("nan")
                 )
             rows.append(row)
     frame = pd.DataFrame(rows)
-    metrics = [column for column in frame.columns if column not in {"optimizer", "optimizer_label", "seed"}]
+    metrics = [
+        column for column in frame.columns
+        if column not in {"optimizer", "optimizer_label", "seed"}
+    ]
     summary = summarize_numeric_metrics(
         frame,
         group_columns=("optimizer", "optimizer_label"),
@@ -292,45 +352,48 @@ def _convergence(performance: pd.DataFrame, seeds: tuple[int, ...], epochs: int)
     return frame, summary
 
 
-def _paired_final(performance: pd.DataFrame, seeds: tuple[int, ...], epochs: int) -> pd.DataFrame:
-    final = performance.loc[performance["epoch"].astype(int).eq(epochs)].copy()
+def _paired_terminal(terminal: pd.DataFrame, seeds: tuple[int, ...]) -> pd.DataFrame:
     rows = []
-    for optimizer_a, optimizer_b in PAIR_ORDER:
-        for metric in PAIR_METRICS:
-            a = final.loc[final["optimizer"].eq(optimizer_a), ["seed", metric]].rename(
-                columns={metric: "value_a"}
-            )
-            b = final.loc[final["optimizer"].eq(optimizer_b), ["seed", metric]].rename(
-                columns={metric: "value_b"}
-            )
-            paired = a.merge(b, on="seed", validate="one_to_one").sort_values("seed")
-            if tuple(paired["seed"].astype(int)) != tuple(sorted(seeds)):
-                raise RuntimeError((optimizer_a, optimizer_b, metric, "seed mismatch"))
-            deltas = (paired["value_a"] - paired["value_b"]).to_numpy(dtype=float)
-            n = int(deltas.size)
-            mean = float(np.mean(deltas))
-            std = float(np.std(deltas, ddof=1))
-            sem = float(std / math.sqrt(n))
-            critical = student_t_critical_95(n)
-            half = float(critical * sem)
-            rows.append(
-                {
-                    "optimizer_a": optimizer_a,
-                    "optimizer_b": optimizer_b,
-                    "contrast": f"{OPTIMIZER_LABELS[optimizer_a]} - {OPTIMIZER_LABELS[optimizer_b]}",
-                    "metric": metric,
-                    "n": n,
-                    "mean_difference": mean,
-                    "std_difference": std,
-                    "sem_difference": sem,
-                    "critical_value": critical,
-                    "ci_half_width": half,
-                    "ci_low": mean - half,
-                    "ci_high": mean + half,
-                    "minimum_difference": float(np.min(deltas)),
-                    "maximum_difference": float(np.max(deltas)),
-                }
-            )
+    for checkpoint in ("final", "validation_selected"):
+        selected = terminal.loc[terminal["checkpoint"].eq(checkpoint)]
+        for optimizer_a, optimizer_b in PAIR_ORDER:
+            for metric in PAIR_METRICS:
+                a = selected.loc[
+                    selected["optimizer"].eq(optimizer_a), ["seed", metric]
+                ].rename(columns={metric: "value_a"})
+                b = selected.loc[
+                    selected["optimizer"].eq(optimizer_b), ["seed", metric]
+                ].rename(columns={metric: "value_b"})
+                paired = a.merge(b, on="seed", validate="one_to_one").sort_values("seed")
+                if tuple(paired["seed"].astype(int)) != tuple(sorted(seeds)):
+                    raise RuntimeError(
+                        (optimizer_a, optimizer_b, checkpoint, metric, "seed mismatch")
+                    )
+                deltas = (paired["value_a"] - paired["value_b"]).to_numpy(dtype=float)
+                n = int(deltas.size)
+                mean = float(np.mean(deltas))
+                std = float(np.std(deltas, ddof=1))
+                sem = std / math.sqrt(n)
+                half = student_t_critical_95(n) * sem
+                rows.append(
+                    {
+                        "checkpoint": checkpoint,
+                        "optimizer_a": optimizer_a,
+                        "optimizer_b": optimizer_b,
+                        "contrast": (
+                            f"{OPTIMIZER_LABELS[optimizer_a]} - "
+                            f"{OPTIMIZER_LABELS[optimizer_b]}"
+                        ),
+                        "metric": metric,
+                        "n": n,
+                        "mean_difference": mean,
+                        "std_difference": std,
+                        "sem_difference": sem,
+                        "ci_half_width": half,
+                        "ci_low": mean - half,
+                        "ci_high": mean + half,
+                    }
+                )
     return pd.DataFrame(rows)
 
 
@@ -340,45 +403,70 @@ def run_baseline_comparison(
     output_dir: str | Path | None = None,
     show_plots: bool = True,
 ) -> BaselineComparisonResult:
-    """Validate all persisted baselines and write the complete comparison package."""
     root = Path(run_root).expanduser().resolve()
-    output = Path(output_dir).expanduser().resolve() if output_dir else root / "comparison"
+    output = (
+        Path(output_dir).expanduser().resolve()
+        if output_dir else root / "comparison"
+    )
     plots = output / "plots"
     output.mkdir(parents=True, exist_ok=True)
     plots.mkdir(parents=True, exist_ok=True)
 
-    manifests, seeds, epochs, inventory, performance, spectral, valid = _load_and_validate(root)
+    (
+        manifests,
+        seeds,
+        epochs,
+        inventory,
+        performance,
+        spectral,
+        valid,
+    ) = _load_and_validate(root)
     inventory.to_csv(output / "checkpoint_inventory.csv", index=False)
-    performance.to_csv(output / "all_optimizers_performance_by_epoch_and_seed.csv", index=False)
-    spectral.to_csv(output / "all_optimizers_spectral_metrics_by_epoch_layer_and_seed.csv", index=False)
+    performance.to_csv(
+        output / "all_optimizers_performance_by_epoch_and_seed.csv", index=False
+    )
+    spectral.to_csv(
+        output / "all_optimizers_spectral_metrics_by_epoch_layer_and_seed.csv",
+        index=False,
+    )
 
-    perf_metrics = [metric for metric in PERFORMANCE_METRICS if metric in performance.columns]
-    spectral_metrics = [metric for metric in SPECTRAL_METRICS if metric in valid.columns]
     performance_summary = summarize_numeric_metrics(
         performance,
         group_columns=("optimizer", "optimizer_label", "epoch"),
-        metrics=perf_metrics,
+        metrics=[metric for metric in PERFORMANCE_METRICS if metric in performance],
         confidence=0.95,
     )
     spectral_summary = summarize_numeric_metrics(
         valid,
         group_columns=("optimizer", "optimizer_label", "layer", "epoch"),
-        metrics=spectral_metrics,
+        metrics=[metric for metric in SPECTRAL_METRICS if metric in valid],
         confidence=0.95,
     )
-    final_summary = performance_summary.loc[
-        performance_summary["epoch"].astype(int).eq(epochs)
+    terminal = _terminal_rows(performance)
+    terminal_summary = summarize_numeric_metrics(
+        terminal,
+        group_columns=("optimizer", "optimizer_label", "checkpoint"),
+        metrics=[
+            metric for metric in PERFORMANCE_METRICS
+            if metric in terminal and metric not in {"primary_lr", "auxiliary_lr"}
+        ],
+        confidence=0.95,
+    )
+    final_summary = terminal_summary.loc[
+        terminal_summary["checkpoint"].eq("final")
     ].copy()
     convergence, convergence_summary = _convergence(performance, seeds, epochs)
-    paired = _paired_final(performance, seeds, epochs)
+    paired = _paired_terminal(terminal, seeds)
 
     table_map = {
         "performance_summary_95ci.csv": performance_summary,
         "spectral_summary_95ci.csv": spectral_summary,
+        "terminal_by_seed.csv": terminal,
+        "terminal_summary_95ci.csv": terminal_summary,
         "final_epoch_summary_95ci.csv": final_summary,
         "convergence_by_seed.csv": convergence,
         "convergence_summary_95ci.csv": convergence_summary,
-        "paired_final_differences_95ci.csv": paired,
+        "paired_terminal_differences_95ci.csv": paired,
     }
     for filename, frame in table_map.items():
         frame.to_csv(output / filename, index=False)
@@ -396,32 +484,36 @@ def run_baseline_comparison(
         colors=OPTIMIZER_COLORS,
         show=show_plots,
     )
-    manifest = {
-        "source_run_root": str(root),
-        "comparison_dir": str(output),
-        "optimizers": [
-            {"optimizer": optimizer, "optimizer_label": OPTIMIZER_LABELS[optimizer]}
-            for optimizer in OPTIMIZER_ORDER
-        ],
-        "seeds": list(seeds),
-        "replicate_count": len(seeds),
-        "epochs": epochs,
-        "final_epoch": epochs,
-        "confidence": 0.95,
-        "error_bar_definition": (
-            "two-sided 95% Student-t confidence interval across independent complete runs"
-        ),
-        "paired_contrast_definition": "optimizer_a minus optimizer_b within matched seed",
-        "derived_metrics": {
-            "train_perplexity": "exp(train_loss)",
-            "test_perplexity": "exp(test_loss)",
-            "accuracy_generalization_gap": "train_accuracy - test_accuracy",
-            "loss_generalization_gap": "test_loss - train_loss",
-        },
-        "plot_files": [str(path.relative_to(output)) for path in plot_paths],
-    }
     manifest_path = output / "comparison_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "source_run_root": str(root),
+                "comparison_dir": str(output),
+                "optimizers": list(OPTIMIZER_ORDER),
+                "optimizer_labels": OPTIMIZER_LABELS,
+                "seeds": list(seeds),
+                "epochs": epochs,
+                "confidence": 0.95,
+                "selection_policy": (
+                    "validation loss selects the reported checkpoint; the "
+                    "official test set is monitoring-only"
+                ),
+                "error_bar_definition": (
+                    "two-sided 95% Student-t confidence interval across "
+                    "independent complete runs"
+                ),
+                "paired_contrast_definition": (
+                    "optimizer_a minus optimizer_b within matched seed"
+                ),
+                "plot_files": [
+                    str(path.relative_to(output)) for path in plot_paths
+                ],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
     expected = (
         output / "checkpoint_inventory.csv",
@@ -434,9 +526,10 @@ def run_baseline_comparison(
     missing = [path for path in expected if not path.is_file()]
     if missing:
         raise RuntimeError(
-            "Comparison did not persist every expected output:\n"
+            "comparison did not persist every expected output:\n"
             + "\n".join(f"  - {path}" for path in missing)
         )
+
     return BaselineComparisonResult(
         run_root=root,
         output_dir=output,
@@ -448,6 +541,8 @@ def run_baseline_comparison(
         spectral_metrics=spectral,
         performance_summary=performance_summary,
         spectral_summary=spectral_summary,
+        terminal_by_seed=terminal,
+        terminal_summary=terminal_summary,
         final_epoch_summary=final_summary,
         convergence_by_seed=convergence,
         convergence_summary=convergence_summary,

@@ -1,79 +1,69 @@
 # Baseline notebooks
 
-The notebook directory contains the interactive entry points for the reference
-experiments documented in
-[`../BASELINE_RECIPE_AUDIT.md`](../BASELINE_RECIPE_AUDIT.md).
+These notebooks are the interactive entry points for the audited reference
+experiments. Read both [`../BASELINE_RECIPE_AUDIT.md`](../BASELINE_RECIPE_AUDIT.md)
+and [`../BASELINE_EXECUTION_REVIEW.md`](../BASELINE_EXECUTION_REVIEW.md).
 
 ## MNIST / MLP3
 
-Run in this order:
+Run in order:
 
 1. `MNIST_MLP3_SGD_Momentum_Baseline.ipynb`
 2. `MNIST_MLP3_AdamW_Baseline.ipynb`
 3. `MNIST_MLP3_SGD_Momentum_Muon_Baseline.ipynb`
 4. `MNIST_MLP3_Baseline_Comparison.ipynb`
 
-The three training notebooks use the same MLP, data, seed set, 30-epoch budget,
-evaluation protocol, WeightWatcher calls, and checkpoint cadence. They differ
-only in their optimizer-specific reference recipes:
+The three training notebooks use the same deterministic 55k/5k
+optimization/validation split, official monitoring-only test set, MLP, seeds,
+30-epoch budget, step-level warm-up/cosine schedule implementation,
+WeightWatcher cadence, and restart protocol. They differ only in their
+optimizer-specific reference recipe.
 
-```text
-SGD + Nesterov:
-  peak LR 0.05
-  2-epoch warm-up
-  cosine floor 5e-4
-  momentum 0.90
-  matrix weight decay 1e-4
-
-AdamW:
-  peak LR 1e-3
-  1-epoch warm-up
-  cosine floor 1e-5
-  betas (0.90, 0.999)
-  matrix weight decay 1e-2
-
-Muon + auxiliary AdamW:
-  hidden-matrix LR 0.02 -> 0.002
-  auxiliary AdamW LR 3e-4 -> 3e-5
-  2-epoch warm-up
-  Muon momentum 0.95
-  five Newton-Schulz steps
-```
-
-The historical result path `sgd_momentum_muon` is retained, but that arm now
-uses the reference auxiliary-AdamW parameter partition.
+Every notebook can be rerun safely. Compatible completed seeds are loaded;
+compatible incomplete seeds resume from `checkpoint_latest.pt`; incompatible
+fingerprints fail visibly. The comparison notebook reports final and
+validation-selected checkpoints and never selects on test performance.
 
 ## CIFAR-10 / small ViT
 
 Run `CIFAR10_ViT_Optimizer_Baselines.ipynb`.
 
-The notebook runs three optimizers × three seeds on a fixed 45k/5k
-train/validation split. The official test set is monitoring-only. The committed
-300-epoch recipe uses RandAugment, color jitter, mixup, CutMix, label smoothing,
-random erasing, stochastic depth, gradient clipping, optimizer-specific
-warm-up/cosine schedules, validation-selected best checkpoints, and restartable
-latest checkpoints.
+The notebook executes three optimizers × three seeds under the fixed 45k/5k
+optimization/validation split and protected official test set. It uses the
+300-epoch DeiT-style regularization recipe and hardened restart runtime. All
+performance bands use the three complete runs. Layer plots give every physical
+matrix its own curve and do not pool transformer blocks as extra replicates.
 
-## nanochat d12
+## nanochat
 
 Run `NanoChat_D12_Reference_Baseline.ipynb`.
 
-This notebook pins and runs native upstream nanochat d12. The upstream
-initialization, data/tokenizer pipeline, parameter groups, scaling rules, and
-learning-rate/momentum/weight-decay schedules remain unchanged. WeightWatcher
-runs offline on saved checkpoints.
+The notebook has two explicit profiles from the pinned upstream implementation:
+
+- `d12`: canonical CUDA/server reference;
+- `mac_d4`: separate Apple-MPS development baseline.
+
+`RG_NANOCHAT_PROFILE=auto` selects d12 on CUDA and mac_d4 on MPS/CPU. The
+notebook creates the platform-correct uv environment, uses one process on
+MPS/CPU, resumes from complete model/metadata/optimizer-shard checkpoints,
+keeps profile caches separate, and performs offline WeightWatcher analysis only
+on principal hidden matrices.
 
 ## One-head nanoGPT
 
 The one-head FineWeb-Edu notebooks live in `../nanogpt_one_head/notebooks/`.
-See [`../nanogpt_one_head/README.md`](../nanogpt_one_head/README.md).
+See [`../nanogpt_one_head/README.md`](../nanogpt_one_head/README.md). Their
+prepared corpus is verified by identity, exact byte count, and SHA-256 before
+reuse.
 
-## WeightWatcher
+## WeightWatcher and uncertainty
 
-Reference notebooks require direct outputs from:
+Strict reference notebooks require direct output from:
 
 ```python
 watcher.analyze(ERG=True, randomize=True, ...)
 ```
 
 No fallback alpha, proxy `num_traps`, or fabricated `ERG_gap` is permitted.
+The unit of replication for every confidence interval is a complete training
+run, never a layer, matrix, checkpoint, or fit point.

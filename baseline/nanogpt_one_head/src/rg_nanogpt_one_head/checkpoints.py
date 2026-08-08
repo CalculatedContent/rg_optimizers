@@ -22,6 +22,31 @@ def _atomic_torch_save(payload: dict[str, Any], path: Path) -> Path:
     return path
 
 
+def _capture_accelerator_rng_state() -> dict[str, Any]:
+    state: dict[str, Any] = {}
+    if torch.cuda.is_available():
+        state["cuda_random_state_all"] = torch.cuda.get_rng_state_all()
+    if (
+        hasattr(torch, "mps")
+        and hasattr(torch.mps, "get_rng_state")
+        and torch.backends.mps.is_available()
+    ):
+        state["mps_random_state"] = torch.mps.get_rng_state()
+    return state
+
+
+def _restore_accelerator_rng_state(payload: dict[str, Any]) -> None:
+    if torch.cuda.is_available() and "cuda_random_state_all" in payload:
+        torch.cuda.set_rng_state_all(payload["cuda_random_state_all"])
+    if (
+        "mps_random_state" in payload
+        and hasattr(torch, "mps")
+        and hasattr(torch.mps, "set_rng_state")
+        and torch.backends.mps.is_available()
+    ):
+        torch.mps.set_rng_state(payload["mps_random_state"])
+
+
 def save_training_checkpoint(
     path: str | Path,
     *,
@@ -38,7 +63,7 @@ def save_training_checkpoint(
     train_generator: torch.Generator,
 ) -> Path:
     payload: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "model": model.state_dict(),
         "optimizers": optimizer_state_dict(handles),
         "step": int(step),
@@ -53,9 +78,8 @@ def save_training_checkpoint(
         "numpy_random_state": np.random.get_state(),
         "torch_random_state": torch.random.get_rng_state(),
         "train_generator_state": train_generator.get_state(),
+        **_capture_accelerator_rng_state(),
     }
-    if torch.cuda.is_available():
-        payload["cuda_random_state_all"] = torch.cuda.get_rng_state_all()
     return _atomic_torch_save(payload, Path(path))
 
 
@@ -70,15 +94,16 @@ def load_training_checkpoint(
     path = Path(path)
     payload = torch.load(path, map_location="cpu", weights_only=False)
     if str(payload.get("fingerprint")) != str(expected_fingerprint):
-        raise RuntimeError("checkpoint protocol fingerprint does not match the requested run")
+        raise RuntimeError(
+            "checkpoint protocol fingerprint does not match the requested run"
+        )
     model.load_state_dict(payload["model"])
     load_optimizer_state_dict(handles, payload["optimizers"])
     random.setstate(payload["python_random_state"])
     np.random.set_state(payload["numpy_random_state"])
     torch.random.set_rng_state(payload["torch_random_state"])
     train_generator.set_state(payload["train_generator_state"])
-    if torch.cuda.is_available() and "cuda_random_state_all" in payload:
-        torch.cuda.set_rng_state_all(payload["cuda_random_state_all"])
+    _restore_accelerator_rng_state(payload)
     return (
         int(payload["step"]),
         float(payload["best_validation_loss"]),
