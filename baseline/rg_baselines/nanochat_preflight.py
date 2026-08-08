@@ -29,6 +29,13 @@ from .nanochat_reference import detect_device_type
 _MARKER = "NANOCHAT_PREFLIGHT_JSON="
 
 
+def _preflight_python(checkout: Path) -> str:
+    """Prefer nanochat's synced uv interpreter when it already exists."""
+
+    candidate = checkout / ".venv" / "bin" / "python"
+    return str(candidate) if candidate.is_file() else sys.executable
+
+
 def run_device_preflight(
     checkout_dir: str | Path,
     *,
@@ -97,8 +104,9 @@ print("NANOCHAT_PREFLIGHT_JSON=" + json.dumps({
     )
     if resolved == "mps":
         env[MPS_FALLBACK_ENV] = "1"
+    interpreter = _preflight_python(checkout)
     process = subprocess.run(
-        [sys.executable, "-c", code],
+        [interpreter, "-c", code],
         cwd=checkout,
         env=env,
         text=True,
@@ -123,6 +131,7 @@ print("NANOCHAT_PREFLIGHT_JSON=" + json.dumps({
         {
             "compile_enabled": compile_enabled_for_device(resolved),
             "checkout": str(checkout),
+            "python": interpreter,
         }
     )
     return result
