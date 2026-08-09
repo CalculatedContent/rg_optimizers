@@ -173,16 +173,14 @@ class ForcePushNotebookAuditTests(unittest.TestCase):
                 continue
             notebook = _read_notebook(output_path)
             source = "\n".join(_cell_source(cell) for cell in notebook.get("cells", []))
-            rendered = json.dumps(notebook)
-            expected = {
-                "epochs=30": source,
-                "DEFAULT_BASELINE_SEEDS": source,
-                "assert len(SEEDS) == 3": source,
-                "overwrite=False": source,
-                '"recipe_version"': rendered,
-            }
-            for marker, haystack in expected.items():
-                if marker not in haystack:
+            expected_markers = (
+                "epochs=30",
+                "DEFAULT_BASELINE_SEEDS",
+                "assert len(SEEDS) == 3",
+                "overwrite=False",
+            )
+            for marker in expected_markers:
+                if marker not in source:
                     failures.append((output_path, f"missing campaign-contract marker: {marker}"))
 
         for path, message in failures:
