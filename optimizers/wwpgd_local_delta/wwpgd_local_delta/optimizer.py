@@ -70,6 +70,27 @@ class LocalDeltaECSOptimizer:
             )
         }
 
+    def _is_due(self, epoch: int) -> bool:
+        return int(epoch) >= int(self.config.warmup_epochs) and (
+            (int(epoch) + 1) % int(self.config.apply_every_epochs) == 0
+        )
+
+    def _first_due_epoch(self) -> int:
+        warmup = int(self.config.warmup_epochs)
+        cadence = int(self.config.apply_every_epochs)
+        return warmup + (-(warmup + 1)) % cadence
+
+    def _provenance_stats(
+        self, *, epoch: int, dose_value: Optional[float]
+    ) -> dict[str, Any]:
+        return {
+            "actuator_id": "wwpgd_local_delta",
+            "ecs_backend": "self_consistent_local_geometry",
+            "dose_definition": "removed_frobenius_over_base_epoch_delta_frobenius",
+            "dose_value": None if dose_value is None else float(dose_value),
+            "is_first_apply": int(epoch) == self._first_due_epoch(),
+        }
+
     @torch.no_grad()
     def begin_epoch(self) -> None:
         if self._epoch_active and self.config.strict_epoch_lifecycle:
@@ -118,6 +139,9 @@ class LocalDeltaECSOptimizer:
             "optimizer_state_adjusted": bool(adjusted),
             "optimizer_state_adjusted_keys": adjusted,
             "optimizer_state_orthogonal_fractions": state_fractions,
+            **self._provenance_stats(
+                epoch=epoch, dose_value=result.removed_fraction_of_base
+            ),
         }
         for key in (
             "correction_fraction", "ecs_rank", "ecs_fraction", "normalization_dimension",
@@ -140,13 +164,16 @@ class LocalDeltaECSOptimizer:
             message = "apply_epoch_delta_correction() called without begin_epoch()."
             if self.config.strict_epoch_lifecycle:
                 raise RuntimeError(message)
-            return [{"epoch": current_epoch, "global_step": self.global_step,
-                     "status": "skipped", "reason": message}]
+            return [{
+                "epoch": current_epoch,
+                "global_step": self.global_step,
+                "status": "skipped",
+                "reason": message,
+                "reference": self.config.reference,
+                **self._provenance_stats(epoch=current_epoch, dose_value=None),
+            }]
 
-        due = current_epoch >= int(self.config.warmup_epochs) and (
-            (current_epoch + 1) % int(self.config.apply_every_epochs) == 0
-        )
-        if not due:
+        if not self._is_due(current_epoch):
             self._epoch_start, self._epoch_active, self.epoch_index = {}, False, current_epoch + 1
             return []
 
@@ -178,6 +205,9 @@ class LocalDeltaECSOptimizer:
                         "epoch": current_epoch, "global_step": self.global_step,
                         "parameter": name, "status": "geometry_failed",
                         "reason": str(exc), "reference": self.config.reference,
+                        **self._provenance_stats(
+                            epoch=current_epoch, dose_value=None
+                        ),
                     })
                     continue
                 candidate = before + result.corrected_delta.to(parameter.device, parameter.dtype)
