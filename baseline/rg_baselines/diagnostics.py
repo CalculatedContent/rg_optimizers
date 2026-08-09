@@ -96,6 +96,8 @@ def clean_positive_eigenvalues(
     if evals.size < 2:
         raise ValueError("fewer than two finite positive eigenvalues")
     return evals
+
+
 def _entropy_effective_rank(evals: np.ndarray) -> float:
     total = float(np.sum(evals))
     if total <= 0.0:
