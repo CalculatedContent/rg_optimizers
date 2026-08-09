@@ -54,10 +54,34 @@ jobs:
           python -m pip install --no-deps -e "${{ matrix.path }}"
 
       - name: Compile package and tests
+        env:
+          PACKAGE_ROOT: ${{ matrix.path }}/${{ matrix.package }}
+          TEST_ROOT: ${{ matrix.path }}/tests
         run: |
-          python -m compileall -q \
-            "${{ matrix.path }}/${{ matrix.package }}" \
-            "${{ matrix.path }}/tests"
+          python - <<'PY'
+          import os
+          import pathlib
+          import py_compile
+          import sys
+
+          failures = []
+          for root_name in (os.environ["PACKAGE_ROOT"], os.environ["TEST_ROOT"]):
+              root = pathlib.Path(root_name)
+              if not root.is_dir():
+                  failures.append((root, "expected directory does not exist"))
+                  continue
+              for path in sorted(root.rglob("*.py")):
+                  try:
+                      py_compile.compile(str(path), doraise=True)
+                  except py_compile.PyCompileError as exc:
+                      failures.append((path, str(exc)))
+
+          for path, message in failures:
+              escaped = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+              print(f"::error file={path},line=1::{escaped}")
+          if failures:
+              raise SystemExit(1)
+          PY
 
       - name: Run complete package test suite
         env:
