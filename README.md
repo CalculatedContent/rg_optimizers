@@ -231,18 +231,20 @@ long-horizon target-hardware campaigns.
 
 ## Optimizer variants
 
-- [`optimizers/trace_log_tracker`](optimizers/trace_log_tracker): removes or
-  tracks the trace-log-normal component of a completed optimizer matrix step.
-- [`optimizers/adaptive_spectral_guard`](optimizers/adaptive_spectral_guard):
-  adds cadence, hysteresis, confidence gating, trace-log volume and shape
-  channels, and a first-order task-loss safeguard.
-- [`optimizers/self_consistent_trace_log_tracker`](optimizers/self_consistent_trace_log_tracker):
-  recomputes the ECS with bulk-effective self-consistent normalization.
-- [`optimizers/spectral_rg_flow_projector`](optimizers/spectral_rg_flow_projector):
-  subtracts only the optimizer displacement aligned with a local spectral
-  collapse direction.
-- [`optimizers/ecs_probe_loss_trace_wall`](optimizers/ecs_probe_loss_trace_wall):
-  adds a line-searched, task-directed ECS probe-loss component.
+The authoritative cross-package catalog is
+[`OPTIMIZER_VARIANTS.md`](OPTIMIZER_VARIANTS.md). It covers all seven
+independent optimizer experiment folders and keeps the following concepts
+separate:
 
-Each optimizer implementation lives in its own folder so it can be evaluated
-against the same frozen reference suite.
+- the actuator applied to the optimizer flow;
+- the ECS, retained support, or spectral geometry used by that actuator;
+- the intervention cadence and experimental status; and
+- the exact numerator, denominator, and time window of any reported dose.
+
+The map also defines the density-exponent versus rank-order-exponent
+correspondence without overloading the Marchenko–Pastur aspect-ratio symbol
+`q`, and documents the corrected `wwpgd_local_delta` provenance fields.
+
+`baseline/` contains no RG intervention. Each optimizer package remains an
+independent experiment that must be evaluated against the same frozen reference
+suite and its own README.
