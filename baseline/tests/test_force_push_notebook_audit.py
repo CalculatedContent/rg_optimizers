@@ -1,8 +1,8 @@
 """Repository-wide notebook integrity audit for the 2026-08-09 force push.
 
-This test is intentionally placed on a temporary audit branch.  It verifies the
-live repository tree and the four committed MNIST output notebooks without
-rerunning the expensive three-seed training campaigns.
+This test lives only on the temporary audit branch. It verifies the repository
+notebook inventory and the four committed MNIST outputs without rerunning the
+expensive three-seed training campaigns.
 """
 
 from __future__ import annotations
@@ -40,12 +40,23 @@ def _cell_source(cell: dict[str, Any]) -> str:
     return "".join(source) if isinstance(source, list) else str(source)
 
 
-def _source_signature(notebook: dict[str, Any]) -> list[tuple[str, str | None, str]]:
-    """Return the source-bearing cell identity that execution must preserve."""
+def _is_papermill_injected(cell: dict[str, Any]) -> bool:
+    tags = cell.get("metadata", {}).get("tags", [])
+    return isinstance(tags, list) and "injected-parameters" in tags
+
+
+def _source_signature(notebook: dict[str, Any]) -> list[tuple[str, str]]:
+    """Return executable/document source, ignoring non-semantic generated IDs.
+
+    Papermill may add one ``injected-parameters`` cell and nbformat may create or
+    regenerate cell IDs. Neither changes the notebook recipe, so both are
+    intentionally excluded from source/output parity.
+    """
 
     return [
-        (str(cell.get("cell_type")), cell.get("id"), _cell_source(cell))
+        (str(cell.get("cell_type")), _cell_source(cell))
         for cell in notebook.get("cells", [])
+        if not _is_papermill_injected(cell)
     ]
 
 
@@ -86,8 +97,18 @@ class ForcePushNotebookAuditTests(unittest.TestCase):
                 failures.append(f"{path.relative_to(REPOSITORY_ROOT)}: {exc}")
                 continue
 
-            self.assertEqual(notebook.get("nbformat"), 4, path)
-            self.assertIsInstance(notebook.get("cells"), list, path)
+            if notebook.get("nbformat") != 4:
+                failures.append(
+                    f"{path.relative_to(REPOSITORY_ROOT)}: nbformat="
+                    f"{notebook.get('nbformat')!r}, expected 4"
+                )
+                continue
+            if not isinstance(notebook.get("cells"), list):
+                failures.append(
+                    f"{path.relative_to(REPOSITORY_ROOT)}: cells is not a list"
+                )
+                continue
+
             for index, cell in enumerate(notebook.get("cells", [])):
                 if cell.get("cell_type") != "code":
                     continue
@@ -116,7 +137,7 @@ class ForcePushNotebookAuditTests(unittest.TestCase):
                 self.assertEqual(
                     _source_signature(output_notebook),
                     _source_signature(source_notebook),
-                    "Executed notebook sources differ from the current source notebook.",
+                    "Executed notebook code/markdown differs from the current source notebook.",
                 )
 
                 executed_code_cells = 0
