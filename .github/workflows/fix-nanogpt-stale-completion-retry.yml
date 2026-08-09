@@ -42,7 +42,9 @@ jobs:
           from pathlib import Path
 
           path = Path("baseline/nanogpt_one_head/tests/test_completion.py")
-          lines = path.read_text(encoding="utf-8").splitlines()
+          lines = path.read_text(encoding="utf-8").replace(
+              ".to_csw(", ".to_csv("
+          ).splitlines()
           marker = next(
               index
               for index, line in enumerate(lines)
