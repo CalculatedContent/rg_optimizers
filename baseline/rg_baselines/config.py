@@ -101,6 +101,10 @@ class BaselineConfig:
             raise ValueError("recipe_version must be positive")
         if self.initialization != MNIST_REFERENCE_INITIALIZATION:
             raise ValueError("unsupported MLP3 initialization contract")
+        if self.seed < 0:
+            raise ValueError("seed must be non-negative")
+        if self.split_seed < 0:
+            raise ValueError("split_seed must be non-negative")
         if self.epochs < 2:
             raise ValueError(
                 "epochs must be at least two for warm-up/cosine schedules"
@@ -113,6 +117,13 @@ class BaselineConfig:
             raise ValueError("num_workers must be non-negative")
         if self.grad_clip_norm <= 0.0:
             raise ValueError("grad_clip_norm must be positive")
+        if (
+            self.train_eval_max_batches is not None
+            and self.train_eval_max_batches < 1
+        ):
+            raise ValueError(
+                "train_eval_max_batches must be positive or None"
+            )
         if self.checkpoint_every_epochs < 1:
             raise ValueError("checkpoint_every_epochs must be positive")
         if not self.test_monitoring_only:
@@ -162,13 +173,18 @@ class BaselineConfig:
         }.items():
             if not 0.0 <= value < 1.0:
                 raise ValueError(f"{name} must lie in [0, 1)")
-        if self.sgd_dampening < 0.0:
-            raise ValueError("dampening must be non-negative")
+        if not 0.0 <= self.sgd_dampening < 1.0:
+            raise ValueError("dampening must lie in [0, 1)")
         if self.sgd_nesterov and (
             self.sgd_momentum <= 0.0 or self.sgd_dampening != 0.0
         ):
             raise ValueError(
                 "Nesterov SGD requires positive momentum and zero dampening"
+            )
+
+        if self.muon_nesterov and self.muon_momentum <= 0.0:
+            raise ValueError(
+                "Nesterov Muon requires positive momentum"
             )
 
         for name, value in {
@@ -181,10 +197,32 @@ class BaselineConfig:
                 raise ValueError(f"{name} must lie in [0, 1)")
         if self.muon_newton_schulz_steps < 1:
             raise ValueError("muon_newton_schulz_steps must be positive")
+        if not self.muon_parameter_names:
+            raise ValueError("muon_parameter_names must not be empty")
+        if len(set(self.muon_parameter_names)) != len(
+            self.muon_parameter_names
+        ):
+            raise ValueError("muon_parameter_names must be unique")
+        if any(
+            not isinstance(name, str) or not name.strip()
+            for name in self.muon_parameter_names
+        ):
+            raise ValueError(
+                "muon_parameter_names must contain non-empty strings"
+            )
         if min(self.muon_eps, self.adamw_eps, self.muon_aux_eps) <= 0.0:
             raise ValueError("optimizer eps values must be positive")
         if self.ww_min_evals < 2:
             raise ValueError("ww_min_evals must be at least two")
+        if (
+            self.ww_max_evals is not None
+            and self.ww_max_evals < self.ww_min_evals
+        ):
+            raise ValueError(
+                "ww_max_evals must be at least ww_min_evals or None"
+            )
+        if not str(self.ww_svd_method).strip():
+            raise ValueError("ww_svd_method must not be empty")
         if not self.ww_randomize:
             raise ValueError(
                 "ww_randomize must be True because WeightWatcher "
