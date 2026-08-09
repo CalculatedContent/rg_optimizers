@@ -1,15 +1,13 @@
-"""Full matrix-log geometry and one-sided RG flow projections."""
+"""Full matrix-log geometry and legacy one-sided flow projections."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
 
 import torch
 
+from .config import CorrectionMode
 from .support import MatrixLogSupport, orient_tall
-
-CorrectionMode = Literal["radial", "modewise"]
 
 
 @dataclass
@@ -46,6 +44,11 @@ class ProjectionResult:
     inward_mode_count: int
     base_inward_mode_norm: float
     corrected_inward_mode_norm: float
+    cone_active_set_size: int = 0
+    cone_iterations: int = 0
+    cone_converged: bool = True
+    max_signed_violation_before: float = 0.0
+    max_signed_violation_after: float = 0.0
 
 
 def _svd_with_cpu_fallback(
@@ -77,7 +80,7 @@ def _eigh_with_cpu_fallback(
         )
 
 
-def _solve_with_cpu_fallback(
+def solve_with_cpu_fallback(
     matrix: torch.Tensor,
     vector: torch.Tensor,
 ) -> torch.Tensor:
@@ -110,13 +113,7 @@ def full_matrix_log_geometry(
     ridge_relative: float = 1e-6,
     eps: float = 1e-12,
 ) -> MatrixLogGeometry:
-    """Compute ``Phi=(1/2m)||log X_tilde_R||_F^2`` and its gradient.
-
-    In the optimizer path, ``support`` supplies a right basis computed by the
-    slower WeightWatcher checkpoint. Only the retained ``m x m`` covariance is
-    diagonalized during a correction; a full SVD of the layer is not repeated.
-    ``retained_rank`` remains available for small standalone tests.
-    """
+    """Compute ``Phi=(1/2m)||log X_tilde_R||_F^2`` and its gradient."""
 
     if weight.ndim != 2:
         raise ValueError(f"Expected a matrix, got shape {tuple(weight.shape)}")
@@ -156,12 +153,12 @@ def full_matrix_log_geometry(
 
     rank = int(max(1, min(int(retained_rank), int(basis.shape[1]))))
     basis = basis[:, :rank]
-    d = (
+    dimension = (
         float(normalization_dimension)
         if normalization_dimension is not None
         else float(compute.shape[1])
     )
-    if d <= 0.0:
+    if dimension <= 0.0:
         raise ValueError("normalization_dimension must be positive")
 
     projected = compute @ basis
@@ -181,7 +178,7 @@ def full_matrix_log_geometry(
     left = (projected @ eigenvectors) / singular_values.unsqueeze(0)
 
     frob_sq = torch.sum(compute.square()).clamp_min(float(eps))
-    normalized = (d * safe_eigenvalues / frob_sq).clamp_min(float(eps))
+    normalized = (dimension * safe_eigenvalues / frob_sq).clamp_min(float(eps))
     log_eigenvalues = torch.log(normalized)
     potential = 0.5 * torch.mean(log_eigenvalues.square())
 
@@ -202,7 +199,7 @@ def full_matrix_log_geometry(
         log_eigenvalues=log_eigenvalues.to(dtype=original_dtype),
         gradient=gradient,
         retained_rank=rank,
-        normalization_dimension=d,
+        normalization_dimension=dimension,
         gradient_norm_sq=float(gradient_norm_sq.detach().cpu()),
         min_retained_singular_value=float(singular_values[-1].detach().cpu()),
         max_retained_singular_value=float(singular_values[0].detach().cpu()),
@@ -224,10 +221,12 @@ def _orient_like_geometry(
     return matrix.transpose(0, 1) if geometry.transposed else matrix
 
 
-def _mode_drifts(
+def matrix_log_mode_drifts(
     delta_base: torch.Tensor,
     geometry: MatrixLogGeometry,
 ) -> torch.Tensor:
+    """Return first-order drifts of every retained normalized log eigenvalue."""
+
     delta_work = _orient_like_geometry(delta_base, geometry).to(
         device=geometry.reference_work.device,
         dtype=geometry.reference_work.dtype,
@@ -245,7 +244,52 @@ def _mode_drifts(
     return 2.0 * mode_delta / geometry.singular_values - radial_delta
 
 
-def _apply_cap(
+def matrix_log_mode_gram(geometry: MatrixLogGeometry) -> torch.Tensor:
+    """Gram matrix of the individual log-eigenvalue gradients."""
+
+    rank = int(geometry.retained_rank)
+    diagonal = torch.diag(4.0 / geometry.singular_values.square())
+    radial = (
+        4.0 / geometry.frobenius_norm_sq
+    ) * torch.ones(
+        (rank, rank),
+        device=diagonal.device,
+        dtype=diagonal.dtype,
+    )
+    return diagonal - radial
+
+
+def matrix_log_correction_from_coefficients(
+    coefficients: torch.Tensor,
+    geometry: MatrixLogGeometry,
+    *,
+    output_like: torch.Tensor,
+) -> torch.Tensor:
+    """Construct ``sum_i coefficients_i * grad ell_i`` in parameter coordinates."""
+
+    coefficients = torch.as_tensor(coefficients).to(
+        device=geometry.reference_work.device,
+        dtype=geometry.reference_work.dtype,
+    )
+    correction_work = 2.0 * (
+        (
+            geometry.mode_left_vectors
+            * (coefficients / geometry.singular_values).unsqueeze(0)
+        )
+        @ geometry.mode_right_vectors.transpose(0, 1)
+    )
+    correction_work = correction_work - (
+        2.0 * torch.sum(coefficients) / geometry.frobenius_norm_sq
+    ) * geometry.reference_work
+    correction = (
+        correction_work.transpose(0, 1)
+        if geometry.transposed
+        else correction_work
+    )
+    return correction.to(device=output_like.device, dtype=output_like.dtype)
+
+
+def apply_correction_cap(
     correction: torch.Tensor,
     delta_base: torch.Tensor,
     *,
@@ -271,6 +315,37 @@ def _apply_cap(
     return correction, ratio, capped
 
 
+def _empty_projection(
+    delta_base: torch.Tensor,
+    *,
+    mode: str,
+    base_drift: float,
+    inward: torch.Tensor,
+    base_mode_drifts: torch.Tensor,
+) -> ProjectionResult:
+    inward_count = int(torch.count_nonzero(inward).detach().cpu())
+    inward_norm = (
+        float(torch.linalg.vector_norm(base_mode_drifts[inward]).detach().cpu())
+        if inward_count
+        else 0.0
+    )
+    zero = torch.zeros_like(delta_base)
+    return ProjectionResult(
+        corrected_delta=delta_base,
+        correction=zero,
+        mode=mode,
+        base_drift=base_drift,
+        corrected_drift=base_drift,
+        coefficient=0.0,
+        correction_ratio=0.0,
+        applied=False,
+        capped=False,
+        inward_mode_count=inward_count,
+        base_inward_mode_norm=inward_norm,
+        corrected_inward_mode_norm=inward_norm,
+    )
+
+
 @torch.no_grad()
 def remove_inward_matrix_log_flow(
     delta_base: torch.Tensor,
@@ -282,19 +357,21 @@ def remove_inward_matrix_log_flow(
     gram_ridge_relative: float = 1e-6,
     eps: float = 1e-12,
 ) -> ProjectionResult:
-    """Remove first-order flow toward ``log(X_tilde_R)=0``.
+    """Legacy radial or exactly-targeted modewise projection.
 
-    ``radial`` removes the net decrease of the matrix-log potential. ``modewise``
-    enforces the stronger full matrix condition by cancelling, to first order,
-    every retained log-eigenvalue motion directed toward zero.
+    ``modewise`` is retained as a historical ablation. The active-set cone
+    projector is the corrected primary method.
     """
 
     if mode not in {"radial", "modewise"}:
-        raise ValueError(f"Unknown correction mode: {mode!r}")
+        raise ValueError(
+            "remove_inward_matrix_log_flow supports only radial/modewise; "
+            "use project_matrix_log_cone for mode='cone'"
+        )
     if not 0.0 <= float(projection_strength) <= 1.0:
         raise ValueError("projection_strength must lie in [0, 1]")
 
-    base_mode_drifts = _mode_drifts(delta_base, geometry)
+    base_mode_drifts = matrix_log_mode_drifts(delta_base, geometry)
     log_values = geometry.log_eigenvalues.to(
         device=base_mode_drifts.device,
         dtype=base_mode_drifts.dtype,
@@ -307,107 +384,70 @@ def remove_inward_matrix_log_flow(
         else 0.0
     )
 
-    if mode == "radial":
-        grad = geometry.gradient.to(delta_base.device, delta_base.dtype)
-        grad_norm_sq = torch.sum(grad.float().square())
-        drift = torch.sum(grad.float() * delta_base.float())
-        g2 = float(grad_norm_sq.detach().cpu())
-        base_drift = float(drift.detach().cpu())
+    grad = geometry.gradient.to(delta_base.device, delta_base.dtype)
+    base_drift = float(
+        torch.sum(grad.float() * delta_base.float()).detach().cpu()
+    )
 
+    if mode == "radial":
+        grad_norm_sq = torch.sum(grad.float().square())
+        g2 = float(grad_norm_sq.detach().cpu())
         if (
             not bool(torch.isfinite(grad_norm_sq).item())
             or g2 <= float(eps)
             or base_drift >= 0.0
         ):
-            correction = torch.zeros_like(delta_base)
-            return ProjectionResult(
-                corrected_delta=delta_base,
-                correction=correction,
+            return _empty_projection(
+                delta_base,
                 mode=mode,
                 base_drift=base_drift,
-                corrected_drift=base_drift,
-                coefficient=0.0,
-                correction_ratio=0.0,
-                applied=False,
-                capped=False,
-                inward_mode_count=inward_count,
-                base_inward_mode_norm=base_inward_norm,
-                corrected_inward_mode_norm=base_inward_norm,
+                inward=inward,
+                base_mode_drifts=base_mode_drifts,
             )
-
         coefficient = base_drift / g2
         correction = -float(projection_strength) * coefficient * grad
-        correction, ratio, capped = _apply_cap(
-            correction,
-            delta_base,
-            max_correction_ratio=max_correction_ratio,
-            eps=eps,
-        )
     else:
-        base_drift = float(
-            torch.sum(
-                geometry.gradient.float() * delta_base.float()
-            ).detach().cpu()
-        )
         if inward_count == 0:
-            correction = torch.zeros_like(delta_base)
-            return ProjectionResult(
-                corrected_delta=delta_base,
-                correction=correction,
+            return _empty_projection(
+                delta_base,
                 mode=mode,
                 base_drift=base_drift,
-                corrected_drift=base_drift,
-                coefficient=0.0,
-                correction_ratio=0.0,
-                applied=False,
-                capped=False,
-                inward_mode_count=0,
-                base_inward_mode_norm=0.0,
-                corrected_inward_mode_norm=0.0,
+                inward=inward,
+                base_mode_drifts=base_mode_drifts,
             )
-
-        singular_values = geometry.singular_values
-        rank = int(geometry.retained_rank)
-        gram = torch.diag(4.0 / singular_values.square())
-        gram = gram - (
-            4.0 / geometry.frobenius_norm_sq
-        ) * torch.ones((rank, rank), device=gram.device, dtype=gram.dtype)
+        gram = matrix_log_mode_gram(geometry)
         target = torch.zeros_like(base_mode_drifts)
         target[inward] = -float(projection_strength) * base_mode_drifts[inward]
         scale = torch.max(torch.diagonal(gram)).clamp_min(float(eps))
         ridge = float(gram_ridge_relative) * scale
-        coefficients = _solve_with_cpu_fallback(
-            gram + ridge * torch.eye(rank, device=gram.device, dtype=gram.dtype),
+        coefficients = solve_with_cpu_fallback(
+            gram
+            + ridge
+            * torch.eye(
+                geometry.retained_rank,
+                device=gram.device,
+                dtype=gram.dtype,
+            ),
             target,
         )
-
-        correction_work = 2.0 * (
-            (geometry.mode_left_vectors * (coefficients / singular_values).unsqueeze(0))
-            @ geometry.mode_right_vectors.transpose(0, 1)
-        )
-        correction_work = correction_work - (
-            2.0 * torch.sum(coefficients) / geometry.frobenius_norm_sq
-        ) * geometry.reference_work
-        correction = (
-            correction_work.transpose(0, 1)
-            if geometry.transposed
-            else correction_work
-        ).to(device=delta_base.device, dtype=delta_base.dtype)
-        correction, ratio, capped = _apply_cap(
-            correction,
-            delta_base,
-            max_correction_ratio=max_correction_ratio,
-            eps=eps,
+        correction = matrix_log_correction_from_coefficients(
+            coefficients,
+            geometry,
+            output_like=delta_base,
         )
         coefficient = float(torch.linalg.vector_norm(coefficients).detach().cpu())
 
+    correction, ratio, capped = apply_correction_cap(
+        correction,
+        delta_base,
+        max_correction_ratio=max_correction_ratio,
+        eps=eps,
+    )
     corrected = delta_base + correction
     corrected_drift = float(
-        torch.sum(
-            geometry.gradient.float() * corrected.float()
-        ).detach().cpu()
+        torch.sum(grad.float() * corrected.float()).detach().cpu()
     )
-    corrected_mode_drifts = _mode_drifts(corrected, geometry)
+    corrected_mode_drifts = matrix_log_mode_drifts(corrected, geometry)
     corrected_inward_norm = (
         float(torch.linalg.vector_norm(corrected_mode_drifts[inward]).detach().cpu())
         if inward_count

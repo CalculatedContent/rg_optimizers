@@ -8,16 +8,99 @@ from typing import Iterable
 import pandas as pd
 import torch
 
+from .config import EffectiveRankMethod, NormalizationMode
+
+
+def _effective_contributor_count(
+    values: torch.Tensor,
+    *,
+    method: EffectiveRankMethod,
+    eps: float = 1e-30,
+) -> float:
+    x = torch.as_tensor(values, dtype=torch.float64).reshape(-1)
+    x = x[torch.isfinite(x) & (x > 0.0)]
+    if x.numel() == 0:
+        return 0.0
+    total = torch.sum(x)
+    if float(total) <= eps:
+        return 0.0
+    if method == "participation_ratio":
+        second = torch.sum(x.square())
+        return float((total.square() / second.clamp_min(eps)).item())
+    if method == "entropy":
+        p = x / total
+        return float(torch.exp(-torch.sum(p * torch.log(p))).item())
+    if method == "stable_rank":
+        return float((total / torch.max(x).clamp_min(eps)).item())
+    raise ValueError(f"Unknown effective-rank method: {method!r}")
+
 
 @dataclass
 class MatrixLogSupport:
-    """Frozen retained subspace used between slower WeightWatcher checkpoints."""
+    """Frozen retained subspace used between slower WeightWatcher checkpoints.
+
+    The full singular spectrum is cached on CPU so the optimizer can evaluate
+    both full-``M`` and bulk-effective self-consistent normalizations without
+    recomputing a layer SVD.
+    """
 
     retained_rank: int
     normalization_dimension: float
     right_basis: torch.Tensor
     transposed: bool
     checkpoint_epoch: int = 0
+    eigenvalues_ascending: torch.Tensor | None = None
+
+    def matrix_dimension(self) -> int:
+        if self.eigenvalues_ascending is not None:
+            return int(torch.as_tensor(self.eigenvalues_ascending).numel())
+        return int(round(float(self.normalization_dimension)))
+
+    def normalization_dimension_for(
+        self,
+        mode: NormalizationMode,
+        *,
+        method: EffectiveRankMethod = "participation_ratio",
+        gamma: float = 0.0,
+    ) -> float:
+        if mode == "full_m":
+            return float(self.matrix_dimension())
+        if mode != "self_consistent":
+            raise ValueError(f"Unknown normalization mode: {mode!r}")
+        if not 0.0 <= float(gamma) <= 1.0:
+            raise ValueError("gamma must lie in [0, 1]")
+        if self.eigenvalues_ascending is None:
+            return float(self.normalization_dimension)
+
+        values = torch.as_tensor(
+            self.eigenvalues_ascending,
+            dtype=torch.float64,
+            device="cpu",
+        ).reshape(-1)
+        total_count = int(values.numel())
+        retained = int(max(1, min(int(self.retained_rank), total_count)))
+        bulk_count = total_count - retained
+        bulk = values[:bulk_count]
+        effective = _effective_contributor_count(bulk, method=method)
+        dimension = (
+            retained
+            + effective
+            + float(gamma) * (float(bulk_count) - effective)
+        )
+        return float(min(float(total_count), max(float(retained), dimension)))
+
+    def bulk_effective_count(
+        self,
+        *,
+        method: EffectiveRankMethod = "participation_ratio",
+    ) -> float:
+        if self.eigenvalues_ascending is None:
+            return float("nan")
+        values = torch.as_tensor(self.eigenvalues_ascending, dtype=torch.float64)
+        retained = int(max(1, min(int(self.retained_rank), values.numel())))
+        return _effective_contributor_count(
+            values[: values.numel() - retained], method=method
+        )
 
     def state_dict(self) -> dict:
         return {
@@ -28,10 +111,18 @@ class MatrixLogSupport:
             ),
             "transposed": bool(self.transposed),
             "checkpoint_epoch": int(self.checkpoint_epoch),
+            "eigenvalues_ascending": (
+                None
+                if self.eigenvalues_ascending is None
+                else torch.as_tensor(self.eigenvalues_ascending)
+                .detach()
+                .to(device="cpu", dtype=torch.float32)
+            ),
         }
 
     @classmethod
     def from_state_dict(cls, payload: dict) -> "MatrixLogSupport":
+        eigenvalues = payload.get("eigenvalues_ascending")
         return cls(
             retained_rank=int(payload["retained_rank"]),
             normalization_dimension=float(payload["normalization_dimension"]),
@@ -40,6 +131,13 @@ class MatrixLogSupport:
             ),
             transposed=bool(payload.get("transposed", False)),
             checkpoint_epoch=int(payload.get("checkpoint_epoch", 0)),
+            eigenvalues_ascending=(
+                None
+                if eigenvalues is None
+                else torch.as_tensor(eigenvalues).detach().to(
+                    device="cpu", dtype=torch.float32
+                )
+            ),
         )
 
 
@@ -67,15 +165,17 @@ def _build_support(
 ) -> MatrixLogSupport:
     work, transposed = orient_tall(weight.detach())
     cpu = work.to(device="cpu", dtype=torch.float32)
-    _, _, vh = torch.linalg.svd(cpu, full_matrices=False)
+    _, singular_values, vh = torch.linalg.svd(cpu, full_matrices=False)
     rank = int(max(1, min(int(retained_rank), int(vh.shape[0]))))
     basis = vh[:rank, :].transpose(0, 1).contiguous()
+    eigenvalues = singular_values.square().flip(0).contiguous()
     return MatrixLogSupport(
         retained_rank=rank,
         normalization_dimension=float(cpu.shape[1]),
         right_basis=basis,
         transposed=transposed,
         checkpoint_epoch=int(epoch),
+        eigenvalues_ascending=eigenvalues,
     )
 
 
@@ -92,12 +192,7 @@ def analyze_supports(
     parameter_names: Iterable[str] | None = None,
     build_bases: bool = True,
 ) -> SupportCheckpoint:
-    """Use the baseline's strict WeightWatcher path, then cache midpoint bases.
-
-    The baseline package is intentionally used here so alpha, detX_num,
-    num_pl_spikes, ERG_gap, correlation traps, and rescaling follow the exact
-    reference protocol.
-    """
+    """Use the baseline's strict WeightWatcher path, then cache midpoint bases."""
 
     try:
         from rg_baselines import measure_weightwatcher_checkpoint
