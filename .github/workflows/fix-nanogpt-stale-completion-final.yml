@@ -26,34 +26,118 @@ jobs:
           cache: pip
           cache-dependency-path: baseline/nanogpt_one_head/pyproject.toml
 
-      - name: Apply reviewed guard and align synthetic checkpoint inventory
+      - name: Apply reviewed stale-completion guard
         shell: bash
         run: |
           set -euo pipefail
           awk '
-            /- name: Reapply the reviewed patch and repair transcription typos/ {
-              section=1
-              next
-            }
+            /- name: Apply stale-completion guard/ { section=1; next }
             section && /run: \|/ { capture=1; next }
             capture && /^      - name:/ { exit }
             capture { sub(/^          /, ""); print }
-          ' .github/workflows/fix-nanogpt-stale-completion-retry.yml \
+          ' .github/workflows/fix-nanogpt-stale-completion.yml \
             > /tmp/apply_guard.sh
           bash /tmp/apply_guard.sh
 
           python - <<'PY'
           from pathlib import Path
 
-          path = Path("baseline/nanogpt_one_head/tests/test_completion.py")
-          text = path.read_text(encoding="utf-8")
-          needle = "    return run_dir, fingerprint, total_steps\n"
-          if text.count(needle) != 1:
-              raise RuntimeError("unexpected completed-run fixture return shape")
-          replacement = "\n".join(
+          completion = Path(
+              "baseline/nanogpt_one_head/src/"
+              "rg_nanogpt_one_head/completion.py"
+          )
+          completion_text = completion.read_text(encoding="utf-8").replace(
+              "_read_csw(", "_read_csv("
+          )
+          inventory_start = completion_text.index(
+              "    epoch_checkpoints = tuple("
+          )
+          inventory_end = completion_text.index(
+              "    if verify_checkpoints:", inventory_start
+          )
+          inventory_replacement = "\n".join(
               [
-                  "    # Keep the synthetic fixture's physical checkpoint",
-                  "    # inventory identical to epoch_metrics.csv.",
+                  '    if "checkpoint_path" not in epoch_metrics.columns:',
+                  '        _fail("epoch_metrics.csv has no checkpoint_path column")',
+                  '    recorded_checkpoint_paths = [',
+                  '        Path(str(value))',
+                  '        for value in epoch_metrics["checkpoint_path"]',
+                  '    ]',
+                  '    if len(recorded_checkpoint_paths) != len(set(epoch_steps)):',
+                  '        _fail(',
+                  '            "epoch checkpoint inventory does not match "',
+                  '            "epoch_metrics.csv"',
+                  '        )',
+                  '    resolved_checkpoint_paths: list[Path] = []',
+                  '    for recorded in recorded_checkpoint_paths:',
+                  '        candidate = recorded',
+                  '        if not candidate.is_file():',
+                  '            candidate = root / "epoch_checkpoints" / recorded.name',
+                  '        if not candidate.is_file() or candidate.stat().st_size == 0:',
+                  '            _fail(',
+                  '                f"missing epoch checkpoint recorded by "',
+                  '                f"epoch_metrics.csv: {recorded}"',
+                  '            )',
+                  '        resolved_checkpoint_paths.append(candidate.resolve())',
+                  '    if len(resolved_checkpoint_paths) != len(',
+                  '        set(resolved_checkpoint_paths)',
+                  '    ):',
+                  '        _fail(',
+                  '            "epoch_metrics.csv references duplicate epoch "',
+                  '            "checkpoints"',
+                  '        )',
+                  '',
+                  '',
+              ]
+          )
+          completion.write_text(
+              completion_text[:inventory_start]
+              + inventory_replacement
+              + completion_text[inventory_end:],
+              encoding="utf-8",
+          )
+
+          test_path = Path(
+              "baseline/nanogpt_one_head/tests/test_completion.py"
+          )
+          lines = test_path.read_text(encoding="utf-8").replace(
+              ".to_csw(", ".to_csv("
+          ).splitlines()
+          marker = next(
+              index
+              for index, line in enumerate(lines)
+              if '"n_matrices": len(MATRICES)' in line
+          )
+          start = marker
+          while start >= 0 and "pd.DataFrame(" not in lines[start]:
+              start -= 1
+          end = marker
+          while end < len(lines) and "index=False" not in lines[end]:
+              end += 1
+          while end < len(lines) and lines[end].strip() != ")":
+              end += 1
+          if start < 0 or end >= len(lines):
+              raise RuntimeError("could not locate malformed summary fixture")
+          indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
+          summary_replacement = [
+              f"{indent}summary_rows = [",
+              f'{indent}    {{"step": step, "n_matrices": len(MATRICES)}}',
+              f"{indent}    for step in steps",
+              f"{indent}]",
+              f"{indent}pd.DataFrame(summary_rows).to_csv(",
+              f'{indent}    run_dir / "spectral" / "summary.csv",',
+              f"{indent}    index=False,",
+              f"{indent})",
+          ]
+          lines[start : end + 1] = summary_replacement
+          test_text = "\n".join(lines) + "\n"
+          return_needle = "    return run_dir, fingerprint, total_steps\n"
+          if test_text.count(return_needle) != 1:
+              raise RuntimeError("unexpected completed-run fixture return shape")
+          fixture_replacement = "\n".join(
+              [
+                  "    # Keep the synthetic fixture's checkpoint inventory",
+                  "    # identical to the paths in epoch_metrics.csv.",
                   '    inventory = pd.read_csv(run_dir / "epoch_metrics.csv")',
                   '    for value in inventory["checkpoint_path"]:',
                   '        checkpoint_path = Path(str(value))',
@@ -68,7 +152,10 @@ jobs:
                   '',
               ]
           )
-          path.write_text(text.replace(needle, replacement, 1), encoding="utf-8")
+          test_path.write_text(
+              test_text.replace(return_needle, fixture_replacement, 1),
+              encoding="utf-8",
+          )
           PY
 
       - name: Install one-head nanoGPT test environment
