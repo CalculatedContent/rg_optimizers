@@ -7,6 +7,10 @@ from pathlib import Path
 import pandas as pd
 import torch
 
+from .completion import (
+    CompletedRunValidationError,
+    validate_completed_run,
+)
 from .config import tokens_per_step
 from .evaluation import evaluate_bleu, evaluate_probe
 from .model import GPT
@@ -31,13 +35,17 @@ def run_directory(results_root: str | Path, optimizer: str, seed: int) -> Path:
 
 
 def run_is_complete(results_root: str | Path, optimizer: str, seed: int) -> bool:
-    path = run_directory(results_root, optimizer, seed) / "run_complete.json"
-    if not path.is_file():
-        return False
+    run_dir = run_directory(results_root, optimizer, seed)
     try:
-        return bool(json.loads(path.read_text(encoding="utf-8")).get("completed", False))
-    except (OSError, json.JSONDecodeError):
+        validate_completed_run(
+            run_dir,
+            expected_optimizer=str(optimizer),
+            expected_seed=int(seed),
+            verify_checkpoints=False,
+        )
+    except (CompletedRunValidationError, OSError):
         return False
+    return True
 
 
 def prepare_csv(path: Path, fields: list[str], resume_step: int | None) -> None:

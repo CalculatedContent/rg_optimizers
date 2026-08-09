@@ -7,6 +7,7 @@ import shutil
 
 import torch
 
+from .completion import validate_completed_run
 from .checkpoints import load_training_checkpoint, save_training_checkpoint
 from .config import (
     SUPPORTED_OPTIMIZERS,
@@ -56,12 +57,6 @@ def run_one(
     results_root = Path(results_root)
     run_dir = run_directory(results_root, optimizer_name, int(seed))
     completion_path = run_dir / "run_complete.json"
-    if completion_path.is_file() and not overwrite:
-        if progress:
-            print(
-                f"[one-head-train] skip completed {optimizer_name} seed={seed}"
-            )
-        return run_dir
     if run_dir.exists() and overwrite:
         shutil.rmtree(run_dir)
     if run_dir.exists() and not resume:
@@ -70,22 +65,38 @@ def run_one(
         )
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    resolved_device = choose_device(device)
-    configure_runtime(resolved_device, cfg)
-    seed_everything(int(seed))
     data_metadata, arrays = load_memmaps(data_root, cfg)
     train_tokens = int(data_metadata["splits"]["train"])
     total_steps = max_steps(cfg, train_tokens)
     profile = optimizer_profile(cfg, optimizer_name)
     warmup = warmup_steps(profile, total_steps)
-    model = GPT(GPTConfig(**cfg["model"])).to(resolved_device)
-    handles = make_optimizer_handles(model, profile)
     fingerprint = protocol_fingerprint(
         cfg,
         optimizer=optimizer_name,
         seed=int(seed),
         data_metadata=data_metadata,
     )
+    if completion_path.is_file():
+        validate_completed_run(
+            run_dir,
+            expected_fingerprint=fingerprint,
+            expected_optimizer=optimizer_name,
+            expected_seed=int(seed),
+            expected_total_steps=total_steps,
+            verify_checkpoints=True,
+        )
+        if progress:
+            print(
+                "[one-head-train] reuse verified completed "
+                f"{optimizer_name} seed={seed}"
+            )
+        return run_dir
+
+    resolved_device = choose_device(device)
+    configure_runtime(resolved_device, cfg)
+    seed_everything(int(seed))
+    model = GPT(GPTConfig(**cfg["model"])).to(resolved_device)
+    handles = make_optimizer_handles(model, profile)
     train_generator = torch.Generator(device="cpu").manual_seed(int(seed) + 11)
 
     batch_size = int(cfg["training"]["batch_size"])
