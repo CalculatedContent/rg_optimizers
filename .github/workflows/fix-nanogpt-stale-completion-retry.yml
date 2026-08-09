@@ -26,7 +26,7 @@ jobs:
           cache: pip
           cache-dependency-path: baseline/nanogpt_one_head/pyproject.toml
 
-      - name: Reapply the reviewed patch and repair the fixture
+      - name: Reapply the reviewed patch and repair transcription typos
         shell: bash
         run: |
           set -euo pipefail
@@ -40,6 +40,17 @@ jobs:
 
           python - <<'PY'
           from pathlib import Path
+
+          completion = Path(
+              "baseline/nanogpt_one_head/src/"
+              "rg_nanogpt_one_head/completion.py"
+          )
+          completion.write_text(
+              completion.read_text(encoding="utf-8").replace(
+                  "_read_csw(", "_read_csv("
+              ),
+              encoding="utf-8",
+          )
 
           path = Path("baseline/nanogpt_one_head/tests/test_completion.py")
           lines = path.read_text(encoding="utf-8").replace(
