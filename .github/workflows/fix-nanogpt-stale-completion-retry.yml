@@ -52,7 +52,9 @@ jobs:
           while start >= 0 and "pd.DataFrame(" not in lines[start]:
               start -= 1
           end = marker
-          while end < len(lines) and ").to_csv(" not in lines[end]:
+          while end < len(lines) and "index=False" not in lines[end]:
+              end += 1
+          while end < len(lines) and lines[end].strip() != ")":
               end += 1
           if start < 0 or end >= len(lines):
               raise RuntimeError("could not locate malformed summary fixture")
@@ -63,6 +65,9 @@ jobs:
               f"{indent}    for step in steps",
               f"{indent}]",
               f"{indent}pd.DataFrame(summary_rows).to_csv(",
+              f'{indent}    run_dir / "spectral" / "summary.csv",',
+              f"{indent}    index=False,",
+              f"{indent})",
           ]
           lines[start : end + 1] = replacement
           path.write_text("\n".join(lines) + "\n", encoding="utf-8")
