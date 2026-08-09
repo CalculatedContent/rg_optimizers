@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "full-matrix-log-rg"
-version = "0.2.0"
-description = "Full matrix-log RG optimizer extension for the rg_optimizers experiments"
+version = "0.3.0"
+description = "Active-set full matrix-log RG optimizer with projected SGD momentum"
 requires-python = ">=3.10"
 dependencies = [
   "torch>=2.1",
