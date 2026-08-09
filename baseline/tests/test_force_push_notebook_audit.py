@@ -1,9 +1,4 @@
-"""Repository-wide notebook integrity audit for the 2026-08-09 force push.
-
-This test lives only on the temporary audit branch. It verifies the repository
-notebook inventory and the four committed MNIST outputs without rerunning the
-expensive three-seed training campaigns.
-"""
+"""Repository-wide notebook integrity audit for the 2026-08-09 force push."""
 
 from __future__ import annotations
 
@@ -31,8 +26,7 @@ OUTPUT_PAIRS = {
 
 
 def _read_notebook(relative_path: str | Path) -> dict[str, Any]:
-    path = REPOSITORY_ROOT / relative_path
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads((REPOSITORY_ROOT / relative_path).read_text(encoding="utf-8"))
 
 
 def _cell_source(cell: dict[str, Any]) -> str:
@@ -46,13 +40,6 @@ def _is_papermill_injected(cell: dict[str, Any]) -> bool:
 
 
 def _source_signature(notebook: dict[str, Any]) -> list[tuple[str, str]]:
-    """Return executable/document source, ignoring non-semantic generated IDs.
-
-    Papermill may add one ``injected-parameters`` cell and nbformat may create or
-    regenerate cell IDs. Neither changes the notebook recipe, so both are
-    intentionally excluded from source/output parity.
-    """
-
     return [
         (str(cell.get("cell_type")), _cell_source(cell))
         for cell in notebook.get("cells", [])
@@ -79,34 +66,34 @@ def _output_text(output: dict[str, Any]) -> str:
     return "".join(chunks)
 
 
+def _emit_error(path: str | Path, message: str) -> None:
+    escaped = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::error file={path},line=1::{escaped}")
+
+
 class ForcePushNotebookAuditTests(unittest.TestCase):
     def test_all_repository_notebooks_are_valid_and_parseable(self) -> None:
         notebooks = sorted(REPOSITORY_ROOT.rglob("*.ipynb"))
-        self.assertEqual(
-            len(notebooks),
-            EXPECTED_NOTEBOOK_COUNT,
-            "The live notebook inventory changed during the force-push audit.",
-        )
+        if len(notebooks) != EXPECTED_NOTEBOOK_COUNT:
+            message = f"found {len(notebooks)} notebooks; expected {EXPECTED_NOTEBOOK_COUNT}"
+            _emit_error("baseline/notebooks", message)
+            self.fail(message)
 
         transformer = TransformerManager()
-        failures: list[str] = []
+        failures: list[tuple[str, str]] = []
         for path in notebooks:
+            relative = str(path.relative_to(REPOSITORY_ROOT))
             try:
                 notebook = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-                failures.append(f"{path.relative_to(REPOSITORY_ROOT)}: {exc}")
+                failures.append((relative, str(exc)))
                 continue
 
             if notebook.get("nbformat") != 4:
-                failures.append(
-                    f"{path.relative_to(REPOSITORY_ROOT)}: nbformat="
-                    f"{notebook.get('nbformat')!r}, expected 4"
-                )
+                failures.append((relative, f"nbformat={notebook.get('nbformat')!r}, expected 4"))
                 continue
             if not isinstance(notebook.get("cells"), list):
-                failures.append(
-                    f"{path.relative_to(REPOSITORY_ROOT)}: cells is not a list"
-                )
+                failures.append((relative, "cells is not a list"))
                 continue
 
             for index, cell in enumerate(notebook.get("cells", [])):
@@ -116,83 +103,92 @@ class ForcePushNotebookAuditTests(unittest.TestCase):
                 if not source.strip():
                     continue
                 try:
-                    transformed = transformer.transform_cell(source)
-                    ast.parse(transformed, filename=f"{path}:cell-{index}")
-                except Exception as exc:  # report all syntax/transform failures together
-                    failures.append(
-                        f"{path.relative_to(REPOSITORY_ROOT)}: cell {index}: {exc}"
+                    ast.parse(
+                        transformer.transform_cell(source),
+                        filename=f"{path}:cell-{index}",
                     )
+                except Exception as exc:
+                    failures.append((relative, f"cell {index}: {exc}"))
 
-        self.assertFalse(
-            failures,
-            "Notebook JSON or code-cell failures:\n" + "\n".join(failures),
-        )
+        for path, message in failures:
+            _emit_error(path, message)
+        if failures:
+            self.fail(f"{len(failures)} notebook JSON/code-cell failure(s)")
 
     def test_committed_outputs_match_current_sources_and_completed_cleanly(self) -> None:
+        failures: list[tuple[str, str]] = []
         for source_path, output_path in OUTPUT_PAIRS.items():
-            with self.subTest(output=output_path):
-                source_notebook = _read_notebook(source_path)
-                output_notebook = _read_notebook(output_path)
-
-                self.assertEqual(
-                    _source_signature(output_notebook),
-                    _source_signature(source_notebook),
-                    "Executed notebook code/markdown differs from the current source notebook.",
+            source_notebook = _read_notebook(source_path)
+            output_notebook = _read_notebook(output_path)
+            source_sig = _source_signature(source_notebook)
+            output_sig = _source_signature(output_notebook)
+            if output_sig != source_sig:
+                first = next(
+                    (i for i, pair in enumerate(zip(output_sig, source_sig)) if pair[0] != pair[1]),
+                    min(len(output_sig), len(source_sig)),
+                )
+                failures.append(
+                    (
+                        output_path,
+                        "source/output recipe mismatch after normalizing generated metadata: "
+                        f"first differing cell={first}, output_cells={len(output_sig)}, "
+                        f"source_cells={len(source_sig)}",
+                    )
                 )
 
-                executed_code_cells = 0
-                all_output_text: list[str] = []
-                for index, cell in enumerate(output_notebook.get("cells", [])):
-                    papermill = cell.get("metadata", {}).get("papermill", {})
-                    self.assertIsNot(
-                        papermill.get("exception"),
-                        True,
-                        f"Papermill exception in cell {index}",
-                    )
-                    self.assertNotEqual(
-                        papermill.get("status"),
-                        "failed",
-                        f"Papermill failure in cell {index}",
-                    )
+            executed_code_cells = 0
+            all_output_text: list[str] = []
+            for index, cell in enumerate(output_notebook.get("cells", [])):
+                papermill = cell.get("metadata", {}).get("papermill", {})
+                if papermill.get("exception") is True or papermill.get("status") == "failed":
+                    failures.append((output_path, f"Papermill failure in cell {index}"))
 
-                    if cell.get("cell_type") != "code":
-                        continue
-                    if _cell_source(cell).strip():
-                        executed_code_cells += 1
-                        self.assertIsNotNone(
-                            cell.get("execution_count"),
-                            f"Non-empty code cell {index} was not executed.",
-                        )
+                if cell.get("cell_type") == "code" and _cell_source(cell).strip():
+                    executed_code_cells += 1
+                    if cell.get("execution_count") is None:
+                        failures.append((output_path, f"non-empty code cell {index} was not executed"))
 
-                    for output in cell.get("outputs", []):
-                        self.assertNotEqual(
-                            output.get("output_type"),
-                            "error",
-                            f"Error output in cell {index}: {output}",
-                        )
-                        all_output_text.append(_output_text(output))
+                for output in cell.get("outputs", []):
+                    if output.get("output_type") == "error":
+                        failures.append((output_path, f"error output in cell {index}: {output}"))
+                    all_output_text.append(_output_text(output))
 
-                self.assertGreater(executed_code_cells, 0)
-                rendered_text = "\n".join(all_output_text)
-                self.assertNotIn("Traceback (most recent call last)", rendered_text)
-                self.assertIn("mnist_mlp3_recipe_v3", rendered_text)
+            rendered_text = "\n".join(all_output_text)
+            if executed_code_cells == 0:
+                failures.append((output_path, "no non-empty code cells were executed"))
+            if "Traceback (most recent call last)" in rendered_text:
+                failures.append((output_path, "rendered output contains a traceback"))
+            if "mnist_mlp3_recipe_v3" not in rendered_text:
+                failures.append((output_path, "recipe-v3 marker is absent from rendered output"))
+
+        for path, message in failures:
+            _emit_error(path, message)
+        if failures:
+            self.fail(f"{len(failures)} committed-output integrity failure(s)")
 
     def test_output_campaign_contract_is_current(self) -> None:
-        training_outputs = [
-            path for path in OUTPUT_PAIRS.values() if "Comparison" not in path
-        ]
-        for output_path in training_outputs:
-            with self.subTest(output=output_path):
-                notebook = _read_notebook(output_path)
-                source = "\n".join(
-                    _cell_source(cell) for cell in notebook.get("cells", [])
-                )
-                rendered = json.dumps(notebook)
-                self.assertIn("epochs=30", source)
-                self.assertIn("DEFAULT_BASELINE_SEEDS", source)
-                self.assertIn("assert len(SEEDS) == 3", source)
-                self.assertIn("overwrite=False", source)
-                self.assertIn('"recipe_version"', rendered)
+        failures: list[tuple[str, str]] = []
+        for output_path in OUTPUT_PAIRS.values():
+            if "Comparison" in output_path:
+                continue
+            notebook = _read_notebook(output_path)
+            source = "\n".join(_cell_source(cell) for cell in notebook.get("cells", []))
+            rendered = json.dumps(notebook)
+            expected = {
+                "epochs=30": source,
+                "DEFAULT_BASELINE_SEEDS": source,
+                "assert len(SEEDS) == 3": source,
+                "overwrite=False": source,
+                '"recipe_version"': rendered,
+            }
+            for marker, haystack in expected.items():
+                if marker not in haystack:
+                    failures.append((output_path, f"missing campaign-contract marker: {marker}"))
+
+        for path, message in failures:
+            _emit_error(path, message)
+        if failures:
+            self.fail(f"{len(failures)} campaign-contract failure(s)")
 
 
 if __name__ == "__main__":
