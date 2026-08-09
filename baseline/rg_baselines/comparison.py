@@ -132,9 +132,15 @@ class BaselineComparisonResult:
     final_epoch_summary: pd.DataFrame
     convergence_by_seed: pd.DataFrame
     convergence_summary: pd.DataFrame
-    paired_final_differences: pd.DataFrame
+    paired_terminal_differences: pd.DataFrame
     plot_paths: tuple[Path, ...]
     expected_outputs: tuple[Path, ...]
+
+    @property
+    def paired_final_differences(self) -> pd.DataFrame:
+        """Backward-compatible alias for historical notebooks."""
+
+        return self.paired_terminal_differences
 
 
 def _required_seed_paths(seed_dir: Path, epochs: int) -> list[Path]:
@@ -546,7 +552,7 @@ def run_baseline_comparison(
         final_epoch_summary=final_summary,
         convergence_by_seed=convergence,
         convergence_summary=convergence_summary,
-        paired_final_differences=paired,
+        paired_terminal_differences=paired,
         plot_paths=plot_paths,
         expected_outputs=tuple(expected),
     )

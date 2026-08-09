@@ -27,6 +27,7 @@ from .engine import (
     set_seed,
     train_one_epoch,
 )
+from .io_utils import atomic_csv, atomic_npz
 from .model import MLP3
 from .optimizers import (
     build_optimizer,
@@ -240,13 +241,17 @@ def _write_progress(
     esds: dict[str, np.ndarray],
 ) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
-    performance.to_csv(run_dir / "performance_by_epoch.csv", index=False)
-    spectral.to_csv(
-        run_dir / "spectral_metrics_by_epoch_and_layer.csv", index=False
+    atomic_csv(performance, run_dir / "performance_by_epoch.csv")
+    atomic_csv(
+        spectral,
+        run_dir / "spectral_metrics_by_epoch_and_layer.csv",
     )
-    details.to_csv(run_dir / "weightwatcher_details_by_epoch.csv", index=False)
-    groups.to_csv(run_dir / "optimizer_groups_by_epoch.csv", index=False)
-    np.savez_compressed(run_dir / "esd_history.npz", **esds)
+    atomic_csv(
+        details,
+        run_dir / "weightwatcher_details_by_epoch.csv",
+    )
+    atomic_csv(groups, run_dir / "optimizer_groups_by_epoch.csv")
+    atomic_npz(esds, run_dir / "esd_history.npz")
 
 
 def _load_completed_result(
@@ -428,12 +433,6 @@ def run_baseline(
             expected_fingerprint=fingerprint,
         )
         model.to(device)
-        for frame_name in ("performance", "spectral", "details", "groups"):
-            frame = locals()[frame_name]
-            if not frame.empty and "epoch" in frame:
-                locals()[frame_name] = frame[
-                    frame["epoch"].astype(int) <= start_epoch
-                ].copy()
         performance = performance[
             performance["epoch"].astype(int) <= start_epoch
         ].copy() if not performance.empty else performance
