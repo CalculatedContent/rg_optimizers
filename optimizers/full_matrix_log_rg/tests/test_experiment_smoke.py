@@ -14,8 +14,6 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from full_matrix_log_rg import FullMatrixLogConfig, MatrixLogSupport
-from full_matrix_log_rg.experiment import run_mnist_sgd
-from full_matrix_log_rg.support import SupportCheckpoint
 
 
 @dataclass(frozen=True)
@@ -149,7 +147,7 @@ def fake_analyze_supports(model, *, run_label, epoch, global_step, **_):
         weight = parameters[name].detach()
         work = weight if weight.shape[0] >= weight.shape[1] else weight.T
         transposed = weight.shape[0] < weight.shape[1]
-        _, _, vh = torch.linalg.svd(work.float(), full_matrices=False)
+        _, singular_values, vh = torch.linalg.svd(work.float(), full_matrices=False)
         rank = min(3, min(work.shape))
         supports[name] = MatrixLogSupport(
             retained_rank=rank,
@@ -157,14 +155,20 @@ def fake_analyze_supports(model, *, run_label, epoch, global_step, **_):
             right_basis=vh[:rank].T.contiguous(),
             transposed=transposed,
             checkpoint_epoch=epoch,
+            eigenvalues_ascending=singular_values.square().flip(0),
         )
-    return SupportCheckpoint(
-        checkpoint.details, checkpoint.metrics, supports, {}
+    return types.SimpleNamespace(
+        details=checkpoint.details,
+        metrics=checkpoint.metrics,
+        supports=supports,
+        esd_arrays={},
     )
 
 
 class ExperimentSmokeTests(unittest.TestCase):
     def test_restartable_baseline_and_rg_runs(self):
+        from full_matrix_log_rg.experiment import run_mnist_sgd
+
         imports = (
             FakeBaselineConfig,
             TinyMLP,
@@ -187,7 +191,9 @@ class ExperimentSmokeTests(unittest.TestCase):
             root = Path(temporary)
             config = FakeBaselineConfig()
             rg_config = FullMatrixLogConfig(
-                mode="modewise",
+                mode="cone",
+                momentum_projection="projected_state",
+                normalization="self_consistent",
                 apply_every_steps=2,
                 max_correction_ratio=0.10,
                 parameter_names=("fc1.weight", "fc2.weight"),
