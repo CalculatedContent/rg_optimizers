@@ -1,0 +1,67 @@
+name: Repository force-push package audit
+
+on:
+  push:
+    branches:
+      - "agent/audit-force-push-20260809"
+    paths:
+      - ".github/workflows/repository-force-push-audit.yml"
+      - "optimizers/adaptive_spectral_guard/**"
+      - "optimizers/self_consistent_trace_log_tracker/**"
+      - "optimizers/spectral_rg_flow_projector/**"
+      - "optimizers/trace_log_tracker/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-force-push-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package-tests:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: adaptive-spectral-guard
+            path: optimizers/adaptive_spectral_guard
+            package: adaptive_spectral_guard
+          - name: self-consistent-trace-log
+            path: optimizers/self_consistent_trace_log_tracker
+            package: rg_sc_trace_log
+          - name: spectral-rg-flow-projector
+            path: optimizers/spectral_rg_flow_projector
+            package: rg_spectral_flow
+          - name: trace-log-tracker
+            path: optimizers/trace_log_tracker
+            package: rg_trace_log
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install CPU test environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install numpy pandas scipy matplotlib nbformat pytest "weightwatcher==0.7.7"
+          python -m pip install --no-deps -e "${{ matrix.path }}"
+
+      - name: Compile package and tests
+        run: |
+          python -m compileall -q \
+            "${{ matrix.path }}/${{ matrix.package }}" \
+            "${{ matrix.path }}/tests"
+
+      - name: Run complete package test suite
+        env:
+          PYTHONPATH: ${{ matrix.path }}
+          MPLBACKEND: Agg
+        run: |
+          python -m unittest discover -s "${{ matrix.path }}/tests" -v
