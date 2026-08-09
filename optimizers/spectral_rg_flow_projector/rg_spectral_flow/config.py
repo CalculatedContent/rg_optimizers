@@ -40,7 +40,7 @@ class SpectralRGFlowConfig:
                 "max_abs_log_eigenvalue_correction must be non-negative or None."
             )
         if self.max_correction_ratio is not None and self.max_correction_ratio < 0.0:
-            raise ValueError(bmax_correction_ratio must be non-negative or None.")
+            raise ValueError("max_correction_ratio must be non-negative or None.")
         if int(self.min_retained) < 2:
             raise ValueError("min_retained must be at least two.")
         if int(self.apply_every_steps) < 1:
