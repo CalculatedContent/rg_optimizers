@@ -1,44 +1,71 @@
 # Full Matrix-Log RG optimizer
 
-This folder implements a state-aware optimizer extension that removes completed SGD motion back toward the trivial retained covariance solution
+This folder implements a state-aware optimizer extension that removes SGD flow back toward the retained trivial covariance condition
 
 \[
 \widetilde X_R = I.
 \]
 
-For the retained ECS/PL midpoint support, define
+For the retained ECS/PL midpoint support,
 
 \[
 \Phi_R(W)=\frac{1}{2m}\left\|\log \widetilde X_R(W)\right\|_F^2.
 \]
 
-Two correction modes are implemented:
+## Scientific hierarchy
 
-- **`radial`** removes only a net first-order decrease of \(\Phi_R\).
-- **`modewise`** removes every retained log-eigenvalue motion directed toward zero. This is the stronger full-matrix condition and is the default.
+The three implementations are deliberately separated:
 
-The correction is applied to the **completed optimizer displacement**, after SGD momentum, Nesterov acceleration, learning-rate scheduling, clipping, and weight decay. It does not project or whiten the accumulated weight matrix.
+1. **`cone` — corrected primary method.** It solves the active-set minimum-norm quadratic program
 
-## Mac-oriented implementation
+   \[
+   \min_C \frac12\|C\|_F^2
+   \quad\text{subject to}\quad
+   \operatorname{sign}(\ell_i)\,[\dot\ell_i + D\ell_i(C)]\ge 0,
+   \]
 
-The expensive full-layer spectral analysis is an outer loop:
+   where \(\ell_i=\log\widetilde\lambda_i\). The accepted correction is also written back into the SGD/Nesterov momentum buffer, so rejected flow is not proposed again on the next step.
+
+2. **`radial` — conservative reference.** It removes only net first-order decrease of \(\Phi_R\).
+
+3. **`modewise` — legacy prototype.** It retains the original regularized full Gram-system equality solve for reproducibility. It is not the primary scientific claim.
+
+The momentum-state ablation is explicit:
+
+- `momentum_projection="projected_state"` is the corrected implementation;
+- `momentum_projection="post_step"` reproduces the original weight-only wrapper.
+
+## Normalization ablation
+
+Every cached support stores both:
+
+- `normalization="full_m"`: \(D_R=M\), the original WeightWatcher/full-dimension normalization;
+- `normalization="self_consistent"`:
+
+  \[
+  D_R=m+r_{\mathrm{bulk}},
+  \qquad
+  r_{\mathrm{bulk}}
+  =\frac{(\sum_{i\in B}\lambda_i)^2}{\sum_{i\in B}\lambda_i^2}.
+  \]
+
+The retained basis is computed once per WeightWatcher checkpoint, so switching the normalization does not add an inner-loop full SVD.
+
+## Computational structure
 
 1. WeightWatcher runs at epoch zero and once per epoch.
-2. It supplies direct `alpha`, `detX_num`, `num_pl_spikes`, `ERG_gap`, and `num_traps` measurements.
-3. The retained rank is the midpoint of the Trace-Log and power-law ranks.
-4. The retained right singular basis is cached until the next checkpoint.
+2. It supplies `alpha`, `detX_num`, `num_pl_spikes`, `ERG_gap`, and `num_traps`.
+3. The working rank is the midpoint of the Trace-Log and power-law ranks.
+4. The retained right singular basis and both normalization dimensions are cached.
+5. At each configured correction step, only the retained \(m\times m\) covariance is diagonalized.
 
-The inner optimizer does **not** recompute a full SVD at every step. At each configured correction step it forms the retained covariance and diagonalizes only an \(m\times m\) matrix. Linear-algebra operations automatically fall back to CPU when an Apple MPS backend does not support them.
-
-The default correction cadence is every 100 optimizer steps and the notebook applies the extension only to `fc1.weight` and `fc2.weight`. These defaults keep the first Mac experiment tractable while still intervening several times per epoch.
+The extension never whitens or projects the accumulated weight matrix. It filters the completed optimizer displacement.
 
 ## Install on a Mac
 
 From the repository root:
 
 ```bash
-git checkout agent/full-matrix-log-rg
-
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip wheel
@@ -46,18 +73,16 @@ python -m pip install -e './baseline[experiment]'
 python -m pip install -e './optimizers/full_matrix_log_rg[experiment]'
 ```
 
-The baseline package pins the tested WeightWatcher version (`0.7.7`) and supplies the exact MNIST model, data split, optimizer schedule, diagnostics, and Student-t aggregation used by the reference notebook.
-
-Store datasets and long-running outputs outside `/tmp`:
+Store data and restartable results outside `/tmp`:
 
 ```bash
 export RG_BASELINE_DATA_DIR="$HOME/rg-optimizer-data"
 export RG_FML_RUN_ROOT="$HOME/rg-optimizer-runs/full_matrix_log_rg"
 ```
 
-MPS is selected automatically when available. The DataLoader uses `num_workers=0` on MPS to avoid the common macOS multiprocessing failure.
+MPS is selected automatically when available. Unsupported decomposition operations fall back to CPU.
 
-## Validate before training
+## Validate
 
 ```bash
 cd optimizers/full_matrix_log_rg
@@ -65,92 +90,53 @@ python -m unittest discover -s tests -v
 cd ../..
 ```
 
-The tests cover:
+The tests cover the matrix-log gradient, active-set KKT projection, mixed inward/outward modes, normalization ablation, Nesterov momentum-state projection, rectangular layers, and checkpoint state round trips.
 
-- the isotropic trivial solution;
-- anisotropy hidden by a zero scalar Trace-Log;
-- the analytic full matrix-log gradient against finite differences;
-- radial and modewise one-sided corrections;
-- rectangular layers;
-- cached-basis equivalence;
-- correction cadence and optimizer-state restart;
-- a restartable end-to-end runner smoke test.
+## Corrected notebook
 
-## Run the notebook
+Open:
 
 ```bash
 jupyter lab optimizers/full_matrix_log_rg/notebooks/MNIST_MLP3_SGD_Momentum_vs_FullMatrixLogRG.ipynb
 ```
 
-The notebook is matched to the qualified baseline:
-
-- MNIST with the fixed 55,000/5,000 optimization/validation split;
-- `784 -> 512 -> 512 -> 10` ReLU MLP;
-- SGD + Nesterov, peak LR `0.05`, floor `5e-4`;
-- two-epoch linear warm-up followed by cosine decay;
-- momentum `0.90`, matrix weight decay `1e-4`, gradient clipping `1.0`;
-- three complete seeds and run-level 95% Student-t intervals.
-
-### Validation-only grid
-
-The Mac-default grid has eight points:
+The validation-only grid compares the corrected cone optimizer under:
 
 ```text
-mode                 radial, modewise
-projection_strength  0.5, 1.0
-apply_every_steps    25, 100
-max_correction_ratio 0.10 (fixed)
+normalization       full_m, self_consistent
+projection_strength 0.5, 1.0
+apply_every_steps   25, 100
 ```
 
-It uses one preregistered seed and five epochs. The test set is not evaluated during selection. The candidates and their checkpoints are restartable under:
+The official test set is not evaluated during hyperparameter selection. The selected configuration is then compared with the unmodified SGD+Nesterov baseline over the same three final seeds with run-level 95% Student-t intervals.
 
-```text
-$RG_FML_RUN_ROOT/validation_grid/
-```
+The notebook now uses the corrected hierarchy; `modewise` and `post_step` remain available only as explicit legacy ablations.
 
-Useful controls:
-
-```bash
-export RG_FML_GRID_EPOCHS=5
-export RG_FML_SKIP_GRID=1   # reuse an existing selected_config.json
-```
-
-### Final campaign
-
-The selected configuration is compared with unmodified SGD + Nesterov for the same three baseline seeds. Every run writes:
-
-- `checkpoint_latest.pt`;
-- `checkpoint_best.pt`, selected only by validation loss;
-- optional per-epoch checkpoints;
-- `final_state.pt` and `run_complete.json`;
-- performance, WeightWatcher, ESD, and correction histories.
-
-Interrupted runs resume from `checkpoint_latest.pt`. Aggregate CSVs, plots, and 95% confidence intervals are written under:
-
-```text
-$RG_FML_RUN_ROOT/final/aggregate/
-```
-
-## Package API
+## Minimal API
 
 ```python
 import torch
-
 from full_matrix_log_rg import FullMatrixLogConfig, FullMatrixLogRG, analyze_supports
 
-base = torch.optim.SGD(...)
+base = torch.optim.SGD(
+    model.parameters(),
+    lr=0.05,
+    momentum=0.9,
+    nesterov=True,
+)
 optimizer = FullMatrixLogRG(
     base,
     model.named_parameters(),
     FullMatrixLogConfig(
-        mode="modewise",
+        mode="cone",
+        momentum_projection="projected_state",
+        normalization="self_consistent",
         projection_strength=1.0,
         max_correction_ratio=0.10,
         apply_every_steps=100,
         parameter_names=("fc1.weight", "fc2.weight"),
     ),
 )
-
 checkpoint = analyze_supports(
     model,
     epoch=0,
@@ -159,8 +145,4 @@ checkpoint = analyze_supports(
 optimizer.set_supports(checkpoint.supports)
 ```
 
-Refresh the cached supports after each slower WeightWatcher checkpoint.
-
-## Validation status
-
-The pure-PyTorch geometry, projection, rectangular-matrix, cadence, state-restart, packaging, and restartable-runner tests are executable without downloading MNIST. The complete MNIST/WeightWatcher grid and three-seed campaign must be run locally; they are intentionally not represented as completed results in this PR.
+Refresh the supports after each slower WeightWatcher checkpoint.
