@@ -54,27 +54,35 @@ jobs:
           inventory_end = completion_text.index(
               "    if verify_checkpoints:", inventory_start
           )
-          inventory_replacement = '''\
-    if "checkpoint_path" not in epoch_metrics.columns:
-        _fail("epoch_metrics.csv has no checkpoint_path column")
-    recorded_checkpoint_paths = [
-        Path(str(value))
-        for value in epoch_metrics["checkpoint_path"]
-    ]
-    if len(recorded_checkpoint_paths) != len(set(epoch_steps)):
-        _fail("epoch checkpoint inventory does not match epoch_metrics.csv")
-    resolved_checkpoint_paths: list[Path] = []
-    for recorded in recorded_checkpoint_paths:
-        candidate = recorded
-        if not candidate.is_file():
-            candidate = root / "epoch_checkpoints" / recorded.name
-        if not candidate.is_file() or candidate.stat().st_size == 0:
-            _fail(f"missing epoch checkpoint recorded by epoch_metrics.csv: {recorded}")
-        resolved_checkpoint_paths.append(candidate.resolve())
-    if len(resolved_checkpoint_paths) != len(set(resolved_checkpoint_paths)):
-        _fail("epoch_metrics.csv references duplicate epoch checkpoints")
-
-'''
+          inventory_replacement = "\n".join(
+              [
+                  '    if "checkpoint_path" not in epoch_metrics.columns:',
+                  '        _fail("epoch_metrics.csv has no checkpoint_path column")',
+                  '    recorded_checkpoint_paths = [',
+                  '        Path(str(value))',
+                  '        for value in epoch_metrics["checkpoint_path"]',
+                  '    ]',
+                  '    if len(recorded_checkpoint_paths) != len(set(epoch_steps)):',
+                  '        _fail("epoch checkpoint inventory does not match epoch_metrics.csv")',
+                  '    resolved_checkpoint_paths: list[Path] = []',
+                  '    for recorded in recorded_checkpoint_paths:',
+                  '        candidate = recorded',
+                  '        if not candidate.is_file():',
+                  '            candidate = root / "epoch_checkpoints" / recorded.name',
+                  '        if not candidate.is_file() or candidate.stat().st_size == 0:',
+                  '            _fail(',
+                  '                f"missing epoch checkpoint recorded by "',
+                  '                f"epoch_metrics.csv: {recorded}"',
+                  '            )',
+                  '        resolved_checkpoint_paths.append(candidate.resolve())',
+                  '    if len(resolved_checkpoint_paths) != len(',
+                  '        set(resolved_checkpoint_paths)',
+                  '    ):',
+                  '        _fail("epoch_metrics.csv references duplicate epoch checkpoints")',
+                  '',
+                  '',
+              ]
+          )
           completion.write_text(
               completion_text[:inventory_start]
               + inventory_replacement
