@@ -7,6 +7,14 @@ from typing import Literal, Optional
 
 OptimizerName = Literal["sgd_momentum", "adamw", "sgd_momentum_muon"]
 
+MNIST_REFERENCE_RECIPE_VERSION = 3
+MNIST_REFERENCE_INITIALIZATION = (
+    "kaiming_uniform_relu_hidden_xavier_uniform_head_v1"
+)
+MNIST_REFERENCE_SUITE_SLUG = (
+    f"mnist_mlp3_recipe_v{MNIST_REFERENCE_RECIPE_VERSION}"
+)
+
 
 @dataclass(frozen=True)
 class BaselineConfig:
@@ -22,8 +30,8 @@ class BaselineConfig:
     """
 
     optimizer: OptimizerName
-    recipe_version: int = 3
-    initialization: str = "kaiming_uniform_relu_hidden_xavier_uniform_head_v1"
+    recipe_version: int = MNIST_REFERENCE_RECIPE_VERSION
+    initialization: str = MNIST_REFERENCE_INITIALIZATION
     seed: int = 1337
     epochs: int = 30
     batch_size: int = 128
@@ -91,9 +99,7 @@ class BaselineConfig:
             raise ValueError(f"Unknown optimizer: {self.optimizer!r}")
         if self.recipe_version < 1:
             raise ValueError("recipe_version must be positive")
-        if self.initialization != (
-            "kaiming_uniform_relu_hidden_xavier_uniform_head_v1"
-        ):
+        if self.initialization != MNIST_REFERENCE_INITIALIZATION:
             raise ValueError("unsupported MLP3 initialization contract")
         if self.epochs < 2:
             raise ValueError(

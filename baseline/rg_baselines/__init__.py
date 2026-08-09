@@ -4,7 +4,12 @@ Plotting is imported lazily so the numerical package and its tests do not
 require Matplotlib until a notebook actually requests a figure.
 """
 
-from .config import BaselineConfig
+from .config import (
+    MNIST_REFERENCE_INITIALIZATION,
+    MNIST_REFERENCE_RECIPE_VERSION,
+    MNIST_REFERENCE_SUITE_SLUG,
+    BaselineConfig,
+)
 from .diagnostics import (
     SpectralCheckpoint,
     measure_weightwatcher_checkpoint,
@@ -52,6 +57,9 @@ __all__ = [
     "BaselineResult",
     "DEFAULT_BASELINE_SEEDS",
     "MLP3",
+    "MNIST_REFERENCE_INITIALIZATION",
+    "MNIST_REFERENCE_RECIPE_VERSION",
+    "MNIST_REFERENCE_SUITE_SLUG",
     "MuonWithAuxAdamW",
     "SGDMomentumMuon",
     "SpectralCheckpoint",
