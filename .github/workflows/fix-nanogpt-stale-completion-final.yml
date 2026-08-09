@@ -50,17 +50,24 @@ jobs:
           needle = "    return run_dir, fingerprint, total_steps\n"
           if text.count(needle) != 1:
               raise RuntimeError("unexpected completed-run fixture return shape")
-          replacement = '''\
-    # Keep the synthetic fixture's physical checkpoint inventory identical to
-    # the exact paths persisted in epoch_metrics.csv.
-    inventory = pd.read_csv(run_dir / "epoch_metrics.csv")
-    for value in inventory["checkpoint_path"]:
-        checkpoint_path = Path(str(value))
-        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-        if not checkpoint_path.is_file():
-            checkpoint_path.write_bytes(b"synthetic epoch checkpoint")
-    return run_dir, fingerprint, total_steps
-'''
+          replacement = "\n".join(
+              [
+                  "    # Keep the synthetic fixture's physical checkpoint",
+                  "    # inventory identical to epoch_metrics.csv.",
+                  '    inventory = pd.read_csv(run_dir / "epoch_metrics.csv")',
+                  '    for value in inventory["checkpoint_path"]:',
+                  '        checkpoint_path = Path(str(value))',
+                  '        checkpoint_path.parent.mkdir(',
+                  '            parents=True, exist_ok=True',
+                  '        )',
+                  '        if not checkpoint_path.is_file():',
+                  '            checkpoint_path.write_bytes(',
+                  '                b"synthetic epoch checkpoint"',
+                  '            )',
+                  '    return run_dir, fingerprint, total_steps',
+                  '',
+              ]
+          )
           path.write_text(text.replace(needle, replacement, 1), encoding="utf-8")
           PY
 
