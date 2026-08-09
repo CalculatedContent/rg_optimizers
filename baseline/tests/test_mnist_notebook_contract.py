@@ -56,7 +56,7 @@ class MnistNotebookArtifactContractTests(unittest.TestCase):
 
 
     def test_comparison_reads_only_the_versioned_suite(self) -> None:
-        source = _notebook_source(COMPARISON_NOTEBOOOK)
+        source = _notebook_source(COMPARISON_NOTEBOOK)
         self.assertIn(
             "RUN_ROOT = BASE_RUN_ROOT / MNIST_REFERENCE_SUITE_SLUG",
             source,
