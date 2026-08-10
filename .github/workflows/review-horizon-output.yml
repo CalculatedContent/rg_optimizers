@@ -1,0 +1,56 @@
+name: Extract horizon output review
+on:
+  push:
+    branches: [agent/review-horizon-output-20260809]
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: agent/review-horizon-output-20260809}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q pandas lxml
+      - name: Extract executed notebook tables
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from io import StringIO
+          from pathlib import Path
+          import pandas as pd
+          root=Path('baseline/notebooks')
+          names={'adamw':'MNIST_MLP3_AdamW_Horizon_Optimized.out.ipynb','muon':'MNIST_MLP3_SGD_Momentum_Muon_Horizon_Optimized.out.ipynb','cmp':'MNIST_MLP3_Horizon_Optimized_Comparison_Zoomed.out.ipynb'}
+          out=Path('horizon_output_review'); out.mkdir(exist_ok=True)
+          def load(k): return json.loads((root/names[k]).read_text())
+          def tables(nb,cid):
+            cell=next(c for c in nb['cells'] if c.get('id')==cid); frames=[]
+            for o in cell.get('outputs',[]):
+              html=o.get('data',{}).get('text/html')
+              if html:
+                for f in pd.read_html(StringIO(''.join(html) if isinstance(html,list) else html)):
+                  f=f.loc[:,~f.columns.astype(str).str.startswith('Unnamed')]; frames.append(f)
+            return frames
+          records=[]
+          for k in ('adamw','muon'):
+            nb=load(k); pm=nb.get('metadata',{}).get('papermill',{})
+            records.append({'notebook':names[k],'exception':pm.get('exception'),'duration':pm.get('duration')})
+            ts=tables(nb,'config')
+            if ts: ts[0].to_csv(out/f'{k}_config.csv',index=False)
+            for cid in ('performance','weightwatcher'):
+              for i,t in enumerate(tables(nb,cid)): t.to_csv(out/f'{k}_{cid}_{i}.csv',index=False)
+          cmp=load('cmp'); pm=cmp.get('metadata',{}).get('papermill',{})
+          records.append({'notebook':names['cmp'],'exception':pm.get('exception'),'duration':pm.get('duration')})
+          for cid in ('load','terminal','rankings','paired','spectral'):
+            for i,t in enumerate(tables(cmp,cid)): t.to_csv(out/f'cmp_{cid}_{i}.csv',index=False)
+          pd.DataFrame(records).to_csv(out/'execution.csv',index=False)
+          PY
+      - name: Commit extraction
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add horizon_output_review
+          git commit -m 'Add extracted horizon output review'
+          git push origin HEAD:agent/review-horizon-output-20260809
