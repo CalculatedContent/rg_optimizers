@@ -49,12 +49,14 @@ class TraceLogProvenanceTests(unittest.TestCase):
                 "correction_frobenius_over_base_step_delta_frobenius",
             )
             self.assertIn(row["status"], {"ok", "skipped", "geometry_failed"})
+            self.assertIn("is_first_due", row)
             if row["status"] == "ok":
                 self.assertIsNotNone(row["dose_value"])
                 self.assertGreaterEqual(float(row["dose_value"]), 0.0)
+                self.assertIs(row["is_first_apply"], True)
             elif row["status"] in {"skipped", "geometry_failed"}:
                 self.assertIsNone(row["dose_value"])
-            self.assertIs(row["is_first_apply"], True)
+                self.assertIs(row["is_first_apply"], False)
 
     def test_first_apply_respects_warmup_and_cadence(self):
         model, wrapper = self._make_wrapper(warmup_steps=2, apply_every_steps=2)
@@ -68,14 +70,21 @@ class TraceLogProvenanceTests(unittest.TestCase):
         # pop after each? step clears; only last step has stats
         stats = wrapper.pop_step_stats()
         self.assertTrue(stats)
-        self.assertTrue(all(row["is_first_apply"] for row in stats))
-        # one more due step (6): not first
+        # first due may skip with null dose; first_apply only if applied
+        for row in stats:
+            self.assertTrue(row["is_first_due"])
+            if row["dose_value"] is not None:
+                self.assertTrue(row["is_first_apply"])
+            else:
+                self.assertFalse(row["is_first_apply"])
+        # one more due step (6): not first due; not first apply if already applied
         for _ in range(2):
             model.zero_grad(set_to_none=True)
             (model.weight ** 2).sum().backward()
             wrapper.step()
         stats2 = wrapper.pop_step_stats()
         self.assertTrue(stats2)
+        self.assertTrue(all(not row["is_first_due"] for row in stats2))
         self.assertTrue(all(not row["is_first_apply"] for row in stats2))
 
 

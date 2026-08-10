@@ -7,7 +7,7 @@ provenance fields (`actuator_id`, `ecs_backend`, `dose_definition`, `dose_value`
 | Package | Provenance fields | Notes |
 |---|---|---|
 | `wwpgd_local_delta` | **yes** | SoT grammar (#34): null dose on no-op; schedule-aware first apply |
-| `trace_log_tracker` | **yes** (step stats) | Logging-only extension of #34 grammar; midpoint `ecs_backend` label |
+| `trace_log_tracker` | **yes** (step stats) | #34-style fields + `is_first_due`; `is_first_apply` = first **successful** apply per param (F1) |
 | `self_consistent_trace_log_tracker` | no | Candidate for same grammar |
 | `adaptive_spectral_guard` | no | Different cadence model |
 | `ecs_probe_loss_trace_wall` | no | |
