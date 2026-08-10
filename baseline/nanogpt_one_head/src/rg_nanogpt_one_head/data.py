@@ -257,7 +257,8 @@ def prepare_fineweb_edu(
     except ImportError as exc:
         raise RuntimeError(
             "data preparation requires datasets and tiktoken; "
-            "run scripts/setup_mac.sh"
+            "install dependencies into the active conda environment with "
+            "`python -m pip install -e .`"
         ) from exc
 
     dataset_cfg = cfg["dataset"]
