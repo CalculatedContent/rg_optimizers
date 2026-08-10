@@ -217,32 +217,84 @@ Test measurements are monitoring-only. Validation loss selects
 `checkpoint_best.pt`; test loss, test accuracy, test perplexity, and BLEU never
 change optimizer updates, schedules, stopping, or checkpoint selection.
 
-## MacBook MPS workflow
+## Conda / local workflow
+
+Use the currently activated conda environment. Do **not** create a project venv
+and do not run setup wrapper scripts.
 
 From the repository root:
 
 ```bash
 cd baseline/nanogpt_one_head
-bash scripts/setup_mac.sh
-bash scripts/prepare_data.sh
-bash scripts/smoke_test.sh
 
+# Install this package and any missing dependencies into the active conda env.
+python -m pip install -e .
+
+# Keep all corpus caches and experiment outputs outside the git checkout.
 export RG_NANOGPT_ONE_HEAD_ROOT="$HOME/rg-nanogpt-one-head"
-caffeinate -dimsu bash scripts/run_all_baselines.sh \
-  2>&1 | tee "$RG_NANOGPT_ONE_HEAD_ROOT/run_all.log"
+
+# Allow unsupported individual MPS operations to fall back to CPU when needed.
+export PYTORCH_ENABLE_MPS_FALLBACK=1
 ```
 
-The setup script reports whether MPS is built and available. When available,
-`--device auto` selects it. Unsupported individual MPS operations may use
-PyTorch CPU fallback because `PYTORCH_ENABLE_MPS_FALLBACK=1` is set by the
-scripts. WeightWatcher always runs on CPU copies of the six matrices.
+Verify the active Python and accelerator before a long run:
 
-The first data-preparation run requires internet access. Later runs reuse only a
-fully verified corpus under:
-
-```text
-$RG_NANOGPT_ONE_HEAD_ROOT/data
+```bash
+which python
+python -c "import torch; print(torch.__version__); print('MPS built:', torch.backends.mps.is_built()); print('MPS available:', torch.backends.mps.is_available())"
 ```
+
+### Prepare the pinned FineWeb-Edu corpus
+
+The first preparation requires internet access. Later runs reuse only the fully
+verified cache under `$RG_NANOGPT_ONE_HEAD_ROOT/data`.
+
+```bash
+rg-onehead-prepare --config configs/reference.yaml
+```
+
+To deliberately replace an incompatible or stale cache:
+
+```bash
+rg-onehead-prepare --config configs/reference.yaml --force
+```
+
+### Run the three reference baselines directly
+
+Each command runs or resumes all three canonical seeds.
+
+```bash
+python -m rg_nanogpt_one_head.training \
+  --config configs/reference.yaml \
+  --optimizer sgd_momentum \
+  --device auto
+
+python -m rg_nanogpt_one_head.training \
+  --config configs/reference.yaml \
+  --optimizer adamw \
+  --device auto
+
+python -m rg_nanogpt_one_head.training \
+  --config configs/reference.yaml \
+  --optimizer muon \
+  --device auto
+```
+
+On an Apple Silicon Mac, `--device auto` selects MPS when available.
+WeightWatcher measurements are performed on CPU copies of the six matrices.
+
+### Build the comparison output notebook
+
+After all nine runs are complete:
+
+```bash
+cd notebooks
+papermill 04_compare_baselines.ipynb 04_compare_baselines.out.ipynb
+```
+
+The notebook requires all three optimizers × all three seeds and produces
+optimizer overlays plus final and validation-selected 95% confidence-interval
+tables.
 
 ## Notebook order
 
@@ -253,14 +305,14 @@ notebooks/03_muon_baseline.ipynb
 notebooks/04_compare_baselines.ipynb
 ```
 
-The first three notebooks run or resume their optimizer's three seeds. The
-comparison notebook requires all nine completed runs and produces optimizer
-overlays plus final and validation-selected 95% confidence-interval tables.
+The first three notebooks are interactive entry points for the same training
+runtime. The direct Python commands above are the simplest path for unattended
+local runs.
 
-Launch Jupyter with:
+To launch Jupyter from the active conda environment:
 
 ```bash
-.venv-one-head/bin/jupyter lab notebooks
+jupyter lab notebooks
 ```
 
 ## Smaller development runs
@@ -271,7 +323,7 @@ Temporary pilots belong in a separate YAML file and a separate output root.
 Run one optimizer:
 
 ```bash
-.venv-one-head/bin/python -m rg_nanogpt_one_head.training \
+python -m rg_nanogpt_one_head.training \
   --config configs/reference.yaml \
   --optimizer adamw \
   --device auto
@@ -280,7 +332,7 @@ Run one optimizer:
 Run one seed:
 
 ```bash
-.venv-one-head/bin/python -m rg_nanogpt_one_head.training \
+python -m rg_nanogpt_one_head.training \
   --config configs/reference.yaml \
   --optimizer muon \
   --seeds 1337 \
@@ -289,8 +341,10 @@ Run one seed:
 
 ## Validation
 
+No shell wrapper is required. From `baseline/nanogpt_one_head` run:
+
 ```bash
-bash scripts/smoke_test.sh
+python -m pytest -q tests
 ```
 
 The test suite checks the architecture, 80M-token corpus contract, all optimizer
