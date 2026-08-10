@@ -230,8 +230,8 @@ cd baseline/nanogpt_one_head
 # Install this package and any missing dependencies into the active conda env.
 python -m pip install -e .
 
-# Keep all corpus caches and experiment outputs outside the git checkout.
-export RG_NANOGPT_ONE_HEAD_ROOT="$HOME/rg-nanogpt-one-head"
+# Keep all corpus caches and experiment outputs under /tmp.
+export RG_NANOGPT_ONE_HEAD_ROOT="/tmp/rg-nanogpt-one-head"
 
 # Allow unsupported individual MPS operations to fall back to CPU when needed.
 export PYTORCH_ENABLE_MPS_FALLBACK=1

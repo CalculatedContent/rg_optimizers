@@ -10,22 +10,22 @@ from typing import Any
 import yaml
 
 SUPPORTED_OPTIMIZERS = ("sgd_momentum", "adamw", "muon")
-DEFAULT_ROOT = Path.home() / "rg-nanogpt-one-head"
+DEFAULT_ROOT = Path("/tmp/rg-nanogpt-one-head")
 
 
 def roots() -> dict[str, Path]:
-    root = Path(os.environ.get("RG_NANOGPT_ONE_HEAD_ROOT", DEFAULT_ROOT)).expanduser()
+    root = Path(os.environ.get("RG_NANOGPT_ONE_HEAD_ROOT", DEFAULT_ROOT))
     return {
         "root": root,
         "data": Path(
             os.environ.get("RG_NANOGPT_ONE_HEAD_DATA_ROOT", root / "data")
-        ).expanduser(),
+        ),
         "results": Path(
             os.environ.get("RG_NANOGPT_ONE_HEAD_RESULTS_ROOT", root / "results")
-        ).expanduser(),
+        ),
         "plots": Path(
             os.environ.get("RG_NANOGPT_ONE_HEAD_PLOTS_ROOT", root / "plots")
-        ).expanduser(),
+        ),
     }
 
 
