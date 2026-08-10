@@ -1,0 +1,73 @@
+name: Materialize horizon-tuned MNIST notebooks
+
+on:
+  push:
+    branches:
+      - agent/add-horizon-tuned-mnist-notebooks
+    paths:
+      - .github/workflows/materialize-horizon-tuned-mnist-notebooks.yml
+
+permissions:
+  contents: write
+
+jobs:
+  write-notebooks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/add-horizon-tuned-mnist-notebooks
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Extract payload, materialize notebooks, and validate syntax
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast
+          import base64
+          import gzip
+          import json
+          import re
+          from pathlib import Path
+
+          payload_source = Path('.github/workflows/write-horizon-tuned-mnist-notebooks.yml')
+          text = payload_source.read_text(encoding='utf-8')
+          match = re.search(r"payload = '''\n(?P<payload>.*?)\n\s*'''", text, flags=re.S)
+          if not match:
+              raise RuntimeError('Could not find embedded notebook payload')
+          payload = ''.join(match.group('payload').split())
+          notebooks = json.loads(gzip.decompress(base64.b64decode(payload)).decode('utf-8'))
+          expected = {
+              'baseline/notebooks/MNIST_MLP3_AdamW_Horizon_Optimized.ipynb',
+              'baseline/notebooks/MNIST_MLP3_SGD_Momentum_Muon_Horizon_Optimized.ipynb',
+              'baseline/notebooks/MNIST_MLP3_Horizon_Optimized_Comparison_Zoomed.ipynb',
+          }
+          if set(notebooks) != expected:
+              raise RuntimeError(f'unexpected notebook set: {sorted(notebooks)}')
+          for repo_path, content in notebooks.items():
+              nb = json.loads(content)
+              for cell in nb.get('cells', []):
+                  if cell.get('cell_type') == 'code':
+                      source = ''.join(cell.get('source', []))
+                      ast.parse(source, filename=f'{repo_path}:{cell.get("id")}')
+              path = Path(repo_path)
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(content + '\n', encoding='utf-8')
+          print('wrote notebooks:', len(notebooks))
+          PY
+          git diff --check
+      - name: Commit generated notebooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            baseline/notebooks/MNIST_MLP3_AdamW_Horizon_Optimized.ipynb \
+            baseline/notebooks/MNIST_MLP3_SGD_Momentum_Muon_Horizon_Optimized.ipynb \
+            baseline/notebooks/MNIST_MLP3_Horizon_Optimized_Comparison_Zoomed.ipynb
+          git commit -m "Add horizon-optimized MNIST baseline notebooks"
+          git push origin HEAD:agent/add-horizon-tuned-mnist-notebooks
