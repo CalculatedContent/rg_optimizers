@@ -1,0 +1,26 @@
+checkpoint,metric,direction,rank,arm,arm_label,mean,ci_half_width
+final,test_accuracy,max,1,new_muon,"new Muon, horizon optimized",0.986467,0.001654
+final,test_accuracy,max,2,old_muon,old Muon + aux AdamW,0.986333,0.001691
+final,test_accuracy,max,3,old_adamw,old AdamW,0.985133,0.001004
+final,test_accuracy,max,4,old_sgd,old SGD + Nesterov,0.984167,0.001497
+final,test_accuracy,max,5,new_adamw,"new AdamW, horizon optimized",0.984167,0.001518
+final,test_loss,min,1,old_sgd,old SGD + Nesterov,0.056838,0.004742
+final,test_loss,min,2,new_adamw,"new AdamW, horizon optimized",0.074325,0.00626
+final,test_loss,min,3,old_adamw,old AdamW,0.082557,0.010787
+final,test_loss,min,4,new_muon,"new Muon, horizon optimized",0.091211,0.013167
+final,test_loss,min,5,old_muon,old Muon + aux AdamW,0.123379,0.008896
+validation_selected,test_accuracy,max,1,old_sgd,old SGD + Nesterov,0.984167,0.001497
+validation_selected,test_accuracy,max,2,new_adamw,"new AdamW, horizon optimized",0.979567,0.007865
+validation_selected,test_accuracy,max,3,old_adamw,old AdamW,0.979133,0.00633
+validation_selected,test_accuracy,max,4,new_muon,"new Muon, horizon optimized",0.976033,0.006465
+validation_selected,test_accuracy,max,5,old_muon,old Muon + aux AdamW,0.971733,0.003795
+validation_selected,test_loss,min,1,old_sgd,old SGD + Nesterov,0.056857,0.004822
+validation_selected,test_loss,min,2,new_adamw,"new AdamW, horizon optimized",0.073526,0.014774
+validation_selected,test_loss,min,3,new_muon,"new Muon, horizon optimized",0.078583,0.022717
+validation_selected,test_loss,min,4,old_adamw,old AdamW,0.079889,0.019555
+validation_selected,test_loss,min,5,old_muon,old Muon + aux AdamW,0.091964,0.00789
+validation_selected,validation_loss,min,1,old_sgd,old SGD + Nesterov,0.059637,0.00621
+validation_selected,validation_loss,min,2,new_adamw,"new AdamW, horizon optimized",0.07151,0.003245
+validation_selected,validation_loss,min,3,new_muon,"new Muon, horizon optimized",0.074405,0.004875
+validation_selected,validation_loss,min,4,old_adamw,old AdamW,0.076289,0.008732
+validation_selected,validation_loss,min,5,old_muon,old Muon + aux AdamW,0.090812,0.000988

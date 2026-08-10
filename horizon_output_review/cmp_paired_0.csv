@@ -1,0 +1,41 @@
+checkpoint,contrast,metric,n,mean_difference,ci_half_width,ci_low,ci_high
+final,"new AdamW, horizon optimized - old AdamW",parameter_l2_norm,3,-10.355521,0.413969,-10.76949,-9.941552
+final,"new AdamW, horizon optimized - old SGD + Nesterov",parameter_l2_norm,3,11.005562,0.351939,10.653623,11.357501
+final,"new Muon, horizon optimized - new AdamW, horizon optimized",parameter_l2_norm,3,4.039572,0.493258,3.546314,4.53283
+final,"new Muon, horizon optimized - old Muon + aux AdamW",parameter_l2_norm,3,-34.171319,1.382561,-35.553879,-32.788758
+final,"new Muon, horizon optimized - old SGD + Nesterov",parameter_l2_norm,3,15.045133,0.843437,14.201696,15.88857
+final,"new AdamW, horizon optimized - old AdamW",test_accuracy,3,-0.000967,0.002227,-0.003193,0.00126
+final,"new AdamW, horizon optimized - old SGD + Nesterov",test_accuracy,3,0.0,0.002799,-0.002799,0.002799
+final,"new Muon, horizon optimized - new AdamW, horizon optimized",test_accuracy,3,0.0023,0.000657,0.001643,0.002957
+final,"new Muon, horizon optimized - old Muon + aux AdamW",test_accuracy,3,0.000133,0.001456,-0.001322,0.001589
+final,"new Muon, horizon optimized - old SGD + Nesterov",test_accuracy,3,0.0023,0.003103,-0.000803,0.005403
+final,"new AdamW, horizon optimized - old AdamW",test_loss,3,-0.008233,0.010611,-0.018844,0.002378
+final,"new AdamW, horizon optimized - old SGD + Nesterov",test_loss,3,0.017486,0.009474,0.008012,0.026961
+final,"new Muon, horizon optimized - new AdamW, horizon optimized",test_loss,3,0.016887,0.008899,0.007988,0.025785
+final,"new Muon, horizon optimized - old Muon + aux AdamW",test_loss,3,-0.032168,0.014837,-0.047005,-0.017332
+final,"new Muon, horizon optimized - old SGD + Nesterov",test_loss,3,0.034373,0.017559,0.016814,0.051932
+final,"new AdamW, horizon optimized - old AdamW",validation_loss,3,-0.008427,0.019853,-0.028279,0.011426
+final,"new AdamW, horizon optimized - old SGD + Nesterov",validation_loss,3,0.020451,0.009629,0.010822,0.03008
+final,"new Muon, horizon optimized - new AdamW, horizon optimized",validation_loss,3,0.016871,0.011907,0.004964,0.028779
+final,"new Muon, horizon optimized - old Muon + aux AdamW",validation_loss,3,-0.033105,0.025243,-0.058349,-0.007862
+final,"new Muon, horizon optimized - old SGD + Nesterov",validation_loss,3,0.037322,0.014087,0.023235,0.05141
+validation_selected,"new AdamW, horizon optimized - old AdamW",parameter_l2_norm,3,-5.773668,7.968977,-13.742645,2.195309
+validation_selected,"new AdamW, horizon optimized - old SGD + Nesterov",parameter_l2_norm,3,11.334026,0.31994,11.014086,11.653966
+validation_selected,"new Muon, horizon optimized - new AdamW, horizon optimized",parameter_l2_norm,3,3.59927,8.158869,-4.559599,11.758139
+validation_selected,"new Muon, horizon optimized - old Muon + aux AdamW",parameter_l2_norm,3,3.068586,7.894808,-4.826222,10.963394
+validation_selected,"new Muon, horizon optimized - old SGD + Nesterov",parameter_l2_norm,3,14.933296,7.966688,6.966608,22.899983
+validation_selected,"new AdamW, horizon optimized - old AdamW",test_accuracy,3,0.000433,0.006066,-0.005633,0.0065
+validation_selected,"new AdamW, horizon optimized - old SGD + Nesterov",test_accuracy,3,-0.0046,0.008302,-0.012902,0.003702
+validation_selected,"new Muon, horizon optimized - new AdamW, horizon optimized",test_accuracy,3,-0.003533,0.01352,-0.017054,0.009987
+validation_selected,"new Muon, horizon optimized - old Muon + aux AdamW",test_accuracy,3,0.0043,0.010194,-0.005894,0.014494
+validation_selected,"new Muon, horizon optimized - old SGD + Nesterov",test_accuracy,3,-0.008133,0.007269,-0.015403,-0.000864
+validation_selected,"new AdamW, horizon optimized - old AdamW",test_loss,3,-0.006363,0.007417,-0.01378,0.001054
+validation_selected,"new AdamW, horizon optimized - old SGD + Nesterov",test_loss,3,0.016669,0.019278,-0.002609,0.035948
+validation_selected,"new Muon, horizon optimized - new AdamW, horizon optimized",test_loss,3,0.005056,0.036895,-0.031839,0.041951
+validation_selected,"new Muon, horizon optimized - old Muon + aux AdamW",test_loss,3,-0.013381,0.029287,-0.042668,0.015906
+validation_selected,"new Muon, horizon optimized - old SGD + Nesterov",test_loss,3,0.021726,0.019604,0.002121,0.04133
+validation_selected,"new AdamW, horizon optimized - old AdamW",validation_loss,3,-0.00478,0.005618,-0.010398,0.000839
+validation_selected,"new AdamW, horizon optimized - old SGD + Nesterov",validation_loss,3,0.011872,0.003111,0.008761,0.014984
+validation_selected,"new Muon, horizon optimized - new AdamW, horizon optimized",validation_loss,3,0.002895,0.004579,-0.001684,0.007474
+validation_selected,"new Muon, horizon optimized - old Muon + aux AdamW",validation_loss,3,-0.016407,0.005845,-0.022252,-0.010561
+validation_selected,"new Muon, horizon optimized - old SGD + Nesterov",validation_loss,3,0.014767,0.00699,0.007777,0.021758

@@ -1,0 +1,41 @@
+arm,arm_label,family,variant,checkpoint,metric,n,mean,std,sem,ci_half_width,ci_low,ci_high,minimum,maximum
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,final,parameter_l2_norm,3,46.89456,0.172842,0.099791,0.429364,46.465196,47.323924,46.695293,47.003891
+old_adamw,old AdamW,adamw,old,final,parameter_l2_norm,3,57.250081,0.223624,0.12911,0.555514,56.694567,57.805595,57.086986,57.505001
+old_sgd,old SGD + Nesterov,sgd_momentum,old,final,parameter_l2_norm,3,35.888998,0.032256,0.018623,0.080128,35.80887,35.969127,35.853322,35.916103
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,final,parameter_l2_norm,3,50.934132,0.371125,0.214269,0.921927,50.012205,51.856059,50.507639,51.183601
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,final,parameter_l2_norm,3,85.10545,0.189903,0.10964,0.471745,84.633706,85.577195,84.935265,85.310296
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,final,test_accuracy,3,0.984167,0.000611,0.000353,0.001518,0.982649,0.985684,0.9835,0.9847
+old_adamw,old AdamW,adamw,old,final,test_accuracy,3,0.985133,0.000404,0.000233,0.001004,0.984129,0.986137,0.9847,0.9855
+old_sgd,old SGD + Nesterov,sgd_momentum,old,final,test_accuracy,3,0.984167,0.000603,0.000348,0.001497,0.982669,0.985664,0.9836,0.9848
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,final,test_accuracy,3,0.986467,0.000666,0.000384,0.001654,0.984813,0.988121,0.9857,0.9869
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,final,test_accuracy,3,0.986333,0.000681,0.000393,0.001691,0.984642,0.988024,0.9858,0.9871
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,final,test_loss,3,0.074325,0.00252,0.001455,0.00626,0.068064,0.080585,0.07255,0.077209
+old_adamw,old AdamW,adamw,old,final,test_loss,3,0.082557,0.004342,0.002507,0.010787,0.07177,0.093344,0.077554,0.085351
+old_sgd,old SGD + Nesterov,sgd_momentum,old,final,test_loss,3,0.056838,0.001909,0.001102,0.004742,0.052097,0.06158,0.055548,0.059031
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,final,test_loss,3,0.091211,0.0053,0.00306,0.013167,0.078044,0.104378,0.085997,0.096594
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,final,test_loss,3,0.123379,0.003581,0.002067,0.008896,0.114484,0.132275,0.11927,0.125831
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,final,validation_loss,3,0.080094,0.003942,0.002276,0.009793,0.070302,0.089887,0.077309,0.084605
+old_adamw,old AdamW,adamw,old,final,validation_loss,3,0.088521,0.004429,0.002557,0.011003,0.077518,0.099524,0.084746,0.093397
+old_sgd,old SGD + Nesterov,sgd_momentum,old,final,validation_loss,3,0.059643,0.002507,0.001448,0.006228,0.053415,0.065872,0.056884,0.061781
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,final,validation_loss,3,0.096965,0.003336,0.001926,0.008287,0.088678,0.105253,0.093231,0.099651
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,final,validation_loss,3,0.130071,0.007916,0.00457,0.019665,0.110406,0.149736,0.121383,0.136876
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,validation_selected,parameter_l2_norm,3,47.264958,0.171187,0.098835,0.425251,46.839707,47.690209,47.148535,47.461514
+old_adamw,old AdamW,adamw,old,validation_selected,parameter_l2_norm,3,53.038626,3.214502,1.855894,7.985266,45.053359,61.023892,49.555024,55.890117
+old_sgd,old SGD + Nesterov,sgd_momentum,old,validation_selected,parameter_l2_norm,3,35.930932,0.042752,0.024683,0.106201,35.824731,36.037133,35.897569,35.979124
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,validation_selected,parameter_l2_norm,3,50.864228,3.177167,1.834338,7.89252,42.971708,58.756748,48.947227,54.531643
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,validation_selected,parameter_l2_norm,3,47.795642,0.024791,0.014313,0.061584,47.734058,47.857226,47.771746,47.82124
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,validation_selected,test_accuracy,3,0.979567,0.003166,0.001828,0.007865,0.971702,0.987431,0.9774,0.9832
+old_adamw,old AdamW,adamw,old,validation_selected,test_accuracy,3,0.979133,0.002548,0.001471,0.00633,0.972803,0.985463,0.9762,0.9808
+old_sgd,old SGD + Nesterov,sgd_momentum,old,validation_selected,test_accuracy,3,0.984167,0.000603,0.000348,0.001497,0.982669,0.985664,0.9836,0.9848
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,validation_selected,test_accuracy,3,0.976033,0.002603,0.001503,0.006465,0.969568,0.982498,0.9735,0.9787
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,validation_selected,test_accuracy,3,0.971733,0.001528,0.000882,0.003795,0.967939,0.975528,0.9704,0.9734
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,validation_selected,test_loss,3,0.073526,0.005947,0.003434,0.014774,0.058752,0.088301,0.067006,0.078654
+old_adamw,old AdamW,adamw,old,validation_selected,test_loss,3,0.079889,0.007872,0.004545,0.019555,0.060334,0.099444,0.072678,0.088287
+old_sgd,old SGD + Nesterov,sgd_momentum,old,validation_selected,test_loss,3,0.056857,0.001941,0.001121,0.004822,0.052035,0.061678,0.055548,0.059087
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,validation_selected,test_loss,3,0.078583,0.009145,0.00528,0.022717,0.055866,0.101299,0.068708,0.08676
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,validation_selected,test_loss,3,0.091964,0.003176,0.001834,0.00789,0.084074,0.099853,0.088296,0.093823
+new_adamw,"new AdamW, horizon optimized",adamw,horizon_optimized,validation_selected,validation_loss,3,0.07151,0.001306,0.000754,0.003245,0.068264,0.074755,0.070008,0.072383
+old_adamw,old AdamW,adamw,old,validation_selected,validation_loss,3,0.076289,0.003515,0.002029,0.008732,0.067558,0.085021,0.072267,0.078772
+old_sgd,old SGD + Nesterov,sgd_momentum,old,validation_selected,validation_loss,3,0.059637,0.0025,0.001443,0.00621,0.053427,0.065847,0.056884,0.061764
+new_muon,"new Muon, horizon optimized",sgd_momentum_muon,horizon_optimized,validation_selected,validation_loss,3,0.074405,0.001963,0.001133,0.004875,0.06953,0.07928,0.073262,0.076671
+old_muon,old Muon + aux AdamW,sgd_momentum_muon,old,validation_selected,validation_loss,3,0.090812,0.000398,0.00023,0.000988,0.089824,0.0918,0.090363,0.09112
