@@ -4,12 +4,38 @@ This repository holds **reference baselines** and **independent RG optimizer
 experiments**. Contributions should keep those lanes separate and avoid
 unsubstantiated efficacy claims.
 
-## Workflow
+This guide is for people sending **pull requests**. How you get a branch onto
+GitHub depends on your access (see below). The **layout and PR expectations**
+apply to external and write-access contributors alike; maintainers may use a
+shorter internal path for trivial fixes.
 
-1. Fork `CalculatedContent/rg_optimizers` (or use your existing fork).
+## Who you are (access paths)
+
+| Role | Typical access | How you open a PR |
+|---|---|---|
+| **External contributor** | No push access to this repo | **Fork** under your account, push a branch to *your* fork, open a PR into `CalculatedContent/rg_optimizers` `main` |
+| **Collaborator / write access** | Can push branches to this repo | Branch on **this** repo from current `main`, push here, open a PR into `main` (no personal fork required) |
+| **Maintainer** | Admin / merge rights | Same as write access for reviewable changes; direct commits to `main` only per the project’s usual maintainer practice (prefer PRs for non-trivial work) |
+
+**Fork is not a social rank.** It is only the usual GitHub path when you cannot
+push to this repository. If you already have write access, do not fork just to
+satisfy a ritual.
+
+### External contributor (no write access)
+
+1. Fork `CalculatedContent/rg_optimizers`.
+2. Branch from current upstream **`main`**.
+3. Push the branch to **your fork**.
+4. Open a PR against `CalculatedContent/rg_optimizers` `main`.
+
+### Collaborator with write access
+
+1. Clone this repository (or add it as `origin`).
 2. Branch from current **`main`**.
-3. Open a pull request against `CalculatedContent/rg_optimizers` `main`.
-4. Prefer **small, single-theme** PRs (one package, or docs-only).
+3. Push the branch to **this** repo.
+4. Open a PR against `main`.
+
+Prefer **small, single-theme** PRs (one package, or docs-only) in either path.
 
 ## Layout (read before editing)
 
@@ -35,6 +61,9 @@ workflows under `.github/workflows/` such as `baseline-tests.yml` or
 `wwpgd-local-delta-tests.yml`). Name what you ran in the PR body.
 
 ## PR expectations
+
+These expectations apply to **any** PR author (external or write-access), unless
+a maintainer explicitly says otherwise for a given change.
 
 | Do | Don't |
 |---|---|
