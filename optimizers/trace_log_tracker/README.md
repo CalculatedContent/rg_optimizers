@@ -135,3 +135,10 @@ The WeightWatcher analysis updates the RG model's cached midpoint ranks for the 
 cd optimizers/trace_log_tracker
 PYTHONPATH=. python -m unittest discover -s tests -v
 ```
+
+## Provenance fields on step stats
+
+`pop_step_stats()` rows include logging-only provenance fields aligned with the
+local-delta package grammar: `actuator_id`, `ecs_backend`, `dose_definition`,
+`dose_value` (null when no correction applied), and schedule-aware
+`is_first_apply`. These fields do **not** change correction mathematics.
