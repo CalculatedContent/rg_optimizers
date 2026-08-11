@@ -25,7 +25,7 @@ def run_optimizer_replicates(
     prepare_data: bool = True,
     progress: bool = True,
 ) -> list[Path]:
-    resolved = roots()
+    resolved = roots(cfg)
     data_root = Path(data_root or resolved["data"])
     results_root = Path(results_root or resolved["results"])
     selected_seeds = tuple(int(seed) for seed in (seeds or canonical_seeds(cfg)))
@@ -61,7 +61,7 @@ def run_all_replicates(
     overwrite: bool = False,
     progress: bool = True,
 ) -> list[Path]:
-    resolved = roots()
+    resolved = roots(cfg)
     data_root = Path(data_root or resolved["data"])
     results_root = Path(results_root or resolved["results"])
     prepare_fineweb_edu(cfg, data_root)

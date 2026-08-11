@@ -30,6 +30,7 @@ The audit and qualification documents are:
 | **MNIST / MLP3** | 55k optimization / 5k validation; official 10k test monitoring-only | `784 → 512 → 512 → 10`, ReLU | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`notebooks/MNIST_MLP3_Baseline_Comparison.ipynb`](notebooks/MNIST_MLP3_Baseline_Comparison.ipynb) |
 | **CIFAR-10 / small ViT** | 45k optimization / 5k validation; official 10k test monitoring-only | 4×4 patches, width 192, 6 blocks, 3 heads | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb`](notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb) |
 | **One-head nanoGPT / FineWeb-Edu** | Pinned `sample-10BT`; exact document-disjoint 80M / 1M / 1M GPT-2-BPE splits | 1 block, 1 head, width 128, context 256 | SGD + Nesterov, AdamW, Muon + auxiliary AdamW | [`nanogpt_one_head/README.md`](nanogpt_one_head/README.md) |
+| **NGB v4 / FineWeb-Edu** | Same pinned document-disjoint corpus | Separate 1×1 control and 4-block/4-head width-128 model | Two-epoch tuned SGD, AdamW, and Muon protocols | [`ngb/README.md`](ngb/README.md) |
 | **nanochat d12** | Native pinned nanochat data/tokenizer pipeline | 12 layers, width 768, context 2048 | Native nanochat Muon + AdamW | [`notebooks/NanoChat_D12_Reference_Baseline.ipynb`](notebooks/NanoChat_D12_Reference_Baseline.ipynb) |
 | **nanochat mac_d4** | Separately cached reduced nanochat preparation | 4 layers, width 256, context 512 | Same pinned upstream optimizer mathematics | Same notebook; auto-selected on MPS/CPU |
 
@@ -56,35 +57,28 @@ report a `mac_d4` result as d12.
    neighborhood for the exact architecture, data, initialization, budget,
    optimizer implementation, and runtime policy.
 
-## Environment and persistent paths
+## Environment and runtime paths
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e '.[experiment]'
-```
-
-When installing from the repository root, use:
+Use the currently active conda environment; do not create a repository venv.
+From the repository root:
 
 ```bash
 python -m pip install -e './baseline[experiment]'
+python -m pip install -e './baseline/nanogpt_one_head[dev]'
 ```
 
-Set persistent locations before running long jobs:
+All local data and long-running experiment artifacts use explicit `/tmp` roots:
 
 ```bash
-export RG_BASELINE_DATA_DIR="$HOME/rg-optimizer-data"
-export RG_BASELINE_RUN_ROOT="$HOME/rg-optimizer-runs"
+export RG_BASELINE_DATA_DIR=/tmp/rg-optimizer-data
+export RG_BASELINE_RUN_ROOT=/tmp/rg-optimizer-runs
+export RG_NANOGPT_ONE_HEAD_ROOT=/tmp/rg-nanogpt-one-head
+export RG_NGB_ROOT=/tmp/rg-ngb
+export RG_NGB_DATA_ROOT=/tmp/rg-nanogpt-one-head/data
 ```
 
-The isolated one-head nanoGPT suite uses:
-
-```bash
-export RG_NANOGPT_ONE_HEAD_ROOT="$HOME/rg-nanogpt-one-head"
-```
-
-Do not put long-running results in `/tmp`.
+NGB v4 keeps its results under `/tmp/rg-ngb/results/<run_slug>` and reuses the
+verified FineWeb-Edu token cache under `/tmp/rg-nanogpt-one-head/data`.
 
 ## 1. MNIST / MLP3
 

@@ -5,15 +5,70 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 from typing import Any
 
 import yaml
 
 SUPPORTED_OPTIMIZERS = ("sgd_momentum", "adamw", "muon")
 DEFAULT_ROOT = Path("/tmp/rg-nanogpt-one-head")
+_RUN_SLUG_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
-def roots() -> dict[str, Path]:
+def run_slug(cfg: dict[str, Any]) -> str:
+    protocol = cfg.get("protocol", {})
+    value = str(protocol.get("run_slug", "")).strip()
+    if not value:
+        value = str(protocol.get("name", "reference")).strip()
+    if not _RUN_SLUG_PATTERN.fullmatch(value):
+        raise ValueError(
+            "protocol.run_slug must contain only letters, numbers, dot, "
+            "underscore, and hyphen"
+        )
+    return value
+
+
+def roots(cfg: dict[str, Any] | None = None) -> dict[str, Path]:
+    """Resolve isolated v3 or NGB-v4 runtime roots under ``/tmp``.
+
+    Version-3 callers retain the historical ``RG_NANOGPT_ONE_HEAD_*``
+    environment contract. Version-4 configurations use the separate
+    ``RG_NGB_*`` contract and a required run slug, preventing artifact reuse
+    across protocols or architectures.
+    """
+
+    version = int(cfg.get("protocol", {}).get("version", 0)) if cfg else 0
+    if cfg is not None and version >= 4:
+        protocol = cfg["protocol"]
+        root = Path(
+            os.environ.get(
+                "RG_NGB_ROOT",
+                protocol.get("storage_root", "/tmp/rg-ngb"),
+            )
+        )
+        data = Path(
+            os.environ.get(
+                "RG_NGB_DATA_ROOT",
+                protocol.get(
+                    "data_root",
+                    "/tmp/rg-nanogpt-one-head/data",
+                ),
+            )
+        )
+        results_base = Path(
+            os.environ.get("RG_NGB_RESULTS_ROOT", root / "results")
+        )
+        plots_base = Path(
+            os.environ.get("RG_NGB_PLOTS_ROOT", root / "plots")
+        )
+        slug = run_slug(cfg)
+        return {
+            "root": root,
+            "data": data,
+            "results": results_base / slug,
+            "plots": plots_base / slug,
+        }
+
     root = Path(os.environ.get("RG_NANOGPT_ONE_HEAD_ROOT", DEFAULT_ROOT))
     return {
         "root": root,
@@ -55,21 +110,25 @@ def validate_config(cfg: dict[str, Any]) -> None:
             raise ValueError(f"missing configuration section: {section}")
 
     protocol = cfg["protocol"]
-    if int(protocol.get("version", 0)) < 1:
+    version = int(protocol.get("version", 0))
+    if version < 1:
         raise ValueError("protocol.version must be positive")
+    if version >= 4:
+        run_slug(cfg)
+        for key in ("storage_root", "data_root"):
+            value = protocol.get(key)
+            if value is None:
+                continue
+            path = Path(str(value))
+            if not path.is_absolute() or path.parts[:2] != ("/", "tmp"):
+                raise ValueError(
+                    f"protocol.{key} must be an absolute /tmp path"
+                )
 
     model = cfg["model"]
     for key in ("vocab_size", "block_size", "n_layer", "n_head", "n_embd"):
         if int(model[key]) < 1:
             raise ValueError(f"model.{key} must be positive")
-    if int(model["n_head"]) != 1:
-        raise ValueError(
-            "this experiment is intentionally fixed to exactly one attention head"
-        )
-    if int(model["n_layer"]) != 1:
-        raise ValueError(
-            "this experiment is intentionally fixed to one transformer block"
-        )
     if int(model["n_embd"]) % int(model["n_head"]) != 0:
         raise ValueError("model.n_embd must be divisible by model.n_head")
     if not 0.0 <= float(model.get("dropout", 0.0)) < 1.0:
@@ -94,9 +153,15 @@ def validate_config(cfg: dict[str, Any]) -> None:
     ):
         if float(training[key]) <= 0:
             raise ValueError(f"training.{key} must be positive")
+    if float(training["epoch_interval"]) > float(training["target_epochs"]):
+        raise ValueError(
+            "training.epoch_interval cannot exceed training.target_epochs"
+        )
     seeds = [int(seed) for seed in training["seeds"]]
     if not seeds or len(set(seeds)) != len(seeds):
         raise ValueError("training.seeds must contain unique values")
+    if any(seed < 0 for seed in seeds):
+        raise ValueError("training.seeds must be nonnegative")
     if float(training["grad_clip"]) < 0:
         raise ValueError("training.grad_clip must be nonnegative")
 
@@ -231,7 +296,7 @@ def warmup_steps(profile: dict[str, Any], total_steps: int) -> int:
 def epoch_step_map(
     cfg: dict[str, Any], train_tokens: int | None = None
 ) -> dict[int, float]:
-    """Map preregistered nominal epochs, including epoch zero, to optimizer steps."""
+    """Map preregistered nominal epochs, including epoch zero, to steps."""
 
     train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
     total_steps = max_steps(cfg, train_tokens)
@@ -257,6 +322,10 @@ def epoch_step_map(
         result[step] = float(epoch)
     result[total_steps] = target_epochs
     return dict(sorted(result.items()))
+
+
+def expected_transformer_matrix_count(cfg: dict[str, Any]) -> int:
+    return 6 * int(cfg["model"]["n_layer"])
 
 
 def protocol_fingerprint(
