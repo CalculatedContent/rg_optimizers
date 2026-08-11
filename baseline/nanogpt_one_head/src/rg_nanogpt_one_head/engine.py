@@ -12,6 +12,7 @@ from .checkpoints import load_training_checkpoint, save_training_checkpoint
 from .config import (
     SUPPORTED_OPTIMIZERS,
     epoch_step_map,
+    lr_schedule_steps,
     max_steps,
     optimizer_profile,
     protocol_fingerprint,
@@ -69,7 +70,8 @@ def run_one(
     train_tokens = int(data_metadata["splits"]["train"])
     total_steps = max_steps(cfg, train_tokens)
     profile = optimizer_profile(cfg, optimizer_name)
-    warmup = warmup_steps(profile, total_steps)
+    schedule_steps = lr_schedule_steps(cfg, profile, train_tokens)
+    warmup = warmup_steps(profile, schedule_steps)
     fingerprint = protocol_fingerprint(
         cfg,
         optimizer=optimizer_name,
@@ -182,6 +184,7 @@ def run_one(
         seed=int(seed),
         device=resolved_device,
         total_steps=total_steps,
+        schedule_steps=schedule_steps,
         warmup=warmup,
         fingerprint=fingerprint,
         model=model,
@@ -220,6 +223,7 @@ def run_one(
                 seed=int(seed),
                 train_tokens=train_tokens,
                 total_steps=total_steps,
+                schedule_steps=schedule_steps,
                 warmup=warmup,
                 start_step=start_step,
                 best_validation_loss=best_validation_loss,

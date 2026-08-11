@@ -415,7 +415,11 @@ def test_tiny_cpu_training_writes_restart_and_epoch_artifacts(
 
 
 def test_notebooks_are_valid_and_expose_requested_metrics():
-    notebook_paths = sorted((EXPERIMENT_ROOT / "notebooks").glob("*.ipynb"))
+    notebook_paths = sorted(
+        path
+        for path in (EXPERIMENT_ROOT / "notebooks").glob("*.ipynb")
+        if not path.name.endswith(".out.ipynb")
+    )
     assert [path.name for path in notebook_paths] == [
         "01_sgd_momentum_baseline.ipynb",
         "02_adamw_baseline.ipynb",

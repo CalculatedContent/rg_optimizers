@@ -22,6 +22,43 @@ from .runtime import (
 from .spectral import run_weightwatcher
 
 
+def _require_finite_metrics(
+    *,
+    completed_steps: int,
+    train_metrics: dict,
+    val_metrics: dict,
+) -> None:
+    values = {
+        "train_loss": float(train_metrics["loss"]),
+        "train_perplexity": float(train_metrics["perplexity"]),
+        "train_accuracy": float(train_metrics["accuracy"]),
+        "val_loss": float(val_metrics["loss"]),
+        "val_perplexity": float(val_metrics["perplexity"]),
+        "val_accuracy": float(val_metrics["accuracy"]),
+    }
+    bad = [name for name, value in values.items() if not math.isfinite(value)]
+    if bad:
+        raise FloatingPointError(
+            "non-finite training state at "
+            f"step={completed_steps}: {', '.join(bad)}. "
+            "Aborting before checkpoint selection or WeightWatcher."
+        )
+
+
+def _require_finite_model(model, *, completed_steps: int) -> None:
+    bad = [
+        name
+        for name, parameter in model.named_parameters()
+        if (parameter.is_floating_point() or parameter.is_complex())
+        and not torch.isfinite(parameter).all()
+    ]
+    if bad:
+        raise FloatingPointError(
+            "non-finite model parameters at "
+            f"step={completed_steps}: {', '.join(bad)}"
+        )
+
+
 def execute_training_loop(
     *,
     cfg: dict,
@@ -37,6 +74,7 @@ def execute_training_loop(
     seed: int,
     train_tokens: int,
     total_steps: int,
+    schedule_steps: int,
     warmup: int,
     start_step: int,
     best_validation_loss: float,
@@ -60,6 +98,16 @@ def execute_training_loop(
     step_tokens = batch_size * grad_accum * block_size
     eval_cfg = cfg["evaluation"]
 
+    if not 1 <= schedule_steps <= total_steps:
+        raise ValueError(
+            f"schedule_steps={schedule_steps} must be in [1, {total_steps}]"
+        )
+    if not 0 <= warmup < schedule_steps:
+        raise ValueError(
+            f"warmup={warmup} must be smaller than "
+            f"schedule_steps={schedule_steps}"
+        )
+
     previous_snapshot = parameter_snapshot(model)
     last_grad_pre = float("nan")
     last_grad_post = float("nan")
@@ -82,11 +130,11 @@ def execute_training_loop(
             last_update_lrs[handle.role] = float(handle.lr)
 
     for completed_steps in range(start_step, total_steps + 1):
-        schedule_index = min(completed_steps, total_steps - 1)
+        schedule_index = min(completed_steps, schedule_steps - 1)
         next_update_lrs = set_learning_rates(
             handles,
             update_index=schedule_index,
-            total_steps=total_steps,
+            total_steps=schedule_steps,
             warmup_steps=warmup,
         )
         epoch_due = completed_steps in epoch_steps
@@ -102,6 +150,15 @@ def execute_training_loop(
             synchronize(device)
             train_metrics = evaluate_probe(model, train_probe, device)
             val_metrics = evaluate_probe(model, val_probe, device)
+            _require_finite_metrics(
+                completed_steps=completed_steps,
+                train_metrics=train_metrics,
+                val_metrics=val_metrics,
+            )
+            _require_finite_model(
+                model,
+                completed_steps=completed_steps,
+            )
             elapsed = elapsed_offset + time.time() - started
             if val_metrics["loss"] < best_validation_loss:
                 best_validation_loss = float(val_metrics["loss"])
@@ -221,7 +278,7 @@ def execute_training_loop(
                     print(
                         "[one-head-ww] "
                         f"optimizer={optimizer_name} seed={seed} "
-                        f"epoch={nominal_epoch:.1f} "
+                        f"epoch={nominal_epoch:.2f} "
                         f"alpha={ww_summary.get('alpha_median', float('nan')):.3f} "
                         f"ERG_gap={ww_summary.get('ERG_gap_median', float('nan')):.3f} "
                         f"num_traps={ww_summary.get('num_traps_mean', float('nan')):.2f}",
@@ -296,6 +353,7 @@ def execute_training_loop(
             or new_step == total_steps
         )
         if checkpoint_due:
+            _require_finite_model(model, completed_steps=new_step)
             save_training_checkpoint(
                 latest_checkpoint,
                 model=model,
