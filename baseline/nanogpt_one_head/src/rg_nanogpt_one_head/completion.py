@@ -1,4 +1,4 @@
-"""Validation for completed one-head nanoGPT experiment directories."""
+"""Validation for completed nanoGPT baseline experiment directories."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ class CompletedRunValidationError(RuntimeError):
 
 def _fail(message: str) -> NoReturn:
     raise CompletedRunValidationError(
-        "completed one-head nanoGPT run is stale or inconsistent: "
+        "completed nanoGPT run is stale or inconsistent: "
         + message
         + ". Use a new results directory or rerun with explicit overwrite."
     )
@@ -53,7 +53,7 @@ def _read_csv(path: Path) -> pd.DataFrame:
     except Exception as exc:
         _fail(f"could not read {path}: {exc}")
     if frame.empty:
-        _fail(f" {path} is empty")
+        _fail(f"{path} is empty")
     return frame
 
 
@@ -71,10 +71,16 @@ def _expect(observed: Any, expected: Any, label: str) -> None:
         )
 
 
-def _step_tuple(frame: pd.DataFrame, label: str) -> tuple[int, ...]:
+def _step_tuple(
+    frame: pd.DataFrame,
+    label: str,
+) -> tuple[int, ...]:
     if "step" not in frame.columns:
         _fail(f"{label} has no step column")
-    values = pd.to_numeric(frame["step"], errors="coerce").to_numpy(dtype=float)
+    values = pd.to_numeric(
+        frame["step"],
+        errors="coerce",
+    ).to_numpy(dtype=float)
     if not np.isfinite(values).all():
         _fail(f"{label} contains non-finite step values")
     rounded = np.rint(values)
@@ -88,12 +94,31 @@ def _step_tuple(frame: pd.DataFrame, label: str) -> tuple[int, ...]:
 
 def _load_checkpoint(path: Path) -> dict[str, Any]:
     try:
-        payload = torch.load(path, map_location="cpu", weights_only=False)
+        payload = torch.load(
+            path,
+            map_location="cpu",
+            weights_only=False,
+        )
     except Exception as exc:
         _fail(f"could not load checkpoint {path}: {exc}")
     if not isinstance(payload, dict):
         _fail(f"checkpoint {path} is not a mapping")
     return payload
+
+
+def _manifest_matrix_count(
+    manifest: dict[str, Any],
+) -> int:
+    model = manifest.get("model")
+    if not isinstance(model, dict):
+        _fail("manifest has no model configuration")
+    n_layer = _as_int(
+        model.get("n_layer"),
+        "manifest model.n_layer",
+    )
+    if n_layer < 1:
+        _fail("manifest model.n_layer must be positive")
+    return 6 * n_layer
 
 
 def validate_completed_run(
@@ -103,13 +128,10 @@ def validate_completed_run(
     expected_optimizer: str | None = None,
     expected_seed: int | None = None,
     expected_total_steps: int | None = None,
+    expected_matrix_count: int | None = None,
     verify_checkpoints: bool = True,
 ) -> dict[str, Any]:
-    """Validate a completed run before it is skipped or analyzed.
-
-    Expected values supplied by the current configuration make this a stale-run
-    guard. Without them, the function still verifies internal consistency.
-    """
+    """Validate a completed run before it is skipped or analyzed."""
 
     root = Path(run_dir)
     missing = [
@@ -125,18 +147,26 @@ def validate_completed_run(
     manifest = _read_json(root / "manifest.json")
     test_results = _read_json(root / "test_results.json")
     if completion.get("completed") is not True:
-        _fail("run_complete.json does not declare completed=true")
+        _fail(
+            "run_complete.json does not declare completed=true"
+        )
 
-    recorded_fingerprint = str(completion.get("fingerprint", ""))
+    recorded_fingerprint = str(
+        completion.get("fingerprint", "")
+    )
     fingerprint = (
         str(expected_fingerprint)
         if expected_fingerprint is not None
         else recorded_fingerprint
     )
     if not fingerprint or not recorded_fingerprint:
-        _fail("the completion record has no protocol fingerprint")
+        _fail(
+            "the completion record has no protocol fingerprint"
+        )
 
-    recorded_optimizer = str(completion.get("optimizer", ""))
+    recorded_optimizer = str(
+        completion.get("optimizer", "")
+    )
     optimizer = (
         str(expected_optimizer)
         if expected_optimizer is not None
@@ -145,10 +175,18 @@ def validate_completed_run(
     if not optimizer or not recorded_optimizer:
         _fail("the completion record has no optimizer")
 
-    recorded_seed = _as_int(completion.get("seed"), "completion seed")
-    seed = int(expected_seed) if expected_seed is not None else recorded_seed
+    recorded_seed = _as_int(
+        completion.get("seed"),
+        "completion seed",
+    )
+    seed = (
+        int(expected_seed)
+        if expected_seed is not None
+        else recorded_seed
+    )
     recorded_steps = _as_int(
-        completion.get("optimizer_steps"), "completion optimizer_steps"
+        completion.get("optimizer_steps"),
+        "completion optimizer_steps",
     )
     total_steps = (
         int(expected_total_steps)
@@ -160,58 +198,145 @@ def validate_completed_run(
         "completion best_validation_step",
     )
 
-    _expect(recorded_fingerprint, fingerprint, "completion fingerprint")
-    _expect(recorded_optimizer, optimizer, "completion optimizer")
+    _expect(
+        recorded_fingerprint,
+        fingerprint,
+        "completion fingerprint",
+    )
+    _expect(
+        recorded_optimizer,
+        optimizer,
+        "completion optimizer",
+    )
     _expect(recorded_seed, seed, "completion seed")
-    _expect(recorded_steps, total_steps, "completion optimizer_steps")
+    _expect(
+        recorded_steps,
+        total_steps,
+        "completion optimizer_steps",
+    )
     _expect(
         str(manifest.get("protocol_fingerprint", "")),
         fingerprint,
         "manifest fingerprint",
     )
-    _expect(str(manifest.get("optimizer", "")), optimizer, "manifest optimizer")
-    _expect(_as_int(manifest.get("seed"), "manifest seed"), seed, "manifest seed")
     _expect(
-        _as_int(manifest.get("max_steps"), "manifest max_steps"),
+        str(manifest.get("optimizer", "")),
+        optimizer,
+        "manifest optimizer",
+    )
+    _expect(
+        _as_int(manifest.get("seed"), "manifest seed"),
+        seed,
+        "manifest seed",
+    )
+    _expect(
+        _as_int(
+            manifest.get("max_steps"),
+            "manifest max_steps",
+        ),
         total_steps,
         "manifest max_steps",
     )
 
-    final_test = test_results.get("final")
-    selected_test = test_results.get("validation_selected")
-    if not isinstance(final_test, dict) or not isinstance(selected_test, dict):
-        _fail("test_results.json lacks final or validation_selected results")
+    manifest_matrix_count = _manifest_matrix_count(
+        manifest
+    )
+    matrix_count = (
+        int(expected_matrix_count)
+        if expected_matrix_count is not None
+        else manifest_matrix_count
+    )
+    if matrix_count < 1:
+        _fail("expected matrix count must be positive")
     _expect(
-        _as_int(final_test.get("step"), "final test step"),
+        manifest_matrix_count,
+        matrix_count,
+        "manifest transformer matrix count",
+    )
+
+    final_test = test_results.get("final")
+    selected_test = test_results.get(
+        "validation_selected"
+    )
+    if not isinstance(final_test, dict) or not isinstance(
+        selected_test,
+        dict,
+    ):
+        _fail(
+            "test_results.json lacks final or "
+            "validation_selected results"
+        )
+    _expect(
+        _as_int(
+            final_test.get("step"),
+            "final test step",
+        ),
         total_steps,
         "final test step",
     )
     _expect(
-        _as_int(selected_test.get("step"), "selected test step"),
+        _as_int(
+            selected_test.get("step"),
+            "selected test step",
+        ),
         best_step,
         "selected test step",
     )
 
     metrics = _read_csv(root / "metrics.csv")
-    epoch_metrics = _read_csv(root / "epoch_metrics.csv")
-    layers = _read_csv(root / "spectral" / "layers.csv")
-    summary = _read_csv(root / "spectral" / "summary.csv")
-    metric_steps = _step_tuple(metrics, "metrics.csv")
-    epoch_steps = _step_tuple(epoch_metrics, "epoch_metrics.csv")
-    summary_steps = _step_tuple(summary, "spectral/summary.csv")
+    epoch_metrics = _read_csv(
+        root / "epoch_metrics.csv"
+    )
+    layers = _read_csv(
+        root / "spectral" / "layers.csv"
+    )
+    summary = _read_csv(
+        root / "spectral" / "summary.csv"
+    )
+    metric_steps = _step_tuple(
+        metrics,
+        "metrics.csv",
+    )
+    epoch_steps = _step_tuple(
+        epoch_metrics,
+        "epoch_metrics.csv",
+    )
+    summary_steps = _step_tuple(
+        summary,
+        "spectral/summary.csv",
+    )
 
     for label, steps in (
         ("metrics.csv", metric_steps),
         ("epoch_metrics.csv", epoch_steps),
     ):
-        if 0 not in steps or total_steps not in steps or max(steps) != total_steps:
-            _fail(f"{label} does not span step zero through {total_steps}")
+        if (
+            0 not in steps
+            or total_steps not in steps
+            or max(steps) != total_steps
+        ):
+            _fail(
+                f"{label} does not span step zero "
+                f"through {total_steps}"
+            )
 
     if "test_monitoring_only" not in epoch_metrics.columns:
-        _fail("epoch_metrics.csv has no test_monitoring_only column")
-    policy = pd.to_numeric(epoch_metrics["test_monitoring_only"], errors="coerce")
-    if policy.isna().any() or not policy.astype(int).eq(1).all():
-        _fail("epoch_metrics.csv violates the monitoring-only test policy")
+        _fail(
+            "epoch_metrics.csv has no "
+            "test_monitoring_only column"
+        )
+    policy = pd.to_numeric(
+        epoch_metrics["test_monitoring_only"],
+        errors="coerce",
+    )
+    if (
+        policy.isna().any()
+        or not policy.astype(int).eq(1).all()
+    ):
+        _fail(
+            "epoch_metrics.csv violates the "
+            "monitoring-only test policy"
+        )
 
     required_layer_columns = {
         "step",
@@ -220,35 +345,74 @@ def validate_completed_run(
         "ERG_gap",
         "num_traps",
     }
-    missing_columns = required_layer_columns.difference(layers.columns)
+    missing_columns = required_layer_columns.difference(
+        layers.columns
+    )
     if missing_columns:
         _fail(
             "spectral/layers.csv is missing columns "
             + ", ".join(sorted(missing_columns))
         )
-    if layers.duplicated(["step", "matrix_name"]).any():
-        _fail("spectral/layers.csv has duplicate step/matrix rows")
+    if layers.duplicated(
+        ["step", "matrix_name"]
+    ).any():
+        _fail(
+            "spectral/layers.csv has duplicate "
+            "step/matrix rows"
+        )
     layer_steps = _step_tuple(
-        layers[["step"]].drop_duplicates().sort_values("step"),
+        layers[["step"]]
+        .drop_duplicates()
+        .sort_values("step"),
         "spectral/layers.csv",
     )
-    if set(summary_steps) != set(epoch_steps) or set(layer_steps) != set(epoch_steps):
-        _fail("spectral steps do not match epoch_metrics.csv")
-    if not layers.groupby("step")["matrix_name"].nunique().eq(6).all():
-        _fail("spectral/layers.csv does not contain six matrices per epoch")
+    if (
+        set(summary_steps) != set(epoch_steps)
+        or set(layer_steps) != set(epoch_steps)
+    ):
+        _fail(
+            "spectral steps do not match "
+            "epoch_metrics.csv"
+        )
+    layer_counts = (
+        layers.groupby("step")["matrix_name"]
+        .nunique()
+    )
+    if not layer_counts.eq(matrix_count).all():
+        _fail(
+            "spectral/layers.csv does not contain "
+            f"{matrix_count} matrices per epoch"
+        )
     if "n_matrices" not in summary.columns:
-        _fail("spectral/summary.csv has no n_matrices column")
-    matrix_counts = pd.to_numeric(summary["n_matrices"], errors="coerce")
-    if matrix_counts.isna().any() or not matrix_counts.astype(int).eq(6).all():
-        _fail("spectral/summary.csv does not report six matrices per epoch")
+        _fail(
+            "spectral/summary.csv has no n_matrices column"
+        )
+    matrix_counts = pd.to_numeric(
+        summary["n_matrices"],
+        errors="coerce",
+    )
+    if (
+        matrix_counts.isna().any()
+        or not matrix_counts.astype(int)
+        .eq(matrix_count)
+        .all()
+    ):
+        _fail(
+            "spectral/summary.csv does not report "
+            f"{matrix_count} matrices per epoch"
+        )
 
     if "checkpoint_path" not in epoch_metrics.columns:
-        _fail("epoch_metrics.csv has no checkpoint_path column")
+        _fail(
+            "epoch_metrics.csv has no checkpoint_path column"
+        )
     recorded_checkpoint_paths = [
         Path(str(value))
         for value in epoch_metrics["checkpoint_path"]
     ]
-    if len(recorded_checkpoint_paths) != len(set(epoch_steps)):
+    if len(recorded_checkpoint_paths) != len(
+        set(epoch_steps)
+    ):
         _fail(
             "epoch checkpoint inventory does not match "
             "epoch_metrics.csv"
@@ -257,67 +421,131 @@ def validate_completed_run(
     for recorded in recorded_checkpoint_paths:
         candidate = recorded
         if not candidate.is_file():
-            candidate = root / "epoch_checkpoints" / recorded.name
-        if not candidate.is_file() or candidate.stat().st_size == 0:
+            candidate = (
+                root
+                / "epoch_checkpoints"
+                / recorded.name
+            )
+        if (
+            not candidate.is_file()
+            or candidate.stat().st_size == 0
+        ):
             _fail(
-                f"missing epoch checkpoint recorded by "
+                "missing epoch checkpoint recorded by "
                 f"epoch_metrics.csv: {recorded}"
             )
-        resolved_checkpoint_paths.append(candidate.resolve())
+        resolved_checkpoint_paths.append(
+            candidate.resolve()
+        )
     if len(resolved_checkpoint_paths) != len(
         set(resolved_checkpoint_paths)
     ):
         _fail(
-            "epoch_metrics.csv references duplicate epoch "
-            "checkpoints"
+            "epoch_metrics.csv references duplicate "
+            "epoch checkpoints"
         )
 
     if verify_checkpoints:
         try:
-            best_loss = float(completion.get("best_validation_loss"))
+            best_loss = float(
+                completion.get(
+                    "best_validation_loss"
+                )
+            )
         except (TypeError, ValueError):
-            _fail("run_complete.json has invalid best_validation_loss")
+            _fail(
+                "run_complete.json has invalid "
+                "best_validation_loss"
+            )
         for filename, expected_step in (
-            ("checkpoint_latest.pt", total_steps),
-            ("checkpoint_final.pt", total_steps),
-            ("checkpoint_best.pt", best_step),
+            (
+                "checkpoint_latest.pt",
+                total_steps,
+            ),
+            (
+                "checkpoint_final.pt",
+                total_steps,
+            ),
+            (
+                "checkpoint_best.pt",
+                best_step,
+            ),
         ):
-            payload = _load_checkpoint(root / filename)
+            payload = _load_checkpoint(
+                root / filename
+            )
             _expect(
-                str(payload.get("fingerprint", "")),
+                str(
+                    payload.get(
+                        "fingerprint",
+                        "",
+                    )
+                ),
                 fingerprint,
                 f"{filename} fingerprint",
             )
             _expect(
-                str(payload.get("optimizer_name", "")),
+                str(
+                    payload.get(
+                        "optimizer_name",
+                        "",
+                    )
+                ),
                 optimizer,
                 f"{filename} optimizer",
             )
             _expect(
-                _as_int(payload.get("seed"), f"{filename} seed"),
+                _as_int(
+                    payload.get("seed"),
+                    f"{filename} seed",
+                ),
                 seed,
                 f"{filename} seed",
             )
             _expect(
-                _as_int(payload.get("step"), f"{filename} step"),
+                _as_int(
+                    payload.get("step"),
+                    f"{filename} step",
+                ),
                 expected_step,
                 f"{filename} step",
             )
             _expect(
                 _as_int(
-                    payload.get("best_validation_step"),
-                    f"{filename} best_validation_step",
+                    payload.get(
+                        "best_validation_step"
+                    ),
+                    (
+                        f"{filename} "
+                        "best_validation_step"
+                    ),
                 ),
                 best_step,
-                f"{filename} best_validation_step",
+                (
+                    f"{filename} "
+                    "best_validation_step"
+                ),
             )
             try:
-                stored_loss = float(payload.get("best_validation_loss"))
+                stored_loss = float(
+                    payload.get(
+                        "best_validation_loss"
+                    )
+                )
             except (TypeError, ValueError):
-                _fail(f"{filename} has invalid best_validation_loss")
+                _fail(
+                    f"{filename} has invalid "
+                    "best_validation_loss"
+                )
             if not math.isclose(
-                stored_loss, best_loss, rel_tol=1e-12, abs_tol=1e-12
+                stored_loss,
+                best_loss,
+                rel_tol=1e-12,
+                abs_tol=1e-12,
             ):
-                _fail(f"{filename} best_validation_loss does not match completion")
+                _fail(
+                    f"{filename} best_validation_loss "
+                    "does not match completion"
+                )
 
     return completion

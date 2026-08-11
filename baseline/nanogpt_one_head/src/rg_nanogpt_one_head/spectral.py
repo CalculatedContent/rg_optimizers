@@ -32,7 +32,7 @@ SPECTRAL_METRICS = (
 
 
 class WeightMatrixHolder(nn.Module):
-    """CPU-only Linear view of the six one-block transformer matrices."""
+    """CPU-only Linear view of all transformer matrices."""
 
     def __init__(self, model: GPT) -> None:
         super().__init__()
@@ -198,7 +198,8 @@ def run_weightwatcher(
         import weightwatcher as ww
     except ImportError as exc:
         raise RuntimeError(
-            "WeightWatcher is required; run scripts/setup_mac.sh"
+            "WeightWatcher is required; install baseline/nanogpt_one_head "
+            "in the active conda environment"
         ) from exc
 
     run_dir = Path(run_dir)

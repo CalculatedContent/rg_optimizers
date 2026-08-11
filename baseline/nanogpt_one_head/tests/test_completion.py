@@ -139,6 +139,7 @@ def _write_completed_run(results_root: Path, cfg: dict) -> tuple[Path, str, int]
         "optimizer": OPTIMIZER,
         "seed": SEED,
         "max_steps": total_steps,
+        "model": cfg["model"],
         "warmup_steps": warmup_steps(profile, total_steps),
         "protocol_fingerprint": fingerprint,
     }
