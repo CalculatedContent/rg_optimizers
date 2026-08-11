@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 from typing import Any
@@ -101,10 +102,18 @@ def validate_config(cfg: dict[str, Any]) -> None:
         raise ValueError("training.grad_clip must be nonnegative")
 
     profiles = cfg["optimizer_profiles"]
+    target_epochs = float(training["target_epochs"])
     for name in SUPPORTED_OPTIMIZERS:
         if name not in profiles:
             raise ValueError(f"missing optimizer profile: {name}")
-        validate_optimizer_profile({**profiles[name], "name": name})
+        profile = {**profiles[name], "name": name}
+        validate_optimizer_profile(profile)
+        schedule_epochs = float(profile.get("lr_schedule_epochs", target_epochs))
+        if schedule_epochs > target_epochs:
+            raise ValueError(
+                f"optimizer_profiles.{name}.lr_schedule_epochs cannot exceed "
+                "training.target_epochs"
+            )
 
     evaluation = cfg["evaluation"]
     for key in (
@@ -166,6 +175,11 @@ def validate_optimizer_profile(profile: dict[str, Any]) -> None:
         raise ValueError("warmup_fraction must be in [0, 1)")
     if str(profile.get("schedule")) != "warmup_cosine":
         raise ValueError("the reference suite requires warmup_cosine schedules")
+    if (
+        "lr_schedule_epochs" in profile
+        and float(profile["lr_schedule_epochs"]) <= 0
+    ):
+        raise ValueError("lr_schedule_epochs must be positive")
 
     if family in {"sgd", "adamw"}:
         peak = float(profile["learning_rate"])
@@ -211,20 +225,58 @@ def tokens_per_step(cfg: dict[str, Any]) -> int:
     )
 
 
-def max_steps(cfg: dict[str, Any], train_tokens: int | None = None) -> int:
-    import math
-
-    train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
-    target_tokens = float(cfg["training"]["target_epochs"]) * train_tokens
+def _steps_for_epochs(
+    cfg: dict[str, Any],
+    epochs: float,
+    train_tokens: int,
+) -> int:
+    target_tokens = float(epochs) * int(train_tokens)
     return max(1, int(math.ceil(target_tokens / tokens_per_step(cfg))))
 
 
-def warmup_steps(profile: dict[str, Any], total_steps: int) -> int:
-    if total_steps < 2:
+def max_steps(cfg: dict[str, Any], train_tokens: int | None = None) -> int:
+    train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
+    return _steps_for_epochs(
+        cfg,
+        float(cfg["training"]["target_epochs"]),
+        train_tokens,
+    )
+
+
+def lr_schedule_steps(
+    cfg: dict[str, Any],
+    profile: dict[str, Any],
+    train_tokens: int | None = None,
+) -> int:
+    """Return the LR horizon, which may be shorter than training."""
+
+    train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
+    training_epochs = float(cfg["training"]["target_epochs"])
+    schedule_epochs = float(profile.get("lr_schedule_epochs", training_epochs))
+    if not 0 < schedule_epochs <= training_epochs:
+        raise ValueError(
+            "lr_schedule_epochs must be positive and cannot exceed "
+            "training.target_epochs"
+        )
+    return min(
+        max_steps(cfg, train_tokens),
+        _steps_for_epochs(cfg, schedule_epochs, train_tokens),
+    )
+
+
+def warmup_steps(profile: dict[str, Any], schedule_steps: int) -> int:
+    if schedule_steps < 2:
         return 0
     return min(
-        total_steps - 1,
-        max(1, int(round(total_steps * float(profile["warmup_fraction"])))),
+        schedule_steps - 1,
+        max(
+            1,
+            int(
+                round(
+                    schedule_steps * float(profile["warmup_fraction"])
+                )
+            ),
+        ),
     )
 
 
@@ -248,11 +300,15 @@ def epoch_step_map(
 
     result: dict[int, float] = {}
     for epoch in points:
-        step = (
-            0
-            if epoch == 0
-            else int(round(epoch * train_tokens / step_tokens))
-        )
+        if epoch == 0:
+            step = 0
+        elif math.isclose(epoch, target_epochs, rel_tol=0.0, abs_tol=1e-12):
+            # The optimizer budget uses ceil rounding. Map the final nominal
+            # epoch to that exact terminal step instead of creating a duplicate
+            # near-terminal checkpoint one step earlier.
+            step = total_steps
+        else:
+            step = int(round(epoch * train_tokens / step_tokens))
         step = min(total_steps, max(0, step))
         result[step] = float(epoch)
     result[total_steps] = target_epochs
