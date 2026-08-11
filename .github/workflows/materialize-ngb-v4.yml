@@ -1,0 +1,250 @@
+name: Materialize NGB v4 protocol
+
+on:
+  push:
+    branches:
+      - agent/ngb-v4-protocol
+    paths:
+      - .github/workflows/materialize-ngb-v4.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize-test-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/ngb-v4-protocol
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: baseline/nanogpt_one_head/pyproject.toml
+
+      - name: Materialize NGB v4 files and patch shared runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import gzip
+          import json
+          from pathlib import Path
+          import re
+
+          repo = Path.cwd()
+
+          def decode_parts(pattern: str) -> dict[str, str]:
+              parts = sorted(repo.glob(pattern))
+              if not parts:
+                  raise RuntimeError(f"no payload parts matched {pattern}")
+              payload = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
+              decoded = gzip.decompress(base64.b64decode(payload)).decode("utf-8")
+              mapping = json.loads(decoded)
+              if not isinstance(mapping, dict):
+                  raise RuntimeError(f"payload {pattern} is not a mapping")
+              return {str(path): str(content) for path, content in mapping.items()}
+
+          files = decode_parts(".github/ngb_payload.part*")
+          files.update(decode_parts(".github/ngb_delta.part*"))
+          for relative, content in files.items():
+              path = repo / relative
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(content, encoding="utf-8")
+
+          def replace_exact(path: Path, old: str, new: str, expected: int = 1) -> None:
+              text = path.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != expected:
+                  raise RuntimeError(
+                      f"{path}: expected {expected} occurrences of {old!r}, found {count}"
+                  )
+              path.write_text(text.replace(old, new), encoding="utf-8")
+
+          runtime = repo / "baseline/nanogpt_one_head/src/rg_nanogpt_one_head"
+
+          training = runtime / "training.py"
+          replace_exact(training, "resolved = roots()", "resolved = roots(cfg)", expected=2)
+
+          data = runtime / "data.py"
+          replace_exact(
+              data,
+              '            "data preparation requires datasets and tiktoken; "\n'
+              '            "run scripts/setup_mac.sh"',
+              '            "data preparation requires datasets and tiktoken; "\n'
+              '            "install baseline/nanogpt_one_head in the active conda environment"',
+          )
+          replace_exact(data, 'roots()["data"]', 'roots(cfg)["data"]')
+
+          spectral = runtime / "spectral.py"
+          replace_exact(
+              spectral,
+              '"""CPU-only Linear view of the six one-block transformer matrices."""',
+              '"""CPU-only Linear view of all transformer matrices."""',
+          )
+          replace_exact(
+              spectral,
+              '            "WeightWatcher is required; run scripts/setup_mac.sh"',
+              '            "WeightWatcher is required; install baseline/nanogpt_one_head "\n'
+              '            "in the active conda environment"',
+          )
+
+          workflow = repo / ".github/workflows/baseline-tests.yml"
+          workflow_text = workflow.read_text(encoding="utf-8")
+          needle = (
+              "      - name: Run one-head tests\n"
+              "        env:\n"
+              "          PYTHONPATH: baseline/nanogpt_one_head/src\n"
+              "          MPLBACKEND: Agg\n"
+              "        run: pytest -q baseline/nanogpt_one_head/tests\n"
+          )
+          addition = needle + (
+              "      - name: Run NGB v4 tests\n"
+              "        env:\n"
+              "          PYTHONPATH: baseline/nanogpt_one_head/src\n"
+              "          MPLBACKEND: Agg\n"
+              "        run: pytest -q baseline/ngb/tests\n"
+          )
+          if workflow_text.count(needle) != 1:
+              raise RuntimeError("could not locate one-head test step")
+          workflow.write_text(workflow_text.replace(needle, addition), encoding="utf-8")
+
+          baseline_readme = repo / "baseline/README.md"
+          readme = baseline_readme.read_text(encoding="utf-8")
+          one_head_row = next(
+              line for line in readme.splitlines()
+              if "**One-head nanoGPT / FineWeb-Edu**" in line
+          )
+          ngb_row = (
+              "| **NGB v4 / FineWeb-Edu** | Same pinned document-disjoint corpus | "
+              "Separate 1×1 control and 4-block/4-head width-128 model | "
+              "Two-epoch tuned SGD, AdamW, and Muon protocols | "
+              "[`ngb/README.md`](ngb/README.md) |"
+          )
+          if ngb_row not in readme:
+              readme = readme.replace(one_head_row, one_head_row + "\n" + ngb_row, 1)
+
+          environment = "\n".join(
+              [
+                  "## Environment and runtime paths",
+                  "",
+                  "Use the currently active conda environment; do not create a repository venv.",
+                  "From the repository root:",
+                  "",
+                  "```bash",
+                  "python -m pip install -e './baseline[experiment]'",
+                  "python -m pip install -e './baseline/nanogpt_one_head[dev]'",
+                  "```",
+                  "",
+                  "All local data and long-running experiment artifacts use explicit `/tmp` roots:",
+                  "",
+                  "```bash",
+                  "export RG_BASELINE_DATA_DIR=/tmp/rg-optimizer-data",
+                  "export RG_BASELINE_RUN_ROOT=/tmp/rg-optimizer-runs",
+                  "export RG_NANOGPT_ONE_HEAD_ROOT=/tmp/rg-nanogpt-one-head",
+                  "export RG_NGB_ROOT=/tmp/rg-ngb",
+                  "export RG_NGB_DATA_ROOT=/tmp/rg-nanogpt-one-head/data",
+                  "```",
+                  "",
+                  "NGB v4 keeps its results under `/tmp/rg-ngb/results/<run_slug>` and reuses the",
+                  "verified FineWeb-Edu token cache under `/tmp/rg-nanogpt-one-head/data`.",
+                  "",
+                  "",
+              ]
+          )
+          readme, substitutions = re.subn(
+              r"## Environment and persistent paths\n.*?(?=## 1\. MNIST / MLP3)",
+              environment,
+              readme,
+              count=1,
+              flags=re.S,
+          )
+          if substitutions != 1:
+              raise RuntimeError("could not replace baseline environment section")
+          for forbidden in ("$HOME", "${HOME}", "Path.home(", ".expanduser(", "/home/", "~/"):
+              if forbidden in readme:
+                  raise RuntimeError(
+                      f"baseline/README.md still contains forbidden path marker {forbidden!r}"
+                  )
+          baseline_readme.write_text(readme, encoding="utf-8")
+
+          required = {
+              "baseline/ngb/README.md",
+              "baseline/ngb/QUALIFICATION.md",
+              "baseline/ngb/configs/v4_one_head.yaml",
+              "baseline/ngb/configs/v4_small_4x4.yaml",
+              "baseline/ngb/notebooks/01_run_v4_one_head.ipynb",
+              "baseline/ngb/notebooks/02_compare_v4_one_head.ipynb",
+              "baseline/ngb/notebooks/03_run_v4_small_4x4.ipynb",
+              "baseline/ngb/notebooks/04_compare_v4_small_4x4.ipynb",
+              "baseline/ngb/notebooks/05_compare_v4_architectures.ipynb",
+              "baseline/ngb/notebooks/06_compare_v3_v4_one_head.ipynb",
+              "baseline/ngb/tests/test_ngb.py",
+          }
+          missing = sorted(path for path in required if not (repo / path).is_file())
+          if missing:
+              raise RuntimeError(f"materialization missed required files: {missing}")
+          print(f"materialized {len(files)} files; required NGB inventory is complete")
+          PY
+
+          git diff --check
+          python -m compileall -q \
+            baseline/nanogpt_one_head/src \
+            baseline/nanogpt_one_head/tests \
+            baseline/ngb/tests
+          python - <<'PY'
+          import ast
+          import json
+          from pathlib import Path
+
+          paths = sorted(Path("baseline/ngb/notebooks").glob("*.ipynb"))
+          if len(paths) != 6:
+              raise RuntimeError(f"expected six NGB notebooks, found {len(paths)}")
+          for path in paths:
+              notebook = json.loads(path.read_text(encoding="utf-8"))
+              if notebook.get("metadata", {}).get("kernelspec", {}).get("name") != "python3":
+                  raise RuntimeError(f"{path} does not use the python3 conda kernel")
+              for index, cell in enumerate(notebook.get("cells", [])):
+                  if cell.get("cell_type") != "code":
+                      continue
+                  source = cell.get("source", "")
+                  if isinstance(source, list):
+                      source = "".join(source)
+                  ast.parse(source, filename=f"{path}:cell-{index}")
+          print("validated NGB notebook JSON and Python syntax")
+          PY
+
+      - name: Install CPU test environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e './baseline/nanogpt_one_head[dev]'
+          python -m pip check
+
+      - name: Run shared one-head and NGB v4 tests
+        env:
+          PYTHONPATH: baseline/nanogpt_one_head/src
+          MPLBACKEND: Agg
+        run: |
+          pytest -q baseline/nanogpt_one_head/tests baseline/ngb/tests
+
+      - name: Commit tested NGB v4 protocol and remove staging files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm -f \
+            .github/ngb_payload.part* \
+            .github/ngb_delta.part* \
+            .github/workflows/materialize-ngb-v4.yml
+          git add -A
+          git commit -m 'Add NGB v4 nanoGPT protocols'
+          git push origin HEAD:agent/ngb-v4-protocol
