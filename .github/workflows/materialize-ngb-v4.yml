@@ -74,14 +74,26 @@ jobs:
           replace_exact(training, "resolved = roots()", "resolved = roots(cfg)", expected=2)
 
           data = runtime / "data.py"
-          replace_exact(
-              data,
+          data_text = data.read_text(encoding="utf-8")
+          stale_data_guidance = (
               '            "data preparation requires datasets and tiktoken; "\n'
-              '            "run scripts/setup_mac.sh"',
-              '            "data preparation requires datasets and tiktoken; "\n'
-              '            "install baseline/nanogpt_one_head in the active conda environment"',
+              '            "run scripts/setup_mac.sh"'
           )
-          replace_exact(data, 'roots()["data"]', 'roots(cfg)["data"]')
+          if stale_data_guidance in data_text:
+              data_text = data_text.replace(
+                  stale_data_guidance,
+                  '            "data preparation requires datasets and tiktoken; "\n'
+                  '            "install dependencies into the active conda environment"',
+                  1,
+              )
+          if "active conda environment" not in data_text:
+              raise RuntimeError("data.py has no conda-native dependency guidance")
+          if data_text.count('roots()["data"]') != 1:
+              raise RuntimeError("could not locate data.py default root resolution")
+          data.write_text(
+              data_text.replace('roots()["data"]', 'roots(cfg)["data"]', 1),
+              encoding="utf-8",
+          )
 
           spectral = runtime / "spectral.py"
           replace_exact(
