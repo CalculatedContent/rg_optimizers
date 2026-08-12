@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -23,9 +24,39 @@ def _worker_args(tmp_path: Path, **overrides) -> argparse.Namespace:
         "overwrite": False,
         "no_resume": False,
         "mps_retries": 1,
+        "fail_fast": False,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
+
+
+def _mock_mps_environment(
+    tmp_path: Path,
+    monkeypatch,
+) -> tuple[Path, Path]:
+    data_root = tmp_path / "data"
+    results_root = tmp_path / "results"
+    monkeypatch.setattr(
+        training,
+        "_resolve_roots",
+        lambda **kwargs: (
+            data_root,
+            results_root,
+            torch.device("mps"),
+        ),
+    )
+    monkeypatch.setattr(
+        training,
+        "prepare_fineweb_edu",
+        lambda cfg, path: None,
+    )
+    monkeypatch.setattr(
+        training,
+        "_release_accelerator",
+        lambda device: None,
+    )
+    monkeypatch.setattr(training.time, "sleep", lambda seconds: None)
+    return data_root, results_root
 
 
 def test_checkpoint_refuses_nonfinite_optimizer_state(tmp_path) -> None:
@@ -115,30 +146,8 @@ def test_mps_supervisor_retries_from_latest_checkpoint(
     monkeypatch,
 ) -> None:
     args = _worker_args(tmp_path, mps_retries=1)
-    data_root = tmp_path / "data"
-    results_root = tmp_path / "results"
+    _, results_root = _mock_mps_environment(tmp_path, monkeypatch)
     calls: list[list[str]] = []
-
-    monkeypatch.setattr(
-        training,
-        "_resolve_roots",
-        lambda **kwargs: (
-            data_root,
-            results_root,
-            torch.device("mps"),
-        ),
-    )
-    monkeypatch.setattr(
-        training,
-        "prepare_fineweb_edu",
-        lambda cfg, path: None,
-    )
-    monkeypatch.setattr(
-        training,
-        "_release_accelerator",
-        lambda device: None,
-    )
-    monkeypatch.setattr(training.time, "sleep", lambda seconds: None)
 
     def fake_run(command, env, check):
         del env, check
@@ -152,7 +161,7 @@ def test_mps_supervisor_retries_from_latest_checkpoint(
 
     monkeypatch.setattr(training.subprocess, "run", fake_run)
 
-    training._run_isolated_mps_workers(
+    result = training._run_isolated_mps_workers(
         args=args,
         cfg={"training": {"seeds": [1337]}},
         seeds=(1337,),
@@ -161,3 +170,84 @@ def test_mps_supervisor_retries_from_latest_checkpoint(
     assert len(calls) == 2
     assert "--mps-worker" in calls[0]
     assert "--mps-worker" in calls[1]
+    assert len(result["completed"]) == 1
+    assert result["failed"] == []
+    assert result["status_path"].is_file()
+
+
+def test_mps_supervisor_skips_failed_seed_and_continues(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    args = _worker_args(
+        tmp_path,
+        mps_retries=0,
+        fail_fast=False,
+    )
+    _, results_root = _mock_mps_environment(tmp_path, monkeypatch)
+    calls: list[list[str]] = []
+
+    def fake_run(command, env, check):
+        del env, check
+        calls.append(list(command))
+        seed = command[command.index("--seeds") + 1]
+        return SimpleNamespace(returncode=1 if seed == "1337" else 0)
+
+    monkeypatch.setattr(training.subprocess, "run", fake_run)
+
+    result = training._run_isolated_mps_workers(
+        args=args,
+        cfg={"training": {"seeds": [1337, 2027]}},
+        seeds=(1337, 2027),
+    )
+
+    assert len(calls) == 2
+    assert len(result["completed"]) == 1
+    assert result["completed"][0]["seed"] == 2027
+    assert len(result["failed"]) == 1
+    assert result["failed"][0]["seed"] == 1337
+
+    failure_path = (
+        results_root / "muon" / "seed_1337" / "run_failed.json"
+    )
+    failure = json.loads(failure_path.read_text(encoding="utf-8"))
+    assert failure["failure_policy"] == "skip_replicate_and_continue_batch"
+    assert failure["last_exit_code"] == 1
+
+    batch = json.loads(
+        (results_root / "_batch_status.json").read_text(encoding="utf-8")
+    )
+    assert batch["requested_replicates"] == 2
+    assert batch["completed_replicates"] == 1
+    assert batch["failed_replicates"] == 1
+    assert batch["all_completed"] is False
+
+
+def test_mps_supervisor_fail_fast_remains_available(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    args = _worker_args(
+        tmp_path,
+        mps_retries=0,
+        fail_fast=True,
+    )
+    _, results_root = _mock_mps_environment(tmp_path, monkeypatch)
+    calls: list[list[str]] = []
+
+    def fake_run(command, env, check):
+        del env, check
+        calls.append(list(command))
+        return SimpleNamespace(returncode=9)
+
+    monkeypatch.setattr(training.subprocess, "run", fake_run)
+
+    with pytest.raises(RuntimeError, match="exhausted its retries"):
+        training._run_isolated_mps_workers(
+            args=args,
+            cfg={"training": {"seeds": [1337, 2027]}},
+            seeds=(1337, 2027),
+        )
+
+    assert len(calls) == 1
+    assert (results_root / "_batch_status.json").is_file()
