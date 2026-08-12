@@ -5,24 +5,35 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Sequence
 
+import torch
+
 from .config import SUPPORTED_OPTIMIZERS, canonical_seeds, load_config, roots
 from .data import prepare_fineweb_edu
 from .engine import run_one
-from .run_utils import run_directory, run_is_complete
+from .runtime import choose_device
 
 
 def _resolve_roots(
     *,
     data_root: str | Path | None,
     results_root: str | Path | None,
-    device: str,
-) -> tuple[Path, Path]:
+    device: str | torch.device,
+) -> tuple[Path, Path, torch.device]:
+    # Resolve the accelerator before data preparation. On a TPU VM this catches
+    # a missing or incompatible torch_xla installation before downloading or
+    # writing the corpus.
+    resolved_device = choose_device(device)
     if data_root is not None and results_root is not None:
-        return Path(data_root), Path(results_root)
-    resolved = roots(device)
+        return Path(data_root), Path(results_root), resolved_device
+    resolved = roots(resolved_device)
     return (
         Path(data_root) if data_root is not None else resolved["data"],
-        Path(results_root) if results_root is not None else resolved["results"],
+        (
+            Path(results_root)
+            if results_root is not None
+            else resolved["results"]
+        ),
+        resolved_device,
     )
 
 
@@ -34,19 +45,21 @@ def run_optimizer_replicates(
     seeds: Sequence[int] | None = None,
     data_root: str | Path | None = None,
     results_root: str | Path | None = None,
-    device: str = "auto",
+    device: str | torch.device = "auto",
     resume: bool = True,
     overwrite: bool = False,
     prepare_data: bool = True,
     progress: bool = True,
 ) -> list[Path]:
     del config_path
-    data_path, results_path = _resolve_roots(
+    data_path, results_path, resolved_device = _resolve_roots(
         data_root=data_root,
         results_root=results_root,
         device=device,
     )
-    selected_seeds = tuple(int(seed) for seed in (seeds or canonical_seeds(cfg)))
+    selected_seeds = tuple(
+        int(seed) for seed in (seeds or canonical_seeds(cfg))
+    )
     if prepare_data:
         prepare_fineweb_edu(cfg, data_path)
     run_dirs = []
@@ -58,7 +71,7 @@ def run_optimizer_replicates(
                 results_root=results_path,
                 optimizer_name=optimizer_name,
                 seed=seed,
-                device=device,
+                device=resolved_device,
                 resume=resume,
                 overwrite=overwrite,
                 progress=progress,
@@ -74,12 +87,12 @@ def run_all_replicates(
     seeds: Sequence[int] | None = None,
     data_root: str | Path | None = None,
     results_root: str | Path | None = None,
-    device: str = "auto",
+    device: str | torch.device = "auto",
     resume: bool = True,
     overwrite: bool = False,
     progress: bool = True,
 ) -> list[Path]:
-    data_path, results_path = _resolve_roots(
+    data_path, results_path, resolved_device = _resolve_roots(
         data_root=data_root,
         results_root=results_root,
         device=device,
@@ -95,7 +108,7 @@ def run_all_replicates(
                 seeds=seeds,
                 data_root=data_path,
                 results_root=results_path,
-                device=device,
+                device=resolved_device,
                 resume=resume,
                 overwrite=overwrite,
                 prepare_data=False,
@@ -131,7 +144,11 @@ def main() -> None:
     args = parser.parse_args()
     cfg = load_config(args.config)
     seeds = (
-        tuple(int(value.strip()) for value in args.seeds.split(",") if value.strip())
+        tuple(
+            int(value.strip())
+            for value in args.seeds.split(",")
+            if value.strip()
+        )
         if args.seeds
         else canonical_seeds(cfg)
     )
