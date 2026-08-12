@@ -21,6 +21,56 @@ from .runtime import (
 )
 
 
+def _nonfinite_tensor_paths(value: Any, path: str) -> list[str]:
+    bad: list[str] = []
+    if torch.is_tensor(value):
+        if value.is_floating_point() or value.is_complex():
+            if not bool(torch.isfinite(value).all()):
+                bad.append(path)
+        return bad
+    if isinstance(value, dict):
+        for key, item in value.items():
+            bad.extend(
+                _nonfinite_tensor_paths(
+                    item,
+                    f"{path}.{key}",
+                )
+            )
+        return bad
+    if isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            bad.extend(
+                _nonfinite_tensor_paths(
+                    item,
+                    f"{path}[{index}]",
+                )
+            )
+    return bad
+
+
+def _require_finite_checkpoint_state(
+    *,
+    model_state: dict[str, Any],
+    optimizer_states: list[dict[str, Any]] | None,
+    step: int,
+) -> None:
+    bad = _nonfinite_tensor_paths(model_state, "model")
+    if optimizer_states is not None:
+        bad.extend(
+            _nonfinite_tensor_paths(
+                optimizer_states,
+                "optimizers",
+            )
+        )
+    if bad:
+        preview = ", ".join(bad[:12])
+        suffix = "" if len(bad) <= 12 else f" (+{len(bad) - 12} more)"
+        raise FloatingPointError(
+            "refusing to write or load a contaminated checkpoint at "
+            f"step={int(step)}; non-finite tensors: {preview}{suffix}"
+        )
+
+
 def _atomic_torch_save(payload: dict[str, Any], path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -46,12 +96,25 @@ def save_training_checkpoint(
 ) -> Path:
     device = model_device(model)
     synchronize(device)
+
+    # Materialize model and optimizer state on CPU before touching the target
+    # path. A Metal command-buffer recovery can otherwise leave finite-looking
+    # Python control flow around corrupted accelerator tensors. The finite-state
+    # gate ensures checkpoint_latest.pt always remains the last verified state.
+    model_state = tree_to_cpu(model.state_dict())
+    optimizer_states = tree_to_cpu(optimizer_state_dict(handles))
+    _require_finite_checkpoint_state(
+        model_state=model_state,
+        optimizer_states=optimizer_states,
+        step=step,
+    )
+
     payload: dict[str, Any] = {
-        "schema_version": 3,
-        # Always serialize CPU tensors so checkpoints are portable between
-        # MPS, CUDA, TPU/XLA, and CPU environments.
-        "model": tree_to_cpu(model.state_dict()),
-        "optimizers": tree_to_cpu(optimizer_state_dict(handles)),
+        "schema_version": 4,
+        # CPU tensors keep checkpoints portable between MPS, CUDA, TPU/XLA,
+        # and CPU environments.
+        "model": model_state,
+        "optimizers": optimizer_states,
         "step": int(step),
         "best_validation_loss": float(best_validation_loss),
         "best_validation_step": int(best_validation_step),
@@ -83,6 +146,11 @@ def load_training_checkpoint(
         raise RuntimeError(
             "checkpoint protocol fingerprint does not match the requested run"
         )
+    _require_finite_checkpoint_state(
+        model_state=payload["model"],
+        optimizer_states=payload["optimizers"],
+        step=int(payload.get("step", -1)),
+    )
     model.load_state_dict(payload["model"])
     load_optimizer_state_dict(handles, payload["optimizers"])
     random.setstate(payload["python_random_state"])
@@ -118,9 +186,15 @@ def save_epoch_model_checkpoint(
     )
     device = model_device(model)
     synchronize(device)
+    model_state = tree_to_cpu(model.state_dict())
+    _require_finite_checkpoint_state(
+        model_state=model_state,
+        optimizer_states=None,
+        step=step,
+    )
     payload = {
-        "schema_version": 2,
-        "model": tree_to_cpu(model.state_dict()),
+        "schema_version": 3,
+        "model": model_state,
         "step": int(step),
         "nominal_epoch": float(nominal_epoch),
         "actual_epoch": float(actual_epoch),
