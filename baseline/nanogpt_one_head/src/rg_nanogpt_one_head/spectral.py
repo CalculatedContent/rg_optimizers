@@ -23,6 +23,7 @@ SPECTRAL_METRICS = (
     "alpha_weighted",
     "ERG_gap",
     "num_traps",
+    "rand_distance",
     "detX_num",
     "num_pl_spikes",
     "num_ERG_spikes",
@@ -73,10 +74,7 @@ def _attach_matrix_metadata(
     metadata: list[dict[str, object]],
 ) -> pd.DataFrame:
     result = frame.copy().reset_index(drop=True)
-    names = [
-        str(item["matrix_name"])
-        for item in metadata
-    ]
+    names = [str(item["matrix_name"]) for item in metadata]
     resolved: list[str | None] = [None] * len(result)
     for row_index, row in result.iterrows():
         text = " ".join(
@@ -227,11 +225,13 @@ def run_weightwatcher(
 ) -> dict[str, Any]:
     """Run WeightWatcher exactly with ERG=True and randomize=True.
 
-    `alpha`, `ERG_gap`, and `num_traps` are retained directly from
-    WeightWatcher. No fallback alpha, proxy trap count, or synthesized ERG gap
-    is permitted. Every CPU and accelerator RNG stream is restored after the
-    randomized diagnostic so measurement cannot change the subsequent
-    training path.
+    `alpha`, `ERG_gap`, `num_traps`, and `rand_distance` are retained directly
+    from WeightWatcher. `rand_distance` is the Jensen-Shannon distance between
+    the empirical ESD and the entry-wise randomized ESD. No fallback alpha,
+    proxy trap count, synthesized ERG gap, or replacement random-distance
+    statistic is permitted. Every CPU and accelerator RNG stream is restored
+    after the randomized diagnostic so measurement cannot change the
+    subsequent training path.
     """
 
     try:
@@ -294,6 +294,7 @@ def run_weightwatcher(
             "alpha",
             "ERG_gap",
             "num_traps",
+            "rand_distance",
         )
         missing = [
             column
@@ -308,8 +309,8 @@ def run_weightwatcher(
             )
         if frame[list(required_columns)].isna().any().any():
             raise RuntimeError(
-                "WeightWatcher required alpha/ERG_gap/num_traps "
-                "values contain NaN"
+                "WeightWatcher required alpha/ERG_gap/num_traps/"
+                "rand_distance values contain NaN"
             )
         epoch = tokens_seen / max(1, int(train_tokens))
         frame.insert(0, "step", int(step))
@@ -351,6 +352,9 @@ def run_weightwatcher(
             ),
             "num_traps_valid_matrices": int(
                 summary["num_traps_n"]
+            ),
+            "rand_distance_valid_matrices": int(
+                summary["rand_distance_n"]
             ),
         }
         (
