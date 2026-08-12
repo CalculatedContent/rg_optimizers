@@ -118,7 +118,7 @@ def _choose_tpu_device() -> torch.device:
     os.environ.setdefault("PJRT_DEVICE", "TPU")
     modules = _load_xla(required=True)
     assert modules is not None
-    torch_xla, xr, _ = modules
+    torch_xla, xr, xm = modules
     if _xla_device_type(xr) != "TPU":
         raise RuntimeError(
             "torch_xla initialized, but its PJRT device is not TPU. "
@@ -127,7 +127,7 @@ def _choose_tpu_device() -> torch.device:
     device = (
         torch_xla.device()
         if hasattr(torch_xla, "device")
-        else torch.device("xla")
+        else xm.xla_device()
     )
     return torch.device(device)
 
