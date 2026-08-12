@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import argparse
 from copy import deepcopy
+from datetime import datetime, timezone
 import gc
+import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
-from typing import Sequence
+from typing import Any, Sequence
 
 import torch
 
@@ -223,19 +226,113 @@ def _mps_worker_command(
     return command
 
 
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, default=str),
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def _clear_failure_marker(run_dir: Path) -> None:
+    (run_dir / "run_failed.json").unlink(missing_ok=True)
+
+
+def _record_failed_replicate(
+    *,
+    run_dir: Path,
+    optimizer_name: str,
+    seed: int,
+    attempts: int,
+    exit_code: int,
+    latest_checkpoint: Path,
+) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "failed": True,
+        "completed": False,
+        "optimizer": str(optimizer_name),
+        "seed": int(seed),
+        "attempts": int(attempts),
+        "last_exit_code": int(exit_code),
+        "last_verified_checkpoint": (
+            str(latest_checkpoint) if latest_checkpoint.is_file() else None
+        ),
+        "failure_policy": "skip_replicate_and_continue_batch",
+        "recorded_at_utc": _utc_now(),
+    }
+    _atomic_json(run_dir / "run_failed.json", record)
+    return record
+
+
+def _prepare_retry_without_checkpoint(run_dir: Path) -> None:
+    """Restart cleanly when a failed worker never wrote a finite checkpoint."""
+
+    if not run_dir.exists():
+        return
+    archive = run_dir.with_name(
+        run_dir.name
+        + ".failed-no-checkpoint."
+        + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    )
+    if archive.exists():
+        shutil.rmtree(archive)
+    run_dir.replace(archive)
+    print(
+        "[one-head-mps] no verified checkpoint exists; archived the partial "
+        f"run at {archive} and will restart from initialization",
+        flush=True,
+    )
+
+
+def _write_batch_status(
+    *,
+    results_root: Path,
+    started_at_utc: str,
+    optimizers: Sequence[str],
+    seeds: Sequence[int],
+    completed: list[dict[str, Any]],
+    failed: list[dict[str, Any]],
+) -> Path:
+    status_path = results_root / "_batch_status.json"
+    payload = {
+        "schema_version": 1,
+        "started_at_utc": started_at_utc,
+        "finished_at_utc": _utc_now(),
+        "accelerator": "mps",
+        "requested_optimizers": [str(value) for value in optimizers],
+        "requested_seeds": [int(value) for value in seeds],
+        "requested_replicates": int(len(optimizers) * len(seeds)),
+        "completed_replicates": int(len(completed)),
+        "failed_replicates": int(len(failed)),
+        "all_completed": not failed,
+        "completed": completed,
+        "failed": failed,
+    }
+    _atomic_json(status_path, payload)
+    return status_path
+
+
 def _run_isolated_mps_workers(
     *,
     args: argparse.Namespace,
     cfg: dict,
     seeds: Sequence[int],
-) -> None:
+) -> dict[str, Any]:
     data_root, results_root, resolved_device = _resolve_roots(
         data_root=args.data_root,
         results_root=args.results_root,
         device="mps",
     )
     if resolved_device.type != "mps":
-        raise RuntimeError("internal MPS worker supervisor selected a non-MPS device")
+        raise RuntimeError(
+            "internal MPS worker supervisor selected a non-MPS device"
+        )
 
     prepare_fineweb_edu(cfg, data_root)
     optimizers = (
@@ -244,13 +341,19 @@ def _run_isolated_mps_workers(
         else (str(args.optimizer),)
     )
     max_attempts = 1 + int(args.mps_retries)
+    fail_fast = bool(getattr(args, "fail_fast", False))
     environment = os.environ.copy()
     environment.setdefault("PYTHONUNBUFFERED", "1")
     environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
+    started_at_utc = _utc_now()
+    completed: list[dict[str, Any]] = []
+    failed: list[dict[str, Any]] = []
 
     for optimizer_name in optimizers:
         for seed in seeds:
             run_dir = run_directory(results_root, optimizer_name, int(seed))
+            succeeded = False
+            last_return_code = 0
             for attempt in range(1, max_attempts + 1):
                 first_attempt = attempt == 1
                 command = _mps_worker_command(
@@ -272,35 +375,108 @@ def _run_isolated_mps_workers(
                     env=environment,
                     check=False,
                 )
+                last_return_code = int(result.returncode)
                 if result.returncode == 0:
+                    _clear_failure_marker(run_dir)
+                    completed.append(
+                        {
+                            "optimizer": str(optimizer_name),
+                            "seed": int(seed),
+                            "attempts": int(attempt),
+                            "run_dir": str(run_dir),
+                        }
+                    )
                     print(
                         "[one-head-mps] worker complete "
                         f"optimizer={optimizer_name} seed={seed}",
                         flush=True,
                     )
+                    succeeded = True
                     break
 
                 latest = run_dir / "checkpoint_latest.pt"
-                if attempt >= max_attempts or not latest.is_file():
-                    checkpoint_note = (
-                        f"last verified checkpoint: {latest}"
-                        if latest.is_file()
-                        else "no verified checkpoint was written"
+                if attempt < max_attempts:
+                    _release_accelerator(resolved_device)
+                    time.sleep(2.0)
+                    if latest.is_file():
+                        print(
+                            "[one-head-mps] worker failed; Metal will restart in "
+                            "a fresh process and resume from the last finite "
+                            f"atomic checkpoint: {latest}",
+                            flush=True,
+                        )
+                    else:
+                        _prepare_retry_without_checkpoint(run_dir)
+                    continue
+
+                failure = _record_failed_replicate(
+                    run_dir=run_dir,
+                    optimizer_name=optimizer_name,
+                    seed=int(seed),
+                    attempts=max_attempts,
+                    exit_code=last_return_code,
+                    latest_checkpoint=latest,
+                )
+                failed.append(failure)
+                checkpoint_note = (
+                    f"last verified checkpoint: {latest}"
+                    if latest.is_file()
+                    else "no verified checkpoint was written"
+                )
+                message = (
+                    "isolated MPS worker exhausted its retries with exit code "
+                    f"{last_return_code} for optimizer={optimizer_name} "
+                    f"seed={seed}; {checkpoint_note}"
+                )
+                if fail_fast:
+                    status_path = _write_batch_status(
+                        results_root=results_root,
+                        started_at_utc=started_at_utc,
+                        optimizers=optimizers,
+                        seeds=seeds,
+                        completed=completed,
+                        failed=failed,
                     )
                     raise RuntimeError(
-                        "isolated MPS worker failed with exit code "
-                        f"{result.returncode} for optimizer={optimizer_name} "
-                        f"seed={seed}; {checkpoint_note}"
+                        message + f"; batch status: {status_path}"
                     )
 
                 print(
-                    "[one-head-mps] worker failed; allowing Metal to reset, "
-                    "then resuming from the last finite atomic checkpoint: "
-                    f"{latest}",
+                    "[one-head-mps] SKIPPING failed replicate and continuing "
+                    f"to the next optimizer/seed: {message}",
                     flush=True,
                 )
+                break
+
+            if not succeeded:
                 _release_accelerator(resolved_device)
-                time.sleep(2.0)
+
+    status_path = _write_batch_status(
+        results_root=results_root,
+        started_at_utc=started_at_utc,
+        optimizers=optimizers,
+        seeds=seeds,
+        completed=completed,
+        failed=failed,
+    )
+    print(
+        "[one-head-mps] batch finished: "
+        f"completed={len(completed)} failed={len(failed)} "
+        f"status={status_path}",
+        flush=True,
+    )
+    if failed:
+        print(
+            "[one-head-mps] PARTIAL SUCCESS: failed replicates remain "
+            "incomplete and are excluded from completed-run analysis; inspect "
+            f"{status_path}",
+            flush=True,
+        )
+    return {
+        "completed": completed,
+        "failed": failed,
+        "status_path": status_path,
+    }
 
 
 def main() -> None:
@@ -333,6 +509,14 @@ def main() -> None:
         help=(
             "fresh-process resume attempts after an MPS worker failure; "
             "default: 1"
+        ),
+    )
+    parser.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help=(
+            "stop the MPS batch after a replicate exhausts its retries; by "
+            "default the failed replicate is recorded and the next seed runs"
         ),
     )
     parser.add_argument(
