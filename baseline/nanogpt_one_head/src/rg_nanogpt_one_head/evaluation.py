@@ -8,6 +8,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from .runtime import is_xla_device, mark_step, synchronize, tree_to_cpu
+
 
 @dataclass(frozen=True)
 class BleuProbe:
@@ -32,12 +34,20 @@ def random_batch(
         generator=generator,
     ).tolist()
     x = torch.stack(
-        [torch.from_numpy(np.asarray(data[start : start + block_size], dtype=np.int64)) for start in starts]
+        [
+            torch.from_numpy(
+                np.asarray(data[start : start + block_size], dtype=np.int64)
+            )
+            for start in starts
+        ]
     )
     y = torch.stack(
         [
             torch.from_numpy(
-                np.asarray(data[start + 1 : start + 1 + block_size], dtype=np.int64)
+                np.asarray(
+                    data[start + 1 : start + 1 + block_size],
+                    dtype=np.int64,
+                )
             )
             for start in starts
         ]
@@ -77,15 +87,30 @@ def fixed_bleu_probe(
     if len(data) <= total + 1:
         raise ValueError("test split is too short for BLEU continuation probes")
     generator = torch.Generator(device="cpu").manual_seed(int(seed))
-    starts = torch.randint(len(data) - total - 1, (int(examples),), generator=generator).tolist()
+    starts = torch.randint(
+        len(data) - total - 1,
+        (int(examples),),
+        generator=generator,
+    ).tolist()
     prompts = torch.stack(
-        [torch.from_numpy(np.asarray(data[start : start + prompt_tokens], dtype=np.int64)) for start in starts]
+        [
+            torch.from_numpy(
+                np.asarray(
+                    data[start : start + prompt_tokens],
+                    dtype=np.int64,
+                )
+            )
+            for start in starts
+        ]
     )
     references = torch.stack(
         [
             torch.from_numpy(
                 np.asarray(
-                    data[start + prompt_tokens : start + prompt_tokens + continuation_tokens],
+                    data[
+                        start + prompt_tokens :
+                        start + prompt_tokens + continuation_tokens
+                    ],
                     dtype=np.int64,
                 )
             )
@@ -108,25 +133,42 @@ def evaluate_probe(
 ) -> dict[str, float]:
     was_training = model.training
     model.eval()
-    losses: list[float] = []
-    correct = 0
+    loss_sum = torch.zeros((), dtype=torch.float32, device=device)
+    correct = torch.zeros((), dtype=torch.int64, device=device)
     total = 0
+    batches = 0
     for x_cpu, y_cpu in probe:
         x = x_cpu.to(device)
         y = y_cpu.to(device)
         logits, loss = model(x, y)
         if loss is None:
             raise RuntimeError("evaluation forward pass did not return loss")
-        losses.append(float(loss.detach().cpu()))
-        correct += int((logits.argmax(dim=-1) == y).sum().detach().cpu())
+        loss_sum = loss_sum + loss.detach().float()
+        correct = correct + (logits.argmax(dim=-1) == y).sum()
         total += int(y.numel())
+        batches += 1
+        # XLA is lazy. Execute each fixed-shape batch without transferring
+        # scalars to the host, allowing the compiled evaluation graph to be reused.
+        mark_step(device)
+    if batches == 0:
+        raise RuntimeError("evaluation probe is empty")
+    synchronize(device)
+    mean_loss = float((loss_sum / batches).detach().cpu())
+    correct_value = int(correct.detach().cpu())
     model.train(was_training)
-    mean_loss = float(np.mean(losses))
     return {
         "loss": mean_loss,
         "perplexity": float(math.exp(min(20.0, mean_loss))),
-        "accuracy": correct / max(1, total),
+        "accuracy": correct_value / max(1, total),
     }
+
+
+def _cpu_bleu_model(model) -> nn.Module:
+    """Build a CPU copy when the live monitoring model is on TPU/XLA."""
+    synchronize(model.lm_head.weight.device)
+    cpu_model = type(model)(model.cfg).cpu()
+    cpu_model.load_state_dict(tree_to_cpu(model.state_dict()))
+    return cpu_model
 
 
 @torch.inference_mode()
@@ -137,33 +179,51 @@ def evaluate_bleu(
     device: torch.device,
     batch_size: int,
 ) -> dict[str, float]:
-    """Greedy fixed-continuation BLEU diagnostic on preregistered test segments.
+    """Greedy fixed-continuation BLEU diagnostic on held-out segments.
 
-    This is not a translation benchmark. It measures exact lexical overlap
-    between deterministic model continuations and the held-out continuation.
+    This is not a translation benchmark. On TPU/XLA, changing sequence lengths
+    would compile a different graph for every generated token, so this
+    monitoring-only diagnostic runs on a CPU snapshot. It cannot affect
+    optimization, scheduling, checkpoint selection, or WeightWatcher.
     """
     try:
         import tiktoken
         from sacrebleu.metrics import BLEU
     except ImportError as exc:
         raise RuntimeError(
-            "BLEU evaluation requires tiktoken and sacrebleu; run scripts/setup_mac.sh"
+            "BLEU evaluation requires tiktoken and sacrebleu; install the "
+            "experiment dependencies with `python -m pip install -e .`"
         ) from exc
 
-    was_training = model.training
-    model.eval()
+    evaluation_model = model
+    evaluation_device = device
+    if is_xla_device(device):
+        evaluation_model = _cpu_bleu_model(model)
+        evaluation_device = torch.device("cpu")
+
+    was_training = evaluation_model.training
+    evaluation_model.eval()
     encoder = tiktoken.get_encoding("gpt2")
     hypotheses: list[str] = []
     references: list[str] = []
     for start in range(0, len(probe.prompts), int(batch_size)):
-        prompts = probe.prompts[start : start + int(batch_size)].to(device)
-        generated = model.generate_greedy(prompts, probe.continuation_tokens)
-        continuation = generated[:, -probe.continuation_tokens :].detach().cpu()
+        prompts = probe.prompts[start : start + int(batch_size)].to(
+            evaluation_device
+        )
+        generated = evaluation_model.generate_greedy(
+            prompts,
+            probe.continuation_tokens,
+        )
+        continuation = generated[
+            :, -probe.continuation_tokens :
+        ].detach().cpu()
         reference_batch = probe.references[start : start + int(batch_size)]
-        for predicted_tokens, reference_tokens in zip(continuation, reference_batch, strict=True):
+        for predicted_tokens, reference_tokens in zip(
+            continuation, reference_batch, strict=True
+        ):
             hypotheses.append(encoder.decode(predicted_tokens.tolist()))
             references.append(encoder.decode(reference_tokens.tolist()))
-    model.train(was_training)
+    evaluation_model.train(was_training)
 
     bleu = BLEU(tokenize="13a", effective_order=True)
     score = bleu.corpus_score(hypotheses, [references])
