@@ -4,7 +4,7 @@ This experiment adds **Full Attention Residuals (AttnRes)** as a controlled arch
 
 ## What changes
 
-Standard residual routing uses the immediately preceding state with a fixed additive path. Full AttnRes instead forms each sublayer input by content-dependent attention over all residual states available earlier in depth. Each routing point has a learned pseudo-query vector; prior residual states are RMS-normalized to form routing keys, while the original states remain the values.
+Standard residual routing accumulates sublayer outputs through a fixed additive path. Full AttnRes replaces that accumulation: before each attention or MLP sublayer, it forms the sublayer input by content-dependent attention over the embedding and all preceding sublayer outputs. Each routing point has a learned pseudo-query vector; prior outputs are RMS-normalized to form routing keys, while the original outputs remain the values. The selected mixture is passed through the normal pre-norm sublayer, and only that sublayer output is appended as the next depth value.
 
 The implementation provides one router before attention and one router before the MLP. The existing causal self-attention computation itself is unchanged.
 
@@ -25,11 +25,11 @@ The controlled comparison keeps the existing long-Muon baseline fixed:
 - WeightWatcher ERG/randomization settings
 - separated `W_Q`, `W_K`, `W_V`, `W_O`, `W_MLP_IN`, and `W_MLP_OUT` matrices
 
-AttnRes pseudo-query vectors are one-dimensional parameter vectors. They are deliberately excluded from `transformer_matrix_items()`, so WeightWatcher continues to analyze the same six matrices per block. Under Muon, the six 2-D hidden matrices remain in the Muon group while the AttnRes queries enter the auxiliary AdamW group.
+AttnRes pseudo-query vectors are 1-D parameter tensors of length `n_embd`. They are deliberately excluded from `transformer_matrix_items()`, so WeightWatcher continues to analyze the same six matrices per block. Under Muon, the six 2-D hidden matrices remain in the Muon group while the AttnRes queries enter the auxiliary AdamW group.
 
 ## Why keep one block first?
 
-Full AttnRes becomes more expressive as depth increases. In a one-block transformer, the attention router initially has only the embedding residual state available, and the MLP router can select between the embedding state and the post-attention state. This is intentionally a conservative first experiment: it preserves the architecture, parameter scale, data exposure, and token budget of the current baseline and therefore isolates the effect of residual routing as cleanly as possible.
+Full AttnRes becomes more expressive as depth increases. In a one-block transformer, the attention router initially has only the embedding output available, and the MLP router can select between the embedding and the attention-sublayer output. This is intentionally a conservative first experiment: it preserves the architecture, data exposure, token budget, and all six transformer matrices of the current baseline and therefore isolates the effect of residual routing as cleanly as possible. The only added trainable parameters are two length-128 pseudo-query vectors.
 
 The model implementation itself is depth-ready and keeps one head at every depth. A later multi-block study can test the larger routing advantage without changing the AttnRes implementation.
 
