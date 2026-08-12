@@ -11,6 +11,12 @@ import torch
 import torch.nn as nn
 
 from .model import GPT, transformer_matrix_items
+from .runtime import (
+    capture_accelerator_rng_state,
+    model_device,
+    restore_accelerator_rng_state,
+    synchronize,
+)
 
 SPECTRAL_METRICS = (
     "alpha",
@@ -37,8 +43,17 @@ class WeightMatrixHolder(nn.Module):
     def __init__(self, model: GPT) -> None:
         super().__init__()
         self.matrix_metadata: list[dict[str, object]] = []
-        for name, matrix_type, block, weight in transformer_matrix_items(model):
-            layer = nn.Linear(weight.shape[1], weight.shape[0], bias=False)
+        for (
+            name,
+            matrix_type,
+            block,
+            weight,
+        ) in transformer_matrix_items(model):
+            layer = nn.Linear(
+                weight.shape[1],
+                weight.shape[0],
+                bias=False,
+            )
             layer.weight = nn.Parameter(
                 weight.detach().float().cpu().clone(),
                 requires_grad=False,
@@ -58,39 +73,59 @@ def _attach_matrix_metadata(
     metadata: list[dict[str, object]],
 ) -> pd.DataFrame:
     result = frame.copy().reset_index(drop=True)
-    names = [str(item["matrix_name"]) for item in metadata]
+    names = [
+        str(item["matrix_name"])
+        for item in metadata
+    ]
     resolved: list[str | None] = [None] * len(result)
     for row_index, row in result.iterrows():
         text = " ".join(
-            str(row.get(column, "")) for column in ("longname", "name")
+            str(row.get(column, ""))
+            for column in ("longname", "name")
         )
         for name in names:
             if name in text:
                 resolved[row_index] = name
                 break
-    if any(value is None for value in resolved) and len(result) == len(metadata):
+    if (
+        any(value is None for value in resolved)
+        and len(result) == len(metadata)
+    ):
         order = list(range(len(result)))
         if "layer_id" in result.columns:
-            numeric = pd.to_numeric(result["layer_id"], errors="coerce")
+            numeric = pd.to_numeric(
+                result["layer_id"],
+                errors="coerce",
+            )
             if numeric.notna().all():
                 order = list(numeric.sort_values().index)
         for metadata_index, row_index in enumerate(order):
             resolved[row_index] = names[metadata_index]
     if any(value is None for value in resolved):
         raise RuntimeError(
-            "WeightWatcher rows could not be matched to all transformer matrices"
+            "WeightWatcher rows could not be matched to all "
+            "transformer matrices"
         )
-    by_name = {str(item["matrix_name"]): item for item in metadata}
+    by_name = {
+        str(item["matrix_name"]): item
+        for item in metadata
+    }
     result.insert(0, "matrix_name", resolved)
     result.insert(
         1,
         "matrix_type",
-        [by_name[str(name)]["matrix_type"] for name in resolved],
+        [
+            by_name[str(name)]["matrix_type"]
+            for name in resolved
+        ],
     )
     result.insert(
         2,
         "block",
-        [by_name[str(name)]["block"] for name in resolved],
+        [
+            by_name[str(name)]["block"]
+            for name in resolved
+        ],
     )
     return result
 
@@ -109,36 +144,18 @@ def _append_deduplicated(
 ) -> None:
     if path.is_file():
         existing = pd.read_csv(path)
-        combined = pd.concat([existing, frame], ignore_index=True, sort=False)
+        combined = pd.concat(
+            [existing, frame],
+            ignore_index=True,
+            sort=False,
+        )
     else:
         combined = frame.copy()
-    combined = combined.drop_duplicates(keys, keep="last").sort_values(keys)
+    combined = (
+        combined.drop_duplicates(keys, keep="last")
+        .sort_values(keys)
+    )
     _atomic_csv(path, combined)
-
-
-def _capture_accelerator_rng() -> dict[str, Any]:
-    state: dict[str, Any] = {}
-    if torch.cuda.is_available():
-        state["cuda"] = torch.cuda.get_rng_state_all()
-    if (
-        hasattr(torch, "mps")
-        and hasattr(torch.mps, "get_rng_state")
-        and torch.backends.mps.is_available()
-    ):
-        state["mps"] = torch.mps.get_rng_state()
-    return state
-
-
-def _restore_accelerator_rng(state: dict[str, Any]) -> None:
-    if torch.cuda.is_available() and "cuda" in state:
-        torch.cuda.set_rng_state_all(state["cuda"])
-    if (
-        "mps" in state
-        and hasattr(torch, "mps")
-        and hasattr(torch.mps, "set_rng_state")
-        and torch.backends.mps.is_available()
-    ):
-        torch.mps.set_rng_state(state["mps"])
 
 
 def summarize_spectral_frame(
@@ -156,23 +173,45 @@ def summarize_spectral_frame(
     }
     for metric in SPECTRAL_METRICS:
         values = (
-            pd.to_numeric(frame[metric], errors="coerce")
+            pd.to_numeric(
+                frame[metric],
+                errors="coerce",
+            )
             if metric in frame.columns
             else pd.Series(dtype=float)
         )
-        array = values.to_numpy(dtype=float, na_value=np.nan)
+        array = values.to_numpy(
+            dtype=float,
+            na_value=np.nan,
+        )
         finite = array[np.isfinite(array)]
         summary[f"{metric}_n"] = int(finite.size)
-        for statistic in ("mean", "median", "std", "min", "max"):
+        for statistic in (
+            "mean",
+            "median",
+            "std",
+            "min",
+            "max",
+        ):
             summary[f"{metric}_{statistic}"] = float("nan")
         if finite.size:
-            summary[f"{metric}_mean"] = float(np.mean(finite))
-            summary[f"{metric}_median"] = float(np.median(finite))
-            summary[f"{metric}_std"] = (
-                float(np.std(finite, ddof=1)) if finite.size > 1 else 0.0
+            summary[f"{metric}_mean"] = float(
+                np.mean(finite)
             )
-            summary[f"{metric}_min"] = float(np.min(finite))
-            summary[f"{metric}_max"] = float(np.max(finite))
+            summary[f"{metric}_median"] = float(
+                np.median(finite)
+            )
+            summary[f"{metric}_std"] = (
+                float(np.std(finite, ddof=1))
+                if finite.size > 1
+                else 0.0
+            )
+            summary[f"{metric}_min"] = float(
+                np.min(finite)
+            )
+            summary[f"{metric}_max"] = float(
+                np.max(finite)
+            )
     return summary
 
 
@@ -188,24 +227,29 @@ def run_weightwatcher(
 ) -> dict[str, Any]:
     """Run WeightWatcher exactly with ERG=True and randomize=True.
 
-    `alpha`, `ERG_gap`, and `num_traps` are retained directly from WeightWatcher.
-    No fallback alpha, proxy trap count, or synthesized ERG gap is permitted.
-    Every CPU and accelerator RNG stream is restored after the randomized
-    diagnostic so measurement cannot change the subsequent training path.
+    `alpha`, `ERG_gap`, and `num_traps` are retained directly from
+    WeightWatcher. No fallback alpha, proxy trap count, or synthesized ERG gap
+    is permitted. Every CPU and accelerator RNG stream is restored after the
+    randomized diagnostic so measurement cannot change the subsequent
+    training path.
     """
 
     try:
         import weightwatcher as ww
     except ImportError as exc:
         raise RuntimeError(
-            "WeightWatcher is required; run scripts/setup_mac.sh"
+            "WeightWatcher is required; install the experiment dependencies "
+            "with `python -m pip install -e .`"
         ) from exc
 
     run_dir = Path(run_dir)
     spectral_root = run_dir / "spectral"
     raw_root = spectral_root / "raw"
     raw_root.mkdir(parents=True, exist_ok=True)
-    raw_path = raw_root / f"weightwatcher_step_{int(step):07d}.csv"
+    raw_path = (
+        raw_root
+        / f"weightwatcher_step_{int(step):07d}.csv"
+    )
     if raw_path.is_file():
         frame = pd.read_csv(raw_path)
         return summarize_spectral_frame(
@@ -215,16 +259,21 @@ def run_weightwatcher(
             epoch=tokens_seen / max(1, int(train_tokens)),
         )
 
+    device = model_device(model)
+    synchronize(device)
     py_state = random.getstate()
     np_state = np.random.get_state()
     torch_state = torch.random.get_rng_state()
-    accelerator_state = _capture_accelerator_rng()
+    accelerator_state = capture_accelerator_rng_state(device)
     diagnostic_seed = int(seed) + 1_000_003 + int(step)
     random.seed(diagnostic_seed)
     np.random.seed(diagnostic_seed % (2**32 - 1))
     torch.manual_seed(diagnostic_seed)
 
     try:
+        # WeightWatcher remains deliberately CPU/NumPy based. For TPU/XLA,
+        # WeightMatrixHolder materializes only the six hidden matrices on the
+        # host and never exposes the live accelerator model to NumPy.
         holder = WeightMatrixHolder(model)
         watcher = ww.WeightWatcher(model=holder)
         details = watcher.analyze(
@@ -238,26 +287,39 @@ def run_weightwatcher(
                 "WeightWatcher returned no transformer-matrix rows"
             )
         frame = _attach_matrix_metadata(
-            pd.DataFrame(details), holder.matrix_metadata
+            pd.DataFrame(details),
+            holder.matrix_metadata,
         )
-        required_columns = ("alpha", "ERG_gap", "num_traps")
+        required_columns = (
+            "alpha",
+            "ERG_gap",
+            "num_traps",
+        )
         missing = [
-            column for column in required_columns if column not in frame.columns
+            column
+            for column in required_columns
+            if column not in frame.columns
         ]
         if missing:
             raise RuntimeError(
-                "WeightWatcher did not return required ERG/randomization columns: "
+                "WeightWatcher did not return required "
+                "ERG/randomization columns: "
                 + ", ".join(missing)
             )
         if frame[list(required_columns)].isna().any().any():
             raise RuntimeError(
-                "WeightWatcher required alpha/ERG_gap/num_traps values contain NaN"
+                "WeightWatcher required alpha/ERG_gap/num_traps "
+                "values contain NaN"
             )
         epoch = tokens_seen / max(1, int(train_tokens))
         frame.insert(0, "step", int(step))
         frame.insert(1, "tokens_seen", int(tokens_seen))
         frame.insert(2, "epoch", float(epoch))
-        frame.insert(3, "diagnostic_seed", int(diagnostic_seed))
+        frame.insert(
+            3,
+            "diagnostic_seed",
+            int(diagnostic_seed),
+        )
         _atomic_csv(raw_path, frame)
         _append_deduplicated(
             spectral_root / "layers.csv",
@@ -281,12 +343,25 @@ def run_weightwatcher(
             "epoch": float(epoch),
             "completed": True,
             "raw_path": str(raw_path),
-            "alpha_valid_matrices": int(summary["alpha_n"]),
-            "ERG_gap_valid_matrices": int(summary["ERG_gap_n"]),
-            "num_traps_valid_matrices": int(summary["num_traps_n"]),
+            "alpha_valid_matrices": int(
+                summary["alpha_n"]
+            ),
+            "ERG_gap_valid_matrices": int(
+                summary["ERG_gap_n"]
+            ),
+            "num_traps_valid_matrices": int(
+                summary["num_traps_n"]
+            ),
         }
-        (spectral_root / f"status_step_{int(step):07d}.json").write_text(
-            json.dumps(status, indent=2, sort_keys=True),
+        (
+            spectral_root
+            / f"status_step_{int(step):07d}.json"
+        ).write_text(
+            json.dumps(
+                status,
+                indent=2,
+                sort_keys=True,
+            ),
             encoding="utf-8",
         )
         return summary
@@ -298,8 +373,15 @@ def run_weightwatcher(
             "error_type": type(exc).__name__,
             "error": str(exc),
         }
-        (spectral_root / f"status_step_{int(step):07d}.json").write_text(
-            json.dumps(status, indent=2, sort_keys=True),
+        (
+            spectral_root
+            / f"status_step_{int(step):07d}.json"
+        ).write_text(
+            json.dumps(
+                status,
+                indent=2,
+                sort_keys=True,
+            ),
             encoding="utf-8",
         )
         if bool(config.get("strict", True)):
@@ -314,4 +396,7 @@ def run_weightwatcher(
         random.setstate(py_state)
         np.random.set_state(np_state)
         torch.random.set_rng_state(torch_state)
-        _restore_accelerator_rng(accelerator_state)
+        restore_accelerator_rng_state(
+            accelerator_state,
+            device,
+        )
