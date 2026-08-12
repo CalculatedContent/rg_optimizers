@@ -8,7 +8,10 @@ import shutil
 import torch
 
 from .completion import validate_completed_run
-from .checkpoints import load_training_checkpoint, save_training_checkpoint
+from .checkpoints import (
+    load_training_checkpoint,
+    save_training_checkpoint,
+)
 from .config import (
     SUPPORTED_OPTIMIZERS,
     epoch_step_map,
@@ -32,7 +35,14 @@ from .run_utils import (
     truncate_spectral_after,
     write_manifest,
 )
-from .runtime import choose_device, configure_runtime, seed_everything
+from .runtime import (
+    accelerator_name,
+    choose_device,
+    configure_runtime,
+    runtime_metadata,
+    seed_everything,
+    synchronize,
+)
 from .train_loop import execute_training_loop
 
 
@@ -96,10 +106,25 @@ def run_one(
 
     resolved_device = choose_device(device)
     configure_runtime(resolved_device, cfg)
-    seed_everything(int(seed))
+    seed_everything(int(seed), resolved_device)
+    if progress:
+        metadata = runtime_metadata(resolved_device)
+        print(
+            "[one-head-env] "
+            f"requested={device} "
+            f"accelerator={accelerator_name(resolved_device)} "
+            f"device={resolved_device} "
+            f"data_root={data_root} "
+            f"results_root={results_root} "
+            f"runtime={json.dumps(metadata, sort_keys=True)}",
+            flush=True,
+        )
+
     model = GPT(GPTConfig(**cfg["model"])).to(resolved_device)
     handles = make_optimizer_handles(model, profile)
-    train_generator = torch.Generator(device="cpu").manual_seed(int(seed) + 11)
+    train_generator = torch.Generator(device="cpu").manual_seed(
+        int(seed) + 11
+    )
 
     batch_size = int(cfg["training"]["batch_size"])
     eval_batches = int(cfg["training"]["eval_batches"])
@@ -160,6 +185,7 @@ def run_one(
             train_generator=train_generator,
         )
         model.to(resolved_device)
+        synchronize(resolved_device)
         truncate_spectral_after(run_dir, start_step)
         if progress:
             print(
@@ -168,7 +194,9 @@ def run_one(
             )
     elif run_dir.exists() and any(run_dir.iterdir()) and resume:
         nontrivial = [
-            path for path in run_dir.iterdir() if path.name != "manifest.json"
+            path
+            for path in run_dir.iterdir()
+            if path.name != "manifest.json"
         ]
         if nontrivial and not latest_checkpoint.is_file():
             raise FileNotFoundError(
@@ -183,6 +211,8 @@ def run_one(
         profile=profile,
         seed=int(seed),
         device=resolved_device,
+        data_root=data_root,
+        results_root=results_root,
         total_steps=total_steps,
         schedule_steps=schedule_steps,
         warmup=warmup,
@@ -203,9 +233,15 @@ def run_one(
         start_step if start_step else None,
     )
     with (
-        metrics_path.open("a", newline="", encoding="utf-8") as metrics_handle,
+        metrics_path.open(
+            "a",
+            newline="",
+            encoding="utf-8",
+        ) as metrics_handle,
         epoch_metrics_path.open(
-            "a", newline="", encoding="utf-8"
+            "a",
+            newline="",
+            encoding="utf-8",
         ) as epoch_handle,
     ):
         best_validation_loss, best_validation_step, elapsed_total = (
@@ -233,11 +269,13 @@ def run_one(
                 train_generator=train_generator,
                 epoch_steps=epoch_steps,
                 metrics_writer=csv.DictWriter(
-                    metrics_handle, fieldnames=METRIC_FIELDS
+                    metrics_handle,
+                    fieldnames=METRIC_FIELDS,
                 ),
                 metrics_handle=metrics_handle,
                 epoch_writer=csv.DictWriter(
-                    epoch_handle, fieldnames=EPOCH_FIELDS
+                    epoch_handle,
+                    fieldnames=EPOCH_FIELDS,
                 ),
                 epoch_handle=epoch_handle,
                 run_dir=run_dir,
@@ -286,6 +324,7 @@ def run_one(
     )
     model.load_state_dict(final_state)
     model.to(resolved_device)
+    synchronize(resolved_device)
 
     test_results = {
         "policy": (
@@ -296,7 +335,11 @@ def run_one(
         "validation_selected": best_test,
     }
     (run_dir / "test_results.json").write_text(
-        json.dumps(test_results, indent=2, sort_keys=True),
+        json.dumps(
+            test_results,
+            indent=2,
+            sort_keys=True,
+        ),
         encoding="utf-8",
     )
     completion = {
@@ -318,12 +361,17 @@ def run_one(
     }
     temporary = run_dir / "run_complete.json.tmp"
     temporary.write_text(
-        json.dumps(completion, indent=2, sort_keys=True),
+        json.dumps(
+            completion,
+            indent=2,
+            sort_keys=True,
+        ),
         encoding="utf-8",
     )
     temporary.replace(completion_path)
     if progress:
         print(
-            f"[one-head-train] complete {optimizer_name} seed={seed}: {run_dir}"
+            f"[one-head-train] complete {optimizer_name} "
+            f"seed={seed}: {run_dir}"
         )
     return run_dir
