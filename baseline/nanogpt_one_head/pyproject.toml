@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rg-nanogpt-one-head"
-version = "0.2.0"
+version = "0.2.1"
 description = "Matched one-head nanoGPT optimizer baselines on pinned FineWeb-Edu"
 requires-python = ">=3.10"
 dependencies = [
@@ -34,6 +34,7 @@ tpu = [
 rg-onehead-prepare = "rg_nanogpt_one_head.data:main"
 rg-onehead-train = "rg_nanogpt_one_head.training:main"
 rg-onehead-env = "rg_nanogpt_one_head.runtime:main"
+rg-onehead-monitor = "rg_nanogpt_one_head.monitor:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
