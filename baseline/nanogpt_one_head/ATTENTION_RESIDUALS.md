@@ -10,7 +10,7 @@ The implementation provides one router before attention and one router before th
 
 ## What does not change
 
-The controlled comparison keeps the existing long-Muon baseline fixed:
+Every matched comparison keeps the existing one-head nanoGPT protocol fixed except for residual routing:
 
 - FineWeb-Edu sample and pinned revision
 - GPT-2 tokenizer
@@ -27,15 +27,64 @@ The controlled comparison keeps the existing long-Muon baseline fixed:
 
 AttnRes pseudo-query vectors are 1-D parameter tensors of length `n_embd`. They are deliberately excluded from `transformer_matrix_items()`, so WeightWatcher continues to analyze the same six matrices per block. Under Muon, the six 2-D hidden matrices remain in the Muon group while the AttnRes queries enter the auxiliary AdamW group.
 
-## Why keep one block first?
+## Command-line setup
 
-Full AttnRes becomes more expressive as depth increases. In a one-block transformer, the attention router initially has only the embedding output available, and the MLP router can select between the embedding and the attention-sublayer output. This is intentionally a conservative first experiment: it preserves the architecture, data exposure, token budget, and all six transformer matrices of the current baseline and therefore isolates the effect of residual routing as cleanly as possible. The only added trainable parameters are two length-128 pseudo-query vectors.
+From `baseline/nanogpt_one_head`:
 
-The model implementation itself is depth-ready and keeps one head at every depth. A later multi-block study can test the larger routing advantage without changing the AttnRes implementation.
+```bash
+python -m pip install -e .
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+```
 
-## Experiment 1: exact matched long-Muon comparison
+Prepare the pinned corpus once and reuse it for every standard/AttnRes comparison:
 
-Use the existing control:
+```bash
+rg-onehead-prepare --config configs/reference.yaml
+```
+
+All scientific runs use the same command-line trainer:
+
+```text
+rg-onehead-train
+```
+
+This preserves the existing checkpointing, restart, evaluation, WeightWatcher, MPS/CUDA/CPU/TPU device selection, and result layout.
+
+## Short run: exact one-epoch reference comparison
+
+This is the quickest clean comparison and uses all three canonical seeds by default.
+
+Standard residual control:
+
+```bash
+rg-onehead-train \
+  --config configs/reference.yaml \
+  --optimizer muon \
+  --data-root /tmp/rg-nanogpt-one-head/data \
+  --results-root /tmp/rg-nanogpt-short-standard/results \
+  --device auto \
+  --no-resume
+```
+
+AttnRes, with the same data, model dimensions, seeds, token budget, Muon hyperparameters, schedule, and probes:
+
+```bash
+rg-onehead-train \
+  --config configs/attnres_reference.yaml \
+  --optimizer muon \
+  --data-root /tmp/rg-nanogpt-one-head/data \
+  --results-root /tmp/rg-nanogpt-short-attnres/results \
+  --device auto \
+  --no-resume
+```
+
+For a fast pilot before committing to all three seeds, append `--seeds 1337` to both commands.
+
+## Long run A: exact matched historical 10-epoch comparison
+
+This preserves the existing validated one-epoch Muon warmup/cosine horizon and then holds the LR floors through epoch 10. It is the correct historical comparison because it changes only residual routing.
+
+Standard residual control:
 
 ```bash
 rg-onehead-train \
@@ -48,7 +97,7 @@ rg-onehead-train \
   --no-resume
 ```
 
-Run AttnRes with every training hyperparameter unchanged:
+Matched AttnRes:
 
 ```bash
 rg-onehead-train \
@@ -61,13 +110,9 @@ rg-onehead-train \
   --no-resume
 ```
 
-Use different results roots because run directories are keyed by optimizer and seed; the protocol fingerprint will correctly distinguish the model configurations but should not be forced to collide in one directory.
+## Long run B: convergence-oriented full-horizon cosine pair
 
-## Experiment 2: conservative full-horizon cosine pair
-
-The existing ten-epoch Muon repair uses a one-epoch cosine schedule followed by nine epochs at the LR floor. That is the correct matched historical control, but it is not the only plausible schedule for studying long-horizon convergence.
-
-The new `*_longcosine.yaml` pair is a deliberately conservative candidate, not an empirically proven optimum. It uses the same schedule for both residual architectures:
+The historical 10-epoch protocol spends epochs 1--10 at the LR floor. For a long run intended to continue optimizing rather than primarily observe late-horizon behavior, the `*_longcosine.yaml` pair uses a conservative learning-rate schedule across all ten epochs:
 
 ```text
 training horizon:       10 epochs
@@ -79,7 +124,9 @@ auxiliary floor LR:     0.00001
 warmup:                 1% of the 10-epoch schedule
 ```
 
-Run the standard-residual control:
+The lower Muon peak relative to the one-epoch reference reduces long-horizon instability risk, while the nonzero floor prevents the optimization from becoming effectively frozen. This is a convergence-oriented candidate rather than a claim that its hyperparameters are globally optimal; actual convergence must be established from validation trajectories.
+
+Standard residual control:
 
 ```bash
 rg-onehead-train \
@@ -92,7 +139,7 @@ rg-onehead-train \
   --no-resume
 ```
 
-Run the matched AttnRes model:
+Matched AttnRes:
 
 ```bash
 rg-onehead-train \
@@ -105,7 +152,13 @@ rg-onehead-train \
   --no-resume
 ```
 
-Do not interpret the long-cosine pair as an AttnRes gain unless it is compared against its matching standard-residual long-cosine control.
+Do not attribute a gain to AttnRes unless it appears against the matching standard-residual config at the same token/step budget.
+
+## Why keep one block first?
+
+Full AttnRes becomes more expressive as depth increases. In a one-block transformer, the attention router initially has only the embedding output available, and the MLP router can select between the embedding and the attention-sublayer output. This is intentionally conservative: it preserves the architecture, data exposure, token budget, and all six transformer matrices of the current baseline and therefore isolates the effect of residual routing as cleanly as possible. The only added trainable parameters are two length-128 pseudo-query vectors.
+
+The model implementation itself is depth-ready and keeps one head at every depth. A later multi-block study can test the larger routing advantage without changing the AttnRes implementation.
 
 ## Primary comparison metrics
 
@@ -120,4 +173,4 @@ For convergence speed, compare at matched optimizer steps and matched tokens:
 
 For the RG/WeightWatcher analysis, retain the existing per-matrix metrics for all six matrices and compare trajectories of alpha, randomization distance, ERG quantities, and spectral diagnostics. AttnRes routing weights can additionally be inspected with `model.attention_residual_weights()` without altering the WeightWatcher matrix set.
 
-The key causal question is not whether the AttnRes run ends with a better number after ten epochs, but whether it reaches the same validation-loss or accuracy threshold in fewer matched tokens while preserving or improving out-of-sample behavior.
+The key causal question is not whether the AttnRes run ends with a better number after a fixed horizon, but whether it reaches the same validation-loss or accuracy threshold in fewer matched tokens while preserving or improving out-of-sample behavior.
