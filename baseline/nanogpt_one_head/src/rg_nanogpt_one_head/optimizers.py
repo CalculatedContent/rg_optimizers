@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Iterable
+from typing import Any, Iterable
 
 import torch
 
@@ -33,10 +33,13 @@ def zeropower_via_newton_schulz_5(
     """Approximate the polar factor of a matrix update using Muon's quintic map.
 
     The calculation is deliberately performed in float32 for Apple-MPS
-    reliability, then converted back to the parameter dtype.
+    reliability and matched cross-accelerator numerics, then converted back to
+    the parameter dtype.
     """
     if update.ndim != 2:
-        raise ValueError(f"Muon requires a matrix update, got shape={tuple(update.shape)}")
+        raise ValueError(
+            f"Muon requires a matrix update, got shape={tuple(update.shape)}"
+        )
     if steps < 1 or eps <= 0:
         raise ValueError("steps and eps must be positive")
     original_dtype = update.dtype
@@ -113,7 +116,11 @@ class Muon(torch.optim.Optimizer):
                     steps=int(group["newton_schulz_steps"]),
                     eps=float(group["eps"]),
                 )
-                update.mul_(math.sqrt(max(1.0, parameter.shape[0] / parameter.shape[1])))
+                update.mul_(
+                    math.sqrt(
+                        max(1.0, parameter.shape[0] / parameter.shape[1])
+                    )
+                )
                 decay = float(group["weight_decay"])
                 if decay:
                     parameter.mul_(max(0.0, 1.0 - lr * decay))
@@ -138,7 +145,9 @@ def cosine_learning_rate(
         raise ValueError("update_index must be nonnegative")
     if warmup_steps and update_index < warmup_steps:
         return float(peak_lr) * (update_index + 1) / warmup_steps
-    progress = (update_index - warmup_steps) / max(1, total_steps - warmup_steps - 1)
+    progress = (update_index - warmup_steps) / max(
+        1, total_steps - warmup_steps - 1
+    )
     progress = min(1.0, max(0.0, progress))
     cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
     return float(min_lr) + cosine * (float(peak_lr) - float(min_lr))
@@ -211,10 +220,14 @@ def make_optimizer_handles(model, profile: dict) -> list[OptimizerHandle]:
     ]
     hidden_ids = {id(parameter) for parameter in hidden}
     auxiliary_named = [
-        (name, parameter) for name, parameter in named if id(parameter) not in hidden_ids
+        (name, parameter)
+        for name, parameter in named
+        if id(parameter) not in hidden_ids
     ]
     if not hidden or not auxiliary_named:
-        raise ValueError("Muon partition must contain both hidden matrices and auxiliary parameters")
+        raise ValueError(
+            "Muon partition must contain both hidden matrices and auxiliary parameters"
+        )
 
     muon = Muon(
         hidden,
@@ -282,8 +295,29 @@ def optimizer_state_dict(handles: list[OptimizerHandle]) -> list[dict]:
     return [handle.optimizer.state_dict() for handle in handles]
 
 
-def load_optimizer_state_dict(handles: list[OptimizerHandle], states: list[dict]) -> None:
+def _move_state_value(value: Any, device: torch.device) -> Any:
+    if torch.is_tensor(value):
+        return value.to(device)
+    if isinstance(value, dict):
+        return {key: _move_state_value(item, device) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_move_state_value(item, device) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_move_state_value(item, device) for item in value)
+    return value
+
+
+def load_optimizer_state_dict(
+    handles: list[OptimizerHandle],
+    states: list[dict],
+) -> None:
     if len(handles) != len(states):
         raise RuntimeError("optimizer-handle count changed across resume")
     for handle, state in zip(handles, states, strict=True):
         handle.optimizer.load_state_dict(state)
+        # Explicitly move custom Muon and built-in optimizer state to the
+        # corresponding parameter device after loading a portable CPU checkpoint.
+        for parameter, parameter_state in list(handle.optimizer.state.items()):
+            handle.optimizer.state[parameter] = _move_state_value(
+                parameter_state, parameter.device
+            )
