@@ -36,7 +36,10 @@ def random_batch(
     x = torch.stack(
         [
             torch.from_numpy(
-                np.asarray(data[start : start + block_size], dtype=np.int64)
+                np.asarray(
+                    data[start : start + block_size],
+                    dtype=np.int64,
+                )
             )
             for start in starts
         ]
@@ -133,6 +136,34 @@ def evaluate_probe(
 ) -> dict[str, float]:
     was_training = model.training
     model.eval()
+
+    if not is_xla_device(device):
+        # Preserve the historical CPU/CUDA/MPS metric path exactly. This keeps
+        # validation-checkpoint selection comparable to existing runs.
+        losses: list[float] = []
+        correct = 0
+        total = 0
+        for x_cpu, y_cpu in probe:
+            x = x_cpu.to(device)
+            y = y_cpu.to(device)
+            logits, loss = model(x, y)
+            if loss is None:
+                raise RuntimeError(
+                    "evaluation forward pass did not return loss"
+                )
+            losses.append(float(loss.detach().cpu()))
+            correct += int(
+                (logits.argmax(dim=-1) == y).sum().detach().cpu()
+            )
+            total += int(y.numel())
+        model.train(was_training)
+        mean_loss = float(np.mean(losses))
+        return {
+            "loss": mean_loss,
+            "perplexity": float(math.exp(min(20.0, mean_loss))),
+            "accuracy": correct / max(1, total),
+        }
+
     loss_sum = torch.zeros((), dtype=torch.float32, device=device)
     correct = torch.zeros((), dtype=torch.int64, device=device)
     total = 0
@@ -164,7 +195,14 @@ def evaluate_probe(
 
 
 def _cpu_bleu_model(model) -> nn.Module:
-    """Build a CPU copy when the live monitoring model is on TPU/XLA."""
+    """Build a CPU copy for BLEU when the live model is on TPU/XLA.
+
+    Greedy decoding changes sequence length at every token and would otherwise
+    trigger a series of XLA compilations. BLEU is monitoring-only, so the small
+    CPU copy avoids that accelerator-specific overhead without affecting
+    training, checkpoint selection, or WeightWatcher measurements.
+    """
+
     synchronize(model.lm_head.weight.device)
     cpu_model = type(model)(model.cfg).cpu()
     cpu_model.load_state_dict(tree_to_cpu(model.state_dict()))
@@ -181,11 +219,13 @@ def evaluate_bleu(
 ) -> dict[str, float]:
     """Greedy fixed-continuation BLEU diagnostic on held-out segments.
 
-    This is not a translation benchmark. On TPU/XLA, changing sequence lengths
-    would compile a different graph for every generated token, so this
-    monitoring-only diagnostic runs on a CPU snapshot. It cannot affect
-    optimization, scheduling, checkpoint selection, or WeightWatcher.
+    This is not a translation benchmark. It measures exact lexical overlap
+    between deterministic model continuations and the held-out continuation.
+    On TPU/XLA, decoding is intentionally performed on a CPU snapshot because
+    it is monitoring-only and its changing sequence lengths are a poor fit for
+    repeated XLA compilation.
     """
+
     try:
         import tiktoken
         from sacrebleu.metrics import BLEU
@@ -207,19 +247,24 @@ def evaluate_bleu(
     hypotheses: list[str] = []
     references: list[str] = []
     for start in range(0, len(probe.prompts), int(batch_size)):
-        prompts = probe.prompts[start : start + int(batch_size)].to(
-            evaluation_device
-        )
+        prompts = probe.prompts[
+            start : start + int(batch_size)
+        ].to(evaluation_device)
         generated = evaluation_model.generate_greedy(
             prompts,
             probe.continuation_tokens,
         )
         continuation = generated[
-            :, -probe.continuation_tokens :
+            :,
+            -probe.continuation_tokens :,
         ].detach().cpu()
-        reference_batch = probe.references[start : start + int(batch_size)]
+        reference_batch = probe.references[
+            start : start + int(batch_size)
+        ]
         for predicted_tokens, reference_tokens in zip(
-            continuation, reference_batch, strict=True
+            continuation,
+            reference_batch,
+            strict=True,
         ):
             hypotheses.append(encoder.decode(predicted_tokens.tolist()))
             references.append(encoder.decode(reference_tokens.tolist()))
