@@ -67,11 +67,11 @@ class RMSNorm(nn.Module):
 
 
 class DepthAttentionRouter(nn.Module):
-    """Full Attention Residuals router over preceding depth states.
+    """Full Attention Residuals router over preceding sublayer outputs.
 
-    Each routing point owns one learned pseudo-query vector. Previous residual
-    states are RMS-normalized to form keys while the unnormalized states remain
-    the values. Softmax is taken over depth, independently for every token.
+    Each routing point owns one learned pseudo-query vector. Previous outputs
+    are RMS-normalized to form keys while the unnormalized outputs remain the
+    values. Softmax is taken over depth, independently for every token.
     """
 
     def __init__(self, width: int) -> None:
@@ -82,7 +82,7 @@ class DepthAttentionRouter(nn.Module):
 
     def forward(self, states: list[torch.Tensor]) -> torch.Tensor:
         if not states:
-            raise ValueError("AttnRes requires at least one residual state")
+            raise ValueError("AttnRes requires at least one preceding output")
         values = torch.stack(states, dim=0)  # [depth, batch, time, width]
         keys = self.norm(values)
         logits = torch.einsum("d,nbtd->nbt", self.query, keys)
@@ -220,13 +220,16 @@ class Block(nn.Module):
         if self.attn_res_router is None or self.mlp_res_router is None:
             raise RuntimeError("forward_attnres called for a standard block")
 
+        # Full AttnRes replaces additive residual accumulation. Each sublayer
+        # attends over the embedding and all preceding sublayer outputs to form
+        # its input h_l, and only f_l(Norm(h_l)) is appended as the next value.
         attn_input = self.attn_res_router(states)
-        attn_state = attn_input + self.attn(self.ln1(attn_input))
-        states.append(attn_state)
+        attn_output = self.attn(self.ln1(attn_input))
+        states.append(attn_output)
 
         mlp_input = self.mlp_res_router(states)
-        mlp_state = mlp_input + self.mlp(self.ln2(mlp_input))
-        states.append(mlp_state)
+        mlp_output = self.mlp(self.ln2(mlp_input))
+        states.append(mlp_output)
         return states
 
 
@@ -273,10 +276,10 @@ class GPT(nn.Module):
             self.token_embedding(idx) + self.position_embedding(positions)
         )
         if self.cfg.residual_mode == "full_attnres":
-            residual_states = [x]
+            layer_outputs = [x]
             for block in self.blocks:
-                residual_states = block.forward_attnres(residual_states)
-            x = residual_states[-1]
+                layer_outputs = block.forward_attnres(layer_outputs)
+            x = layer_outputs[-1]
         else:
             for block in self.blocks:
                 x = block(x)
