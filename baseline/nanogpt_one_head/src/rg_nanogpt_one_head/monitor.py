@@ -61,7 +61,9 @@ def _read_csv(path: Path) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-def load_monitor_frames(run_dir: str | Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+def load_monitor_frames(
+    run_dir: str | Path,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     run_dir = Path(run_dir)
     metrics = _read_csv(run_dir / "metrics.csv")
     layers = _read_csv(run_dir / "spectral" / "layers.csv")
@@ -80,6 +82,13 @@ def _finite_summary(values: pd.Series) -> str:
     )
 
 
+def _format_table(frame: pd.DataFrame) -> str:
+    return frame.to_string(
+        index=False,
+        float_format=lambda value: f"{value:.4f}",
+    )
+
+
 def format_monitor_snapshot(
     run_dir: str | Path,
     metrics: pd.DataFrame,
@@ -94,10 +103,15 @@ def format_monitor_snapshot(
         lines.extend(["", "Waiting for metrics.csv..."])
     else:
         metrics = metrics.copy()
-        metrics["step"] = pd.to_numeric(metrics["step"], errors="coerce")
+        metrics["step"] = pd.to_numeric(
+            metrics["step"],
+            errors="coerce",
+        )
         metrics = metrics.dropna(subset=["step"]).sort_values("step")
         if metrics.empty:
-            lines.extend(["", "Waiting for a complete training-metric row..."])
+            lines.extend(
+                ["", "Waiting for a complete training-metric row..."]
+            )
         else:
             row = metrics.iloc[-1]
             lines.extend(
@@ -119,12 +133,17 @@ def format_monitor_snapshot(
         return "\n".join(lines)
 
     layers = layers.copy()
-    missing = [column for column in _LAYER_COLUMNS if column not in layers.columns]
+    missing = [
+        column
+        for column in _LAYER_COLUMNS
+        if column not in layers.columns
+    ]
     if missing:
         lines.extend(
             [
                 "",
-                "INCOMPATIBLE SPECTRAL OUTPUT: missing " + ", ".join(missing),
+                "INCOMPATIBLE SPECTRAL OUTPUT: missing "
+                + ", ".join(missing),
                 (
                     "rand_distance should be returned directly by WeightWatcher "
                     "when randomize=True."
@@ -135,7 +154,10 @@ def format_monitor_snapshot(
 
     for column in _NUMERIC_COLUMNS:
         if column in layers.columns:
-            layers[column] = pd.to_numeric(layers[column], errors="coerce")
+            layers[column] = pd.to_numeric(
+                layers[column],
+                errors="coerce",
+            )
     layers = layers.dropna(subset=["step"]).sort_values(
         ["step", "matrix_name"]
     )
@@ -156,10 +178,11 @@ def format_monitor_snapshot(
                 f"step={latest_step} epoch={latest_epoch:.3f}"
             ),
             "",
-            table.round(4).to_string(index=False),
+            _format_table(table),
             "",
             "ALPHA:         " + _finite_summary(latest["alpha"]),
-            "RAND_DISTANCE: " + _finite_summary(latest["rand_distance"]),
+            "RAND_DISTANCE: "
+            + _finite_summary(latest["rand_distance"]),
         ]
     )
 
@@ -179,7 +202,7 @@ def format_monitor_snapshot(
         [
             "",
             "RECENT SPECTRAL CHECKPOINT MEDIANS",
-            recent_frame.round(4).to_string(index=False),
+            _format_table(recent_frame),
         ]
     )
     return "\n".join(lines)
