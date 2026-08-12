@@ -86,7 +86,7 @@ optimizer_profiles:
     warmup_fraction: 0.0512
     schedule: warmup_cosine
     momentum: 0.95
-    nesterov: true
+    nesterov: false
     newton_schulz_steps: 5
     muon_epsilon: 1.0e-7
     weight_decay: 0.10
