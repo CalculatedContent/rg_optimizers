@@ -1,0 +1,103 @@
+protocol:
+  name: rg_nanogpt_one_head_attnres_reference
+  version: 5
+  description: Full Attention Residuals one-block, one-head nanoGPT matched exactly to the one-epoch FineWeb-Edu reference protocol except for residual routing.
+
+dataset:
+  name: HuggingFaceFW/fineweb-edu
+  config: sample-10BT
+  split: train
+  revision: 593b3a867298afb8ce42625a270ef20ddcad28f9
+  tokenizer: gpt2
+  train_tokens: 80000000
+  val_tokens: 1000000
+  test_tokens: 1000000
+
+model:
+  vocab_size: 50257
+  block_size: 256
+  n_layer: 1
+  n_head: 1
+  n_embd: 128
+  dropout: 0.0
+  bias: false
+  tie_weights: true
+  residual_mode: full_attnres
+
+training:
+  seeds: [1337, 2027, 4099]
+  batch_size: 4
+  grad_accum_steps: 8
+  target_epochs: 1.0
+  epoch_interval: 0.125
+  eval_interval_steps: 250
+  eval_batches: 64
+  checkpoint_interval_steps: 250
+  grad_clip: 1.0
+
+optimizer_profiles:
+  sgd_momentum:
+    display_name: SGD + Nesterov momentum
+    family: sgd
+    learning_rate: 0.05
+    min_learning_rate: 0.005
+    warmup_fraction: 0.10
+    schedule: warmup_cosine
+    momentum: 0.90
+    dampening: 0.0
+    nesterov: true
+    weight_decay: 0.01
+
+  adamw:
+    display_name: AdamW
+    family: adamw
+    learning_rate: 0.0006
+    min_learning_rate: 0.00006
+    warmup_fraction: 0.01
+    schedule: warmup_cosine
+    beta1: 0.90
+    beta2: 0.95
+    epsilon: 1.0e-8
+    weight_decay: 0.10
+
+  muon:
+    display_name: Muon + auxiliary AdamW
+    family: muon
+    matrix_learning_rate: 0.02
+    matrix_min_learning_rate: 0.002
+    aux_learning_rate: 0.0003
+    aux_min_learning_rate: 0.00003
+    warmup_fraction: 0.05
+    schedule: warmup_cosine
+    momentum: 0.95
+    nesterov: true
+    newton_schulz_steps: 5
+    muon_epsilon: 1.0e-7
+    matrix_weight_decay: 0.01
+    beta1: 0.90
+    beta2: 0.95
+    epsilon: 1.0e-8
+    aux_weight_decay: 0.01
+
+evaluation:
+  train_probe_seed: 21001
+  validation_probe_seed: 22001
+  test_probe_seed: 23001
+  bleu_probe_seed: 24001
+  bleu_examples: 64
+  bleu_prompt_tokens: 64
+  bleu_continuation_tokens: 32
+  bleu_batch_size: 4
+
+weightwatcher:
+  enabled: true
+  ERG: true
+  randomize: true
+  strict: true
+  min_evals: 20
+
+runtime:
+  matmul_precision: high
+  mps_fallback: true
+  deterministic_algorithms: false
+  empty_mps_cache_after_weightwatcher: true
