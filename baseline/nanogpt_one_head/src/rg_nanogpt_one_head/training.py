@@ -11,6 +11,21 @@ from .engine import run_one
 from .run_utils import run_directory, run_is_complete
 
 
+def _resolve_roots(
+    *,
+    data_root: str | Path | None,
+    results_root: str | Path | None,
+    device: str,
+) -> tuple[Path, Path]:
+    if data_root is not None and results_root is not None:
+        return Path(data_root), Path(results_root)
+    resolved = roots(device)
+    return (
+        Path(data_root) if data_root is not None else resolved["data"],
+        Path(results_root) if results_root is not None else resolved["results"],
+    )
+
+
 def run_optimizer_replicates(
     *,
     cfg: dict,
@@ -25,19 +40,22 @@ def run_optimizer_replicates(
     prepare_data: bool = True,
     progress: bool = True,
 ) -> list[Path]:
-    resolved = roots()
-    data_root = Path(data_root or resolved["data"])
-    results_root = Path(results_root or resolved["results"])
+    del config_path
+    data_path, results_path = _resolve_roots(
+        data_root=data_root,
+        results_root=results_root,
+        device=device,
+    )
     selected_seeds = tuple(int(seed) for seed in (seeds or canonical_seeds(cfg)))
     if prepare_data:
-        prepare_fineweb_edu(cfg, data_root)
+        prepare_fineweb_edu(cfg, data_path)
     run_dirs = []
     for seed in selected_seeds:
         run_dirs.append(
             run_one(
                 cfg=deepcopy(cfg),
-                data_root=data_root,
-                results_root=results_root,
+                data_root=data_path,
+                results_root=results_path,
                 optimizer_name=optimizer_name,
                 seed=seed,
                 device=device,
@@ -61,10 +79,12 @@ def run_all_replicates(
     overwrite: bool = False,
     progress: bool = True,
 ) -> list[Path]:
-    resolved = roots()
-    data_root = Path(data_root or resolved["data"])
-    results_root = Path(results_root or resolved["results"])
-    prepare_fineweb_edu(cfg, data_root)
+    data_path, results_path = _resolve_roots(
+        data_root=data_root,
+        results_root=results_root,
+        device=device,
+    )
+    prepare_fineweb_edu(cfg, data_path)
     outputs: list[Path] = []
     for optimizer_name in SUPPORTED_OPTIMIZERS:
         outputs.extend(
@@ -73,8 +93,8 @@ def run_all_replicates(
                 config_path=config_path,
                 optimizer_name=optimizer_name,
                 seeds=seeds,
-                data_root=data_root,
-                results_root=results_root,
+                data_root=data_path,
+                results_root=results_path,
                 device=device,
                 resume=resume,
                 overwrite=overwrite,
@@ -86,13 +106,26 @@ def run_all_replicates(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the one-head FineWeb-Edu optimizer baselines")
+    parser = argparse.ArgumentParser(
+        description="Run the one-head FineWeb-Edu optimizer baselines"
+    )
     parser.add_argument("--config", required=True)
-    parser.add_argument("--optimizer", choices=[*SUPPORTED_OPTIMIZERS, "all"], default="all")
-    parser.add_argument("--seeds", help="comma-separated seeds; default comes from the config")
+    parser.add_argument(
+        "--optimizer",
+        choices=[*SUPPORTED_OPTIMIZERS, "all"],
+        default="all",
+    )
+    parser.add_argument(
+        "--seeds",
+        help="comma-separated seeds; default comes from the config",
+    )
     parser.add_argument("--data-root")
     parser.add_argument("--results-root")
-    parser.add_argument("--device", default="auto")
+    parser.add_argument(
+        "--device",
+        choices=("auto", "tpu", "xla", "cuda", "mps", "cpu"),
+        default="auto",
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
@@ -102,28 +135,22 @@ def main() -> None:
         if args.seeds
         else canonical_seeds(cfg)
     )
+    common = dict(
+        cfg=cfg,
+        config_path=args.config,
+        seeds=seeds,
+        data_root=args.data_root,
+        results_root=args.results_root,
+        device=args.device,
+        resume=not args.no_resume,
+        overwrite=args.overwrite,
+    )
     if args.optimizer == "all":
-        run_all_replicates(
-            cfg=cfg,
-            config_path=args.config,
-            seeds=seeds,
-            data_root=args.data_root,
-            results_root=args.results_root,
-            device=args.device,
-            resume=not args.no_resume,
-            overwrite=args.overwrite,
-        )
+        run_all_replicates(**common)
     else:
         run_optimizer_replicates(
-            cfg=cfg,
-            config_path=args.config,
+            **common,
             optimizer_name=args.optimizer,
-            seeds=seeds,
-            data_root=args.data_root,
-            results_root=args.results_root,
-            device=args.device,
-            resume=not args.no_resume,
-            overwrite=args.overwrite,
         )
 
 
