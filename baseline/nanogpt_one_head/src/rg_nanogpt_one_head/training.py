@@ -10,6 +10,7 @@ import torch
 from .config import SUPPORTED_OPTIMIZERS, canonical_seeds, load_config, roots
 from .data import prepare_fineweb_edu
 from .engine import run_one
+from .run_utils import run_directory, run_is_complete
 from .runtime import choose_device
 
 
