@@ -18,12 +18,13 @@ class GPTConfig:
     dropout: float = 0.0
     bias: bool = False
     tie_weights: bool = True
+    residual_mode: str = "standard"
 
     def __post_init__(self) -> None:
-        if self.n_layer != 1 or self.n_head != 1:
+        if self.n_layer < 1 or self.n_head != 1:
             raise ValueError(
-                "the reference architecture is fixed to one block and one "
-                "attention head"
+                "the reference architecture requires at least one block and "
+                "exactly one attention head"
             )
         if self.n_embd % self.n_head != 0:
             raise ValueError("n_embd must be divisible by n_head")
@@ -31,6 +32,10 @@ class GPTConfig:
             raise ValueError("invalid GPT configuration")
         if not 0.0 <= self.dropout < 1.0:
             raise ValueError("dropout must be in [0, 1)")
+        if self.residual_mode not in {"standard", "full_attnres"}:
+            raise ValueError(
+                "residual_mode must be 'standard' or 'full_attnres'"
+            )
 
 
 class LayerNorm(nn.Module):
@@ -47,6 +52,44 @@ class LayerNorm(nn.Module):
             self.bias,
             1e-5,
         )
+
+
+class RMSNorm(nn.Module):
+    """Parameter-free RMS normalization used only for AttnRes routing keys."""
+
+    def __init__(self, eps: float = 1e-6) -> None:
+        super().__init__()
+        self.eps = float(eps)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        scale = torch.rsqrt(x.float().pow(2).mean(dim=-1, keepdim=True) + self.eps)
+        return x * scale.to(dtype=x.dtype)
+
+
+class DepthAttentionRouter(nn.Module):
+    """Full Attention Residuals router over preceding depth states.
+
+    Each routing point owns one learned pseudo-query vector. Previous residual
+    states are RMS-normalized to form keys while the unnormalized states remain
+    the values. Softmax is taken over depth, independently for every token.
+    """
+
+    def __init__(self, width: int) -> None:
+        super().__init__()
+        self.query = nn.Parameter(torch.zeros(width))
+        self.norm = RMSNorm()
+        self.last_mean_weights: torch.Tensor | None = None
+
+    def forward(self, states: list[torch.Tensor]) -> torch.Tensor:
+        if not states:
+            raise ValueError("AttnRes requires at least one residual state")
+        values = torch.stack(states, dim=0)  # [depth, batch, time, width]
+        keys = self.norm(values)
+        logits = torch.einsum("d,nbtd->nbt", self.query, keys)
+        weights = logits.softmax(dim=0)
+        if not torch.jit.is_scripting():
+            self.last_mean_weights = weights.detach().mean(dim=(1, 2)).cpu()
+        return torch.einsum("nbt,nbtd->btd", weights, values)
 
 
 class CausalSelfAttention(nn.Module):
@@ -110,9 +153,6 @@ class CausalSelfAttention(nn.Module):
         ).transpose(1, 2)
         dropout_p = self.dropout if self.training else 0.0
         if q.device.type == "xla":
-            # Use core matmul/mask/softmax operations on TPU. This avoids
-            # depending on accelerator-specific SDPA kernel registration while
-            # preserving the same causal attention equation.
             y = self._xla_math_attention(
                 q,
                 k,
@@ -150,14 +190,44 @@ class MLP(nn.Module):
 class Block(nn.Module):
     def __init__(self, cfg: GPTConfig) -> None:
         super().__init__()
+        self.residual_mode = cfg.residual_mode
         self.ln1 = LayerNorm(cfg.n_embd, cfg.bias)
         self.attn = CausalSelfAttention(cfg)
         self.ln2 = LayerNorm(cfg.n_embd, cfg.bias)
         self.mlp = MLP(cfg)
+        self.attn_res_router = (
+            DepthAttentionRouter(cfg.n_embd)
+            if cfg.residual_mode == "full_attnres"
+            else None
+        )
+        self.mlp_res_router = (
+            DepthAttentionRouter(cfg.n_embd)
+            if cfg.residual_mode == "full_attnres"
+            else None
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.residual_mode != "standard":
+            states = self.forward_attnres([x])
+            return states[-1]
         x = x + self.attn(self.ln1(x))
         return x + self.mlp(self.ln2(x))
+
+    def forward_attnres(
+        self,
+        states: list[torch.Tensor],
+    ) -> list[torch.Tensor]:
+        if self.attn_res_router is None or self.mlp_res_router is None:
+            raise RuntimeError("forward_attnres called for a standard block")
+
+        attn_input = self.attn_res_router(states)
+        attn_state = attn_input + self.attn(self.ln1(attn_input))
+        states.append(attn_state)
+
+        mlp_input = self.mlp_res_router(states)
+        mlp_state = mlp_input + self.mlp(self.ln2(mlp_input))
+        states.append(mlp_state)
+        return states
 
 
 class GPT(nn.Module):
@@ -202,8 +272,14 @@ class GPT(nn.Module):
         x = self.drop(
             self.token_embedding(idx) + self.position_embedding(positions)
         )
-        for block in self.blocks:
-            x = block(x)
+        if self.cfg.residual_mode == "full_attnres":
+            residual_states = [x]
+            for block in self.blocks:
+                residual_states = block.forward_attnres(residual_states)
+            x = residual_states[-1]
+        else:
+            for block in self.blocks:
+                x = block(x)
         return self.ln_f(x)
 
     def forward(
@@ -221,7 +297,6 @@ class GPT(nn.Module):
         return logits, loss
 
     def next_token_logits(self, idx: torch.Tensor) -> torch.Tensor:
-        # Apply the expensive vocabulary projection only to the final position.
         hidden = self.hidden_states(idx)[:, -1:, :]
         return self.lm_head(hidden)
 
@@ -249,11 +324,31 @@ class GPT(nn.Module):
     def parameter_count(self) -> int:
         return sum(parameter.numel() for parameter in self.parameters())
 
+    def attention_residual_weights(self) -> dict[str, list[float]]:
+        """Return the latest mean depth-routing weights for diagnostics."""
+        result: dict[str, list[float]] = {}
+        for block_index, block in enumerate(self.blocks):
+            for name, router in (
+                ("ATTN", block.attn_res_router),
+                ("MLP", block.mlp_res_router),
+            ):
+                if router is None or router.last_mean_weights is None:
+                    continue
+                result[f"L{block_index:02d}_{name}"] = [
+                    float(value) for value in router.last_mean_weights.tolist()
+                ]
+        return result
+
 
 def transformer_matrix_items(
     model: GPT,
 ) -> list[tuple[str, str, int, torch.Tensor]]:
-    """Return the six transformer matrices used by WeightWatcher and Muon."""
+    """Return Q/K/V/O and MLP matrices used by WeightWatcher and Muon.
+
+    AttnRes pseudo-query vectors are intentionally excluded: they are 1-D
+    routing parameters, not transformer weight matrices, and therefore remain
+    in the auxiliary optimizer group rather than being folded into Muon/WW.
+    """
     items: list[tuple[str, str, int, torch.Tensor]] = []
     for block_index, block in enumerate(model.blocks):
         matrices = (
