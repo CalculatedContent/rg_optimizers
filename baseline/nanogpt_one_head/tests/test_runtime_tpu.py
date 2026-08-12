@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import pytest
 import torch
+import torch.nn.functional as F
+
+
+EXPERIMENT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(EXPERIMENT_ROOT / "src"))
 
 import rg_nanogpt_one_head.runtime as runtime
+from rg_nanogpt_one_head.model import CausalSelfAttention, GPTConfig
 
 
 class FakeTorchXLA:
@@ -149,3 +156,43 @@ def test_cpu_tree_conversion_detaches_nested_tensors():
     assert converted["a"].requires_grad is False
     assert converted["b"][0].device.type == "cpu"
     assert converted["c"][0].device.type == "cpu"
+
+
+def test_resolved_device_is_accepted_without_redetection(monkeypatch):
+    monkeypatch.setattr(
+        runtime,
+        "is_tpu_environment",
+        lambda requested="auto": (_ for _ in ()).throw(
+            AssertionError("resolved device should not be redetected")
+        ),
+    )
+    device = torch.device("cpu")
+    assert runtime.choose_device(device) is device
+
+
+def test_tpu_math_attention_matches_reference_sdpa_on_cpu():
+    module = CausalSelfAttention(
+        GPTConfig(
+            vocab_size=64,
+            block_size=8,
+            n_layer=1,
+            n_head=1,
+            n_embd=16,
+            dropout=0.0,
+        )
+    )
+    generator = torch.Generator().manual_seed(11)
+    q = torch.randn(2, 1, 8, 16, generator=generator)
+    k = torch.randn(2, 1, 8, 16, generator=generator)
+    v = torch.randn(2, 1, 8, 16, generator=generator)
+
+    observed = module._xla_math_attention(q, k, v, dropout_p=0.0)
+    expected = F.scaled_dot_product_attention(
+        q,
+        k,
+        v,
+        dropout_p=0.0,
+        is_causal=True,
+    )
+
+    assert torch.allclose(observed, expected, atol=1e-6, rtol=1e-5)
