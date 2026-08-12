@@ -6,27 +6,187 @@ import json
 import math
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import yaml
 
+from .runtime import is_tpu_environment
+
 SUPPORTED_OPTIMIZERS = ("sgd_momentum", "adamw", "muon")
 DEFAULT_ROOT = Path("/tmp/rg-nanogpt-one-head")
+TPU_ROOT_ENV = "RG_NANOGPT_ONE_HEAD_TPU_ROOT"
+TPU_PERSISTENT_ENV = "RG_TPU_PERSISTENT_ROOT"
+TPU_EPHEMERAL_ENV = "RG_NANOGPT_ALLOW_EPHEMERAL_TPU_STORAGE"
+_TPU_MOUNT_PREFIXES = (
+    Path("/mnt/disks"),
+    Path("/mnt/hyperdisk"),
+    Path("/mnt/persistent"),
+)
 
 
-def roots() -> dict[str, Path]:
-    root = Path(os.environ.get("RG_NANOGPT_ONE_HEAD_ROOT", DEFAULT_ROOT))
+def _decode_mount_path(value: str) -> Path:
+    return Path(
+        value.replace("\\040", " ")
+        .replace("\\011", "\t")
+        .replace("\\012", "\n")
+        .replace("\\134", "\\")
+    )
+
+
+def _mounted_paths() -> tuple[Path, ...]:
+    path = Path("/proc/self/mountinfo")
+    if not path.is_file():
+        return ()
+    mounts: list[Path] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        fields = line.split()
+        if len(fields) >= 5:
+            mount = _decode_mount_path(fields[4])
+            if mount.is_absolute():
+                mounts.append(mount)
+    return tuple(dict.fromkeys(mounts))
+
+
+def _within(path: Path, parent: Path) -> bool:
+    try:
+        path.resolve(strict=False).relative_to(parent.resolve(strict=False))
+        return True
+    except ValueError:
+        return False
+
+
+def _is_tpu_persistent_mount(path: Path) -> bool:
+    return any(
+        _within(path, prefix) and path != prefix
+        for prefix in _TPU_MOUNT_PREFIXES
+    )
+
+
+def _rank_tpu_mount(path: Path) -> tuple[int, int, str]:
+    name = path.name.lower()
+    preference = 0
+    if "rg" in name:
+        preference -= 4
+    if "data" in name:
+        preference -= 2
+    if "persist" in name:
+        preference -= 1
+    return preference, len(path.parts), str(path)
+
+
+def _all_mounts(
+    mount_points: Iterable[Path] | None = None,
+) -> tuple[Path, ...]:
+    source = _mounted_paths() if mount_points is None else mount_points
+    return tuple(dict.fromkeys(Path(value) for value in source))
+
+
+def _tpu_mount_candidates(
+    mount_points: Iterable[Path] | None = None,
+) -> tuple[Path, ...]:
+    mounts = _all_mounts(mount_points)
+    candidates = [path for path in mounts if _is_tpu_persistent_mount(path)]
+    return tuple(sorted(dict.fromkeys(candidates), key=_rank_tpu_mount))
+
+
+def _allow_ephemeral_tpu_storage() -> bool:
+    return str(os.environ.get(TPU_EPHEMERAL_ENV, "")).lower() in {
+        "1", "true", "yes", "on"
+    }
+
+
+def _ensure_under_mount(
+    root: Path,
+    mounts: tuple[Path, ...],
+    *,
+    source: str,
+) -> Path:
+    excluded = (Path("/proc"), Path("/sys"), Path("/dev"), Path("/run"), Path("/boot"))
+    eligible = [
+        mount
+        for mount in mounts
+        if mount != Path("/")
+        and not any(mount == item or _within(mount, item) for item in excluded)
+    ]
+    if any(root == mount or _within(root, mount) for mount in eligible):
+        return root
+    if _allow_ephemeral_tpu_storage():
+        return root
+    raise RuntimeError(
+        f"{source}={root} is not located on a detected TPU persistent mount. "
+        "Mount Hyperdisk/Persistent Disk under /mnt/disks or set "
+        f"{TPU_EPHEMERAL_ENV}=1 only for a disposable smoke test."
+    )
+
+
+def _default_tpu_root(
+    mount_points: Iterable[Path] | None = None,
+) -> Path:
+    all_mounts = _all_mounts(mount_points)
+    candidates = _tpu_mount_candidates(all_mounts)
+
+    exact = os.environ.get(TPU_ROOT_ENV)
+    if exact:
+        return _ensure_under_mount(Path(exact), all_mounts, source=TPU_ROOT_ENV)
+
+    persistent = os.environ.get(TPU_PERSISTENT_ENV)
+    if persistent:
+        return _ensure_under_mount(
+            Path(persistent) / "rg-nanogpt-one-head",
+            all_mounts,
+            source=TPU_PERSISTENT_ENV,
+        )
+
+    if candidates:
+        return candidates[0] / "rg-nanogpt-one-head"
+    if _allow_ephemeral_tpu_storage():
+        return DEFAULT_ROOT
+    raise RuntimeError(
+        "A TPU environment was detected, but no persistent data volume was "
+        "found. Attach and mount Hyperdisk/Persistent Disk under /mnt/disks, "
+        f"or set {TPU_PERSISTENT_ENV} to the mounted volume. Use "
+        f"{TPU_EPHEMERAL_ENV}=1 only for a disposable smoke test."
+    )
+
+
+def roots(
+    device: str = "auto",
+    *,
+    mount_points: Iterable[Path] | None = None,
+) -> dict[str, Path]:
+    root_override = os.environ.get("RG_NANOGPT_ONE_HEAD_ROOT")
+    data_override = os.environ.get("RG_NANOGPT_ONE_HEAD_DATA_ROOT")
+    results_override = os.environ.get("RG_NANOGPT_ONE_HEAD_RESULTS_ROOT")
+    plots_override = os.environ.get("RG_NANOGPT_ONE_HEAD_PLOTS_ROOT")
+    tpu_environment = is_tpu_environment(device)
+    all_mounts = _all_mounts(mount_points) if tpu_environment else ()
+
+    if root_override:
+        root = Path(root_override)
+        if tpu_environment:
+            root = _ensure_under_mount(
+                root,
+                all_mounts,
+                source="RG_NANOGPT_ONE_HEAD_ROOT",
+            )
+    elif data_override and results_override:
+        # Exact per-purpose paths are an intentional advanced override and may
+        # use an organization-specific bind mount outside the conventional TPU
+        # mount prefixes.
+        try:
+            root = Path(os.path.commonpath([data_override, results_override]))
+        except ValueError:
+            root = Path(results_override).parent
+    elif tpu_environment:
+        root = _default_tpu_root(all_mounts)
+    else:
+        root = DEFAULT_ROOT
+
     return {
         "root": root,
-        "data": Path(
-            os.environ.get("RG_NANOGPT_ONE_HEAD_DATA_ROOT", root / "data")
-        ),
-        "results": Path(
-            os.environ.get("RG_NANOGPT_ONE_HEAD_RESULTS_ROOT", root / "results")
-        ),
-        "plots": Path(
-            os.environ.get("RG_NANOGPT_ONE_HEAD_PLOTS_ROOT", root / "plots")
-        ),
+        "data": Path(data_override) if data_override else root / "data",
+        "results": Path(results_override) if results_override else root / "results",
+        "plots": Path(plots_override) if plots_override else root / "plots",
     }
 
 
@@ -42,21 +202,14 @@ def load_config(path: str | Path) -> dict[str, Any]:
 
 def validate_config(cfg: dict[str, Any]) -> None:
     required_sections = (
-        "protocol",
-        "dataset",
-        "model",
-        "training",
-        "optimizer_profiles",
-        "evaluation",
-        "weightwatcher",
-        "runtime",
+        "protocol", "dataset", "model", "training", "optimizer_profiles",
+        "evaluation", "weightwatcher", "runtime",
     )
     for section in required_sections:
         if section not in cfg:
             raise ValueError(f"missing configuration section: {section}")
 
-    protocol = cfg["protocol"]
-    if int(protocol.get("version", 0)) < 1:
+    if int(cfg["protocol"].get("version", 0)) < 1:
         raise ValueError("protocol.version must be positive")
 
     model = cfg["model"]
@@ -64,13 +217,9 @@ def validate_config(cfg: dict[str, Any]) -> None:
         if int(model[key]) < 1:
             raise ValueError(f"model.{key} must be positive")
     if int(model["n_head"]) != 1:
-        raise ValueError(
-            "this experiment is intentionally fixed to exactly one attention head"
-        )
+        raise ValueError("this experiment is fixed to exactly one attention head")
     if int(model["n_layer"]) != 1:
-        raise ValueError(
-            "this experiment is intentionally fixed to one transformer block"
-        )
+        raise ValueError("this experiment is fixed to one transformer block")
     if int(model["n_embd"]) % int(model["n_head"]) != 0:
         raise ValueError("model.n_embd must be divisible by model.n_head")
     if not 0.0 <= float(model.get("dropout", 0.0)) < 1.0:
@@ -79,18 +228,12 @@ def validate_config(cfg: dict[str, Any]) -> None:
     dataset = cfg["dataset"]
     for key in ("train_tokens", "val_tokens", "test_tokens"):
         if int(dataset[key]) <= int(model["block_size"]) + 1:
-            raise ValueError(
-                f"dataset.{key} is too small for the configured context length"
-            )
+            raise ValueError(f"dataset.{key} is too small for the context length")
 
     training = cfg["training"]
     for key in (
-        "batch_size",
-        "grad_accum_steps",
-        "target_epochs",
-        "eval_interval_steps",
-        "eval_batches",
-        "checkpoint_interval_steps",
+        "batch_size", "grad_accum_steps", "target_epochs",
+        "eval_interval_steps", "eval_batches", "checkpoint_interval_steps",
         "epoch_interval",
     ):
         if float(training[key]) <= 0:
@@ -117,9 +260,7 @@ def validate_config(cfg: dict[str, Any]) -> None:
 
     evaluation = cfg["evaluation"]
     for key in (
-        "bleu_examples",
-        "bleu_prompt_tokens",
-        "bleu_continuation_tokens",
+        "bleu_examples", "bleu_prompt_tokens", "bleu_continuation_tokens",
         "bleu_batch_size",
     ):
         if int(evaluation[key]) < 1:
@@ -129,23 +270,16 @@ def validate_config(cfg: dict[str, Any]) -> None:
         + int(evaluation["bleu_continuation_tokens"])
         > int(model["block_size"])
     ):
-        raise ValueError(
-            "BLEU prompt plus continuation must fit inside model.block_size"
-        )
+        raise ValueError("BLEU prompt plus continuation exceeds context length")
 
-    probe_seed_keys = (
-        "train_probe_seed",
-        "validation_probe_seed",
-        "test_probe_seed",
+    probe_keys = (
+        "train_probe_seed", "validation_probe_seed", "test_probe_seed",
         "bleu_probe_seed",
     )
     probe_seeds = []
-    for key in probe_seed_keys:
+    for key in probe_keys:
         if key not in evaluation:
-            raise ValueError(
-                f"evaluation.{key} is required so every optimizer and model seed "
-                "uses the same fixed evaluation examples"
-            )
+            raise ValueError(f"evaluation.{key} is required")
         value = int(evaluation[key])
         if value < 0:
             raise ValueError(f"evaluation.{key} must be nonnegative")
@@ -155,13 +289,9 @@ def validate_config(cfg: dict[str, Any]) -> None:
 
     ww = cfg["weightwatcher"]
     if not bool(ww.get("ERG", False)):
-        raise ValueError(
-            "WeightWatcher ERG must be enabled for this reference experiment"
-        )
+        raise ValueError("WeightWatcher ERG must be enabled")
     if not bool(ww.get("randomize", False)):
-        raise ValueError(
-            "WeightWatcher randomize must be enabled to obtain num_traps"
-        )
+        raise ValueError("WeightWatcher randomize must be enabled")
     if int(ww["min_evals"]) < 5:
         raise ValueError("weightwatcher.min_evals must be at least 5")
 
@@ -175,10 +305,7 @@ def validate_optimizer_profile(profile: dict[str, Any]) -> None:
         raise ValueError("warmup_fraction must be in [0, 1)")
     if str(profile.get("schedule")) != "warmup_cosine":
         raise ValueError("the reference suite requires warmup_cosine schedules")
-    if (
-        "lr_schedule_epochs" in profile
-        and float(profile["lr_schedule_epochs"]) <= 0
-    ):
+    if "lr_schedule_epochs" in profile and float(profile["lr_schedule_epochs"]) <= 0:
         raise ValueError("lr_schedule_epochs must be positive")
 
     if family in {"sgd", "adamw"}:
@@ -194,9 +321,7 @@ def validate_optimizer_profile(profile: dict[str, Any]) -> None:
             peak = float(profile[peak_key])
             floor = float(profile[floor_key])
             if peak <= 0 or floor < 0 or floor > peak:
-                raise ValueError(
-                    f"Muon {peak_key}/{floor_key} values are inconsistent"
-                )
+                raise ValueError(f"Muon {peak_key}/{floor_key} values are inconsistent")
         if int(profile["newton_schulz_steps"]) < 1:
             raise ValueError("Muon newton_schulz_steps must be positive")
 
@@ -225,22 +350,14 @@ def tokens_per_step(cfg: dict[str, Any]) -> int:
     )
 
 
-def _steps_for_epochs(
-    cfg: dict[str, Any],
-    epochs: float,
-    train_tokens: int,
-) -> int:
+def _steps_for_epochs(cfg: dict[str, Any], epochs: float, train_tokens: int) -> int:
     target_tokens = float(epochs) * int(train_tokens)
     return max(1, int(math.ceil(target_tokens / tokens_per_step(cfg))))
 
 
 def max_steps(cfg: dict[str, Any], train_tokens: int | None = None) -> int:
     train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
-    return _steps_for_epochs(
-        cfg,
-        float(cfg["training"]["target_epochs"]),
-        train_tokens,
-    )
+    return _steps_for_epochs(cfg, float(cfg["training"]["target_epochs"]), train_tokens)
 
 
 def lr_schedule_steps(
@@ -249,14 +366,12 @@ def lr_schedule_steps(
     train_tokens: int | None = None,
 ) -> int:
     """Return the LR horizon, which may be shorter than training."""
-
     train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
     training_epochs = float(cfg["training"]["target_epochs"])
     schedule_epochs = float(profile.get("lr_schedule_epochs", training_epochs))
     if not 0 < schedule_epochs <= training_epochs:
         raise ValueError(
-            "lr_schedule_epochs must be positive and cannot exceed "
-            "training.target_epochs"
+            "lr_schedule_epochs must be positive and cannot exceed training.target_epochs"
         )
     return min(
         max_steps(cfg, train_tokens),
@@ -269,22 +384,15 @@ def warmup_steps(profile: dict[str, Any], schedule_steps: int) -> int:
         return 0
     return min(
         schedule_steps - 1,
-        max(
-            1,
-            int(
-                round(
-                    schedule_steps * float(profile["warmup_fraction"])
-                )
-            ),
-        ),
+        max(1, int(round(schedule_steps * float(profile["warmup_fraction"])))),
     )
 
 
 def epoch_step_map(
-    cfg: dict[str, Any], train_tokens: int | None = None
+    cfg: dict[str, Any],
+    train_tokens: int | None = None,
 ) -> dict[int, float]:
-    """Map preregistered nominal epochs, including epoch zero, to optimizer steps."""
-
+    """Map preregistered nominal epochs, including epoch zero, to steps."""
     train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
     total_steps = max_steps(cfg, train_tokens)
     step_tokens = tokens_per_step(cfg)
@@ -303,14 +411,10 @@ def epoch_step_map(
         if epoch == 0:
             step = 0
         elif math.isclose(epoch, target_epochs, rel_tol=0.0, abs_tol=1e-12):
-            # The optimizer budget uses ceil rounding. Map the final nominal
-            # epoch to that exact terminal step instead of creating a duplicate
-            # near-terminal checkpoint one step earlier.
             step = total_steps
         else:
             step = int(round(epoch * train_tokens / step_tokens))
-        step = min(total_steps, max(0, step))
-        result[step] = float(epoch)
+        result[min(total_steps, max(0, step))] = float(epoch)
     result[total_steps] = target_epochs
     return dict(sorted(result.items()))
 
@@ -334,10 +438,5 @@ def protocol_fingerprint(
         "seed": int(seed),
         "data_metadata": data_metadata,
     }
-    canonical = json.dumps(
-        payload,
-        sort_keys=True,
-        separators=(",", ":"),
-        default=str,
-    )
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()

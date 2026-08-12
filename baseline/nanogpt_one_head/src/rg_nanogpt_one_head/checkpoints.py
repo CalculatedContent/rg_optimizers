@@ -12,6 +12,13 @@ from .optimizers import (
     load_optimizer_state_dict,
     optimizer_state_dict,
 )
+from .runtime import (
+    capture_accelerator_rng_state,
+    model_device,
+    restore_accelerator_rng_state,
+    synchronize,
+    tree_to_cpu,
+)
 
 
 def _atomic_torch_save(payload: dict[str, Any], path: Path) -> Path:
@@ -20,31 +27,6 @@ def _atomic_torch_save(payload: dict[str, Any], path: Path) -> Path:
     torch.save(payload, temporary)
     temporary.replace(path)
     return path
-
-
-def _capture_accelerator_rng_state() -> dict[str, Any]:
-    state: dict[str, Any] = {}
-    if torch.cuda.is_available():
-        state["cuda_random_state_all"] = torch.cuda.get_rng_state_all()
-    if (
-        hasattr(torch, "mps")
-        and hasattr(torch.mps, "get_rng_state")
-        and torch.backends.mps.is_available()
-    ):
-        state["mps_random_state"] = torch.mps.get_rng_state()
-    return state
-
-
-def _restore_accelerator_rng_state(payload: dict[str, Any]) -> None:
-    if torch.cuda.is_available() and "cuda_random_state_all" in payload:
-        torch.cuda.set_rng_state_all(payload["cuda_random_state_all"])
-    if (
-        "mps_random_state" in payload
-        and hasattr(torch, "mps")
-        and hasattr(torch.mps, "set_rng_state")
-        and torch.backends.mps.is_available()
-    ):
-        torch.mps.set_rng_state(payload["mps_random_state"])
 
 
 def save_training_checkpoint(
@@ -62,10 +44,14 @@ def save_training_checkpoint(
     seed: int,
     train_generator: torch.Generator,
 ) -> Path:
+    device = model_device(model)
+    synchronize(device)
     payload: dict[str, Any] = {
-        "schema_version": 2,
-        "model": model.state_dict(),
-        "optimizers": optimizer_state_dict(handles),
+        "schema_version": 3,
+        # Always serialize CPU tensors so checkpoints are portable between
+        # MPS, CUDA, TPU/XLA, and CPU environments.
+        "model": tree_to_cpu(model.state_dict()),
+        "optimizers": tree_to_cpu(optimizer_state_dict(handles)),
         "step": int(step),
         "best_validation_loss": float(best_validation_loss),
         "best_validation_step": int(best_validation_step),
@@ -78,7 +64,7 @@ def save_training_checkpoint(
         "numpy_random_state": np.random.get_state(),
         "torch_random_state": torch.random.get_rng_state(),
         "train_generator_state": train_generator.get_state(),
-        **_capture_accelerator_rng_state(),
+        **capture_accelerator_rng_state(device),
     }
     return _atomic_torch_save(payload, Path(path))
 
@@ -103,7 +89,7 @@ def load_training_checkpoint(
     np.random.set_state(payload["numpy_random_state"])
     torch.random.set_rng_state(payload["torch_random_state"])
     train_generator.set_state(payload["train_generator_state"])
-    _restore_accelerator_rng_state(payload)
+    restore_accelerator_rng_state(payload, model_device(model))
     return (
         int(payload["step"]),
         float(payload["best_validation_loss"]),
@@ -130,9 +116,11 @@ def save_epoch_model_checkpoint(
         / "epoch_checkpoints"
         / f"model_epoch_{epoch_text}_step_{int(step):07d}.pt"
     )
+    device = model_device(model)
+    synchronize(device)
     payload = {
-        "schema_version": 1,
-        "model": model.state_dict(),
+        "schema_version": 2,
+        "model": tree_to_cpu(model.state_dict()),
         "step": int(step),
         "nominal_epoch": float(nominal_epoch),
         "actual_epoch": float(actual_epoch),

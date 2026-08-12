@@ -21,7 +21,10 @@ class GPTConfig:
 
     def __post_init__(self) -> None:
         if self.n_layer != 1 or self.n_head != 1:
-            raise ValueError("the reference architecture is fixed to one block and one attention head")
+            raise ValueError(
+                "the reference architecture is fixed to one block and one "
+                "attention head"
+            )
         if self.n_embd % self.n_head != 0:
             raise ValueError("n_embd must be divisible by n_head")
         if self.block_size < 2 or self.vocab_size < 2 or self.n_embd < 1:
@@ -37,7 +40,13 @@ class LayerNorm(nn.Module):
         self.bias = nn.Parameter(torch.zeros(width)) if bias else None
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return F.layer_norm(x, self.weight.shape, self.weight, self.bias, 1e-5)
+        return F.layer_norm(
+            x,
+            self.weight.shape,
+            self.weight,
+            self.bias,
+            1e-5,
+        )
 
 
 class CausalSelfAttention(nn.Module):
@@ -51,22 +60,77 @@ class CausalSelfAttention(nn.Module):
         self.v_proj = nn.Linear(cfg.n_embd, cfg.n_embd, bias=cfg.bias)
         self.out_proj = nn.Linear(cfg.n_embd, cfg.n_embd, bias=cfg.bias)
         self.resid_dropout = nn.Dropout(cfg.dropout)
+        self.register_buffer(
+            "causal_mask",
+            torch.ones(
+                cfg.block_size,
+                cfg.block_size,
+                dtype=torch.bool,
+            ).tril().view(1, 1, cfg.block_size, cfg.block_size),
+            persistent=False,
+        )
+
+    def _xla_math_attention(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        *,
+        dropout_p: float,
+    ) -> torch.Tensor:
+        """TPU-safe mathematical SDPA using core XLA tensor operations."""
+        sequence = q.shape[-2]
+        scale = 1.0 / math.sqrt(q.shape[-1])
+        scores = (q @ k.transpose(-2, -1)) * scale
+        mask = self.causal_mask[:, :, :sequence, :sequence]
+        scores = scores.masked_fill(
+            ~mask,
+            torch.finfo(scores.dtype).min,
+        )
+        probabilities = F.softmax(scores, dim=-1)
+        if dropout_p:
+            probabilities = F.dropout(
+                probabilities,
+                p=dropout_p,
+                training=True,
+            )
+        return probabilities @ v
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         batch, sequence, channels = x.shape
         head_width = channels // self.n_head
-        q = self.q_proj(x).view(batch, sequence, self.n_head, head_width).transpose(1, 2)
-        k = self.k_proj(x).view(batch, sequence, self.n_head, head_width).transpose(1, 2)
-        v = self.v_proj(x).view(batch, sequence, self.n_head, head_width).transpose(1, 2)
-        y = F.scaled_dot_product_attention(
-            q,
-            k,
-            v,
-            attn_mask=None,
-            dropout_p=self.dropout if self.training else 0.0,
-            is_causal=True,
+        q = self.q_proj(x).view(
+            batch, sequence, self.n_head, head_width
+        ).transpose(1, 2)
+        k = self.k_proj(x).view(
+            batch, sequence, self.n_head, head_width
+        ).transpose(1, 2)
+        v = self.v_proj(x).view(
+            batch, sequence, self.n_head, head_width
+        ).transpose(1, 2)
+        dropout_p = self.dropout if self.training else 0.0
+        if q.device.type == "xla":
+            # Use core matmul/mask/softmax operations on TPU. This avoids
+            # depending on accelerator-specific SDPA kernel registration while
+            # preserving the same causal attention equation.
+            y = self._xla_math_attention(
+                q,
+                k,
+                v,
+                dropout_p=dropout_p,
+            )
+        else:
+            y = F.scaled_dot_product_attention(
+                q,
+                k,
+                v,
+                attn_mask=None,
+                dropout_p=dropout_p,
+                is_causal=True,
+            )
+        y = y.transpose(1, 2).contiguous().view(
+            batch, sequence, channels
         )
-        y = y.transpose(1, 2).contiguous().view(batch, sequence, channels)
         return self.resid_dropout(self.out_proj(y))
 
 
@@ -78,7 +142,9 @@ class MLP(nn.Module):
         self.dropout = nn.Dropout(cfg.dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.dropout(self.proj(F.gelu(self.fc(x), approximate="tanh")))
+        return self.dropout(
+            self.proj(F.gelu(self.fc(x), approximate="tanh"))
+        )
 
 
 class Block(nn.Module):
@@ -110,8 +176,16 @@ class GPT(nn.Module):
         self.apply(self._init_module)
         residual_std = 0.02 / math.sqrt(2 * cfg.n_layer)
         for block in self.blocks:
-            nn.init.normal_(block.attn.out_proj.weight, mean=0.0, std=residual_std)
-            nn.init.normal_(block.mlp.proj.weight, mean=0.0, std=residual_std)
+            nn.init.normal_(
+                block.attn.out_proj.weight,
+                mean=0.0,
+                std=residual_std,
+            )
+            nn.init.normal_(
+                block.mlp.proj.weight,
+                mean=0.0,
+                std=residual_std,
+            )
 
     @staticmethod
     def _init_module(module: nn.Module) -> None:
@@ -125,7 +199,9 @@ class GPT(nn.Module):
         if sequence > self.cfg.block_size:
             raise ValueError("input sequence exceeds model.block_size")
         positions = torch.arange(sequence, device=idx.device)
-        x = self.drop(self.token_embedding(idx) + self.position_embedding(positions))
+        x = self.drop(
+            self.token_embedding(idx) + self.position_embedding(positions)
+        )
         for block in self.blocks:
             x = block(x)
         return self.ln_f(x)
@@ -138,7 +214,10 @@ class GPT(nn.Module):
         logits = self.lm_head(self.hidden_states(idx))
         loss = None
         if targets is not None:
-            loss = F.cross_entropy(logits.reshape(-1, logits.size(-1)), targets.reshape(-1))
+            loss = F.cross_entropy(
+                logits.reshape(-1, logits.size(-1)),
+                targets.reshape(-1),
+            )
         return logits, loss
 
     def next_token_logits(self, idx: torch.Tensor) -> torch.Tensor:
@@ -147,7 +226,11 @@ class GPT(nn.Module):
         return self.lm_head(hidden)
 
     @torch.inference_mode()
-    def generate_greedy(self, prompts: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
+    def generate_greedy(
+        self,
+        prompts: torch.Tensor,
+        max_new_tokens: int,
+    ) -> torch.Tensor:
         if prompts.ndim != 2:
             raise ValueError("prompts must be [batch, sequence]")
         if max_new_tokens < 0:
@@ -156,7 +239,10 @@ class GPT(nn.Module):
         for _ in range(int(max_new_tokens)):
             idx_cond = idx[:, -self.cfg.block_size :]
             logits = self.next_token_logits(idx_cond)
-            next_token = logits[:, -1, :].argmax(dim=-1, keepdim=True)
+            next_token = logits[:, -1, :].argmax(
+                dim=-1,
+                keepdim=True,
+            )
             idx = torch.cat((idx, next_token), dim=1)
         return idx
 
@@ -179,5 +265,12 @@ def transformer_matrix_items(
             ("W_MLP_OUT", block.mlp.proj.weight),
         )
         for matrix_type, weight in matrices:
-            items.append((f"L{block_index:02d}_{matrix_type}", matrix_type, block_index, weight))
+            items.append(
+                (
+                    f"L{block_index:02d}_{matrix_type}",
+                    matrix_type,
+                    block_index,
+                    weight,
+                )
+            )
     return items

@@ -14,6 +14,7 @@ from .completion import (
 from .config import tokens_per_step
 from .evaluation import evaluate_bleu, evaluate_probe
 from .model import GPT
+from .runtime import runtime_metadata
 
 METRIC_FIELDS = [
     "step", "tokens_seen", "epoch", "elapsed_sec", "tokens_per_sec",
@@ -26,15 +27,26 @@ METRIC_FIELDS = [
     "mps_current_allocated_mb", "mps_driver_allocated_mb",
 ]
 EPOCH_FIELDS = [
-    *METRIC_FIELDS, "nominal_epoch", "checkpoint_path", "test_monitoring_only"
+    *METRIC_FIELDS,
+    "nominal_epoch",
+    "checkpoint_path",
+    "test_monitoring_only",
 ]
 
 
-def run_directory(results_root: str | Path, optimizer: str, seed: int) -> Path:
+def run_directory(
+    results_root: str | Path,
+    optimizer: str,
+    seed: int,
+) -> Path:
     return Path(results_root) / str(optimizer) / f"seed_{int(seed)}"
 
 
-def run_is_complete(results_root: str | Path, optimizer: str, seed: int) -> bool:
+def run_is_complete(
+    results_root: str | Path,
+    optimizer: str,
+    seed: int,
+) -> bool:
     run_dir = run_directory(results_root, optimizer, seed)
     try:
         validate_completed_run(
@@ -48,12 +60,22 @@ def run_is_complete(results_root: str | Path, optimizer: str, seed: int) -> bool
     return True
 
 
-def prepare_csv(path: Path, fields: list[str], resume_step: int | None) -> None:
+def prepare_csv(
+    path: Path,
+    fields: list[str],
+    resume_step: int | None,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.is_file() and resume_step is not None:
         frame = pd.read_csv(path)
         if "step" in frame.columns:
-            frame = frame[pd.to_numeric(frame["step"], errors="coerce") < int(resume_step)]
+            frame = frame[
+                pd.to_numeric(
+                    frame["step"],
+                    errors="coerce",
+                )
+                < int(resume_step)
+            ]
         temporary = path.with_suffix(path.suffix + ".tmp")
         frame.to_csv(temporary, index=False)
         temporary.replace(path)
@@ -62,14 +84,23 @@ def prepare_csv(path: Path, fields: list[str], resume_step: int | None) -> None:
             csv.DictWriter(handle, fieldnames=fields).writeheader()
 
 
-def truncate_spectral_after(run_dir: Path, resume_step: int) -> None:
+def truncate_spectral_after(
+    run_dir: Path,
+    resume_step: int,
+) -> None:
     spectral_root = run_dir / "spectral"
     for filename in ("layers.csv", "summary.csv"):
         path = spectral_root / filename
         if path.is_file():
             frame = pd.read_csv(path)
             if "step" in frame.columns:
-                frame = frame[pd.to_numeric(frame["step"], errors="coerce") < int(resume_step)]
+                frame = frame[
+                    pd.to_numeric(
+                        frame["step"],
+                        errors="coerce",
+                    )
+                    < int(resume_step)
+                ]
             temporary = path.with_suffix(path.suffix + ".tmp")
             frame.to_csv(temporary, index=False)
             temporary.replace(path)
@@ -100,6 +131,8 @@ def write_manifest(
     profile: dict,
     seed: int,
     device: torch.device,
+    data_root: str | Path,
+    results_root: str | Path,
     total_steps: int,
     schedule_steps: int,
     warmup: int,
@@ -107,12 +140,18 @@ def write_manifest(
     model: GPT,
 ) -> None:
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "protocol": cfg["protocol"],
         "optimizer": optimizer_name,
         "optimizer_profile": profile,
         "seed": int(seed),
         "device": str(device),
+        "runtime_environment": runtime_metadata(device),
+        "storage": {
+            "data_root": str(Path(data_root)),
+            "results_root": str(Path(results_root)),
+            "run_dir": str(Path(run_dir)),
+        },
         "torch_version": torch.__version__,
         "model": cfg["model"],
         "parameter_count": model.parameter_count(),
@@ -124,14 +163,28 @@ def write_manifest(
         "max_steps": int(total_steps),
         "lr_schedule_steps": int(schedule_steps),
         "warmup_steps": int(warmup),
-        "planned_training_tokens": int(total_steps * tokens_per_step(cfg)),
+        "planned_training_tokens": int(
+            total_steps * tokens_per_step(cfg)
+        ),
         "protocol_fingerprint": fingerprint,
-        "test_policy": "fixed test probes are monitoring-only and never select checkpoints or tune schedules",
-        "bleu_policy": "fixed greedy held-out continuation BLEU; secondary diagnostic, not translation BLEU",
+        "test_policy": (
+            "fixed test probes are monitoring-only and never select "
+            "checkpoints or tune schedules"
+        ),
+        "bleu_policy": (
+            "fixed greedy held-out continuation BLEU; secondary diagnostic, "
+            "not translation BLEU"
+        ),
     }
     temporary = run_dir / "manifest.json.tmp"
     temporary.write_text(
-        json.dumps(payload, indent=2, sort_keys=True, default=str), encoding="utf-8"
+        json.dumps(
+            payload,
+            indent=2,
+            sort_keys=True,
+            default=str,
+        ),
+        encoding="utf-8",
     )
     temporary.replace(run_dir / "manifest.json")
 
@@ -145,11 +198,18 @@ def checkpoint_eval(
     device: torch.device,
     bleu_batch_size: int,
 ) -> dict[str, float]:
-    payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    payload = torch.load(
+        checkpoint,
+        map_location="cpu",
+        weights_only=False,
+    )
     model.load_state_dict(payload["model"])
     metrics = evaluate_probe(model, test_probe, device)
     bleu = evaluate_bleu(
-        model, bleu_probe, device=device, batch_size=bleu_batch_size
+        model,
+        bleu_probe,
+        device=device,
+        batch_size=bleu_batch_size,
     )
     return {
         "step": int(payload["step"]),
