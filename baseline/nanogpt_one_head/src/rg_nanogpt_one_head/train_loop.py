@@ -7,12 +7,16 @@ import time
 
 import torch
 
-from .checkpoints import save_epoch_model_checkpoint, save_training_checkpoint
+from .checkpoints import (
+    save_epoch_model_checkpoint,
+    save_training_checkpoint,
+)
 from .evaluation import evaluate_bleu, evaluate_probe, random_batch
 from .optimizers import optimizer_step, set_learning_rates, zero_grad
 from .runtime import (
     empty_mps_cache,
     gradient_norm,
+    mark_step,
     model_weight_norm,
     mps_memory_megabytes,
     parameter_snapshot,
@@ -36,7 +40,11 @@ def _require_finite_metrics(
         "val_perplexity": float(val_metrics["perplexity"]),
         "val_accuracy": float(val_metrics["accuracy"]),
     }
-    bad = [name for name, value in values.items() if not math.isfinite(value)]
+    bad = [
+        name
+        for name, value in values.items()
+        if not math.isfinite(value)
+    ]
     if bad:
         raise FloatingPointError(
             "non-finite training state at "
@@ -45,18 +53,44 @@ def _require_finite_metrics(
         )
 
 
-def _require_finite_model(model, *, completed_steps: int) -> None:
+def _require_finite_model(
+    model,
+    *,
+    completed_steps: int,
+) -> None:
+    checks = [
+        (name, torch.isfinite(parameter).all())
+        for name, parameter in model.named_parameters()
+        if parameter.is_floating_point() or parameter.is_complex()
+    ]
+    if not checks:
+        return
+    all_finite = torch.stack([value for _, value in checks]).all()
+    if bool(all_finite.detach().cpu()):
+        return
     bad = [
         name
-        for name, parameter in model.named_parameters()
-        if (parameter.is_floating_point() or parameter.is_complex())
-        and not torch.isfinite(parameter).all()
+        for name, value in checks
+        if not bool(value.detach().cpu())
     ]
-    if bad:
-        raise FloatingPointError(
-            "non-finite model parameters at "
-            f"step={completed_steps}: {', '.join(bad)}"
-        )
+    raise FloatingPointError(
+        "non-finite model parameters at "
+        f"step={completed_steps}: {', '.join(bad)}"
+    )
+
+
+def _evaluation_due(
+    step: int,
+    *,
+    cfg: dict,
+    epoch_steps: dict[int, float],
+    total_steps: int,
+) -> bool:
+    return (
+        step % int(cfg["training"]["eval_interval_steps"]) == 0
+        or step in epoch_steps
+        or step == total_steps
+    )
 
 
 def execute_training_loop(
@@ -121,7 +155,8 @@ def execute_training_loop(
     last_update_lrs = {
         "primary": 0.0,
         "auxiliary": (
-            0.0 if any(handle.role == "auxiliary" for handle in handles)
+            0.0
+            if any(handle.role == "auxiliary" for handle in handles)
             else float("nan")
         ),
     }
@@ -138,12 +173,11 @@ def execute_training_loop(
             warmup_steps=warmup,
         )
         epoch_due = completed_steps in epoch_steps
-        evaluation_due = (
-            completed_steps
-            % int(cfg["training"]["eval_interval_steps"])
-            == 0
-            or epoch_due
-            or completed_steps == total_steps
+        evaluation_due = _evaluation_due(
+            completed_steps,
+            cfg=cfg,
+            epoch_steps=epoch_steps,
+            total_steps=total_steps,
         )
 
         if evaluation_due:
@@ -185,7 +219,11 @@ def execute_training_loop(
             }
             bleu_metrics = {"bleu": float("nan")}
             if epoch_due or completed_steps == total_steps:
-                test_metrics = evaluate_probe(model, test_probe, device)
+                test_metrics = evaluate_probe(
+                    model,
+                    test_probe,
+                    device,
+                )
                 bleu_metrics = evaluate_bleu(
                     model,
                     bleu_probe,
@@ -196,7 +234,10 @@ def execute_training_loop(
             tokens_seen = int(completed_steps * step_tokens)
             actual_epoch = tokens_seen / max(1, train_tokens)
             current_snapshot = parameter_snapshot(model)
-            delta_norm = update_norm(previous_snapshot, current_snapshot)
+            delta_norm = update_norm(
+                previous_snapshot,
+                current_snapshot,
+            )
             previous_snapshot = current_snapshot
             weight_norm = model_weight_norm(model)
             current_mps, driver_mps = mps_memory_megabytes(device)
@@ -207,26 +248,45 @@ def execute_training_loop(
                 "elapsed_sec": float(elapsed),
                 "tokens_per_sec": tokens_seen / max(elapsed, 1e-9),
                 "primary_lr": float(
-                    last_update_lrs.get("primary", float("nan"))
+                    last_update_lrs.get(
+                        "primary",
+                        float("nan"),
+                    )
                 ),
                 "auxiliary_lr": float(
-                    last_update_lrs.get("auxiliary", float("nan"))
+                    last_update_lrs.get(
+                        "auxiliary",
+                        float("nan"),
+                    )
                 ),
                 "train_loss": float(train_metrics["loss"]),
-                "train_perplexity": float(train_metrics["perplexity"]),
-                "train_accuracy": float(train_metrics["accuracy"]),
+                "train_perplexity": float(
+                    train_metrics["perplexity"]
+                ),
+                "train_accuracy": float(
+                    train_metrics["accuracy"]
+                ),
                 "val_loss": float(val_metrics["loss"]),
-                "val_perplexity": float(val_metrics["perplexity"]),
-                "val_accuracy": float(val_metrics["accuracy"]),
+                "val_perplexity": float(
+                    val_metrics["perplexity"]
+                ),
+                "val_accuracy": float(
+                    val_metrics["accuracy"]
+                ),
                 "test_loss": float(test_metrics["loss"]),
-                "test_perplexity": float(test_metrics["perplexity"]),
-                "test_accuracy": float(test_metrics["accuracy"]),
+                "test_perplexity": float(
+                    test_metrics["perplexity"]
+                ),
+                "test_accuracy": float(
+                    test_metrics["accuracy"]
+                ),
                 "test_bleu": float(bleu_metrics["bleu"]),
                 "val_generalization_gap": float(
                     val_metrics["loss"] - train_metrics["loss"]
                 ),
                 "test_generalization_gap": float(
-                    test_metrics["loss"] - train_metrics["loss"]
+                    test_metrics["loss"]
+                    - train_metrics["loss"]
                 ),
                 "grad_norm_pre_clip": float(last_grad_pre),
                 "grad_norm_post_clip": float(last_grad_post),
@@ -243,7 +303,9 @@ def execute_training_loop(
             metrics_handle.flush()
 
             if epoch_due:
-                nominal_epoch = float(epoch_steps[completed_steps])
+                nominal_epoch = float(
+                    epoch_steps[completed_steps]
+                )
                 checkpoint_path = save_epoch_model_checkpoint(
                     run_dir,
                     model=model,
@@ -286,7 +348,8 @@ def execute_training_loop(
                     )
                 if bool(
                     cfg["runtime"].get(
-                        "empty_mps_cache_after_weightwatcher", True
+                        "empty_mps_cache_after_weightwatcher",
+                        True,
                     )
                 ):
                     empty_mps_cache(device)
@@ -294,7 +357,11 @@ def execute_training_loop(
             if progress:
                 remaining = total_steps - completed_steps
                 rate = completed_steps / max(elapsed, 1e-9)
-                eta = remaining / rate if rate > 0 else float("nan")
+                eta = (
+                    remaining / rate
+                    if rate > 0
+                    else float("nan")
+                )
                 eta_text = (
                     "unknown"
                     if not math.isfinite(eta)
@@ -330,30 +397,59 @@ def execute_training_loop(
             y = y_cpu.to(device)
             _, loss = model(x, y)
             if loss is None:
-                raise RuntimeError("training forward pass did not return loss")
+                raise RuntimeError(
+                    "training forward pass did not return loss"
+                )
             (loss / grad_accum).backward()
 
         grad_pre_tensor = gradient_norm(model.parameters())
-        last_grad_pre = float(grad_pre_tensor.detach().cpu())
         clip = float(cfg["training"]["grad_clip"])
         if clip > 0:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+            torch.nn.utils.clip_grad_norm_(
+                model.parameters(),
+                clip,
+                foreach=False,
+            )
         grad_post_tensor = gradient_norm(model.parameters())
-        last_grad_post = float(grad_post_tensor.detach().cpu())
-        last_clipped = bool(last_grad_pre > clip) if clip > 0 else False
         optimizer_step(handles)
+        mark_step(device)
         last_update_lrs = dict(next_update_lrs)
 
         new_step = completed_steps + 1
+        if _evaluation_due(
+            new_step,
+            cfg=cfg,
+            epoch_steps=epoch_steps,
+            total_steps=total_steps,
+        ):
+            # Materialize gradient diagnostics only when the next state is
+            # actually recorded. On XLA this avoids a host sync every step.
+            last_grad_pre = float(
+                grad_pre_tensor.detach().cpu()
+            )
+            last_grad_post = float(
+                grad_post_tensor.detach().cpu()
+            )
+            last_clipped = (
+                bool(last_grad_pre > clip)
+                if clip > 0
+                else False
+            )
+
         checkpoint_due = (
             new_step
-            % int(cfg["training"]["checkpoint_interval_steps"])
+            % int(
+                cfg["training"]["checkpoint_interval_steps"]
+            )
             == 0
             or new_step in epoch_steps
             or new_step == total_steps
         )
         if checkpoint_due:
-            _require_finite_model(model, completed_steps=new_step)
+            _require_finite_model(
+                model,
+                completed_steps=new_step,
+            )
             save_training_checkpoint(
                 latest_checkpoint,
                 model=model,
@@ -361,7 +457,9 @@ def execute_training_loop(
                 step=new_step,
                 best_validation_loss=best_validation_loss,
                 best_validation_step=best_validation_step,
-                elapsed_seconds=elapsed_offset + time.time() - started,
+                elapsed_seconds=(
+                    elapsed_offset + time.time() - started
+                ),
                 fingerprint=fingerprint,
                 cfg=cfg,
                 optimizer_name=optimizer_name,
@@ -369,6 +467,7 @@ def execute_training_loop(
                 train_generator=train_generator,
             )
 
+    synchronize(device)
     return (
         float(best_validation_loss),
         int(best_validation_step),
