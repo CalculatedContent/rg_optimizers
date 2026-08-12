@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Any, Iterable
+from typing import Iterable
 
 import torch
 
@@ -118,7 +118,10 @@ class Muon(torch.optim.Optimizer):
                 )
                 update.mul_(
                     math.sqrt(
-                        max(1.0, parameter.shape[0] / parameter.shape[1])
+                        max(
+                            1.0,
+                            parameter.shape[0] / parameter.shape[1],
+                        )
                     )
                 )
                 decay = float(group["weight_decay"])
@@ -146,7 +149,8 @@ def cosine_learning_rate(
     if warmup_steps and update_index < warmup_steps:
         return float(peak_lr) * (update_index + 1) / warmup_steps
     progress = (update_index - warmup_steps) / max(
-        1, total_steps - warmup_steps - 1
+        1,
+        total_steps - warmup_steps - 1,
     )
     progress = min(1.0, max(0.0, progress))
     cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
@@ -165,15 +169,26 @@ def _decay_groups(
     named_parameters: list[tuple[str, torch.nn.Parameter]],
     weight_decay: float,
 ) -> list[dict]:
-    decay = [parameter for _, parameter in named_parameters if parameter.ndim >= 2]
-    no_decay = [parameter for _, parameter in named_parameters if parameter.ndim < 2]
+    decay = [
+        parameter
+        for _, parameter in named_parameters
+        if parameter.ndim >= 2
+    ]
+    no_decay = [
+        parameter
+        for _, parameter in named_parameters
+        if parameter.ndim < 2
+    ]
     return [
         {"params": decay, "weight_decay": float(weight_decay)},
         {"params": no_decay, "weight_decay": 0.0},
     ]
 
 
-def make_optimizer_handles(model, profile: dict) -> list[OptimizerHandle]:
+def make_optimizer_handles(
+    model,
+    profile: dict,
+) -> list[OptimizerHandle]:
     named = _named_parameters(model)
     family = str(profile["family"])
 
@@ -198,7 +213,10 @@ def make_optimizer_handles(model, profile: dict) -> list[OptimizerHandle]:
         optimizer = torch.optim.AdamW(
             _decay_groups(named, float(profile["weight_decay"])),
             lr=float(profile["learning_rate"]),
-            betas=(float(profile["beta1"]), float(profile["beta2"])),
+            betas=(
+                float(profile["beta1"]),
+                float(profile["beta2"]),
+            ),
             eps=float(profile["epsilon"]),
         )
         return [
@@ -226,7 +244,8 @@ def make_optimizer_handles(model, profile: dict) -> list[OptimizerHandle]:
     ]
     if not hidden or not auxiliary_named:
         raise ValueError(
-            "Muon partition must contain both hidden matrices and auxiliary parameters"
+            "Muon partition must contain both hidden matrices and "
+            "auxiliary parameters"
         )
 
     muon = Muon(
@@ -239,9 +258,15 @@ def make_optimizer_handles(model, profile: dict) -> list[OptimizerHandle]:
         eps=float(profile.get("muon_epsilon", 1e-7)),
     )
     auxiliary = torch.optim.AdamW(
-        _decay_groups(auxiliary_named, float(profile["aux_weight_decay"])),
+        _decay_groups(
+            auxiliary_named,
+            float(profile["aux_weight_decay"]),
+        ),
         lr=float(profile["aux_learning_rate"]),
-        betas=(float(profile["beta1"]), float(profile["beta2"])),
+        betas=(
+            float(profile["beta1"]),
+            float(profile["beta2"]),
+        ),
         eps=float(profile["epsilon"]),
     )
     return [
@@ -295,18 +320,6 @@ def optimizer_state_dict(handles: list[OptimizerHandle]) -> list[dict]:
     return [handle.optimizer.state_dict() for handle in handles]
 
 
-def _move_state_value(value: Any, device: torch.device) -> Any:
-    if torch.is_tensor(value):
-        return value.to(device)
-    if isinstance(value, dict):
-        return {key: _move_state_value(item, device) for key, item in value.items()}
-    if isinstance(value, list):
-        return [_move_state_value(item, device) for item in value]
-    if isinstance(value, tuple):
-        return tuple(_move_state_value(item, device) for item in value)
-    return value
-
-
 def load_optimizer_state_dict(
     handles: list[OptimizerHandle],
     states: list[dict],
@@ -314,10 +327,8 @@ def load_optimizer_state_dict(
     if len(handles) != len(states):
         raise RuntimeError("optimizer-handle count changed across resume")
     for handle, state in zip(handles, states, strict=True):
+        # Optimizer.load_state_dict owns device/dtype restoration semantics.
+        # In particular, built-in AdamW may intentionally keep its scalar
+        # step state on CPU while moving moment tensors to the parameter
+        # device. Do not recursively force every tensor onto XLA.
         handle.optimizer.load_state_dict(state)
-        # Explicitly move custom Muon and built-in optimizer state to the
-        # corresponding parameter device after loading a portable CPU checkpoint.
-        for parameter, parameter_state in list(handle.optimizer.state.items()):
-            handle.optimizer.state[parameter] = _move_state_value(
-                parameter_state, parameter.device
-            )
