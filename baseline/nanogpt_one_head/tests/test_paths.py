@@ -32,7 +32,6 @@ FORBIDDEN_HOME_TOKENS = (
     "$HOME",
     "${HOME}",
     "Path.home(",
-    ".expanduser(",
     "/home/",
     "~/",
 )

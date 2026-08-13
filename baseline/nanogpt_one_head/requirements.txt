@@ -7,6 +7,7 @@ datasets>=2.19
 tiktoken>=0.7
 sacrebleu>=2.4
 weightwatcher>=0.7.7
+powerlaw>=2.0.0,<3
 jupyter>=1.0
 ipykernel>=6.29
 pytest>=8.0
