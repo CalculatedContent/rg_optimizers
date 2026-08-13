@@ -231,8 +231,14 @@ print(capture_dir)
     completed = subprocess.run(
         [sys.executable, "-c", code, str(tmp_path)],
         cwd=EXPERIMENT_ROOT,
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
+    if completed.returncode:
+        raise AssertionError(
+            "MuonClip walk subprocess failed.\n"
+            f"STDOUT:\n{completed.stdout}\n"
+            f"STDERR:\n{completed.stderr}"
+        )
     assert "captures" in completed.stdout
