@@ -426,38 +426,80 @@ def test_notebooks_are_valid_and_expose_requested_metrics():
         "03_muon_baseline.ipynb",
         "04_compare_baselines.ipynb",
         "05_muonclip_esd_clip_xmax.ipynb",
+        "06_first_layer_esd_binning_powerlaw.ipynb",
     ]
-    baseline_names = {
-        "01_sgd_momentum_baseline.ipynb",
-        "02_adamw_baseline.ipynb",
-        "03_muon_baseline.ipynb",
-        "04_compare_baselines.ipynb",
+
+    required_by_notebook = {
+        "01_sgd_momentum_baseline.ipynb": (
+            "test_accuracy",
+            "train_accuracy",
+            "test_loss",
+            "train_loss",
+            "test_perplexity",
+            "test_bleu",
+            "alpha",
+            "ERG_gap",
+            "num_traps",
+            "95% Student-t",
+        ),
+        "02_adamw_baseline.ipynb": (
+            "test_accuracy",
+            "train_accuracy",
+            "test_loss",
+            "train_loss",
+            "test_perplexity",
+            "test_bleu",
+            "alpha",
+            "ERG_gap",
+            "num_traps",
+            "95% Student-t",
+        ),
+        "03_muon_baseline.ipynb": (
+            "test_accuracy",
+            "train_accuracy",
+            "test_loss",
+            "train_loss",
+            "test_perplexity",
+            "test_bleu",
+            "alpha",
+            "ERG_gap",
+            "num_traps",
+            "95% Student-t",
+        ),
+        "04_compare_baselines.ipynb": (
+            "test_accuracy",
+            "train_accuracy",
+            "test_loss",
+            "train_loss",
+            "test_perplexity",
+            "test_bleu",
+            "alpha",
+            "ERG_gap",
+            "num_traps",
+            "95% Student-t",
+        ),
+        "05_muonclip_esd_clip_xmax.ipynb": (
+            "WeightMatrixHolder",
+            "watcher_standard.analyze",
+            "fix_fingers='clip_xmax'",
+            "max_fingers=MAX_FINGERS",
+            "watcher_standard.get_ESD",
+            "alpha_reduction",
+        ),
+        "06_first_layer_esd_binning_powerlaw.ipynb": (
+            "watcher.get_ESD(layer=layer_id)",
+            "LAYER_ID =",
+            "REMOVE_TOP_EIGENVALUES =",
+            "powerlaw.Fit(",
+            "xmin=float(RETAINED_ESD.min())",
+            "truncated_power_law",
+            "for remove_top in range(maximum_remove + 1)",
+        ),
     }
+
     for path in notebook_paths:
         notebook = nbformat.read(path, as_version=4)
         nbformat.validate(notebook)
         source = "\n".join(cell.source for cell in notebook.cells)
-        if path.name in baseline_names:
-            for required in (
-                "test_accuracy",
-                "train_accuracy",
-                "test_loss",
-                "train_loss",
-                "test_perplexity",
-                "test_bleu",
-                "alpha",
-                "ERG_gap",
-                "num_traps",
-                "95% Student-t",
-            ):
-                assert required in source
-        else:
-            for required in (
-                "WeightMatrixHolder",
-                "watcher_standard.analyze",
-                "fix_fingers='clip_xmax'",
-                "max_fingers=MAX_FINGERS",
-                "watcher_standard.get_ESD",
-                "alpha_reduction",
-            ):
-                assert required in source
+        for required in required_by_notebook[path.name]:
+            assert required in source
