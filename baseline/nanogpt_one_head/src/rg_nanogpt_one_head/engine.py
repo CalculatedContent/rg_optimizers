@@ -193,10 +193,18 @@ def run_one(
                 f"seed={seed} step={start_step}"
             )
     elif run_dir.exists() and any(run_dir.iterdir()) and resume:
+        # Opt-in diagnostics may register an external append-only artifact
+        # directory while optimizer handles are constructed, before the first
+        # restart checkpoint exists. Those pointer/manifest files are metadata,
+        # not evidence of a partially trained state.
+        precheckpoint_metadata = {
+            "manifest.json",
+            "muonclip_walk_location.json",
+        }
         nontrivial = [
             path
             for path in run_dir.iterdir()
-            if path.name != "manifest.json"
+            if path.name not in precheckpoint_metadata
         ]
         if nontrivial and not latest_checkpoint.is_file():
             raise FileNotFoundError(
