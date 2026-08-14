@@ -1,6 +1,6 @@
 protocol:
   name: rg_nanogpt_one_head_muonclip_microbatch10
-  version: 9
+  version: 10
   description: MuonClip RMS microbatch capture for ten effective batches.
 dataset:
   name: HuggingFaceFW/fineweb-edu
@@ -90,6 +90,9 @@ optimizer_profiles:
     beta1: 0.90
     beta2: 0.95
     epsilon: 1.0e-8
+    # Keep the legacy key in sync so the compatibility wrapper actually
+    # constructs the recorder before MuonClip training starts.
+    walk_capture_steps: 10
     walk_capture_effective_batches: 10
     walk_capture_microbatches: true
     walk_max_checkpoints: 500
