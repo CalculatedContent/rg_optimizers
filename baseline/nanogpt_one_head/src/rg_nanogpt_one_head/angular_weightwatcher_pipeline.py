@@ -7,15 +7,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import powerlaw
 
 from .angular_weightwatcher_core import (
     AnalysisConfig,
     ResolvedRun,
+    TailFit,
     angular_from_polar,
     angular_spectra,
     assert_gauge_invariance,
-    ccdf,
-    fit_tail,
     gram_esd,
     load_weight_pairs,
     monte_carlo_ks,
@@ -43,6 +43,47 @@ def _finish(
     if show:
         plt.show()
     plt.close(figure)
+
+
+def _positive(values: np.ndarray) -> np.ndarray:
+    array = np.asarray(values, dtype=np.float64).reshape(-1)
+    return array[np.isfinite(array) & (array > 0)]
+
+
+def _powerlaw_fit(
+    values: np.ndarray,
+    min_tail: int,
+) -> tuple[TailFit, powerlaw.Fit | None]:
+    """Fit the largest values with the same powerlaw package used by WeightWatcher.
+
+    powerlaw.Fit performs the Clauset-style MLE/KS search over candidate xmin
+    values.  We do not supply xmin: the package chooses the tail start.  The
+    min_tail check is applied only after that search so it cannot force the
+    optimizer toward a hand-selected part of the spectrum.
+    """
+    array = _positive(values)
+    if array.size < min_tail:
+        return TailFit(False), None
+    try:
+        fit = powerlaw.Fit(
+            array,
+            discrete=False,
+            verbose=False,
+        )
+        alpha = float(fit.power_law.alpha)
+        xmin = float(fit.power_law.xmin)
+        ks = float(fit.power_law.D)
+        n_tail = int(np.count_nonzero(array >= xmin))
+    except Exception:
+        return TailFit(False), None
+    if (
+        not np.isfinite(alpha)
+        or not np.isfinite(xmin)
+        or not np.isfinite(ks)
+        or n_tail < min_tail
+    ):
+        return TailFit(False), fit
+    return TailFit(True, alpha, xmin, ks, n_tail), fit
 
 
 def _angular_plot(
@@ -92,54 +133,120 @@ def _angular_plot(
     )
 
 
-def _tail_plot(
+def _powerlaw_native_plots(
     *,
     name: str,
     kind: str,
-    actual: np.ndarray,
-    nulls: list[np.ndarray],
-    fit,
+    projective_values: np.ndarray,
+    package_fit: powerlaw.Fit | None,
+    fit: TailFit,
     null_alpha_median: float,
-    upper: float,
     output_dir: Path,
     show: bool,
 ) -> None:
-    x_actual, y_actual = ccdf(projective(actual, upper))
+    """Use powerlaw's own PDF/CDF/CCDF plotting routines.
+
+    These are deliberately the package-native diagnostics rather than a
+    separately implemented histogram or fitted line.  The fitted distribution
+    uses the same xmin and alpha selected by powerlaw.Fit.
+    """
+    data = _positive(projective_values)
+    if package_fit is None or not data.size:
+        return
+
+    xlabel = "tan² θ" if kind == "tilt" else "tan²(φ/2)"
+    suffix = (
+        f"powerlaw MLE α={fit.alpha:.3f}, xmin={fit.xmin:.4g}, "
+        f"n_tail={fit.n_tail}; null α median={null_alpha_median:.3f}"
+        if fit.success
+        else f"powerlaw MLE tail rejected; null α median={null_alpha_median:.3f}"
+    )
+
+    # Native logarithmic PDF/density plot.
     figure, axis = plt.subplots(figsize=(8.5, 5.2))
-    if x_actual.size:
-        axis.loglog(x_actual, y_actual, ".", label="actual")
-    for sample in nulls[: min(20, len(nulls))]:
-        x_null, y_null = ccdf(projective(sample, upper))
-        if x_null.size:
-            axis.loglog(x_null, y_null, alpha=0.12)
-    if fit.success and x_actual.size:
-        x_fit = np.geomspace(
-            fit.xmin,
-            max(x_actual.max(), fit.xmin),
-            100,
-        )
-        y_fit = (
-            fit.n_tail / x_actual.size
-        ) * (x_fit / fit.xmin) ** (1 - fit.alpha)
-        axis.loglog(
-            x_fit,
-            y_fit,
-            "--",
-            label=f"actual Pareto α={fit.alpha:.3f}",
-        )
+    package_fit.plot_pdf(ax=axis, label="empirical PDF")
+    package_fit.power_law.plot_pdf(
+        ax=axis,
+        linestyle="--",
+        label="power-law fit",
+    )
     axis.set(
-        xlabel="tan² θ" if kind == "tilt" else "tan²(φ/2)",
-        ylabel="CCDF",
-        title=(
-            f"{name}: {kind} projective tail; "
-            f"null α median={null_alpha_median:.3f}"
-        ),
+        xlabel=xlabel,
+        ylabel="PDF / density",
+        title=f"{name}: {kind} projective PDF (powerlaw)\n{suffix}",
     )
     axis.legend(fontsize=8)
     _finish(
         figure,
         output_dir,
-        f"{name}_{kind}_projective_ccdf.png",
+        f"{name}_{kind}_powerlaw_pdf_loglog.png",
+        show,
+    )
+
+    # Native PDF with linear bins, then shown on linear axes to make terminal
+    # cutoff/rollover visible instead of hiding it in log-log compression.
+    figure, axis = plt.subplots(figsize=(8.5, 5.2))
+    powerlaw.plot_pdf(
+        data,
+        ax=axis,
+        linear_bins=True,
+        label="empirical PDF, linear bins",
+    )
+    axis.set_xscale("linear")
+    axis.set_yscale("linear")
+    axis.set(
+        xlabel=xlabel,
+        ylabel="PDF / density",
+        title=f"{name}: {kind} projective PDF, linear scale (powerlaw)",
+    )
+    axis.legend(fontsize=8)
+    _finish(
+        figure,
+        output_dir,
+        f"{name}_{kind}_powerlaw_pdf_linear.png",
+        show,
+    )
+
+    # Native CDF.
+    figure, axis = plt.subplots(figsize=(8.5, 5.2))
+    package_fit.plot_cdf(ax=axis, label="empirical CDF")
+    package_fit.power_law.plot_cdf(
+        ax=axis,
+        linestyle="--",
+        label="power-law fit",
+    )
+    axis.set(
+        xlabel=xlabel,
+        ylabel="CDF",
+        title=f"{name}: {kind} projective CDF (powerlaw)",
+    )
+    axis.legend(fontsize=8)
+    _finish(
+        figure,
+        output_dir,
+        f"{name}_{kind}_powerlaw_cdf.png",
+        show,
+    )
+
+    # Native CCDF.  This is the most direct visual check that the largest
+    # elements form a long tail instead of rolling over rapidly at the end.
+    figure, axis = plt.subplots(figsize=(8.5, 5.2))
+    package_fit.plot_ccdf(ax=axis, label="empirical CCDF")
+    package_fit.power_law.plot_ccdf(
+        ax=axis,
+        linestyle="--",
+        label="power-law fit",
+    )
+    axis.set(
+        xlabel=xlabel,
+        ylabel="CCDF",
+        title=f"{name}: {kind} projective CCDF (powerlaw)\n{suffix}",
+    )
+    axis.legend(fontsize=8)
+    _finish(
+        figure,
+        output_dir,
+        f"{name}_{kind}_powerlaw_ccdf_loglog.png",
         show,
     )
 
@@ -253,7 +360,7 @@ def _summary_plots(
             rotation=35,
             ha="right",
         )
-        axis.set_ylabel("fitted Pareto exponent")
+        axis.set_ylabel("powerlaw.Fit MLE exponent")
         axis.set_title(
             f"{kind.capitalize()} exponent: actual versus randomized initial"
         )
@@ -297,14 +404,19 @@ def run_analysis(
                 nulls[kind].append(sample[kind])
 
         for kind, upper in (("tilt", 1.0), ("twist", 4.0)):
-            fit = fit_tail(
-                projective(actual[kind], upper),
+            actual_projective = projective(actual[kind], upper)
+            fit, package_fit = _powerlaw_fit(
+                actual_projective,
                 config.min_tail,
             )
-            null_fits = [
-                fit_tail(projective(sample, upper), config.min_tail)
+            null_fit_pairs = [
+                _powerlaw_fit(
+                    projective(sample, upper),
+                    config.min_tail,
+                )
                 for sample in nulls[kind]
             ]
+            null_fits = [pair[0] for pair in null_fit_pairs]
             null_alphas = [
                 item.alpha for item in null_fits if item.success
             ]
@@ -319,6 +431,8 @@ def run_analysis(
                 fit.success
                 and fit.ks <= 0.15
                 and probability < 0.05
+                and np.isfinite(alpha_low)
+                and np.isfinite(alpha_high)
                 and (
                     fit.alpha < alpha_low
                     or fit.alpha > alpha_high
@@ -329,10 +443,22 @@ def run_analysis(
                     "matrix_name": name,
                     "angular_type": kind,
                     "shape": str(initial.shape),
+                    "fit_backend": "powerlaw.Fit",
+                    "fit_selection": "package MLE/KS xmin search; largest x >= xmin",
                     "actual_alpha": fit.alpha,
                     "actual_xmin": fit.xmin,
                     "actual_fit_ks": fit.ks,
                     "actual_tail_n": fit.n_tail,
+                    "actual_tail_fraction": (
+                        fit.n_tail / max(_positive(actual_projective).size, 1)
+                        if fit.success
+                        else np.nan
+                    ),
+                    "actual_xmax": (
+                        float(np.max(_positive(actual_projective)))
+                        if _positive(actual_projective).size
+                        else np.nan
+                    ),
                     "null_alpha_2p5": alpha_low,
                     "null_alpha_median": alpha_median,
                     "null_alpha_97p5": alpha_high,
@@ -350,14 +476,13 @@ def run_analysis(
                 output_dir=resolved.output_dir,
                 show=config.show_plots,
             )
-            _tail_plot(
+            _powerlaw_native_plots(
                 name=name,
                 kind=kind,
-                actual=actual[kind],
-                nulls=nulls[kind],
+                projective_values=actual_projective,
+                package_fit=package_fit,
                 fit=fit,
                 null_alpha_median=alpha_median,
-                upper=upper,
                 output_dir=resolved.output_dir,
                 show=config.show_plots,
             )
@@ -385,6 +510,17 @@ def run_analysis(
         "final_checkpoint": str(resolved.final_path),
         "final_step": resolved.final_step,
         "primary_null": "randomized_initial_to_fixed_final",
+        "tail_fit_backend": "powerlaw.Fit",
+        "tail_fit_selection": (
+            "powerlaw package continuous MLE/KS search over xmin; "
+            "tail is the largest projective angular values x >= xmin"
+        ),
+        "native_powerlaw_plots": [
+            "PDF log-log",
+            "PDF linear bins/linear axes",
+            "CDF",
+            "CCDF log-log",
+        ],
         "strict_saved_checkpoint_mode": True,
         **metadata,
     }
