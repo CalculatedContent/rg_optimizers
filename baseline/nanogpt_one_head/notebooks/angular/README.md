@@ -85,6 +85,7 @@ By default, results are written to:
 <RUN_DIR>/diagnostics/angular_saved_step_0000000_vs_final_<step>/
 ```
 
-The directory contains per-layer ESD tables, randomized-null fits, radial and
-angular plots, verdict tables, and `analysis_manifest.json` recording the exact
-environment and checkpoint paths used.
+The directory contains per-layer radial and angular ESD plots, projective-tail
+plots, summary exponent plots, `angular_initial_vs_final_summary.csv`, and
+`analysis_manifest.json` recording the exact environment and checkpoint paths
+used.
