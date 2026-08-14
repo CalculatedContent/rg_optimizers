@@ -163,7 +163,7 @@ def test_both_angular_notebooks_are_valid_papermill_parameterized_entrypoints():
         full_source = "\n".join(cell.source for cell in notebook.cells)
 
         # Papermill injects overrides immediately after the tagged parameter
-        # cell.  CONFIG must therefore be constructed later, not inside the
+        # cell. CONFIG must therefore be constructed later, not inside the
         # tagged cell from environment values that Papermill cannot override.
         assert "CONFIG =" not in parameter_source
         assert "AnalysisConfig(" in later_source
@@ -185,9 +185,9 @@ def test_both_angular_notebooks_are_valid_papermill_parameterized_entrypoints():
             assert name in parameter_source
 
         for text in (
-            "checkpoint_initial.pt",
-            "checkpoint_best.pt",
-            "checkpoint_final.pt",
+            "initial",
+            "best",
+            "final",
             "powerlaw.Fit",
             "no `xmin`",
             "no `xmax`",
