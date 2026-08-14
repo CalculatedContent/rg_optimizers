@@ -168,6 +168,7 @@ def run_one(
     best_validation_loss = float("inf")
     best_validation_step = 0
     elapsed_offset = 0.0
+    initial_checkpoint = run_dir / "checkpoint_initial.pt"
     latest_checkpoint = run_dir / "checkpoint_latest.pt"
     best_checkpoint = run_dir / "checkpoint_best.pt"
     final_checkpoint = run_dir / "checkpoint_final.pt"
@@ -227,6 +228,38 @@ def run_one(
         fingerprint=fingerprint,
         model=model,
     )
+
+    # Persist an immutable step-zero checkpoint before evaluation, WeightWatcher,
+    # or the first optimizer update. This makes initial-versus-final angular
+    # analysis use two actual checkpoint files rather than seed reconstruction.
+    if start_step == 0 and not initial_checkpoint.is_file():
+        save_training_checkpoint(
+            initial_checkpoint,
+            model=model,
+            handles=handles,
+            step=0,
+            best_validation_loss=best_validation_loss,
+            best_validation_step=best_validation_step,
+            elapsed_seconds=elapsed_offset,
+            fingerprint=fingerprint,
+            cfg=cfg,
+            optimizer_name=optimizer_name,
+            seed=int(seed),
+            train_generator=train_generator,
+        )
+        if progress:
+            print(
+                "[one-head-checkpoint] saved immutable initialization "
+                f"{initial_checkpoint}",
+                flush=True,
+            )
+    elif start_step > 0 and not initial_checkpoint.is_file() and progress:
+        print(
+            "[one-head-checkpoint] warning: resumed legacy run has no "
+            "checkpoint_initial.pt; strict initial-vs-final analysis is "
+            "unavailable for this run",
+            flush=True,
+        )
 
     metrics_path = run_dir / "metrics.csv"
     epoch_metrics_path = run_dir / "epoch_metrics.csv"
