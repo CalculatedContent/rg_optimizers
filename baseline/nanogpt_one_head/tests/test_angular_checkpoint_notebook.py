@@ -42,6 +42,7 @@ CANONICAL_NOTEBOOK = (
 EXPLORATORY_NOTEBOOK = (
     EXPERIMENT_ROOT
     / "notebooks"
+    / "angular"
     / "muonclip_angular_radial_rg.ipynb"
 )
 
