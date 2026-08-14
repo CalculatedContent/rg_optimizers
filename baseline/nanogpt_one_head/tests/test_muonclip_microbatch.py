@@ -50,17 +50,22 @@ def test_capture_budget_and_committed_config() -> None:
     ) == 91
 
 
-def test_movie_uses_requested_weightwatcher_call() -> None:
+def test_movie_renders_true_weightwatcher_loglog_esd() -> None:
     source = (
         ROOT
         / "src"
         / "rg_nanogpt_one_head"
-        / "muonclip_movie.py"
+        / "muonclip_esd_movie.py"
     ).read_text()
     assert "savedir = str(native_dir)" in source
     assert "savefig=savedir" in source
     assert "randomize=False" in source
     assert "ERG=False" in source
+    assert "watcher.get_ESD(layer=layer_id)" in source
+    assert 'ax.set_xscale("log")' in source
+    assert 'ax.set_yscale("log")' in source
+    assert "selected {len(index)} actual checkpoints" in source
+    assert "cross-fade" not in source.lower()
 
 
 def test_recorder_writes_explicit_initial_and_microbatch_files(tmp_path) -> None:
