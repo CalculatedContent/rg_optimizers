@@ -21,6 +21,7 @@ dependencies = [
   "powerlaw>=2.0.0,<3",
   "jupyter>=1.0",
   "ipykernel>=6.29",
+  "papermill>=2.6,<3",
 ]
 
 [project.optional-dependencies]
