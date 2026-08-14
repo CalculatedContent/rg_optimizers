@@ -201,6 +201,7 @@ def run_one(
         precheckpoint_metadata = {
             "manifest.json",
             "muonclip_walk_location.json",
+            "checkpoint_initial.pt",
         }
         nontrivial = [
             path
