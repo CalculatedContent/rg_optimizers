@@ -1,10 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import nbformat
+import torch
 
 EXPERIMENT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(EXPERIMENT_ROOT / "src"))
+
+from rg_nanogpt_one_head.angular_weightwatcher_core import (
+    AnalysisConfig,
+    resolve_run,
+)
+
 ENGINE_PATH = EXPERIMENT_ROOT / "src" / "rg_nanogpt_one_head" / "engine.py"
 CORE_PATH = (
     EXPERIMENT_ROOT
@@ -38,6 +47,36 @@ def test_training_saves_immutable_initial_checkpoint_before_training():
     )
     training_position = source.index("execute_training_loop(")
     assert save_position < training_position
+
+
+def test_runroot_resolves_any_seed_and_standard_results_layout(tmp_path):
+    runroot = tmp_path / "repeatable-run-root"
+    run_dir = runroot / "results" / "muon_clip" / "seed_777"
+    run_dir.mkdir(parents=True)
+    torch.save(
+        {"step": 0, "model": {}, "seed": 777},
+        run_dir / "checkpoint_initial.pt",
+    )
+    torch.save(
+        {"step": 29, "model": {}, "seed": 777},
+        run_dir / "checkpoint_final.pt",
+    )
+
+    config = AnalysisConfig(
+        seed=777,
+        optimizer="muon_clip",
+        runroot=str(runroot),
+        angular_nulls=10,
+        entry_nulls=3,
+        show_plots=False,
+    )
+    resolved = resolve_run(config)
+
+    assert resolved.run_dir == run_dir.resolve()
+    assert resolved.run_dir_source == "RUNROOT"
+    assert resolved.initial_path.name == "checkpoint_initial.pt"
+    assert resolved.final_path.name == "checkpoint_final.pt"
+    assert resolved.final_step == 29
 
 
 def test_angular_notebook_and_modules_are_valid_and_environment_driven():
