@@ -1,7 +1,7 @@
 protocol:
   name: rg_nanogpt_one_head_muonclip_24h_125k
-  version: 11
-  description: One-head MuonClip long-horizon run for exactly 125000 optimizer updates, with 100 permanent model and WeightWatcher analysis states including initialization and the final state.
+  version: 12
+  description: MuonClip long-horizon run for 125,000 optimizer updates, corresponding to 12.8 corpus-equivalent epochs and approximately 24 hours on the observed Apple-MPS baseline. Exactly 100 permanent model and WeightWatcher analysis states are retained.
 
 dataset:
   name: HuggingFaceFW/fineweb-edu
