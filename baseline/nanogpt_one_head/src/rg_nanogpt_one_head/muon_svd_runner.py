@@ -2,12 +2,22 @@ from __future__ import annotations
 
 """Instrumented launcher for Muon/MuonClip update-SVD frame capture."""
 
-from typing import Any
+import sys
+from typing import Any, Sequence
 
 from .muon_svd_capture import MuonUpdateSVDCapture
 
 _ACTIVE_RECORDER: MuonUpdateSVDCapture | None = None
 _INSTALLED = False
+
+
+def _requested_optimizer(argv: Sequence[str]) -> str | None:
+    for index, value in enumerate(argv):
+        if value == "--optimizer" and index + 1 < len(argv):
+            return str(argv[index + 1]).lower()
+        if value.startswith("--optimizer="):
+            return value.split("=", 1)[1].lower()
+    return None
 
 
 def install_muon_svd_capture() -> None:
@@ -18,15 +28,8 @@ def install_muon_svd_capture() -> None:
         return
 
     from . import engine as engine_module
-    from . import muonclip as muonclip_module
-    from . import optimizers as optimizers_module
     from . import training as training_module
     from . import train_loop as train_loop_module
-
-    # Make the dedicated launcher understand both ordinary Muon and MuonClip.
-    # For ordinary Muon this extension is inert; for MuonClip it installs the
-    # repository's existing MuonClip optimizer implementation first.
-    muonclip_module.install_muonclip_extension()
 
     original_execute = train_loop_module.execute_training_loop
     original_optimizer_step = train_loop_module.optimizer_step
@@ -76,15 +79,20 @@ def install_muon_svd_capture() -> None:
     train_loop_module.optimizer_step = optimizer_step
     # engine imported execute_training_loop by value, so update that binding too.
     engine_module.execute_training_loop = execute_training_loop
-    # Keep direct callers of optimizers.optimizer_step consistent with the
-    # instrumented launcher where possible.
-    optimizers_module.optimizer_step = optimizer_step
     training_module._mps_worker_module = worker_module
 
     _INSTALLED = True
 
 
 def main() -> None:
+    requested = _requested_optimizer(sys.argv[1:])
+    if requested == "muon_clip":
+        # Install the repository's existing MuonClip implementation only for a
+        # MuonClip run. Ordinary Muon therefore retains its original attention
+        # forward path and optimizer partition exactly.
+        from .muonclip import install_muonclip_extension
+
+        install_muonclip_extension()
     install_muon_svd_capture()
     from .training import main as training_main
 
