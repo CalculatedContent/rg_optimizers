@@ -19,4 +19,4 @@ def test_movie_renderer_is_headless_and_single_matrix() -> None:
     assert "randomize=False" in source
     assert "ERG=False" in source
     assert "libx264" in source
-    assert "frames_native_esd" in source
+    assert "native_esd_frames" in source
