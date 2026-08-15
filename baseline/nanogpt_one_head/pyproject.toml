@@ -37,6 +37,7 @@ rg-onehead-validation = "rg_nanogpt_one_head.validation_report:main"
 rg-onehead-muonclip = "rg_nanogpt_one_head.muonclip:main"
 rg-onehead-muonclip-walk = "rg_nanogpt_one_head.muonclip_capture:main"
 rg-onehead-muonclip-movie = "rg_nanogpt_one_head.muonclip_esd_movie:main"
+rg-onehead-muon-svd = "rg_nanogpt_one_head.muon_svd_runner:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
