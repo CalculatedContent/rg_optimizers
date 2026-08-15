@@ -9,6 +9,7 @@ extension in-process and then delegates to the existing training launcher.
 
 import csv
 from copy import deepcopy
+import importlib
 import math
 from pathlib import Path
 from typing import Any, Iterable
@@ -524,7 +525,17 @@ def install_muonclip_extension() -> None:
     if _INSTALLED:
         return
 
-    from . import analysis as analysis_module
+    # Training must not depend on plotting/aggregation helpers. In particular,
+    # isolated workers may execute from a namespace-style source package where
+    # analysis.py is unavailable, as long as the training modules are present.
+    try:
+        analysis_module = importlib.import_module(".analysis", __package__)
+    except ModuleNotFoundError as exc:
+        expected = f"{__package__}.analysis"
+        if exc.name != expected:
+            raise
+        analysis_module = None
+
     from . import config as config_module
     from . import engine as engine_module
     from . import model as model_module
@@ -538,10 +549,11 @@ def install_muonclip_extension() -> None:
     config_module.SUPPORTED_OPTIMIZERS = all_optimizers
     engine_module.SUPPORTED_OPTIMIZERS = all_optimizers
     training_module.SUPPORTED_OPTIMIZERS = all_optimizers
-    analysis_module.OPTIMIZER_LABELS["muon_clip"] = (
-        "MuonClip + auxiliary AdamW"
-    )
-    analysis_module.OPTIMIZER_COLORS["muon_clip"] = "#CC79A7"
+    if analysis_module is not None:
+        analysis_module.OPTIMIZER_LABELS["muon_clip"] = (
+            "MuonClip + auxiliary AdamW"
+        )
+        analysis_module.OPTIMIZER_COLORS["muon_clip"] = "#CC79A7"
 
     original_validate = config_module.validate_optimizer_profile
     original_make_handles = optimizers_module.make_optimizer_handles
