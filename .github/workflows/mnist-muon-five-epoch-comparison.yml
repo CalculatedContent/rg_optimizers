@@ -1,0 +1,121 @@
+name: MNIST Muon five-epoch alpha comparison
+
+on:
+  push:
+    branches:
+      - agent/mnist-muon-five-epoch-comparison
+    paths:
+      - ".github/workflows/mnist-muon-five-epoch-comparison.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      MPLBACKEND: Agg
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: baseline/pyproject.toml
+
+      - name: Install CPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e './baseline[experiment]'
+
+      - name: Verify comparison sources
+        run: |
+          python -m py_compile \
+            baseline/rg_baselines/mnist_muon_microbatch.py \
+            baseline/rg_baselines/mnist_muon_epoch_comparison.py \
+            baseline/rg_baselines/rectangular_rg.py
+          python -m rg_baselines.mnist_muon_epoch_comparison --help
+          rg-mnist-muon-microbatch --help | grep -- '--test-every-epoch'
+
+      - name: Train five real MNIST epochs with Muon
+        run: |
+          RUN_DIR="$RUNNER_TEMP/mnist_mlp3_muon_five_epochs"
+          echo "RUN_DIR=$RUN_DIR" >> "$GITHUB_ENV"
+          df -h
+          rg-mnist-muon-microbatch \
+            --data-dir "$RUNNER_TEMP/mnist-data" \
+            --output-dir "$RUN_DIR" \
+            --epochs 5 \
+            --batch-size 128 \
+            --seed 1337 \
+            --device cpu \
+            --capture-every 1 \
+            --checkpoint-dtype float32 \
+            --test-every-epoch \
+            --overwrite
+          df -h
+
+      - name: Fit standard and rectangular RG spectra
+        run: |
+          python -m rg_baselines.mnist_muon_epoch_comparison \
+            --run-dir "$RUN_DIR" \
+            --output-dir "$RUN_DIR/five_epoch_comparison" \
+            --flow-step-stride 10 \
+            --rank-rtol 1e-10 \
+            --log-zero-tol 1e-12 \
+            --angle-zero-tol 1e-12 \
+            --powerlaw-min-points 8 \
+            --alpha-min 1.01 \
+            --alpha-max 20
+
+      - name: Preserve epoch endpoints and inspect outputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import shutil
+          import pandas as pd
+
+          run_dir = Path(os.environ["RUN_DIR"])
+          metrics = pd.read_csv(run_dir / "training_metrics.csv")
+          endpoint_dir = run_dir / "five_epoch_comparison" / "epoch_end_checkpoints"
+          endpoint_dir.mkdir(parents=True, exist_ok=True)
+          initial = run_dir / "microbatch_checkpoints" / "frames" / "step_0000000.pt"
+          shutil.copy2(initial, endpoint_dir / initial.name)
+          for step in metrics["global_step"].astype(int):
+              source = (
+                  run_dir
+                  / "microbatch_checkpoints"
+                  / "frames"
+                  / f"step_{step:07d}.pt"
+              )
+              shutil.copy2(source, endpoint_dir / source.name)
+
+          print("--- training metrics ---")
+          print(metrics.to_string(index=False))
+          print("--- epoch alpha/accuracy comparison ---")
+          comparison = pd.read_csv(
+              run_dir / "five_epoch_comparison" / "alpha_test_accuracy_by_epoch.csv"
+          )
+          print(comparison.to_string(index=False))
+          PY
+          find "$RUN_DIR/five_epoch_comparison" -type f -printf '%p %k KB\n' | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mnist-muon-five-epoch-alpha-comparison
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+          path: |
+            ${{ env.RUN_DIR }}/manifest.json
+            ${{ env.RUN_DIR }}/training_metrics.csv
+            ${{ env.RUN_DIR }}/microbatch_checkpoints/manifest.json
+            ${{ env.RUN_DIR }}/microbatch_checkpoints/checkpoint_index.csv
+            ${{ env.RUN_DIR }}/five_epoch_comparison/**
