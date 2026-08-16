@@ -77,7 +77,9 @@ class MuonMicrobatchCaptureTests(unittest.TestCase):
         self,
     ) -> None:
         for shape in ((5, 7), (5, 5), (7, 5)):
-            matrix = torch.randn(*shape, dtype=torch.float64)
+            matrix = torch.zeros(*shape, dtype=torch.float64)
+            rank = min(shape)
+            matrix[:rank, :rank] = torch.eye(rank, dtype=torch.float64)
             operator, side = relative_flow_operator(
                 matrix, matrix, pinv_rtol=1e-10
             )
