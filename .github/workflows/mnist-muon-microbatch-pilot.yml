@@ -1,0 +1,306 @@
+name: MNIST Muon microbatch pilot
+
+on:
+  push:
+    branches:
+      - agent/mnist-muon-pilot-run
+    paths:
+      - ".github/workflows/mnist-muon-microbatch-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      MPLBACKEND: Agg
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: baseline/pyproject.toml
+
+      - name: Install CPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e './baseline[experiment]'
+
+      - name: Train the real MNIST Muon pilot and save every microbatch
+        run: |
+          RUN_DIR="$RUNNER_TEMP/mnist_mlp3_muon_microbatch_500"
+          echo "RUN_DIR=$RUN_DIR" >> "$GITHUB_ENV"
+          rg-mnist-muon-microbatch \
+            --data-dir "$RUNNER_TEMP/mnist-data" \
+            --output-dir "$RUN_DIR" \
+            --epochs 30 \
+            --batch-size 128 \
+            --seed 1337 \
+            --device cpu \
+            --max-steps 500 \
+            --capture-every 1 \
+            --checkpoint-dtype float32 \
+            --overwrite
+
+      - name: Fit power laws and plot alpha versus step
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          from pathlib import Path
+
+          import matplotlib.pyplot as plt
+          import numpy as np
+          import pandas as pd
+          import powerlaw
+
+          from rg_baselines.muon_microbatch_capture import (
+              load_microbatch_checkpoint,
+              load_microbatch_index,
+              log_flow_deviation,
+              matrix_esd_eigenvalues,
+              relative_flow_esd_eigenvalues,
+          )
+
+          run_dir = Path(os.environ["RUN_DIR"])
+          analysis_dir = run_dir / "pilot_analysis"
+          analysis_dir.mkdir(parents=True, exist_ok=True)
+          index = load_microbatch_index(run_dir)
+          by_step = {
+              int(row.global_step): Path(row.checkpoint_path)
+              for row in index.itertuples(index=False)
+          }
+          final_step = max(by_step)
+          selected_steps = [0] + list(range(10, final_step + 1, 10))
+          if selected_steps[-1] != final_step:
+              selected_steps.append(final_step)
+
+          def fit_powerlaw(values):
+              values = np.asarray(values, dtype=float)
+              values = values[np.isfinite(values) & (values > 0.0)]
+              if values.size < 8:
+                  return {
+                      "alpha": np.nan,
+                      "xmin": np.nan,
+                      "ks_distance": np.nan,
+                      "n_tail": 0,
+                      "n_values": int(values.size),
+                      "fit_error": "too_few_values",
+                  }
+              try:
+                  fit = powerlaw.Fit(values, discrete=False, verbose=False)
+                  xmin = float(fit.power_law.xmin)
+                  return {
+                      "alpha": float(fit.power_law.alpha),
+                      "xmin": xmin,
+                      "ks_distance": float(fit.power_law.D),
+                      "n_tail": int(np.count_nonzero(values >= xmin)),
+                      "n_values": int(values.size),
+                      "fit_error": "",
+                  }
+              except Exception as exc:
+                  return {
+                      "alpha": np.nan,
+                      "xmin": np.nan,
+                      "ks_distance": np.nan,
+                      "n_tail": 0,
+                      "n_values": int(values.size),
+                      "fit_error": f"{type(exc).__name__}: {exc}",
+                  }
+
+          rows = []
+          spectra = {}
+          cache = {}
+
+          def payload(step):
+              if step not in cache:
+                  cache[step] = load_microbatch_checkpoint(by_step[step])
+              return cache[step]
+
+          for step in selected_steps:
+              current = payload(step)
+              for layer, matrix in current["matrices"].items():
+                  weight_eigs = matrix_esd_eigenvalues(matrix)
+                  spectra[("weight", step, layer)] = weight_eigs
+                  rows.append({
+                      "spectrum": "weight",
+                      "global_step": step,
+                      "layer": layer,
+                      "operator_side": "weight",
+                      **fit_powerlaw(weight_eigs),
+                  })
+
+                  if step == 0:
+                      continue
+                  previous = payload(step - 1)
+                  flow_eigs, side = relative_flow_esd_eigenvalues(
+                      previous["matrices"][layer], matrix, pinv_rtol=1e-6
+                  )
+                  spectra[("relative_flow", step, layer)] = flow_eigs
+                  rows.append({
+                      "spectrum": "relative_flow",
+                      "global_step": step,
+                      "layer": layer,
+                      "operator_side": side,
+                      **fit_powerlaw(flow_eigs),
+                  })
+                  log_modes = log_flow_deviation(flow_eigs, zero_tol=1e-12)
+                  spectra[("log_flow_deviation", step, layer)] = log_modes
+                  rows.append({
+                      "spectrum": "log_flow_deviation",
+                      "global_step": step,
+                      "layer": layer,
+                      "operator_side": side,
+                      **fit_powerlaw(log_modes),
+                  })
+
+          fits = pd.DataFrame(rows).sort_values(
+              ["spectrum", "layer", "global_step"]
+          ).reset_index(drop=True)
+          fits.to_csv(analysis_dir / "microbatch_powerlaw_fits.csv", index=False)
+          np.savez_compressed(
+              analysis_dir / "selected_microbatch_esd_spectra.npz",
+              **{
+                  f"{kind}__step_{step:07d}__{layer.replace('.', '_')}": values
+                  for (kind, step, layer), values in spectra.items()
+              },
+          )
+
+          def plot_alpha(spectrum):
+              selected = fits[fits["spectrum"].eq(spectrum)]
+              fig, ax = plt.subplots(figsize=(9, 5.5))
+              for layer, group in selected.groupby("layer", sort=True):
+                  group = group[np.isfinite(group["alpha"])].sort_values(
+                      "global_step"
+                  )
+                  ax.plot(
+                      group["global_step"],
+                      group["alpha"],
+                      marker=".",
+                      linewidth=1.2,
+                      label=layer,
+                  )
+              ax.axhline(
+                  2.0,
+                  linestyle="--",
+                  linewidth=1.4,
+                  label="RG hypothesis alpha=2",
+              )
+              ax.set_xlabel("optimizer step")
+              ax.set_ylabel("power-law exponent alpha")
+              ax.set_title(f"MNIST MLP3 Muon: {spectrum} alpha versus step")
+              ax.grid(True, alpha=0.25)
+              ax.legend()
+              fig.tight_layout()
+              fig.savefig(
+                  analysis_dir / f"alpha_{spectrum}_vs_step.png", dpi=180
+              )
+              plt.close(fig)
+
+          for spectrum in (
+              "weight",
+              "relative_flow",
+              "log_flow_deviation",
+          ):
+              plot_alpha(spectrum)
+
+          def plot_esds(spectrum, layer, steps):
+              fig, ax = plt.subplots(figsize=(8.5, 5.5))
+              for step in steps:
+                  key = (spectrum, step, layer)
+                  if key not in spectra:
+                      continue
+                  values = np.asarray(spectra[key], dtype=float)
+                  values = values[np.isfinite(values) & (values > 0.0)]
+                  if values.size < 2 or values.min() == values.max():
+                      continue
+                  edges = np.logspace(
+                      np.log10(values.min()), np.log10(values.max()), 30
+                  )
+                  density, edges = np.histogram(values, bins=edges, density=True)
+                  centers = np.sqrt(edges[:-1] * edges[1:])
+                  mask = density > 0.0
+                  ax.loglog(
+                      centers[mask], density[mask], marker="o", label=f"step {step}"
+                  )
+              ax.set_xlabel("eigenvalue / mode magnitude")
+              ax.set_ylabel("ESD density")
+              ax.set_title(f"{spectrum}: {layer}")
+              ax.grid(True, which="both", alpha=0.25)
+              ax.legend()
+              fig.tight_layout()
+              fig.savefig(
+                  analysis_dir / f"esd_{spectrum}_{layer.replace('.', '_')}.png",
+                  dpi=180,
+              )
+              plt.close(fig)
+
+          display_steps = [0, 100, 250, final_step]
+          flow_steps = [10, 100, 250, final_step]
+          for layer in ("fc1.weight", "fc2.weight", "fc3.weight"):
+              plot_esds("weight", layer, display_steps)
+              plot_esds("relative_flow", layer, flow_steps)
+              plot_esds("log_flow_deviation", layer, flow_steps)
+
+          summary = (
+              fits[np.isfinite(fits["alpha"])]
+              .sort_values("global_step")
+              .groupby(["spectrum", "layer"], as_index=False)
+              .tail(10)
+              .groupby(["spectrum", "layer"], as_index=False)
+              .agg(
+                  alpha_median=("alpha", "median"),
+                  alpha_mean=("alpha", "mean"),
+                  alpha_std=("alpha", "std"),
+                  last_step=("global_step", "max"),
+                  median_tail_size=("n_tail", "median"),
+              )
+          )
+          summary.to_csv(analysis_dir / "late_step_alpha_summary.csv", index=False)
+          (analysis_dir / "pilot_summary.json").write_text(
+              json.dumps(
+                  {
+                      "final_step": final_step,
+                      "saved_microbatch_checkpoints": len(index),
+                      "selected_fit_steps": selected_steps,
+                      "fit_rows": len(fits),
+                  },
+                  indent=2,
+              ),
+              encoding="utf-8",
+          )
+
+          endpoint_dir = analysis_dir / "endpoint_checkpoints"
+          endpoint_dir.mkdir(exist_ok=True)
+          for step in (0, final_step):
+              target = endpoint_dir / by_step[step].name
+              target.write_bytes(by_step[step].read_bytes())
+
+          print(summary.to_string(index=False))
+          PY
+
+      - name: Inspect pilot outputs
+        run: |
+          find "$RUN_DIR/pilot_analysis" -maxdepth 2 -type f -printf '%p %k KB\n' | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mnist-muon-microbatch-pilot
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+          path: |
+            ${{ env.RUN_DIR }}/manifest.json
+            ${{ env.RUN_DIR }}/training_metrics.csv
+            ${{ env.RUN_DIR }}/microbatch_checkpoints/manifest.json
+            ${{ env.RUN_DIR }}/microbatch_checkpoints/checkpoint_index.csv
+            ${{ env.RUN_DIR }}/pilot_analysis/**
