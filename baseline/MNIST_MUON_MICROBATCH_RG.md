@@ -82,5 +82,12 @@ It writes `microbatch_powerlaw_fits.csv` and
 `microbatch_esd_spectra.npz`, then plots fitted alpha versus optimizer step with
 an `alpha = 2` reference line.
 
+`powerlaw` 2.0 uses a built-in upper bound of `alpha = 3` for its power-law
+model. The notebook explicitly expands the fitting range to
+`1.01 <= alpha <= 10`, records the selected tail size and KS distance, and
+marks any fit that reaches the expanded boundary. This prevents a sequence of
+clipped values at exactly three from being mistaken for measured exponents.
+
 The relative-flow construction is basis dependent. This experiment tests that
-proposal numerically; it does not establish a basis-invariant quotient.
+proposal numerically; it does not establish a basis-invariant quotient. The
+`fc3.weight` spectrum contains only ten values, so its fits are qualitative.
