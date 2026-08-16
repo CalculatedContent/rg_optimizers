@@ -110,8 +110,14 @@ def run_muon_microbatch_capture(
     large_capture_gib: float = 8.0,
     overwrite: bool = False,
     progress: bool = True,
+    test_every_epoch: bool = False,
 ) -> Path:
-    """Run the exact Muon baseline recipe with matrix-only step checkpoints."""
+    """Run the exact Muon baseline recipe with matrix-only step checkpoints.
+
+    ``test_every_epoch`` is opt-in so the preregistered baseline remains
+    monitoring-only by default. Diagnostic experiments may enable it to align
+    held-out test accuracy with epoch-level spectral measurements.
+    """
 
     config = BaselineConfig(
         optimizer="sgd_momentum_muon",
@@ -193,6 +199,7 @@ def run_muon_microbatch_capture(
             "checkpoint_dtype": checkpoint_dtype,
             "estimated_checkpoint_count": capture_count,
             "estimated_raw_capture_gib": estimated_gib,
+            "test_every_epoch": bool(test_every_epoch),
             "completed": False,
         },
         run_dir / "manifest.json",
@@ -280,9 +287,10 @@ def run_muon_microbatch_capture(
                 break
 
         validation = evaluate(model, validation_loader, device=resolved_device)
+        should_test = bool(test_every_epoch) or stop or epoch == config.epochs
         test = (
             evaluate(model, test_loader, device=resolved_device)
-            if stop or epoch == config.epochs
+            if should_test
             else {"loss": float("nan"), "accuracy": float("nan")}
         )
         _append_metrics(
@@ -364,6 +372,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--allow-large-capture", action="store_true")
     parser.add_argument("--large-capture-gib", type=float, default=8.0)
+    parser.add_argument(
+        "--test-every-epoch",
+        action="store_true",
+        help=(
+            "Evaluate the official test set after every epoch for diagnostic "
+            "comparison. The default keeps test monitoring final-only."
+        ),
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--quiet", action="store_true")
     return parser
@@ -386,6 +402,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         large_capture_gib=args.large_capture_gib,
         overwrite=args.overwrite,
         progress=not args.quiet,
+        test_every_epoch=args.test_every_epoch,
     )
 
 
