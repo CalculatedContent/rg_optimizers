@@ -1,0 +1,90 @@
+name: MNIST Muon rectangular RG pilot
+
+on:
+  push:
+    branches:
+      - agent/mnist-muon-rectangular-pilot
+    paths:
+      - ".github/workflows/mnist-muon-rectangular-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      MPLBACKEND: Agg
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: baseline/pyproject.toml
+
+      - name: Install CPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e './baseline[experiment]'
+
+      - name: Train real MNIST Muon and save every microbatch
+        run: |
+          RUN_DIR="$RUNNER_TEMP/mnist_mlp3_muon_rectangular_500"
+          echo "RUN_DIR=$RUN_DIR" >> "$GITHUB_ENV"
+          rg-mnist-muon-microbatch \
+            --data-dir "$RUNNER_TEMP/mnist-data" \
+            --output-dir "$RUN_DIR" \
+            --epochs 30 \
+            --batch-size 128 \
+            --seed 1337 \
+            --device cpu \
+            --max-steps 500 \
+            --capture-every 1 \
+            --checkpoint-dtype float32 \
+            --overwrite
+
+      - name: Analyze aligned core and Grassmann spectra
+        run: |
+          rg-mnist-muon-rectangular-analysis \
+            --run-dir "$RUN_DIR" \
+            --output-dir "$RUN_DIR/rectangular_rg_analysis" \
+            --step-stride 10 \
+            --max-step 500 \
+            --rank-rtol 1e-10 \
+            --log-zero-tol 1e-12 \
+            --angle-zero-tol 1e-12 \
+            --alpha-min 1.01 \
+            --alpha-max 10
+
+      - name: Preserve endpoint checkpoints and inspect results
+        run: |
+          mkdir -p "$RUN_DIR/rectangular_rg_analysis/endpoint_checkpoints"
+          cp "$RUN_DIR/microbatch_checkpoints/frames/step_0000000.pt" \
+             "$RUN_DIR/rectangular_rg_analysis/endpoint_checkpoints/"
+          cp "$RUN_DIR/microbatch_checkpoints/frames/step_0000500.pt" \
+             "$RUN_DIR/rectangular_rg_analysis/endpoint_checkpoints/"
+          echo '--- late step summary ---'
+          cat "$RUN_DIR/rectangular_rg_analysis/late_step_alpha_summary.csv"
+          echo '--- final diagnostics ---'
+          tail -n 8 "$RUN_DIR/rectangular_rg_analysis/rectangular_flow_diagnostics.csv"
+          echo '--- files ---'
+          find "$RUN_DIR/rectangular_rg_analysis" -type f -printf '%p %k KB\n' | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mnist-muon-rectangular-rg-pilot
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+          path: |
+            ${{ env.RUN_DIR }}/manifest.json
+            ${{ env.RUN_DIR }}/training_metrics.csv
+            ${{ env.RUN_DIR }}/microbatch_checkpoints/manifest.json
+            ${{ env.RUN_DIR }}/microbatch_checkpoints/checkpoint_index.csv
+            ${{ env.RUN_DIR }}/rectangular_rg_analysis/**
