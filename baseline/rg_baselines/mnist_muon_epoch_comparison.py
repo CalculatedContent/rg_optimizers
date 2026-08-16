@@ -29,12 +29,14 @@ def fit_powerlaw_ks_mle(
     alpha_range: tuple[float, float] = DEFAULT_ALPHA_RANGE,
     boundary_atol: float = 1e-3,
 ) -> dict[str, Any]:
-    """Fit a continuous power law with MLE alpha and KS-selected xmin.
+    """Fit a continuous power law with package MLE and KS-selected ``xmin``.
 
-    ``powerlaw.Fit`` searches candidate tail starts and selects ``xmin`` by
-    minimizing the Kolmogorov-Smirnov distance. ``test_all_xmin=True`` forces
-    the search over every admissible observed tail start rather than a reduced
-    candidate grid. The returned ``fit.power_law.alpha`` is the package's MLE.
+    In ``powerlaw==2.0.0``, leaving ``xmin=None`` invokes ``Fit.find_xmin``.
+    That method enumerates every unique observed candidate below the maximum,
+    fits the candidate tail, and selects the candidate with minimum distance.
+    We explicitly request ``xmin_distance='D'`` so that distance is the
+    Kolmogorov-Smirnov statistic. The selected distribution's ``alpha`` is the
+    package maximum-likelihood estimate.
     """
 
     import powerlaw
@@ -60,7 +62,7 @@ def fit_powerlaw_ks_mle(
         "fit_warning": "",
         "fit_error": "",
         "fit_method": "powerlaw.Fit continuous MLE",
-        "xmin_method": "minimum KS distance over all observed candidates",
+        "xmin_method": "minimum KS distance over all unique observed candidates",
     }
     if data.size < int(min_points):
         return {**base, "fit_error": "too_few_values"}
@@ -72,7 +74,7 @@ def fit_powerlaw_ks_mle(
                 data,
                 discrete=False,
                 verbose=False,
-                test_all_xmin=True,
+                xmin_distance="D",
                 parameter_ranges={"alpha": [lower, upper]},
             )
         alpha = float(fit.power_law.alpha)
@@ -125,18 +127,19 @@ def _selected_flow_steps(
         raise ValueError("stride must be positive")
     steps = sorted({int(step) for step in available if int(step) > 0})
     ends = {int(step) for step in epoch_end_steps}
-    selected = [step for step in steps if step % int(stride) == 0 or step in ends]
-    return sorted(set(selected))
+    return sorted(
+        {step for step in steps if step % int(stride) == 0 or step in ends}
+    )
 
 
-def _aggregate_epoch_rows(
-    raw: pd.DataFrame,
-    metrics: pd.DataFrame,
-) -> pd.DataFrame:
+def aggregate_epoch_rows(raw: pd.DataFrame, metrics: pd.DataFrame) -> pd.DataFrame:
+    """Combine endpoint weight fits and within-epoch flow-fit medians."""
+
     rows: list[dict[str, Any]] = []
     metric_map = metrics.set_index("epoch").to_dict(orient="index")
 
     weight = raw[raw["spectrum"].eq("weight_esd")].copy()
+    weight = weight[np.isfinite(weight["alpha"])].copy()
     for record in weight.itertuples(index=False):
         meta = metric_map[int(record.epoch)]
         rows.append(
@@ -163,8 +166,9 @@ def _aggregate_epoch_rows(
 
     flow = raw[~raw["spectrum"].eq("weight_esd")].copy()
     flow = flow[np.isfinite(flow["alpha"])].copy()
-    grouped = flow.groupby(["epoch", "spectrum", "layer"], sort=True)
-    for (epoch, spectrum, layer), group in grouped:
+    for (epoch, spectrum, layer), group in flow.groupby(
+        ["epoch", "spectrum", "layer"], sort=True
+    ):
         meta = metric_map[int(epoch)]
         rows.append(
             {
@@ -193,14 +197,14 @@ def _aggregate_epoch_rows(
     ).reset_index(drop=True)
 
 
-def _plot_test_accuracy(metrics: pd.DataFrame, output_path: Path) -> None:
+def plot_test_accuracy(metrics: pd.DataFrame, output_path: Path) -> None:
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(8.5, 5.2))
     ax.plot(metrics["epoch"], metrics["test_accuracy"], marker="o")
     ax.set_xlabel("epoch")
     ax.set_ylabel("test accuracy")
-    ax.set_title("MNIST MLP3 Muon: test accuracy through five epochs")
+    ax.set_title("MNIST MLP3 Muon: test accuracy")
     ax.grid(True, alpha=0.25)
     ax.set_xticks(metrics["epoch"])
     fig.tight_layout()
@@ -208,7 +212,7 @@ def _plot_test_accuracy(metrics: pd.DataFrame, output_path: Path) -> None:
     plt.close(fig)
 
 
-def _plot_alpha_with_accuracy(
+def plot_alpha_with_accuracy(
     summary: pd.DataFrame,
     metrics: pd.DataFrame,
     *,
@@ -259,17 +263,49 @@ def _plot_alpha_with_accuracy(
     plt.close(fig)
 
 
-def _plot_all_alpha(summary: pd.DataFrame, metrics: pd.DataFrame, output_path: Path) -> None:
-    _plot_alpha_with_accuracy(
+def write_comparison_outputs(
+    raw: pd.DataFrame,
+    metrics: pd.DataFrame,
+    destination: Path,
+) -> pd.DataFrame:
+    """Write tables and plots for already-computed spectra fits."""
+
+    destination.mkdir(parents=True, exist_ok=True)
+    summary = aggregate_epoch_rows(raw, metrics)
+    raw.to_csv(destination / "powerlaw_fits_by_step.csv", index=False)
+    summary.to_csv(destination / "alpha_test_accuracy_by_epoch.csv", index=False)
+    metrics.to_csv(destination / "training_metrics_with_test_each_epoch.csv", index=False)
+
+    plot_test_accuracy(metrics, destination / "test_accuracy_vs_epoch.png")
+    plot_alpha_with_accuracy(
+        summary,
+        metrics,
+        spectra=("weight_esd",),
+        title="Standard weight-ESD alpha versus test accuracy",
+        output_path=destination / "standard_weight_alpha_vs_epoch.png",
+    )
+    plot_alpha_with_accuracy(
+        summary,
+        metrics,
+        spectra=("core_log_deviation",),
+        title="Aligned-core RG alpha versus test accuracy",
+        output_path=destination / "rg_core_alpha_vs_epoch.png",
+    )
+    plot_alpha_with_accuracy(
+        summary,
+        metrics,
+        spectra=("angular_theta_squared",),
+        title="Grassmann angular alpha versus test accuracy",
+        output_path=destination / "rg_angular_alpha_vs_epoch.png",
+    )
+    plot_alpha_with_accuracy(
         summary,
         metrics,
         spectra=("weight_esd", "core_log_deviation", "angular_theta_squared"),
-        title=(
-            "MNIST MLP3 Muon: standard weight and rectangular RG alphas "
-            "versus test accuracy"
-        ),
-        output_path=output_path,
+        title="Standard and rectangular RG alphas versus test accuracy",
+        output_path=destination / "all_alpha_and_test_accuracy_vs_epoch.png",
     )
+    return summary
 
 
 def analyze_five_epoch_run(
@@ -307,7 +343,6 @@ def analyze_five_epoch_run(
     fit_rows: list[dict[str, Any]] = []
     spectra: dict[tuple[str, int, str], np.ndarray] = {}
 
-    # Standard analysis: fit the ordinary weight ESD at each epoch endpoint.
     for metric in metrics.itertuples(index=False):
         step = int(metric.global_step)
         payload = load_microbatch_checkpoint(by_step[step])
@@ -329,7 +364,6 @@ def analyze_five_epoch_run(
                 }
             )
 
-    # Rectangular RG analysis: sample one-step flows throughout every epoch.
     flow_steps = _selected_flow_steps(
         by_step,
         stride=int(flow_step_stride),
@@ -348,82 +382,42 @@ def analyze_five_epoch_run(
                 log_zero_tol=float(log_zero_tol),
                 angle_zero_tol=float(angle_zero_tol),
             )
-            core = np.asarray(result["core_log_deviation"], dtype=float)
-            spectra[("core_log_deviation", step, layer)] = core
-            fit_rows.append(
-                {
-                    "epoch": epoch,
-                    "global_step": step,
-                    "previous_step": step - 1,
-                    "spectrum": "core_log_deviation",
-                    "layer": layer,
-                    **fit_powerlaw_ks_mle(
-                        core,
-                        min_points=powerlaw_min_points,
-                        alpha_range=powerlaw_alpha_range,
-                    ),
-                }
-            )
-
-            angular = np.asarray(result["angular_eigenvalues"], dtype=float)
-            spectra[("angular_theta_squared", step, layer)] = angular
-            fit_rows.append(
-                {
-                    "epoch": epoch,
-                    "global_step": step,
-                    "previous_step": step - 1,
-                    "spectrum": "angular_theta_squared",
-                    "layer": layer,
-                    **fit_powerlaw_ks_mle(
-                        angular,
-                        min_points=powerlaw_min_points,
-                        alpha_range=powerlaw_alpha_range,
-                    ),
-                }
-            )
+            for spectrum, values in (
+                (
+                    "core_log_deviation",
+                    np.asarray(result["core_log_deviation"], dtype=float),
+                ),
+                (
+                    "angular_theta_squared",
+                    np.asarray(result["angular_eigenvalues"], dtype=float),
+                ),
+            ):
+                spectra[(spectrum, step, layer)] = values
+                fit_rows.append(
+                    {
+                        "epoch": epoch,
+                        "global_step": step,
+                        "previous_step": step - 1,
+                        "spectrum": spectrum,
+                        "layer": layer,
+                        **fit_powerlaw_ks_mle(
+                            values,
+                            min_points=powerlaw_min_points,
+                            alpha_range=powerlaw_alpha_range,
+                        ),
+                    }
+                )
 
     raw = pd.DataFrame(fit_rows).sort_values(
         ["spectrum", "layer", "global_step"]
     ).reset_index(drop=True)
-    summary = _aggregate_epoch_rows(raw, metrics)
-
-    raw.to_csv(destination / "powerlaw_fits_by_step.csv", index=False)
-    summary.to_csv(destination / "alpha_test_accuracy_by_epoch.csv", index=False)
-    metrics.to_csv(destination / "training_metrics_with_test_each_epoch.csv", index=False)
+    summary = write_comparison_outputs(raw, metrics, destination)
     np.savez_compressed(
         destination / "selected_spectra.npz",
         **{
             f"{kind}__step_{step:07d}__{layer.replace('.', '_')}": values
             for (kind, step, layer), values in spectra.items()
         },
-    )
-
-    _plot_test_accuracy(metrics, destination / "test_accuracy_vs_epoch.png")
-    _plot_alpha_with_accuracy(
-        summary,
-        metrics,
-        spectra=("weight_esd",),
-        title="Standard weight-ESD alpha versus test accuracy",
-        output_path=destination / "standard_weight_alpha_vs_epoch.png",
-    )
-    _plot_alpha_with_accuracy(
-        summary,
-        metrics,
-        spectra=("core_log_deviation",),
-        title="Aligned-core RG alpha versus test accuracy",
-        output_path=destination / "rg_core_alpha_vs_epoch.png",
-    )
-    _plot_alpha_with_accuracy(
-        summary,
-        metrics,
-        spectra=("angular_theta_squared",),
-        title="Grassmann angular alpha versus test accuracy",
-        output_path=destination / "rg_angular_alpha_vs_epoch.png",
-    )
-    _plot_all_alpha(
-        summary,
-        metrics,
-        destination / "all_alpha_and_test_accuracy_vs_epoch.png",
     )
 
     manifest = {
@@ -436,11 +430,12 @@ def analyze_five_epoch_run(
         "flow_pair_lag": 1,
         "flow_steps": flow_steps,
         "powerlaw_fit": {
-            "package": "powerlaw",
+            "package": "powerlaw==2.0.0",
             "distribution": "continuous",
             "alpha_estimator": "powerlaw package MLE",
             "xmin_selection": (
-                "minimum Kolmogorov-Smirnov distance with test_all_xmin=True"
+                "Fit.find_xmin minimum Kolmogorov-Smirnov distance over all "
+                "unique observed candidates"
             ),
             "alpha_range": list(powerlaw_alpha_range),
             "minimum_spectrum_points": int(powerlaw_min_points),
@@ -457,8 +452,7 @@ def analyze_five_epoch_run(
         "fit_rows": int(len(raw)),
     }
     (destination / "analysis_manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True),
-        encoding="utf-8",
+        json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
     )
     return {
         "metrics": metrics,
