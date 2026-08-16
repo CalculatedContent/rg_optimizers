@@ -1,0 +1,188 @@
+name: MNIST Muon five-epoch corrected power-law refit
+
+on:
+  push:
+    branches:
+      - agent/mnist-muon-five-epoch-comparison
+    paths:
+      - ".github/workflows/mnist-muon-five-epoch-refit.yml"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  refit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      MPLBACKEND: Agg
+      SOURCE_RUN_ID: "31926914630"
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install analysis dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy pandas matplotlib 'powerlaw==2.0.0'
+
+      - name: Download five-epoch training artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p source
+          gh run download "$SOURCE_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name mnist-muon-five-epoch-alpha-comparison \
+            --dir source
+          find source -maxdepth 3 -type f -print | sort
+
+      - name: Refit spectra with package KS xmin selection and MLE alpha
+        run: |
+          PYTHONPATH=baseline python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+          import re
+          import shutil
+
+          import numpy as np
+          import pandas as pd
+          import powerlaw
+
+          from rg_baselines.mnist_muon_epoch_comparison import (
+              fit_powerlaw_ks_mle,
+              write_comparison_outputs,
+          )
+
+          source = Path("source")
+          previous = source / "five_epoch_comparison"
+          output = Path("corrected_five_epoch_comparison")
+          output.mkdir(parents=True, exist_ok=True)
+
+          metrics = pd.read_csv(source / "training_metrics.csv").sort_values("epoch")
+          epoch_end_steps = metrics["global_step"].astype(int).to_numpy()
+          archive = np.load(previous / "selected_spectra.npz")
+          pattern = re.compile(
+              r"^(weight_esd|core_log_deviation|angular_theta_squared)__"
+              r"step_(\d{7})__(fc[12]_weight)$"
+          )
+          layer_map = {
+              "fc1_weight": "fc1.weight",
+              "fc2_weight": "fc2.weight",
+          }
+
+          print("powerlaw version:", getattr(powerlaw, "__version__", "unknown"))
+          rows = []
+          for key in archive.files:
+              match = pattern.match(key)
+              if match is None:
+                  raise RuntimeError(f"unexpected spectrum key: {key}")
+              spectrum, step_text, layer_key = match.groups()
+              step = int(step_text)
+              epoch = int(np.searchsorted(epoch_end_steps, step, side="left") + 1)
+              if epoch < 1 or epoch > len(epoch_end_steps):
+                  raise RuntimeError(f"step {step} maps outside the five epochs")
+              rows.append(
+                  {
+                      "epoch": epoch,
+                      "global_step": step,
+                      "previous_step": np.nan if spectrum == "weight_esd" else step - 1,
+                      "spectrum": spectrum,
+                      "layer": layer_map[layer_key],
+                      **fit_powerlaw_ks_mle(
+                          archive[key],
+                          min_points=8,
+                          alpha_range=(1.01, 20.0),
+                      ),
+                  }
+              )
+
+          raw = pd.DataFrame(rows).sort_values(
+              ["spectrum", "layer", "global_step"]
+          ).reset_index(drop=True)
+
+          unexpected = raw[
+              raw["fit_error"].fillna("").ne("")
+              & raw["fit_error"].fillna("").ne("too_few_values")
+          ]
+          if not unexpected.empty:
+              print(unexpected[["spectrum", "layer", "global_step", "fit_error"]])
+              raise RuntimeError("unexpected power-law fitting errors remain")
+
+          required = raw[
+              raw["spectrum"].ne("angular_theta_squared")
+              | raw["layer"].eq("fc1.weight")
+          ]
+          if not np.isfinite(required["alpha"]).all():
+              raise RuntimeError("required FC1/FC2 fits contain non-finite alpha")
+
+          summary = write_comparison_outputs(raw, metrics, output)
+          shutil.copy2(previous / "selected_spectra.npz", output / "selected_spectra.npz")
+          shutil.copytree(
+              previous / "epoch_end_checkpoints",
+              output / "epoch_end_checkpoints",
+              dirs_exist_ok=True,
+          )
+
+          error_summary = (
+              raw.groupby(["spectrum", "layer", "fit_error"], dropna=False)
+              .size()
+              .reset_index(name="rows")
+          )
+          error_summary.to_csv(output / "fit_error_summary.csv", index=False)
+          boundary_summary = (
+              raw.groupby(["spectrum", "layer"], as_index=False)
+              .agg(
+                  fit_rows=("global_step", "count"),
+                  finite_alpha=("alpha", lambda x: int(np.isfinite(x).sum())),
+                  boundary_hits=("alpha_at_boundary", "sum"),
+                  median_ks=("ks_distance", "median"),
+                  median_tail_fraction=("tail_fraction", "median"),
+              )
+          )
+          boundary_summary.to_csv(output / "fit_quality_summary.csv", index=False)
+
+          manifest = {
+              "source_run_id": int("31926914630"),
+              "source_artifact": "mnist-muon-five-epoch-alpha-comparison",
+              "powerlaw_version": getattr(powerlaw, "__version__", "unknown"),
+              "alpha_estimator": "powerlaw package continuous MLE",
+              "xmin_selection": (
+                  "powerlaw 2.0.0 Fit.find_xmin enumerates all unique observed "
+                  "candidate xmins and minimizes the Kolmogorov-Smirnov D statistic"
+              ),
+              "alpha_range": [1.01, 20.0],
+              "raw_fit_rows": int(len(raw)),
+              "finite_alpha_rows": int(np.isfinite(raw["alpha"]).sum()),
+          }
+          (output / "analysis_manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True),
+              encoding="utf-8",
+          )
+
+          print("--- corrected epoch comparison ---")
+          print(summary.to_string(index=False))
+          print("--- fit quality ---")
+          print(boundary_summary.to_string(index=False))
+          PY
+
+      - name: Inspect corrected outputs
+        run: |
+          find corrected_five_epoch_comparison -type f -printf '%p %k KB\n' | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mnist-muon-five-epoch-alpha-comparison-corrected
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+          path: corrected_five_epoch_comparison/**
