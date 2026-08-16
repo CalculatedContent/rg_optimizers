@@ -24,6 +24,7 @@ experiment = [
 
 [project.scripts]
 rg-mnist-muon-microbatch = "rg_baselines.mnist_muon_microbatch:main"
+rg-mnist-muon-rectangular-analysis = "rg_baselines.mnist_muon_rectangular_analysis:main"
 
 [tool.setuptools]
 packages = ["rg_baselines"]
