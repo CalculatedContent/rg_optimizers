@@ -18,8 +18,13 @@ dependencies = [
 experiment = [
   "matplotlib>=3.7",
   "weightwatcher==0.7.7",
+  "powerlaw>=2.0.0,<3",
   "jupyter>=1.0",
 ]
+
+[project.scripts]
+rg-mnist-muon-microbatch = "rg_baselines.mnist_muon_microbatch:main"
+rg-mnist-muon-rectangular-analysis = "rg_baselines.mnist_muon_rectangular_analysis:main"
 
 [tool.setuptools]
 packages = ["rg_baselines"]
