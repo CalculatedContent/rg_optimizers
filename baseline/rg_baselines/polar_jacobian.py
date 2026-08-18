@@ -27,6 +27,12 @@ def frechet_action(weight: np.ndarray, perturbation: np.ndarray) -> np.ndarray:
     return out
 
 
+def raw_weight_esd(weight: np.ndarray) -> np.ndarray:
+    """Raw nonzero eigenvalues of W^T W, i.e. squared singular values."""
+    s = np.linalg.svd(np.asarray(weight, dtype=np.float64), compute_uv=False)
+    return np.sort(s * s)
+
+
 def analytic_gram_spectrum(weight: np.ndarray) -> tuple[np.ndarray, int]:
     """Exact positive spectrum of (D Pi)^* D Pi and zero-mode count."""
     w = np.asarray(weight, dtype=np.float64)
@@ -70,6 +76,47 @@ def numerical_probe_gram_spectrum(
     }
 
 
+def powerlaw_mle_grid_ks(evals: np.ndarray, *, min_tail: int = 5) -> dict[str, float]:
+    """Continuous Pareto MLE with an x_min grid search minimizing KS distance.
+
+    For every candidate x_min leaving at least ``min_tail`` observations,
+    alpha = 1 + n / sum(log(x/x_min)).  The selected candidate minimizes the
+    Kolmogorov-Smirnov distance between the empirical tail CDF and the fitted
+    continuous Pareto CDF.
+    """
+    values = np.sort(np.asarray(evals, dtype=np.float64))
+    values = values[np.isfinite(values) & (values > 0)]
+    if values.size < max(2, int(min_tail)):
+        return {"alpha": np.nan, "D": np.nan, "xmin": np.nan, "xmax": np.nan, "tail_evals": 0}
+
+    best = None
+    for start in range(0, values.size - int(min_tail) + 1):
+        xmin = float(values[start])
+        tail = values[start:]
+        n = int(tail.size)
+        denom = float(np.sum(np.log(tail / xmin)))
+        if not np.isfinite(denom) or denom <= 0:
+            continue
+        alpha = 1.0 + n / denom
+        empirical = np.arange(1, n + 1, dtype=np.float64) / n
+        theoretical = 1.0 - np.power(tail / xmin, 1.0 - alpha)
+        D = float(np.max(np.abs(empirical - theoretical)))
+        candidate = (D, start, alpha, xmin, n)
+        if best is None or candidate[0] < best[0]:
+            best = candidate
+
+    if best is None:
+        return {"alpha": np.nan, "D": np.nan, "xmin": np.nan, "xmax": float(np.max(values)), "tail_evals": 0}
+    D, _, alpha, xmin, n = best
+    return {
+        "alpha": float(alpha),
+        "D": float(D),
+        "xmin": float(xmin),
+        "xmax": float(np.max(values)),
+        "tail_evals": int(n),
+    }
+
+
 def weightwatcher_pl_fit(evals: np.ndarray) -> dict[str, float]:
     """Use WeightWatcher's own PL fitter on raw positive eigenvalues."""
     from weightwatcher.WW_powerlaw import pl_fit
@@ -94,14 +141,14 @@ def finite_difference_error(weight: np.ndarray, perturbation: np.ndarray, eps_re
     return float(np.linalg.norm(fd - exact) / max(np.linalg.norm(fd), np.finfo(float).tiny))
 
 
-def probe_convergence(weight: np.ndarray, counts=(16, 32, 64, 128, 256), *, eps_rel=1e-5, seed=918273):
-    """Return analytic and finite-probe WeightWatcher fits for one checkpoint."""
+def probe_convergence(weight: np.ndarray, counts=(16, 32, 64, 128, 256), *, eps_rel=1e-5, seed=918273, min_tail=5):
+    """Return analytic and finite-probe MLE/KS fits for one checkpoint."""
     analytic, _ = analytic_gram_spectrum(weight)
-    reference = weightwatcher_pl_fit(analytic)
+    reference = powerlaw_mle_grid_ks(analytic, min_tail=min_tail)
     rows = [{"method": "analytic", "probes": np.nan, **reference}]
     for count in counts:
         sampled, _ = numerical_probe_gram_spectrum(weight, probes=int(count), eps_rel=eps_rel, seed=seed)
-        rows.append({"method": "numerical_finite_difference", "probes": int(count), **weightwatcher_pl_fit(sampled)})
+        rows.append({"method": "numerical_finite_difference", "probes": int(count), **powerlaw_mle_grid_ks(sampled, min_tail=min_tail)})
     for row in rows:
         row["alpha_analytic"] = reference["alpha"]
         row["alpha_difference"] = row["alpha"] - reference["alpha"]
