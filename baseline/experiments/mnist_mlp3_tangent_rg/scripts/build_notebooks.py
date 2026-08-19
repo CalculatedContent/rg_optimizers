@@ -5905,6 +5905,950 @@ def data_dependent_ecs_jacobians_notebook() -> tuple[str, dict[str, object]]:
     return notebook("17_Data_Dependent_ECS_Jacobians.ipynb", cells)
 
 
+def single_run_muonclip_audit_notebook() -> tuple[str, dict[str, object]]:
+    cells = [
+        markdown(
+            r"""
+            # Single-run MuonClip Jacobian audit
+
+            This Papermill driver is the fast, readable diagnostic for one
+            completed MuonClip-RMS seed. It executes and verifies every
+            notebook in this suite that forms a declared Jacobian, consolidates
+            their nonzero $J^\ast J$ energy fits, and compares them with the
+            weight-matrix ESD from the same run.
+
+            This is deliberately **not** a multi-seed statistical result. No
+            confidence interval or error bar is computed. Checkpoints, probe
+            directions, minibatch examples, singular modes, and repeated ECS
+            shell modes are dependent observations from one trained model.
+            They may reveal numerical failures and qualitative flow, but they
+            are not substitutes for independent seeded training runs.
+            """
+        ),
+        parameters(
+            """
+            OPTIMIZER_SLUG = "muonclip_rms"
+            SEED = 1337
+            SEEDS = [1337]
+            RUN_CHILD_NOTEBOOKS = True
+            CHILD_KERNEL = "rg-muonclip-run"
+            TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
+            MINIMUM_TAIL = 8
+            MLE_MAX_STATES = 24
+            MLE_TAIL_EPOCHS = 100
+            MAX_METHODS_PER_PAGE = 6
+            METHOD_SLUG = "single_run_muonclip_jacobian_audit"
+            UNCERTAINTY_POLICY = "no_seed_error_bars"
+            """
+        ),
+        code(BOOTSTRAP),
+        code(
+            COMMON_IMPORTS
+            + "\n"
+            + ANALYSIS_IMPORTS
+            + "\nfrom matplotlib.lines import Line2D"
+        ),
+        markdown(
+            r"""
+            ## What is differentiated
+
+            Every derived spectrum below comes from a declared derivative,
+            and every plotted Jacobian energy is a nonzero eigenvalue of
+            $J^\ast J$. The driver runs these five analysis families:
+
+            1. **Muon source/Stiefel derivatives** (notebook 11): differentials
+               of the polar and finite Newton--Schulz update maps.
+            2. **Single-checkpoint weight maps** (notebook 13): analytic Gram,
+               polar, radial, and anchored ECS/Grassmann cover Jacobians,
+               including
+               $D_E\Phi_W(0)[E]=2V_c^\top E^\top U_k\Sigma_k^{-1}$.
+            3. **Calibrated local training maps** (notebook 14): derivatives of
+               the replayed optimizer map at the captured checkpoint.
+            4. **Additional weight-only ECS maps** (notebook 16): the gap-aware
+               hard projector, soft projector, trace-free log-Gram, resolvent,
+               and Feshbach/log-effective-core Jacobians.
+            5. **Data-dependent ECS maps** (notebook 17): input--output,
+               quotient parameter--output, per-example quotient-loss,
+               quotient GGN, and the replay-qualified Muon one-step quotient
+               Jacobian.
+
+            Notebook 10 is a two-checkpoint finite-flow operator, not a
+            Jacobian. Notebook 12 is a quotient/decomposition control. Neither
+            is relabelled or included here.
+
+            The baseline weight ESD is analyzed in two independent ways:
+
+            - WeightWatcher `raw` and
+              `fix_fingers=clip_xmax` results persisted by training;
+            - direct continuous maximum-likelihood fits using
+              `powerlaw.Fit`, with top-$k=0,\ldots,5$ removal shown only as a
+              sensitivity curve. No post-hoc best-$k$ selection is performed.
+            """
+        ),
+        code(COMMON_HELPERS + "\n" + TAIL_CHECKPOINT_CACHE_HELPERS),
+        markdown("## Verify one completed run and execute the Jacobian notebooks"),
+        code(
+            r"""
+            if str(OPTIMIZER_SLUG) != "muonclip_rms":
+                raise ValueError(
+                    "This diagnostic is intentionally a single MuonClip-RMS run; "
+                    "set OPTIMIZER_SLUG='muonclip_rms'."
+                )
+            SEED = int(SEED)
+            SEEDS = (SEED,)
+            OPTIMIZER_SLUGS = [str(OPTIMIZER_SLUG)]
+            if str(UNCERTAINTY_POLICY) != "no_seed_error_bars":
+                raise ValueError("The single-run uncertainty policy must remain no_seed_error_bars")
+
+            seed_dir = require_tail_checkpoint_cache(OPTIMIZER_SLUG, SEED)
+            run_fingerprint = verified_run_fingerprint(OPTIMIZER_SLUG, SEED)
+            run_manifest, resolved_run, completion = validate_run_identity(
+                seed_dir, optimizer_slug=OPTIMIZER_SLUG, seed=SEED
+            )
+            tail_refs = _VERIFIED_TAIL_CACHE_REFS[(OPTIMIZER_SLUG, SEED)]
+            if len(tail_refs) != min(100, int(completion["epochs"])):
+                raise RuntimeError("The verified final-100 checkpoint cache is incomplete")
+
+            audit_root = (
+                OUTPUT_ROOT_PATH / METHOD_SLUG / f"{OPTIMIZER_SLUG}_seed_{SEED}"
+            )
+            child_output_root = audit_root / "method_outputs"
+            executed_child_root = audit_root / "executed_children"
+            figure_root = audit_root / "figures"
+            for directory in (audit_root, child_output_root, executed_child_root, figure_root):
+                directory.mkdir(parents=True, exist_ok=True)
+
+            child_specs = (
+                (
+                    "11_Muon_Update_Stiefel_Tangent.ipynb",
+                    "muon_update_stiefel_tangent",
+                    {"verified_dense_update_capture"},
+                    "Muon source / Stiefel",
+                ),
+                (
+                    "13_Single_Checkpoint_Map_Jacobians.ipynb",
+                    "single_checkpoint_map_jacobians",
+                    {
+                        "verified_tail_checkpoint_cache_model_only",
+                        "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
+                    },
+                    "Single-checkpoint weight maps",
+                ),
+                (
+                    "14_Calibrated_Local_Training_Map.ipynb",
+                    "calibrated_local_training_map",
+                    {"verified_calibrated_dense_capture"},
+                    "Calibrated local training map",
+                ),
+                (
+                    "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+                    "additional_weight_only_ecs_jacobians",
+                    {"verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics"},
+                    "Additional weight-only ECS",
+                ),
+                (
+                    "17_Data_Dependent_ECS_Jacobians.ipynb",
+                    "data_dependent_ecs_jacobians",
+                    {
+                        "verified_calibrated_dense_capture",
+                        "verified_calibrated_dense_capture_plus_exact_sparse_weightwatcher_trace_metrics",
+                    },
+                    "Data-dependent ECS",
+                ),
+            )
+            child_parameters = {
+                "RUN_ROOT": str(RUN_ROOT_PATH),
+                "OUTPUT_ROOT": str(child_output_root),
+                "CHECKPOINT_CACHE_ROOT": str(CHECKPOINT_CACHE_ROOT_PATH),
+                "CONFIG_PATH": str(CONFIG_PATH),
+                "PROFILE": str(PROFILE),
+                "PROTOCOL_SLUG": str(PROTOCOL_SLUG),
+                "SEEDS": [SEED],
+                "OPTIMIZER_SLUGS": [OPTIMIZER_SLUG],
+                "CHECKPOINT_PAYLOAD_CACHE_SIZE": min(
+                    int(CHECKPOINT_PAYLOAD_CACHE_SIZE), 12
+                ),
+                "SHOW_PLOTS": False,
+                "REQUIRE_ARTIFACTS": True,
+                "ALLOW_TEMPORARY_LONG_RUN": bool(ALLOW_TEMPORARY_LONG_RUN),
+            }
+            if bool(RUN_CHILD_NOTEBOOKS):
+                try:
+                    import papermill as pm
+                except ImportError as error:
+                    raise RuntimeError(
+                        "Papermill is required to run the child Jacobian notebooks. "
+                        "Install the experiment requirements in the selected Conda environment."
+                    ) from error
+                for filename, _, _, family in child_specs:
+                    source = require_path(
+                        EXPERIMENT_ROOT / "notebooks" / filename,
+                        description=f"clean source notebook for {family}",
+                    )
+                    executed = executed_child_root / filename
+                    print(f"running {filename} for {OPTIMIZER_SLUG}, seed={SEED}")
+                    execute_kwargs = {
+                        "input_path": str(source),
+                        "output_path": str(executed),
+                        "parameters": dict(child_parameters),
+                        "cwd": str(REPO_ROOT),
+                        "log_output": True,
+                    }
+                    if str(CHILD_KERNEL).strip():
+                        execute_kwargs["kernel_name"] = str(CHILD_KERNEL).strip()
+                    pm.execute_notebook(**execute_kwargs)
+            """
+        ),
+        markdown("## Reject stale or mixed child artifacts"),
+        code(
+            r"""
+            expected_grid = {f"{OPTIMIZER_SLUG}:{SEED}": run_fingerprint}
+            child_fit_frames = []
+            child_operator_frames = []
+            child_provenance_rows = []
+            for filename, method_slug, expected_sources, family in child_specs:
+                method_dir = require_path(
+                    child_output_root / "analyses" / method_slug,
+                    description=f"{method_slug} single-run method output",
+                )
+                provenance_path = require_path(
+                    method_dir / "method_provenance.json",
+                    description=f"{method_slug} provenance manifest",
+                )
+                provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+                observed_grid = provenance.get(
+                    "optimizer_seed_protocol_fingerprints", {}
+                )
+                observed_sources = set(provenance.get("source_artifact_kinds", []))
+                failures = []
+                if str(provenance.get("suite_name")) != str(PROTOCOL_SLUG):
+                    failures.append("suite_name")
+                if str(provenance.get("method_slug")) != method_slug:
+                    failures.append("method_slug")
+                if observed_grid != expected_grid:
+                    failures.append("optimizer/seed/fingerprint grid")
+                if observed_sources != set(expected_sources):
+                    failures.append(
+                        f"source kinds observed={sorted(observed_sources)}, "
+                        f"expected={sorted(expected_sources)}"
+                    )
+                if failures:
+                    raise RuntimeError(
+                        f"Rejected stale or incompatible {method_slug} artifacts: "
+                        + "; ".join(failures)
+                    )
+
+                fits = pd.read_csv(
+                    require_path(
+                        method_dir / "powerlaw_fits.csv",
+                        description=f"{method_slug} power-law fits",
+                    )
+                )
+                operators = pd.read_csv(
+                    require_path(
+                        method_dir / "operator_rows.csv",
+                        description=f"{method_slug} operator rows",
+                    )
+                )
+                if int(provenance.get("fit_row_count", -1)) != len(fits):
+                    raise RuntimeError(f"{method_slug} fit-row count disagrees with manifest")
+                required_fit_identity = {
+                    "optimizer", "seed", "protocol_fingerprint",
+                    "source_artifact_kind", "operator_kind", "map_definition",
+                }
+                missing = required_fit_identity - set(fits.columns)
+                if missing:
+                    raise RuntimeError(
+                        f"{method_slug} fit rows lack {sorted(missing)}"
+                    )
+                if fits[list(required_fit_identity)].isna().any().any():
+                    raise RuntimeError(f"{method_slug} contains null fit provenance")
+                identities = fits[
+                    ["optimizer", "seed", "protocol_fingerprint"]
+                ].drop_duplicates()
+                if len(identities) != 1:
+                    raise RuntimeError(f"{method_slug} contains multiple run identities")
+                identity = identities.iloc[0]
+                if (
+                    str(identity["optimizer"]) != OPTIMIZER_SLUG
+                    or int(identity["seed"]) != SEED
+                    or str(identity["protocol_fingerprint"]) != run_fingerprint
+                ):
+                    raise RuntimeError(f"{method_slug} fit identity is stale or misplaced")
+                if set(fits["source_artifact_kind"].astype(str)) != set(expected_sources):
+                    raise RuntimeError(f"{method_slug} fit source-kind grid is incomplete")
+                fits["analysis_family"] = family
+                fits["source_notebook"] = filename
+                operators["analysis_family"] = family
+                operators["source_notebook"] = filename
+                child_fit_frames.append(fits)
+                child_operator_frames.append(operators)
+                child_provenance_rows.append({
+                    "source_notebook": filename,
+                    "method_slug": method_slug,
+                    "analysis_family": family,
+                    "fit_rows": int(len(fits)),
+                    "operator_rows": int(len(operators)),
+                    "source_artifact_kinds": json.dumps(sorted(observed_sources)),
+                    "protocol_fingerprint": run_fingerprint,
+                    "provenance_manifest": str(provenance_path),
+                })
+
+            all_jacobian_fits = pd.concat(
+                child_fit_frames, ignore_index=True, sort=False
+            )
+            all_jacobian_operators = pd.concat(
+                child_operator_frames, ignore_index=True, sort=False
+            )
+            child_provenance = pd.DataFrame(child_provenance_rows)
+            all_jacobian_fits.to_csv(
+                audit_root / "all_jacobian_powerlaw_fits.csv", index=False
+            )
+            all_jacobian_operators.to_csv(
+                audit_root / "all_jacobian_operator_rows.csv", index=False
+            )
+            child_provenance.to_csv(
+                audit_root / "child_method_provenance.csv", index=False
+            )
+            display(child_provenance)
+            """
+        ),
+        markdown(
+            r"""
+            ## Weight-matrix ESD: WeightWatcher and independent MLE
+
+            The training-time table is retained in full, including failures.
+            `raw` is an audit curve. `clip_xmax` is the preregistered
+            WeightWatcher fixed-finger curve and carries the exact backend
+            endpoint or the explicitly labelled WeightWatcher 0.7.7 fallback.
+            The independent MLE table below calls `powerlaw.Fit` directly on
+            saved $W^\top W$ eigenvalues. Top-finger removal is a displayed
+            sensitivity, never an optimized hyperparameter.
+            """
+        ),
+        code(
+            r"""
+            metrics_dir = Path(seed_dir) / "metrics"
+            ww_path = require_path(
+                metrics_dir / "weightwatcher_fits.csv",
+                description="training-time WeightWatcher raw/fixed-finger table",
+            )
+            trace_path = require_path(
+                metrics_dir / "trace_log.csv",
+                description="training-time trace-log table",
+            )
+            status_path = require_path(
+                metrics_dir / "analysis_status.csv",
+                description="sparse-analysis status table",
+            )
+            weightwatcher_rows = pd.read_csv(ww_path)
+            trace_rows = pd.read_csv(trace_path)
+            analysis_status = pd.read_csv(status_path)
+
+            required_ww = {
+                "optimizer", "seed", "protocol_fingerprint", "epoch",
+                "global_step", "layer", "fit_variant", "alpha", "fit_ok",
+            }
+            missing = required_ww - set(weightwatcher_rows.columns)
+            if missing:
+                raise RuntimeError(f"WeightWatcher table lacks {sorted(missing)}")
+            ww_identities = weightwatcher_rows[
+                ["optimizer", "seed", "protocol_fingerprint"]
+            ].drop_duplicates()
+            if len(ww_identities) != 1:
+                raise RuntimeError("WeightWatcher rows contain multiple run identities")
+            ww_identity = ww_identities.iloc[0]
+            if (
+                str(ww_identity["optimizer"]) != OPTIMIZER_SLUG
+                or int(ww_identity["seed"]) != SEED
+                or str(ww_identity["protocol_fingerprint"]) != run_fingerprint
+            ):
+                raise RuntimeError("WeightWatcher table is stale or belongs to another run")
+            observed_variants = set(weightwatcher_rows["fit_variant"].astype(str))
+            if not {"raw", "clip_xmax"}.issubset(observed_variants):
+                raise RuntimeError(
+                    "WeightWatcher output must contain both raw and fix_fingers=clip_xmax fits"
+                )
+            weightwatcher_rows["fit_ok_bool"] = boolean_series(
+                weightwatcher_rows["fit_ok"]
+            )
+            weightwatcher_rows["finger_policy_display"] = np.where(
+                weightwatcher_rows["fit_variant"].astype(str).eq("clip_xmax"),
+                "WeightWatcher fix_fingers=clip_xmax",
+                "WeightWatcher raw",
+            )
+            weightwatcher_rows.to_csv(
+                audit_root / "weightwatcher_raw_and_fixed_fingers.csv", index=False
+            )
+            required_trace = {
+                "optimizer", "seed", "protocol_fingerprint", "epoch",
+                "global_step", "layer", "fit_variant", "support_rank_source",
+                "trace_log_per_eval", "certification_eligible",
+            }
+            missing = required_trace - set(trace_rows.columns)
+            if missing:
+                raise RuntimeError(f"Trace-log table lacks {sorted(missing)}")
+            trace_identity = trace_rows[
+                ["optimizer", "seed", "protocol_fingerprint"]
+            ].drop_duplicates()
+            if len(trace_identity) != 1 or (
+                str(trace_identity.iloc[0]["optimizer"]) != OPTIMIZER_SLUG
+                or int(trace_identity.iloc[0]["seed"]) != SEED
+                or str(trace_identity.iloc[0]["protocol_fingerprint"]) != run_fingerprint
+            ):
+                raise RuntimeError("Trace-log table is stale or belongs to another run")
+            trace_rows.to_csv(audit_root / "weightwatcher_trace_log.csv", index=False)
+
+            status_required = {
+                "optimizer", "seed", "protocol_fingerprint", "epoch",
+                "global_step", "esd_path",
+            }
+            missing = status_required - set(analysis_status.columns)
+            if missing:
+                raise RuntimeError(f"Analysis-status table lacks {sorted(missing)}")
+            status_identity = analysis_status[
+                ["optimizer", "seed", "protocol_fingerprint"]
+            ].drop_duplicates()
+            if len(status_identity) != 1 or (
+                str(status_identity.iloc[0]["optimizer"]) != OPTIMIZER_SLUG
+                or int(status_identity.iloc[0]["seed"]) != SEED
+                or str(status_identity.iloc[0]["protocol_fingerprint"]) != run_fingerprint
+            ):
+                raise RuntimeError("Analysis-status ESD index has incompatible provenance")
+
+            final_epoch = int(completion["epochs"])
+            tail_start = max(1, final_epoch - int(MLE_TAIL_EPOCHS) + 1)
+            candidates = (
+                analysis_status[
+                    pd.to_numeric(analysis_status["epoch"], errors="coerce").ge(tail_start)
+                ]
+                .sort_values(["epoch", "global_step"])
+                .drop_duplicates(["epoch", "global_step"], keep="last")
+                .reset_index(drop=True)
+            )
+            if candidates.empty:
+                raise RuntimeError("No saved weight ESD intersects the requested tail window")
+            budget = min(int(MLE_MAX_STATES), len(candidates))
+            selected_indices = np.unique(
+                np.rint(np.linspace(0, len(candidates) - 1, num=budget)).astype(int)
+            )
+            if len(candidates) - 1 not in selected_indices:
+                selected_indices = np.append(selected_indices, len(candidates) - 1)
+            selected_states = candidates.iloc[selected_indices].copy()
+
+            mle_frames = []
+            for selected in selected_states.itertuples(index=False):
+                esd_archive = require_path(
+                    Path(seed_dir) / str(selected.esd_path),
+                    description="saved sparse weight ESD archive",
+                )
+                with np.load(esd_archive) as archive:
+                    for layer in ("fc1.weight", "fc2.weight", "fc3.weight"):
+                        if layer not in archive.files:
+                            raise KeyError(f"{esd_archive} lacks {layer}")
+                        energy = positive_spectrum(archive[layer])
+                        feasible = tuple(
+                            int(value) for value in TOP_K_VALUES
+                            if int(value) <= energy.size - 2
+                        )
+                        if not feasible or feasible[0] != 0:
+                            feasible = (0,)
+                        fits = powerlaw_fit.fit_clipping_sensitivity(
+                            energy,
+                            top_k_values=feasible,
+                            minimum_tail=int(MINIMUM_TAIL),
+                            operator_kind="weight_gram_esd_independent_powerlaw_mle",
+                            map_definition=(
+                                "identity on the saved checkpoint W^T W nonzero ESD; "
+                                "continuous powerlaw.Fit xmin MLE/KS scan"
+                            ),
+                            spectrum_kind="weight_energy",
+                            metadata={
+                                "optimizer": OPTIMIZER_SLUG,
+                                "seed": SEED,
+                                "protocol_fingerprint": run_fingerprint,
+                                "epoch": int(selected.epoch),
+                                "global_step": int(selected.global_step),
+                                "state_index": int(selected.global_step),
+                                "layer": layer,
+                                "source_esd_archive": str(esd_archive),
+                                "finger_policy": "explicit_top_k_sensitivity_no_posthoc_selection",
+                                "uncertainty_policy": UNCERTAINTY_POLICY,
+                            },
+                        )
+                        mle_frames.append(fits)
+            mle_weight_fits = pd.concat(mle_frames, ignore_index=True, sort=False)
+            mle_weight_fits.to_csv(
+                audit_root / "weight_esd_powerlaw_mle_finger_sensitivity.csv",
+                index=False,
+            )
+            selected_states[
+                ["epoch", "global_step", "esd_path"]
+            ].to_csv(audit_root / "mle_selected_esd_states.csv", index=False)
+            print(
+                f"independent powerlaw.Fit states: {len(selected_states)}; "
+                f"rows: {len(mle_weight_fits)}"
+            )
+            """
+        ),
+        markdown("## Single-run plots (descriptive only; no confidence bands)"),
+        code(
+            r"""
+            try:
+                plt.style.use("seaborn-v0_8-whitegrid")
+            except OSError:
+                plt.style.use("default")
+            COLORS = {
+                "fc1.weight": "#0072B2",
+                "fc2.weight": "#D55E00",
+                "fc3.weight": "#009E73",
+            }
+
+            def finish_figure(fig, filename, *, legend_handles=None, legend_labels=None):
+                if legend_handles:
+                    fig.legend(
+                        legend_handles,
+                        legend_labels,
+                        loc="lower center",
+                        bbox_to_anchor=(0.5, -0.01),
+                        ncol=min(3, len(legend_handles)),
+                        frameon=False,
+                        fontsize=8,
+                    )
+                    fig.tight_layout(rect=(0, 0.08, 1, 0.97))
+                else:
+                    fig.tight_layout()
+                target = figure_root / filename
+                fig.savefig(target, dpi=190, bbox_inches="tight", facecolor="white")
+                if SHOW_PLOTS:
+                    plt.show()
+                else:
+                    plt.close(fig)
+                return target
+
+            # WeightWatcher raw versus fixed fingers: one compact shared legend.
+            layers = ("fc1.weight", "fc2.weight", "fc3.weight")
+            fig, axes = plt.subplots(1, 3, figsize=(13.5, 3.9), sharey=False)
+            for axis, layer in zip(axes, layers):
+                subset = weightwatcher_rows[
+                    weightwatcher_rows["layer"].astype(str).eq(layer)
+                ].copy()
+                for variant, style, width, alpha_value in (
+                    ("raw", "--", 1.1, 0.55),
+                    ("clip_xmax", "-", 2.0, 0.95),
+                ):
+                    selected = subset[
+                        subset["fit_variant"].astype(str).eq(variant)
+                        & subset["fit_ok_bool"]
+                    ].sort_values("epoch")
+                    axis.plot(
+                        selected["epoch"], selected["alpha"],
+                        linestyle=style, linewidth=width, alpha=alpha_value,
+                        color=COLORS[layer],
+                    )
+                failures = subset[~subset["fit_ok_bool"]]
+                if not failures.empty:
+                    axis.scatter(
+                        failures["epoch"], np.full(len(failures), 1.05),
+                        marker="x", s=15, color="#555555", alpha=0.65,
+                    )
+                axis.axhline(2.0, color="#222222", linestyle=":", linewidth=1.0)
+                axis.set_title(layer.replace(".weight", ""), fontsize=10)
+                axis.set_xlabel("epoch")
+                axis.set_ylabel(r"WeightWatcher $\alpha$")
+                axis.tick_params(labelsize=8)
+            ww_handles = [
+                Line2D([0], [0], color="#555555", linestyle="--", linewidth=1.2),
+                Line2D([0], [0], color="#555555", linestyle="-", linewidth=2.0),
+                Line2D([0], [0], color="#222222", linestyle=":", linewidth=1.0),
+            ]
+            finish_figure(
+                fig,
+                "weightwatcher_alpha_raw_vs_clip_xmax.png",
+                legend_handles=ww_handles,
+                legend_labels=("raw audit", "fix_fingers=clip_xmax", r"$\alpha=2$"),
+            )
+
+            # Independently supported fixed-finger trace-log response.
+            trace_rows["certification_eligible_bool"] = boolean_series(
+                trace_rows["certification_eligible"]
+            )
+            certifying_trace = trace_rows[
+                trace_rows["fit_variant"].astype(str).eq("clip_xmax")
+                & trace_rows["certification_eligible_bool"]
+            ].copy()
+            fig, axis = plt.subplots(figsize=(8.2, 4.4))
+            for layer in layers:
+                selected = certifying_trace[
+                    certifying_trace["layer"].astype(str).eq(layer)
+                ].sort_values("epoch")
+                axis.plot(
+                    selected["epoch"], selected["trace_log_per_eval"],
+                    linewidth=1.8, marker=".", markersize=3,
+                    color=COLORS[layer], label=layer.replace(".weight", ""),
+                )
+            axis.axhline(0.0, color="#222222", linestyle=":", linewidth=1.0)
+            axis.set(
+                xlabel="epoch",
+                ylabel="trace-log per supported eigenvalue",
+                title="Independent-support fixed-finger trace-log audit",
+            )
+            handles, labels = axis.get_legend_handles_labels()
+            finish_figure(
+                fig, "weightwatcher_fixed_finger_trace_log.png",
+                legend_handles=handles, legend_labels=labels,
+            )
+
+            # Independent MLE top-finger sensitivity at the final selected ESD.
+            final_mle_epoch = int(mle_weight_fits["epoch"].max())
+            final_mle = mle_weight_fits[
+                pd.to_numeric(mle_weight_fits["epoch"], errors="coerce").eq(final_mle_epoch)
+            ].copy()
+            final_mle["fit_ok_bool"] = boolean_series(final_mle["fit_ok"])
+            fig, axis = plt.subplots(figsize=(7.8, 4.5))
+            for layer in layers:
+                selected = final_mle[
+                    final_mle["layer"].astype(str).eq(layer)
+                ].sort_values("clip_top_k")
+                axis.plot(
+                    selected["clip_top_k"], selected["alpha"],
+                    marker="o", markersize=4, linewidth=1.8,
+                    color=COLORS[layer], label=layer.replace(".weight", ""),
+                )
+                rejected = selected[~selected["fit_ok_bool"]]
+                if not rejected.empty:
+                    axis.scatter(
+                        rejected["clip_top_k"], rejected["alpha"],
+                        marker="x", s=35, color=COLORS[layer],
+                    )
+            axis.axhline(2.0, color="#222222", linestyle=":", linewidth=1.0)
+            axis.set(
+                xlabel="top weight-ESD eigenvalues removed (sensitivity only)",
+                ylabel=r"continuous-MLE $\alpha$",
+                title=f"Independent powerlaw.Fit finger sensitivity, epoch {final_mle_epoch}",
+            )
+            handles, labels = axis.get_legend_handles_labels()
+            finish_figure(
+                fig, "weight_esd_mle_finger_sensitivity.png",
+                legend_handles=handles, legend_labels=labels,
+            )
+
+            # Primary direct-MLE trajectory over the deterministic sparse ESD sample.
+            primary_mle = mle_weight_fits[
+                pd.to_numeric(mle_weight_fits["clip_top_k"], errors="coerce").eq(0)
+            ].copy()
+            primary_mle["fit_ok_bool"] = boolean_series(primary_mle["fit_ok"])
+            fig, axes = plt.subplots(1, 3, figsize=(13.5, 3.9), sharey=False)
+            for axis, layer in zip(axes, layers):
+                selected = primary_mle[
+                    primary_mle["layer"].astype(str).eq(layer)
+                    & primary_mle["fit_ok_bool"]
+                ].sort_values("epoch")
+                axis.plot(
+                    selected["epoch"], selected["alpha"],
+                    linewidth=1.9, marker="o", markersize=3,
+                    color=COLORS[layer],
+                )
+                axis.axhline(2.0, color="#222222", linestyle=":", linewidth=1.0)
+                axis.set_title(layer.replace(".weight", ""), fontsize=10)
+                axis.set_xlabel("epoch")
+                axis.set_ylabel(r"direct-MLE weight-ESD $\alpha$")
+                axis.tick_params(labelsize=8)
+            finish_figure(fig, "weight_esd_primary_mle_trajectory.png")
+
+            # Final saved weight ESD PDF and CCDF, with the package-selected
+            # primary xmin marked. These are visual fit diagnostics, not new fits.
+            final_state = selected_states.sort_values(
+                ["epoch", "global_step"]
+            ).iloc[-1]
+            final_esd_archive = require_path(
+                Path(seed_dir) / str(final_state["esd_path"]),
+                description="final selected saved weight ESD archive",
+            )
+            fig, axes = plt.subplots(2, 3, figsize=(13.5, 7.0))
+            with np.load(final_esd_archive) as archive:
+                for column, layer in enumerate(layers):
+                    sample = positive_spectrum(archive[layer])
+                    x, ccdf = powerlaw_fit.empirical_ccdf(sample)
+                    if sample[0] < sample[-1]:
+                        bins = np.geomspace(
+                            sample[0], sample[-1],
+                            min(48, max(8, sample.size // 3)),
+                        )
+                        axes[0, column].hist(
+                            sample, bins=bins, density=True,
+                            histtype="step", linewidth=1.7, color=COLORS[layer],
+                        )
+                    else:
+                        axes[0, column].scatter(
+                            sample, np.ones_like(sample), s=18, color=COLORS[layer]
+                        )
+                    axes[1, column].step(
+                        x, ccdf, where="post", linewidth=1.7,
+                        color=COLORS[layer],
+                    )
+                    fit_row = primary_mle[
+                        primary_mle["layer"].astype(str).eq(layer)
+                        & pd.to_numeric(primary_mle["epoch"], errors="coerce").eq(
+                            int(final_state["epoch"])
+                        )
+                    ]
+                    if len(fit_row) == 1 and bool(fit_row.iloc[0]["fit_ok_bool"]):
+                        xmin = float(fit_row.iloc[0]["xmin"])
+                        for axis in axes[:, column]:
+                            axis.axvline(
+                                xmin, color="#CC79A7", linestyle="--", linewidth=1.1
+                            )
+                    for axis in axes[:, column]:
+                        axis.set_xscale("log")
+                        axis.set_yscale("log")
+                        axis.tick_params(labelsize=7)
+                    axes[0, column].set_title(layer.replace(".weight", ""), fontsize=10)
+                    axes[0, column].set_ylabel("density")
+                    axes[1, column].set_ylabel(r"$P(\Lambda\geq\lambda)$")
+                    axes[1, column].set_xlabel(r"weight energy $\lambda$")
+            fig.suptitle(
+                f"Weight ESD fit diagnostics, epoch {int(final_state['epoch'])}; "
+                "dashed line is primary powerlaw.Fit xmin",
+                fontsize=10,
+            )
+            finish_figure(fig, "weight_esd_final_pdf_ccdf.png")
+
+            # Select primary successful energy fits. No sigma/CI is displayed.
+            jacobian = all_jacobian_fits.copy()
+            jacobian["fit_ok_bool"] = boolean_series(jacobian["fit_ok"])
+            energy_mask = jacobian["spectrum_kind"].astype(str).str.contains(
+                "energy", case=False, na=False
+            )
+            primary_mask = pd.to_numeric(
+                jacobian.get("clip_top_k", 0), errors="coerce"
+            ).fillna(0).eq(0)
+            primary_energy = jacobian[energy_mask & primary_mask].copy()
+            primary_energy["method_display"] = primary_energy.get(
+                "method", primary_energy["operator_kind"]
+            ).fillna(primary_energy["operator_kind"]).astype(str)
+            primary_energy["layer_display"] = primary_energy.get(
+                "layer", "all"
+            ).fillna("all").astype(str)
+            primary_energy["step_display"] = pd.to_numeric(
+                primary_energy.get("state_index", primary_energy.get("global_step")),
+                errors="coerce",
+            )
+
+            summary_rows = []
+            for identity, group in primary_energy.groupby(
+                ["analysis_family", "method_display", "layer_display"],
+                dropna=False,
+            ):
+                valid = group[
+                    group["fit_ok_bool"]
+                    & pd.to_numeric(group["alpha"], errors="coerce").notna()
+                ].copy()
+                latest_step = pd.to_numeric(valid["step_display"], errors="coerce").max()
+                latest = valid[
+                    pd.to_numeric(valid["step_display"], errors="coerce").eq(latest_step)
+                ] if np.isfinite(latest_step) else valid
+                summary_rows.append({
+                    "analysis_family": identity[0],
+                    "method": identity[1],
+                    "layer": identity[2],
+                    "fit_attempts": int(len(group)),
+                    "successful_fits": int(len(valid)),
+                    "success_fraction": float(len(valid) / len(group)) if len(group) else np.nan,
+                    "latest_state_index": latest_step,
+                    "latest_alpha": float(pd.to_numeric(latest["alpha"], errors="coerce").median()) if len(latest) else np.nan,
+                    "median_alpha_all_states": float(pd.to_numeric(valid["alpha"], errors="coerce").median()) if len(valid) else np.nan,
+                    "median_ks_D": float(pd.to_numeric(valid["ks_D"], errors="coerce").median()) if len(valid) else np.nan,
+                    "median_n_tail": float(pd.to_numeric(valid["n_tail"], errors="coerce").median()) if len(valid) else np.nan,
+                    "median_tail_decades": float(pd.to_numeric(valid.get("tail_decades"), errors="coerce").median()) if len(valid) and "tail_decades" in valid else np.nan,
+                    "uncertainty_policy": UNCERTAINTY_POLICY,
+                })
+            jacobian_summary = pd.DataFrame(summary_rows)
+            jacobian_summary.to_csv(
+                audit_root / "single_run_jacobian_descriptive_summary.csv", index=False
+            )
+
+            # Alpha heatmap: all methods, no confidence interval.
+            heat = jacobian_summary.pivot_table(
+                index=["analysis_family", "method"],
+                columns="layer", values="latest_alpha", aggfunc="median",
+            )
+            if not heat.empty:
+                values = heat.to_numpy(dtype=float)
+                height = max(4.5, 0.30 * len(heat) + 1.8)
+                fig, axis = plt.subplots(figsize=(8.8, height))
+                image = axis.imshow(values, aspect="auto", cmap="viridis", vmin=1.0, vmax=4.0)
+                axis.set_xticks(np.arange(len(heat.columns)), labels=heat.columns, fontsize=8)
+                short_rows = [
+                    f"{family[:18]} | {method[:42]}"
+                    for family, method in heat.index
+                ]
+                axis.set_yticks(np.arange(len(short_rows)), labels=short_rows, fontsize=6.5)
+                for row_index in range(values.shape[0]):
+                    for column_index in range(values.shape[1]):
+                        value = values[row_index, column_index]
+                        if np.isfinite(value):
+                            axis.text(
+                                column_index, row_index, f"{value:.2f}",
+                                ha="center", va="center", fontsize=6.5,
+                                color="white" if value < 1.7 or value > 3.0 else "black",
+                            )
+                axis.set_title(
+                    r"Latest available single-run Jacobian energy $\alpha$ (no error bars)",
+                    fontsize=11,
+                )
+                colorbar = fig.colorbar(image, ax=axis, fraction=0.025, pad=0.02)
+                colorbar.set_label(r"$\alpha$")
+                finish_figure(fig, "jacobian_latest_alpha_heatmap.png")
+
+            # Paginated method trajectories. One subplot per method and one
+            # shared three-layer legend keeps the page readable.
+            for family, family_rows in primary_energy.groupby("analysis_family"):
+                methods = sorted(family_rows["method_display"].dropna().unique())
+                for page_start in range(0, len(methods), int(MAX_METHODS_PER_PAGE)):
+                    page_methods = methods[
+                        page_start:page_start + int(MAX_METHODS_PER_PAGE)
+                    ]
+                    columns = 2
+                    rows = int(np.ceil(len(page_methods) / columns))
+                    fig, axes = plt.subplots(
+                        rows, columns,
+                        figsize=(12.0, max(3.3, 3.0 * rows)),
+                        squeeze=False,
+                    )
+                    for axis, method in zip(axes.ravel(), page_methods):
+                        selected_method = family_rows[
+                            family_rows["method_display"].eq(method)
+                            & family_rows["fit_ok_bool"]
+                        ]
+                        for layer, layer_rows in selected_method.groupby("layer_display"):
+                            curve = (
+                                layer_rows.groupby("step_display", as_index=False)["alpha"]
+                                .median(numeric_only=True)
+                                .sort_values("step_display")
+                            )
+                            axis.plot(
+                                curve["step_display"], curve["alpha"],
+                                linewidth=1.5, marker=".", markersize=3,
+                                color=COLORS.get(str(layer), "#777777"),
+                            )
+                        axis.axhline(2.0, color="#222222", linestyle=":", linewidth=0.9)
+                        axis.set_title(str(method).replace("_", " ")[:64], fontsize=8)
+                        axis.set_xlabel("state / optimizer step", fontsize=8)
+                        axis.set_ylabel(r"energy $\alpha$", fontsize=8)
+                        axis.tick_params(labelsize=7)
+                    for axis in axes.ravel()[len(page_methods):]:
+                        axis.set_visible(False)
+                    handles = [
+                        Line2D([0], [0], color=COLORS[layer], linewidth=1.7)
+                        for layer in layers
+                    ]
+                    family_slug = re.sub(r"[^A-Za-z0-9]+", "_", str(family)).strip("_").lower()
+                    finish_figure(
+                        fig,
+                        f"jacobian_trajectories_{family_slug}_page_{page_start // int(MAX_METHODS_PER_PAGE) + 1}.png",
+                        legend_handles=handles,
+                        legend_labels=[layer.replace(".weight", "") for layer in layers],
+                    )
+
+            # Fit-quality heatmap prevents alpha alone from looking persuasive.
+            quality = jacobian_summary.set_index(
+                ["analysis_family", "method", "layer"]
+            )[["success_fraction", "median_ks_D", "median_n_tail", "median_tail_decades"]]
+            if not quality.empty:
+                plot_quality = quality.copy()
+                for column in plot_quality.columns:
+                    values = pd.to_numeric(plot_quality[column], errors="coerce")
+                    finite = values[np.isfinite(values)]
+                    if len(finite) and finite.max() > finite.min():
+                        plot_quality[column] = (values - finite.min()) / (finite.max() - finite.min())
+                    else:
+                        plot_quality[column] = values
+                fig, axis = plt.subplots(
+                    figsize=(8.8, max(4.5, 0.24 * len(plot_quality) + 1.8))
+                )
+                image = axis.imshow(
+                    plot_quality.to_numpy(dtype=float), aspect="auto",
+                    cmap="magma", vmin=0.0, vmax=1.0,
+                )
+                axis.set_xticks(
+                    np.arange(len(plot_quality.columns)),
+                    labels=[name.replace("_", " ") for name in plot_quality.columns],
+                    rotation=20, ha="right", fontsize=8,
+                )
+                axis.set_yticks(
+                    np.arange(len(plot_quality)),
+                    labels=[f"{family[:14]} | {method[:28]} | {layer}" for family, method, layer in plot_quality.index],
+                    fontsize=5.8,
+                )
+                axis.set_title("Fit-quality diagnostics (columns scaled independently)", fontsize=10)
+                fig.colorbar(image, ax=axis, fraction=0.025, pad=0.02)
+                finish_figure(fig, "jacobian_fit_quality_heatmap.png")
+
+            display(jacobian_summary)
+            """
+        ),
+        markdown("## Reproducible audit manifest and interpretation"),
+        code(
+            r"""
+            audit_manifest = {
+                "schema_version": 1,
+                "suite_name": str(PROTOCOL_SLUG),
+                "optimizer": str(OPTIMIZER_SLUG),
+                "seed": int(SEED),
+                "protocol_fingerprint": str(run_fingerprint),
+                "operator_kind": "consolidated_declared_jacobian_families",
+                "map_definition": (
+                    "the exact declared maps in child notebooks 11, 13, 14, 16, and 17"
+                ),
+                "energy_convention": "nonzero_eigenvalues_of_J_star_J",
+                "uncertainty_policy": str(UNCERTAINTY_POLICY),
+                "independent_seed_count": 1,
+                "confidence_intervals_computed": False,
+                "child_notebooks": [item[0] for item in child_specs],
+                "child_method_slugs": [item[1] for item in child_specs],
+                "verified_tail_checkpoint_count": int(len(tail_refs)),
+                "weightwatcher_source": str(ww_path),
+                "weightwatcher_variants": sorted(observed_variants),
+                "weightwatcher_fixed_finger_policy": "fix_fingers=clip_xmax",
+                "independent_mle_backend": "powerlaw.Fit",
+                "independent_mle_top_k_sensitivity": [int(value) for value in TOP_K_VALUES],
+                "independent_mle_state_count": int(len(selected_states)),
+                "run_child_notebooks": bool(RUN_CHILD_NOTEBOOKS),
+                "child_kernel": str(CHILD_KERNEL),
+                "artifact_root": str(audit_root),
+            }
+            (audit_root / "single_run_audit_manifest.json").write_text(
+                json.dumps(audit_manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            print(json.dumps(audit_manifest, indent=2, sort_keys=True))
+            print("single-run audit outputs:", audit_root)
+            """
+        ),
+        markdown(
+            r"""
+            ## Reading the result
+
+            A useful single-run signal has a credible MLE tail, modest KS
+            distance, adequate tail decades, stable explicit finger
+            sensitivity, and a coherent late-checkpoint trajectory. Agreement
+            with $\alpha=2$ is diagnostic, not proof of an RG fixed point.
+            Likewise, agreement between a Jacobian energy exponent and the
+            WeightWatcher weight-ESD exponent does not establish that the two
+            operators represent the same flow.
+
+            Publication-level claims still require the preregistered
+            multi-optimizer, three-seed notebooks and their independent-seed
+            uncertainty analysis. This notebook exists to make one MuonClip
+            run easy to inspect, debug, reproduce with Papermill, and share as
+            a clean executed notebook.
+            """
+        ),
+    ]
+    return notebook("18_Single_Run_MuonClip_Jacobian_Audit.ipynb", cells)
+
+
 def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
     cells = [
         markdown(
@@ -6659,6 +7603,7 @@ def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
         calibrated_training_map_notebook(),
         additional_weight_jacobians_notebook(),
         data_dependent_ecs_jacobians_notebook(),
+        single_run_muonclip_audit_notebook(),
         nulls_stability_notebook(),
     )
 
@@ -6680,6 +7625,7 @@ def main() -> None:
         "15_Method_Nulls_Stability_Comparison.ipynb",
         "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
         "17_Data_Dependent_ECS_Jacobians.ipynb",
+        "18_Single_Run_MuonClip_Jacobian_Audit.ipynb",
     }
     observed = {name for name, _ in built}
     if observed != expected:
