@@ -300,11 +300,31 @@ Every derived row and plot must display both `operator_kind` and
 - A difference divided by the step interval is a beta surrogate.
 - `D Pi(W)` is the Jacobian of a specified projection such as the polar map
   `Pi(W)=UV^T`.
-- Notebook `13` treats five maps computable from one checkpoint as candidate
+- Notebook `13` treats six maps computable from one checkpoint as candidate
   RG transformations and forms the actual derivative of every one: the polar
   map, normalized smaller-Gram map, centered matrix-log Gram map, centered
   log-singular radial map, and the exact configured finite Muon NS5 map applied
-  directly to `W`. Only the nonzero singular spectrum of each Jacobian is fit;
+  directly to `W`, plus the wide-FC1 restricted retracted-core ECS Grassmann
+  Cartan cover. The latter is the smooth checkpoint-anchored map
+  `Phi_W(E)=V_c^T(2 P_row(R_W(K_W(E)))-I)V_k`, with
+  `K_W(E)=V_c^T E^T U_k Sigma_k^-1`; its actual derivative at `E=0` is
+  `J[E]=2 V_c^T E^T U_k Sigma_k^-1` and has amplitudes `2/sigma_i`
+  repeated `q-k` times. Its retained `k` is the finger-aware power-law top-mode
+  boundary. The requested primary variant takes outer `q` to be the checkpoint
+  numerical row rank; a separately named sensitivity takes `q=detX_num`.
+  Both use exact same-checkpoint WeightWatcher/trace states. Metric roles are
+  never swapped; missing, coincident, or reversed detX boundaries are recorded
+  rather than filled. At fixed `k`, changing `q` only changes the uniform
+  multiplicity `q-k`, so detX-`q` is a shell-dimension/multiplicity sensitivity,
+  not independent spectral-shape or alpha corroboration. ECS finger
+  sensitivities remove complete `(q-k)`-mode core groups, and `fit_ok` requires
+  at least `MINIMUM_TAIL` retained-core groups above the package-selected
+  `xmin`; repeated modes cannot qualify a tail by themselves. Notebook `15`
+  treats the comparison as incomplete and stops unless every optimizer/seed
+  has a successful group-qualified primary full-`q` ECS-cover fit. The
+  detX-`q` shell remains a sensitivity and is not required to exist when its
+  boundary is coincident or reversed.
+  Only the nonzero singular spectrum of each Jacobian is fit;
   an undifferentiated Gram translation or checkpoint displacement is not
   admitted as a single-checkpoint Jacobian candidate.
 - A calibrated local optimizer response is the derivative of the fully

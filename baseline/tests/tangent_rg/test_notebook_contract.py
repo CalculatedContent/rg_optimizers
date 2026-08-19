@@ -82,7 +82,137 @@ def _load_builder():
     return module
 
 
+def _load_single_checkpoint_module():
+    path = BASELINE_ROOT / "rg_baselines" / "tangent_rg" / "single_checkpoint.py"
+    spec = importlib.util.spec_from_file_location(
+        "tangent_rg_single_checkpoint_contract", path
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load single-checkpoint module: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 class NotebookContractTests(unittest.TestCase):
+    def test_ecs_exact_rank_join_rejects_inexact_or_malformed_states(self) -> None:
+        import numpy as np
+        import pandas as pd
+
+        builder = _load_builder()
+        namespace = {
+            "np": np,
+            "pd": pd,
+            "Path": Path,
+            "single_checkpoint": _load_single_checkpoint_module(),
+        }
+        exec(builder.ECS_COVER_METRIC_HELPERS, namespace)
+        select = namespace["exact_ecs_cover_rank_record"]
+        identity = {
+            "optimizer": "muon",
+            "seed": 1337,
+            "protocol_fingerprint": "fingerprint",
+            "epoch": 1000,
+            "global_step": 430000,
+            "layer": "fc1.weight",
+            "fit_variant": "clip_xmax",
+        }
+        fits = pd.DataFrame([
+            {
+                **identity,
+                "fit_ok": True,
+                "detX_num": 8,
+                "pl_support_rank": 6,
+            }
+        ])
+        traces = pd.DataFrame([
+            {
+                **identity,
+                "qualification_role": "preregistered_independent_fit_support",
+                "sensitivity_only": False,
+                "certification_eligible": True,
+                "support_rank_source": "weightwatcher_backend_xmax_exact_fit_tail",
+                "support_rank": 4,
+                "support_window_start_descending_zero_based": 2,
+                "support_window_end_descending_exclusive": 6,
+                "pl_support_rank_before_finger_clip": 6,
+                "n_fingers_removed": 2,
+            },
+            {
+                **identity,
+                "qualification_role": "same_curve_audit_cannot_certify",
+                "sensitivity_only": False,
+                "certification_eligible": False,
+                "support_rank_source": "weightwatcher_detX",
+                "support_rank": 8,
+                "support_window_start_descending_zero_based": 0,
+                "support_window_end_descending_exclusive": 8,
+            },
+            {
+                **identity,
+                "qualification_role": "same_curve_audit_cannot_certify",
+                "sensitivity_only": False,
+                "certification_eligible": False,
+                "support_rank_source": "weightwatcher_midpoint",
+                "support_rank": 6,
+                "support_window_start_descending_zero_based": 0,
+                "support_window_end_descending_exclusive": 6,
+            },
+        ])
+
+        def evaluate(selected_fits=fits, selected_traces=traces, **overrides):
+            arguments = {
+                "optimizer_slug": "muon",
+                "seed": 1337,
+                "epoch": 1000,
+                "global_step": 430000,
+                "layer": "fc1.weight",
+                "maximum_rank": 10,
+                "fit_path": "/runs/metrics/weightwatcher_fits.csv",
+                "trace_path": "/runs/metrics/trace_log.csv",
+            }
+            arguments.update(overrides)
+            return select(selected_fits, selected_traces, **arguments)
+
+        record = evaluate()
+        self.assertTrue(record["ecs_rank_metrics_available"])
+        self.assertTrue(record["ecs_full_shell_available"])
+        self.assertTrue(record["ecs_detx_shell_available"])
+        self.assertEqual(record["retained_rank"], 6)
+        self.assertEqual(record["full_shell_outer_rank"], 10)
+        self.assertEqual(record["detx_shell_outer_rank"], 8)
+        self.assertEqual(record["detx_shell_rank"], 2)
+        self.assertEqual(record["k_boundary_mid"], 7)
+        self.assertEqual(record["weightwatcher_midpoint_rank"], 6)
+        self.assertTrue(record["ecs_rank_exact_weightwatcher_state_found"])
+        self.assertTrue(record["ecs_rank_exact_trace_state_found"])
+
+        missing = evaluate(epoch=999)
+        self.assertFalse(missing["ecs_rank_metrics_available"])
+        self.assertFalse(missing["ecs_full_shell_available"])
+        self.assertFalse(missing["ecs_detx_shell_available"])
+        self.assertFalse(missing["ecs_rank_exact_epoch_match_found"])
+        self.assertFalse(missing["ecs_rank_exact_weightwatcher_state_found"])
+
+        with self.assertRaises(RuntimeError):
+            evaluate(pd.concat([fits, fits], ignore_index=True), traces)
+        detx_mismatch = traces.copy()
+        detx_mismatch.loc[
+            detx_mismatch["support_rank_source"].eq("weightwatcher_detX"),
+            "support_rank",
+        ] = 9
+        with self.assertRaises(RuntimeError):
+            evaluate(fits, detx_mismatch)
+        fractional = fits.astype({"detX_num": float})
+        fractional.loc[0, "detX_num"] = 8.25
+        with self.assertRaises(RuntimeError):
+            evaluate(fractional, traces)
+        pl_mismatch = fits.copy()
+        pl_mismatch.loc[0, "pl_support_rank"] = 7
+        with self.assertRaises(RuntimeError):
+            evaluate(pl_mismatch, traces)
+
     def test_inventory_parameters_cleanliness_and_analysis_metadata(self) -> None:
         actual_names = {path.name for path in NOTEBOOK_ROOT.glob("*.ipynb")}
         self.assertEqual(actual_names, EXPECTED_NOTEBOOKS)
@@ -115,6 +245,28 @@ class NotebookContractTests(unittest.TestCase):
                     all_source = "\n".join(_source_text(cell) for cell in notebook["cells"])
                     self.assertIn("operator_kind", all_source)
                     self.assertIn("map_definition", all_source)
+
+                if name == "13_Single_Checkpoint_Map_Jacobians.ipynb":
+                    all_source = "\n".join(
+                        _source_text(cell) for cell in notebook["cells"]
+                    )
+                    self.assertIn("qualify_replicated_group_fits", all_source)
+                    self.assertIn("ecs_clip_core_groups", all_source)
+                    self.assertIn("ecs_tail_core_group_count", all_source)
+                    self.assertIn(
+                        "shell-dimension/multiplicity sensitivity", all_source
+                    )
+
+                if name == "15_Method_Nulls_Stability_Comparison.ipynb":
+                    all_source = "\n".join(
+                        _source_text(cell) for cell in notebook["cells"]
+                    )
+                    self.assertIn("REQUIRED_ECS_PRIMARY_METHOD", all_source)
+                    self.assertIn("REQUIRED_ECS_FIT_CONTRACT_TOKEN", all_source)
+                    self.assertIn("expected_ecs_primary_grid", all_source)
+                    self.assertIn("observed_ecs_primary_grid", all_source)
+                    self.assertIn("missing_ecs_contract", all_source)
+                    self.assertIn("ecs_group_tail_qualified", all_source)
 
     def test_tail_cache_is_the_only_model_checkpoint_analysis_source(self) -> None:
         for name in sorted(TAIL_CACHE_ANALYSIS_NOTEBOOKS):
@@ -246,7 +398,7 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("observed_fit_grid != expected_method_grid", all_source)
         self.assertIn("fit_row_count", all_source)
 
-    def test_single_checkpoint_notebook_fits_only_five_declared_jacobians(self) -> None:
+    def test_single_checkpoint_notebook_fits_only_six_declared_jacobians(self) -> None:
         notebook = json.loads(
             (NOTEBOOK_ROOT / "13_Single_Checkpoint_Map_Jacobians.ipynb").read_text(
                 encoding="utf-8"
@@ -261,9 +413,29 @@ class NotebookContractTests(unittest.TestCase):
             "finite_muon_ns5_pullback",
         ):
             self.assertIn(f'("{method}",', all_source)
+        self.assertIn(
+            '"ecs_grassmann_cartan_cover_full_row_shell_pullback"',
+            all_source,
+        )
+        self.assertIn(
+            '"ecs_grassmann_cartan_cover_detx_shell_pullback"',
+            all_source,
+        )
         self.assertIn("muon_newton_schulz_analytic_spectrum", all_source)
         self.assertIn("centered_log_gram_analytic_spectrum", all_source)
         self.assertIn("centered_log_singular_analytic_spectrum", all_source)
+        self.assertIn("ecs_grassmann_cover_analytic_spectrum", all_source)
+        self.assertIn("ecs_grassmann_cover_map", all_source)
+        self.assertIn("ecs_grassmann_retracted_core", all_source)
+        self.assertIn("requested anchored retracted-core cover", all_source)
+        self.assertIn("J[E]=2V_c^T E^T U_k Sigma_k^-1", all_source)
+        self.assertIn(
+            ") = load_verified_ecs_metric_tables(",
+            all_source,
+        )
+        self.assertIn("exact_ecs_cover_rank_record", all_source)
+        self.assertIn("ecs_rank_nearest_or_forward_fill_used", all_source)
+        self.assertIn("verified_tail_checkpoint_cache_plus_exact_sparse", all_source)
         self.assertEqual(all_source.count("np.linalg.svd(W, compute_uv=False)"), 1)
         self.assertIn(
             "precomputed_singular_values=checkpoint_singular_values",
@@ -276,6 +448,19 @@ class NotebookContractTests(unittest.TestCase):
         )
         self.assertIn("if int(selected.epoch) == final_cache_epoch", all_source)
         self.assertIn("Fits cover every selected state", all_source)
+
+        notebook15 = json.loads(
+            (NOTEBOOK_ROOT / "15_Method_Nulls_Stability_Comparison.ipynb").read_text(
+                encoding="utf-8"
+            )
+        )
+        notebook15_source = "\n".join(
+            _source_text(cell) for cell in notebook15["cells"]
+        )
+        self.assertIn(
+            "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
+            notebook15_source,
+        )
 
     def test_generated_notebooks_are_up_to_date(self) -> None:
         builder = _load_builder()

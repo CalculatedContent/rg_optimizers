@@ -6,11 +6,13 @@ import unittest
 from unittest import mock
 
 import numpy as np
+import pandas as pd
 
 from rg_baselines.tangent_rg.powerlaw_fit import (
     amplitude_fit_to_energy,
     fit_clipping_sensitivity,
     fit_powerlaw,
+    qualify_replicated_group_fits,
 )
 from rg_baselines.tangent_rg.trace_log import (
     nearest_trace_log_zero,
@@ -89,6 +91,73 @@ class PowerLawContractTests(unittest.TestCase):
         self.assertEqual(row["n_used"], 2)
         self.assertIn("minimum_tail=8", row["warning"])
         self.assertEqual(_FakeFit.calls, [])
+
+    def test_replicated_esd_clips_whole_groups_and_uses_group_tail_gate(self):
+        groups = np.asarray([1.0, 2.0, 4.0, 8.0, 16.0])
+        multiplicity = 3
+        expanded = np.repeat(groups, multiplicity)
+        with mock.patch.dict(sys.modules, {"powerlaw": self.fake_module}):
+            amplitudes = fit_clipping_sensitivity(
+                expanded,
+                top_k_values=(0, multiplicity),
+                minimum_tail=5,
+                operator_kind="replicated_test_operator",
+                map_definition="five groups repeated three times",
+            )
+        energies = pd.DataFrame(
+            [amplitude_fit_to_energy(row) for row in amplitudes.to_dict("records")]
+        )
+        qualified = qualify_replicated_group_fits(
+            pd.concat([amplitudes, energies], ignore_index=True),
+            groups,
+            group_multiplicity=multiplicity,
+            minimum_tail_groups=5,
+        )
+        primary = qualified[qualified["clip_top_k"].eq(0)]
+        clipped = qualified[qualified["clip_top_k"].eq(multiplicity)]
+        self.assertTrue(primary["fit_ok"].all())
+        self.assertEqual(set(primary["tail_group_count"]), {5})
+        self.assertFalse(clipped["fit_ok"].any())
+        self.assertEqual(set(clipped["clip_group_count"]), {1})
+        self.assertEqual(set(clipped["tail_group_count"]), {4})
+        self.assertTrue(clipped["mode_level_fit_ok_before_group_gate"].all())
+        self.assertTrue(
+            clipped["warning"].str.contains("minimum_tail_groups=5").all()
+        )
+
+        malformed = amplitudes.copy()
+        malformed.loc[1, "clip_top_k"] = 1
+        with self.assertRaises(ValueError):
+            qualify_replicated_group_fits(
+                malformed,
+                groups,
+                group_multiplicity=multiplicity,
+                minimum_tail_groups=2,
+            )
+
+        inconsistent = amplitudes.iloc[[0]].copy()
+        inconsistent.loc[:, "n_tail"] = inconsistent["n_tail"] - 1
+        with self.assertRaises(ValueError):
+            qualify_replicated_group_fits(
+                inconsistent,
+                groups,
+                group_multiplicity=multiplicity,
+                minimum_tail_groups=2,
+            )
+
+        one_group = qualified.iloc[[0]].copy()
+        one_group.loc[:, "xmin"] = 1.0
+        one_group.loc[:, "n_total"] = multiplicity
+        one_group.loc[:, "n_used"] = multiplicity
+        one_group.loc[:, "n_tail"] = multiplicity
+        audited = qualify_replicated_group_fits(
+            one_group,
+            [1.0],
+            group_multiplicity=multiplicity,
+            minimum_tail_groups=2,
+        )
+        self.assertEqual(int(audited.iloc[0]["tail_group_count"]), 1)
+        self.assertFalse(bool(audited.iloc[0]["fit_ok"]))
 
 
 class TraceLogContractTests(unittest.TestCase):

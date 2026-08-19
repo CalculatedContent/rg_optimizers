@@ -83,6 +83,93 @@ class SingleCheckpointJacobianSpectrumRecord:
 
 
 @dataclass(frozen=True)
+class ECSCoverRankSelectionRecord:
+    power_law_rank: int
+    trace_log_rank: int
+    boundary_midpoint_rank: int
+    retained_rank: int
+    outer_rank: int
+    shell_rank: int
+    maximum_rank: int
+    retained_rank_source: str
+    outer_rank_source: str
+    available: bool
+    unavailable_reason: str
+    selection_rule: str
+
+
+@dataclass(frozen=True)
+class ECSGrassmannCoverJVPRecord:
+    quotient_coordinate: FloatArray
+    cartan_cross_block: FloatArray
+    projector_tangent: FloatArray
+    horizontal_reconstruction: FloatArray
+    retained_rank: int
+    outer_rank: int
+    shell_rank: int
+    retained_singular_values: FloatArray
+    checkpoint_scale_null_residual: float
+    horizontal_reconstruction_fraction: float
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class ECSGrassmannCoverMapRecord:
+    value: FloatArray
+    quotient_coordinate: FloatArray
+    retracted_weight: FloatArray
+    row_basis: FloatArray
+    row_projector: FloatArray
+    retained_rank: int
+    outer_rank: int
+    shell_rank: int
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class ECSGrassmannCoverSpectrumRecord:
+    singular_amplitudes: FloatArray
+    jt_j_nonzero_eigenvalues: FloatArray
+    canonical_chart_amplitudes: FloatArray
+    projector_frobenius_amplitudes: FloatArray
+    zero_count: int
+    input_dimension: int
+    derivative_rank: int
+    core_amplitude_group_count: int
+    numerically_distinct_core_amplitude_count: int
+    deterministic_shell_multiplicity: int
+    retained_rank: int
+    outer_rank: int
+    shell_rank: int
+    ambient_row_dimension: int
+    ambient_cover_dimension: int
+    restricted_cover_dimension: int
+    retained_singular_values: FloatArray
+    boundary_singular_gap: float
+    outer_boundary_singular_gap: float
+    coordinate_scale: float
+    metric_convention: str
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class ECSGrassmannRetractedCoreRecord:
+    weight: FloatArray
+    row_basis: FloatArray
+    row_projector: FloatArray
+    cartan_cross_block: FloatArray
+    retained_rank: int
+    outer_rank: int
+    shell_rank: int
+    orthogonality_residual: float
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
 class CenteredLogGramRecord:
     value: FloatArray
     normalized_gram: FloatArray
@@ -277,6 +364,420 @@ def _log_divided_difference(first: float, second: float) -> float:
     if abs(first - second) <= 32.0 * np.finfo(np.float64).eps * scale:
         return 2.0 / (first + second)
     return float((np.log(first) - np.log(second)) / (first - second))
+
+
+def _integer_rank(value: int | float, *, name: str) -> int:
+    numeric = float(value)
+    if not np.isfinite(numeric):
+        raise ValueError(f"{name} must be finite")
+    rounded = int(round(numeric))
+    if not np.isclose(numeric, rounded, rtol=0.0, atol=1.0e-9):
+        raise ValueError(f"{name} must be integer-valued")
+    return rounded
+
+
+def select_ecs_cover_ranks(
+    power_law_rank: int | float,
+    trace_log_rank: int | float,
+    *,
+    maximum_rank: int,
+) -> ECSCoverRankSelectionRecord:
+    """Bracket an ECS shell using independently recorded PL and trace ranks.
+
+    The exact finger-aware power-law boundary defines the gauge-fixed retained
+    core, while the exact trace-log/detX boundary defines the allowed outer
+    shell.  Their roles are never swapped: an equal or reversed ordering makes
+    the requested cover unavailable.  No nearest-state or forward-filled rank
+    is accepted by this pure selection rule.
+    """
+
+    k_pl = _integer_rank(power_law_rank, name="power_law_rank")
+    k_tl = _integer_rank(trace_log_rank, name="trace_log_rank")
+    limit = _integer_rank(maximum_rank, name="maximum_rank")
+    if limit < 1:
+        raise ValueError("maximum_rank must be positive")
+    if not (1 <= k_pl <= limit and 1 <= k_tl <= limit):
+        raise ValueError(
+            "power-law and trace-log ranks must lie in [1, maximum_rank]"
+        )
+    midpoint = int(np.floor((k_pl + k_tl) / 2.0))
+    shell = max(0, k_tl - k_pl)
+    available = k_pl < k_tl
+    if k_pl == k_tl:
+        unavailable_reason = "power-law and trace-log boundaries coincide"
+    elif k_pl > k_tl:
+        unavailable_reason = (
+            "power-law retained boundary is outside the trace-log outer boundary"
+        )
+    else:
+        unavailable_reason = ""
+    return ECSCoverRankSelectionRecord(
+        power_law_rank=k_pl,
+        trace_log_rank=k_tl,
+        boundary_midpoint_rank=midpoint,
+        retained_rank=k_pl,
+        outer_rank=k_tl,
+        shell_rank=shell,
+        maximum_rank=limit,
+        retained_rank_source="power_law_top_mode_boundary",
+        outer_rank_source="weightwatcher_detX_trace_log_boundary",
+        available=available,
+        unavailable_reason=unavailable_reason,
+        selection_rule=(
+            "k=k_pl, q=k_tl, require k_pl<k_tl, "
+            "k_boundary_mid=floor((k_pl+k_tl)/2); exact same-checkpoint "
+            "boundary ranks only; roles are never swapped"
+        ),
+    )
+
+
+def _ecs_cover_frames(
+    matrix: FloatArray,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float | None,
+) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, float]:
+    rows, columns = matrix.shape
+    if rows >= columns:
+        raise ValueError(
+            "the row-space ECS Grassmann cover is defined for a wide matrix"
+        )
+    k = _integer_rank(retained_rank, name="retained_rank")
+    q = _integer_rank(outer_rank, name="outer_rank")
+    if not (1 <= k < q <= rows):
+        raise ValueError(
+            "ECS cover ranks must satisfy 1 <= retained_rank < outer_rank "
+            "<= the wide matrix row rank"
+        )
+    left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=True)
+    largest = float(singular_values[0])
+    if rcond is not None and rcond < 0.0:
+        raise ValueError("rcond must be non-negative")
+    tolerance = (
+        float(rcond) * largest
+        if rcond is not None
+        else max(matrix.shape)
+        * np.finfo(np.float64).eps
+        * largest
+    )
+    numerical_rank = int(np.count_nonzero(singular_values > tolerance))
+    if q > numerical_rank:
+        raise np.linalg.LinAlgError(
+            "outer ECS rank exceeds the checkpoint numerical rank"
+        )
+    retained = right_h[:k].T
+    shell = right_h[k:q].T
+    return left[:, :k], singular_values, retained, shell, float(tolerance)
+
+
+def ecs_grassmann_cover_jvp(
+    weight: ArrayLike,
+    direction: ArrayLike,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float | None = None,
+) -> ECSGrassmannCoverJVPRecord:
+    """Apply the restricted retracted-core ECS Grassmann cover Jacobian.
+
+    With ``W_k=U_k Sigma_k V_k^T`` and allowed shell ``V_c``, the canonical
+    horizontal coordinate is ``K=V_c^T E^T U_k Sigma_k^-1``.  The declared
+    checkpoint-anchored map retracts this coordinate to the fixed-rank core and
+    reads the one-cross-block Cartan coordinate.  Its derivative at zero
+    displacement is ``D_E Phi_W(0)[E]=2K``.  This factor of two belongs to the
+    named Cartan coordinate; it is not the Frobenius norm of the full mirrored
+    projector tangent.
+    """
+
+    matrix = _matrix(weight)
+    tangent = _matrix(direction, name="direction")
+    if tangent.shape != matrix.shape:
+        raise ValueError("weight and direction must have identical shapes")
+    left, singular_values, retained, shell, _ = _ecs_cover_frames(
+        matrix,
+        retained_rank=retained_rank,
+        outer_rank=outer_rank,
+        rcond=rcond,
+    )
+    k = int(retained.shape[1])
+    q = int(k + shell.shape[1])
+    inverse = 1.0 / singular_values[:k]
+    coordinate = (shell.T @ tangent.T @ left) * inverse[None, :]
+    cartan = 2.0 * coordinate
+    projector_tangent = (
+        shell @ coordinate @ retained.T
+        + retained @ coordinate.T @ shell.T
+    )
+    horizontal = (
+        (left * singular_values[:k][None, :])
+        @ coordinate.T
+        @ shell.T
+    )
+    scale_coordinate = (
+        (shell.T @ matrix.T @ left) * inverse[None, :]
+    )
+    direction_norm = float(np.linalg.norm(tangent, ord="fro"))
+    horizontal_fraction = float(
+        np.linalg.norm(horizontal, ord="fro")
+        / max(direction_norm, np.finfo(np.float64).tiny)
+    )
+    return ECSGrassmannCoverJVPRecord(
+        quotient_coordinate=coordinate,
+        cartan_cross_block=cartan,
+        projector_tangent=projector_tangent,
+        horizontal_reconstruction=horizontal,
+        retained_rank=k,
+        outer_rank=q,
+        shell_rank=q - k,
+        retained_singular_values=singular_values[:k],
+        checkpoint_scale_null_residual=float(np.linalg.norm(scale_coordinate)),
+        horizontal_reconstruction_fraction=horizontal_fraction,
+        operator_kind=(
+            "restricted_retracted_core_ecs_grassmann_cartan_cover_jvp"
+        ),
+        map_definition=(
+            "D Phi_W(0)[E]=2 V_c^T E^T U_k Sigma_k^-1 for the smooth "
+            "checkpoint-anchored retraction Phi_W(E)=V_c^T(2P_row(R_W(K_W(E)))"
+            "-I)V_k; radial, left-angular, and internal V_k gauge directions "
+            "are quotiented out"
+        ),
+    )
+
+
+def ecs_grassmann_cover_map(
+    weight: ArrayLike,
+    displacement: ArrayLike,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float | None = None,
+) -> ECSGrassmannCoverMapRecord:
+    """Evaluate the nonlinear checkpoint-anchored ECS Cartan cover map.
+
+    The checkpoint freezes ``U_k, Sigma_k, V_k, V_c``.  An arbitrary ambient
+    displacement is pulled back to ``K_W(E)=V_c^T E^T U_k Sigma_k^-1`` and
+    retracted to the fixed-rank core before its Cartan cross block is read.
+    This smooth anchored composite has the genuine ambient derivative returned
+    by :func:`ecs_grassmann_cover_jvp` at zero displacement.
+    """
+
+    matrix = _matrix(weight)
+    perturbation = _matrix(displacement, name="displacement")
+    if perturbation.shape != matrix.shape:
+        raise ValueError("weight and displacement must have identical shapes")
+    linear = ecs_grassmann_cover_jvp(
+        matrix,
+        perturbation,
+        retained_rank=retained_rank,
+        outer_rank=outer_rank,
+        rcond=rcond,
+    )
+    retracted = ecs_grassmann_retracted_core(
+        matrix,
+        linear.quotient_coordinate,
+        retained_rank=retained_rank,
+        outer_rank=outer_rank,
+        rcond=rcond,
+    )
+    return ECSGrassmannCoverMapRecord(
+        value=retracted.cartan_cross_block,
+        quotient_coordinate=linear.quotient_coordinate,
+        retracted_weight=retracted.weight,
+        row_basis=retracted.row_basis,
+        row_projector=retracted.row_projector,
+        retained_rank=retracted.retained_rank,
+        outer_rank=retracted.outer_rank,
+        shell_rank=retracted.shell_rank,
+        operator_kind=(
+            "single_checkpoint_anchored_retracted_core_ecs_grassmann_"
+            "cartan_cover_map"
+        ),
+        map_definition=(
+            "Phi_W(E)=V_c^T(2P_row(R_W(K_W(E)))-I)V_k, "
+            "K_W(E)=V_c^T E^T U_k Sigma_k^-1, and "
+            "R_W(K)=U_k Sigma_k[(V_k+V_cK)(I+K^TK)^(-1/2)]^T"
+        ),
+    )
+
+
+def ecs_grassmann_retracted_core(
+    weight: ArrayLike,
+    quotient_coordinate: ArrayLike,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float | None = None,
+) -> ECSGrassmannRetractedCoreRecord:
+    """Retract a quotient coordinate and evaluate its Cartan cross block."""
+
+    matrix = _matrix(weight)
+    left, singular_values, retained, shell, _ = _ecs_cover_frames(
+        matrix,
+        retained_rank=retained_rank,
+        outer_rank=outer_rank,
+        rcond=rcond,
+    )
+    k = int(retained.shape[1])
+    q = int(k + shell.shape[1])
+    coordinate = np.asarray(quotient_coordinate, dtype=np.float64)
+    expected = (q - k, k)
+    if coordinate.shape != expected or not np.all(np.isfinite(coordinate)):
+        raise ValueError(
+            f"quotient_coordinate must be a finite matrix with shape {expected}"
+        )
+    metric = np.eye(k) + coordinate.T @ coordinate
+    eigenvalues, eigenvectors = np.linalg.eigh(metric)
+    inverse_root = (
+        eigenvectors * (1.0 / np.sqrt(eigenvalues))[None, :]
+    ) @ eigenvectors.T
+    row_basis = (retained + shell @ coordinate) @ inverse_root
+    retracted = (
+        (left * singular_values[:k][None, :]) @ row_basis.T
+    )
+    projector = row_basis @ row_basis.T
+    cartan = shell.T @ (
+        2.0 * projector - np.eye(matrix.shape[1])
+    ) @ retained
+    return ECSGrassmannRetractedCoreRecord(
+        weight=retracted,
+        row_basis=row_basis,
+        row_projector=projector,
+        cartan_cross_block=cartan,
+        retained_rank=k,
+        outer_rank=q,
+        shell_rank=q - k,
+        orthogonality_residual=float(
+            np.linalg.norm(row_basis.T @ row_basis - np.eye(k), ord="fro")
+        ),
+        operator_kind="ecs_grassmann_gauge_fixed_retracted_core",
+        map_definition=(
+            "W(K)=U_k Sigma_k [(V_k+V_cK)(I+K^TK)^(-1/2)]^T; "
+            "Cartan cross block V_c^T(2P_row(W(K))-I)V_k"
+        ),
+    )
+
+
+def ecs_grassmann_cover_analytic_spectrum(
+    weight: ArrayLike,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float | None = None,
+    precomputed_singular_values: ArrayLike | None = None,
+) -> ECSGrassmannCoverSpectrumRecord:
+    """Exact spectrum ``2/sigma_i`` of the restricted ECS cover Jacobian."""
+
+    matrix = _matrix(weight)
+    rows, columns = matrix.shape
+    if rows >= columns:
+        raise ValueError(
+            "the row-space ECS Grassmann cover is defined for a wide matrix"
+        )
+    k = _integer_rank(retained_rank, name="retained_rank")
+    q = _integer_rank(outer_rank, name="outer_rank")
+    if not (1 <= k < q <= rows):
+        raise ValueError(
+            "ECS cover ranks must satisfy 1 <= retained_rank < outer_rank "
+            "<= the wide matrix row rank"
+        )
+    if precomputed_singular_values is None:
+        singular_values = np.linalg.svd(matrix, compute_uv=False)
+    else:
+        singular_values = np.asarray(
+            precomputed_singular_values,
+            dtype=np.float64,
+        )
+        expected = min(matrix.shape)
+        if singular_values.shape != (expected,):
+            raise ValueError(
+                f"precomputed_singular_values must have shape {(expected,)}"
+            )
+        if not np.all(np.isfinite(singular_values)):
+            raise ValueError("precomputed_singular_values contain non-finite values")
+        if np.any(singular_values < 0.0):
+            raise ValueError("precomputed_singular_values must be non-negative")
+        if np.any(np.diff(singular_values) > 0.0):
+            raise ValueError("precomputed_singular_values must be non-increasing")
+    largest = float(singular_values[0])
+    if rcond is not None and rcond < 0.0:
+        raise ValueError("rcond must be non-negative")
+    tolerance = (
+        float(rcond) * largest
+        if rcond is not None
+        else max(matrix.shape)
+        * np.finfo(np.float64).eps
+        * largest
+    )
+    numerical_rank = int(np.count_nonzero(singular_values > tolerance))
+    if q > numerical_rank:
+        raise np.linalg.LinAlgError(
+            "outer ECS rank exceeds the checkpoint numerical rank"
+        )
+    shell_rank = q - k
+    canonical = np.repeat(1.0 / singular_values[:k], shell_rank)
+    projector = np.sqrt(2.0) * canonical
+    cartan = 2.0 * canonical
+    amplitudes = np.sort(cartan)[::-1]
+    energies = amplitudes**2
+    derivative_rank = int(k * shell_rank)
+    input_dimension = int(matrix.size)
+    core_amplitudes = np.sort(2.0 / singular_values[:k])
+    distinct_tolerance = (
+        64.0
+        * np.finfo(np.float64).eps
+        * float(core_amplitudes[-1])
+    )
+    numerical_distinct = 1 + int(
+        np.count_nonzero(np.diff(core_amplitudes) > distinct_tolerance)
+    )
+    boundary_gap = float(
+        singular_values[k - 1] - singular_values[k]
+        if k < singular_values.size
+        else singular_values[k - 1]
+    )
+    outer_boundary_gap = float(
+        singular_values[q - 1] - singular_values[q]
+        if q < singular_values.size
+        else singular_values[q - 1]
+    )
+    return ECSGrassmannCoverSpectrumRecord(
+        singular_amplitudes=amplitudes,
+        jt_j_nonzero_eigenvalues=energies,
+        canonical_chart_amplitudes=np.sort(canonical)[::-1],
+        projector_frobenius_amplitudes=np.sort(projector)[::-1],
+        zero_count=input_dimension - derivative_rank,
+        input_dimension=input_dimension,
+        derivative_rank=derivative_rank,
+        core_amplitude_group_count=k,
+        numerically_distinct_core_amplitude_count=numerical_distinct,
+        deterministic_shell_multiplicity=shell_rank,
+        retained_rank=k,
+        outer_rank=q,
+        shell_rank=shell_rank,
+        ambient_row_dimension=columns,
+        ambient_cover_dimension=int(k * (columns - k)),
+        restricted_cover_dimension=derivative_rank,
+        retained_singular_values=singular_values[:k],
+        boundary_singular_gap=boundary_gap,
+        outer_boundary_singular_gap=outer_boundary_gap,
+        coordinate_scale=2.0,
+        metric_convention=(
+            "one independent cross block of the Cartan involution 2P_row-I; "
+            "canonical K amplitudes are 1/sigma and full-projector Frobenius "
+            "amplitudes are sqrt(2)/sigma"
+        ),
+        operator_kind=(
+            "single_checkpoint_restricted_retracted_core_ecs_grassmann_"
+            "cartan_cover_jacobian_exact_spectrum"
+        ),
+        map_definition=(
+            "exact nonzero spectrum of D Phi_W(0) for the smooth anchored "
+            "cover Phi_W(E)=V_c^T(2P_row(R_W(K_W(E)))-I)V_k; "
+            "J[E]=2V_c^TE^TU_kSigma_k^-1 and j_ia=2/sigma_i for k<a<=q, "
+            "with each retained core group i repeated q-k times"
+        ),
+    )
 
 
 def gram_translation_quotient(
@@ -991,6 +1492,11 @@ __all__ = [
     "CenteredLogSingularJVPRecord",
     "CenteredLogSingularRecord",
     "CenteredLogSingularFlowRecord",
+    "ECSCoverRankSelectionRecord",
+    "ECSGrassmannCoverJVPRecord",
+    "ECSGrassmannCoverMapRecord",
+    "ECSGrassmannCoverSpectrumRecord",
+    "ECSGrassmannRetractedCoreRecord",
     "GramTranslationRecord",
     "NormalizedGramJVPRecord",
     "NormalizedGramRecord",
@@ -1006,10 +1512,15 @@ __all__ = [
     "centered_log_singular_analytic_spectrum",
     "centered_log_singular_jvp",
     "centered_log_singular_map",
+    "ecs_grassmann_cover_analytic_spectrum",
+    "ecs_grassmann_cover_jvp",
+    "ecs_grassmann_cover_map",
+    "ecs_grassmann_retracted_core",
     "essential_centered_log_singular_flow",
     "gram_translation_quotient",
     "normalized_gram_analytic_spectrum",
     "normalized_gram_jvp",
     "normalized_gram_map",
     "normalized_gram_spectrum",
+    "select_ecs_cover_ranks",
 ]

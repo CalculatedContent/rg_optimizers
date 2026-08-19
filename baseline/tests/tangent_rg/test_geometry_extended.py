@@ -31,9 +31,14 @@ from rg_baselines.tangent_rg.single_checkpoint import (
     centered_log_singular_flow,
     centered_log_singular_jvp,
     centered_log_singular_map,
+    ecs_grassmann_cover_analytic_spectrum,
+    ecs_grassmann_cover_jvp,
+    ecs_grassmann_cover_map,
+    ecs_grassmann_retracted_core,
     gram_translation_quotient,
     normalized_gram_analytic_spectrum,
     normalized_gram_map,
+    select_ecs_cover_ranks,
 )
 from rg_baselines.tangent_rg.two_checkpoint import (
     check_relative_polar_orthogonal_invariance,
@@ -182,6 +187,248 @@ class RelativePolarAngularTests(unittest.TestCase):
 
 
 class SingleCheckpointMapTests(unittest.TestCase):
+    def test_ecs_cover_rank_selection_records_boundary_order(self):
+        selected = select_ecs_cover_ranks(5, 9, maximum_rank=12)
+        self.assertEqual(selected.boundary_midpoint_rank, 7)
+        self.assertEqual(selected.retained_rank, 5)
+        self.assertEqual(selected.outer_rank, 9)
+        self.assertEqual(selected.shell_rank, 4)
+        self.assertEqual(
+            selected.retained_rank_source,
+            "power_law_top_mode_boundary",
+        )
+        reversed_selection = select_ecs_cover_ranks(9, 5, maximum_rank=12)
+        self.assertFalse(reversed_selection.available)
+        self.assertEqual(reversed_selection.retained_rank, 9)
+        self.assertEqual(reversed_selection.outer_rank, 5)
+        self.assertEqual(reversed_selection.shell_rank, 0)
+        self.assertIn("outside", reversed_selection.unavailable_reason)
+        coincident = select_ecs_cover_ranks(7, 7, maximum_rank=12)
+        self.assertFalse(coincident.available)
+        self.assertEqual(coincident.shell_rank, 0)
+
+    def test_ecs_grassmann_cover_jacobian_matches_explicit_and_retraction(self):
+        rng = np.random.default_rng(7310)
+        matrix = rng.normal(size=(4, 7))
+        retained_rank, outer_rank = 2, 4
+        analytic = ecs_grassmann_cover_analytic_spectrum(
+            matrix,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=True)
+        expected = np.sort(
+            np.repeat(2.0 / singular_values[:retained_rank], 2)
+        )[::-1]
+        np.testing.assert_allclose(analytic.singular_amplitudes, expected)
+        self.assertEqual(analytic.derivative_rank, retained_rank * 2)
+        self.assertEqual(analytic.core_amplitude_group_count, retained_rank)
+        self.assertEqual(
+            analytic.numerically_distinct_core_amplitude_count,
+            retained_rank,
+        )
+        self.assertEqual(analytic.deterministic_shell_multiplicity, 2)
+
+        columns = []
+        for index in range(matrix.size):
+            direction = np.zeros_like(matrix)
+            direction.reshape(-1)[index] = 1.0
+            columns.append(
+                ecs_grassmann_cover_jvp(
+                    matrix,
+                    direction,
+                    retained_rank=retained_rank,
+                    outer_rank=outer_rank,
+                ).cartan_cross_block.reshape(-1)
+            )
+        explicit = np.column_stack(columns)
+        explicit_amplitudes = np.linalg.svd(explicit, compute_uv=False)
+        np.testing.assert_allclose(
+            explicit_amplitudes[: analytic.derivative_rank],
+            analytic.singular_amplitudes,
+            rtol=2.0e-12,
+            atol=2.0e-12,
+        )
+
+        ambient_direction = rng.normal(size=matrix.shape)
+        epsilon = 1.0e-6
+        nonlinear_difference = (
+            ecs_grassmann_cover_map(
+                matrix,
+                epsilon * ambient_direction,
+                retained_rank=retained_rank,
+                outer_rank=outer_rank,
+            ).value
+            - ecs_grassmann_cover_map(
+                matrix,
+                -epsilon * ambient_direction,
+                retained_rank=retained_rank,
+                outer_rank=outer_rank,
+            ).value
+        ) / (2.0 * epsilon)
+        analytic_direction = ecs_grassmann_cover_jvp(
+            matrix,
+            ambient_direction,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        np.testing.assert_allclose(
+            nonlinear_difference,
+            analytic_direction.cartan_cross_block,
+            rtol=2.0e-6,
+            atol=2.0e-8,
+        )
+
+        coordinate = rng.normal(size=(2, retained_rank))
+        plus = ecs_grassmann_retracted_core(
+            matrix,
+            epsilon * coordinate,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        minus = ecs_grassmann_retracted_core(
+            matrix,
+            -epsilon * coordinate,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        finite = (
+            plus.cartan_cross_block - minus.cartan_cross_block
+        ) / (2.0 * epsilon)
+        np.testing.assert_allclose(finite, 2.0 * coordinate, rtol=2.0e-6, atol=2.0e-8)
+        self.assertLess(plus.orthogonality_residual, 1.0e-12)
+
+        radial = (
+            left[:, :retained_rank]
+            * np.arange(1.0, retained_rank + 1.0)[None, :]
+        ) @ right_h[:retained_rank]
+        radial_jvp = ecs_grassmann_cover_jvp(
+            matrix,
+            radial,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        np.testing.assert_allclose(radial_jvp.cartan_cross_block, 0.0, atol=1.0e-12)
+        omega = np.asarray([[0.0, -0.7], [0.7, 0.0]])
+        internal_gauge = (
+            left[:, :retained_rank] * singular_values[:retained_rank][None, :]
+        ) @ omega.T @ right_h[:retained_rank]
+        internal_jvp = ecs_grassmann_cover_jvp(
+            matrix,
+            internal_gauge,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        np.testing.assert_allclose(
+            internal_jvp.cartan_cross_block,
+            0.0,
+            atol=1.0e-12,
+        )
+        horizontal = (
+            left[:, :retained_rank]
+            * singular_values[:retained_rank][None, :]
+        ) @ coordinate.T @ right_h[retained_rank:outer_rank]
+        horizontal_jvp = ecs_grassmann_cover_jvp(
+            matrix,
+            horizontal,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        np.testing.assert_allclose(
+            horizontal_jvp.quotient_coordinate,
+            coordinate,
+            rtol=2.0e-12,
+            atol=2.0e-12,
+        )
+        left_generator = rng.normal(size=(matrix.shape[0], matrix.shape[0]))
+        left_generator -= left_generator.T
+        left_angular = left_generator @ (
+            (left[:, :retained_rank] * singular_values[:retained_rank][None, :])
+            @ right_h[:retained_rank]
+        )
+        left_jvp = ecs_grassmann_cover_jvp(
+            matrix,
+            left_angular,
+            retained_rank=retained_rank,
+            outer_rank=outer_rank,
+        )
+        np.testing.assert_allclose(
+            left_jvp.cartan_cross_block,
+            0.0,
+            atol=1.0e-12,
+        )
+
+    def test_ecs_cover_spectrum_is_orthogonally_invariant_and_wide_only(self):
+        rng = np.random.default_rng(7311)
+        matrix = rng.normal(size=(4, 7))
+        left, _ = np.linalg.qr(rng.normal(size=(4, 4)))
+        right, _ = np.linalg.qr(rng.normal(size=(7, 7)))
+        transformed = left @ matrix @ right.T
+        original = ecs_grassmann_cover_analytic_spectrum(
+            matrix, retained_rank=2, outer_rank=4
+        )
+        changed = ecs_grassmann_cover_analytic_spectrum(
+            transformed, retained_rank=2, outer_rank=4
+        )
+        np.testing.assert_allclose(
+            changed.singular_amplitudes,
+            original.singular_amplitudes,
+            rtol=2.0e-12,
+            atol=2.0e-12,
+        )
+        with self.assertRaises(ValueError):
+            ecs_grassmann_cover_analytic_spectrum(
+                matrix.T, retained_rank=2, outer_rank=4
+            )
+        with self.assertRaises(ValueError):
+            ecs_grassmann_cover_analytic_spectrum(
+                matrix, retained_rank=4, outer_rank=4
+            )
+
+    def test_ecs_cover_allows_rank_deficiency_beyond_outer_shell(self):
+        matrix = np.zeros((4, 7), dtype=float)
+        matrix[:3, :3] = np.diag([4.0, 3.0, 2.0])
+        singular_values = np.linalg.svd(matrix, compute_uv=False)
+        record = ecs_grassmann_cover_analytic_spectrum(
+            matrix,
+            retained_rank=1,
+            outer_rank=3,
+            rcond=1.0e-12,
+            precomputed_singular_values=singular_values,
+        )
+        np.testing.assert_allclose(record.singular_amplitudes, [0.5, 0.5])
+        with self.assertRaises(np.linalg.LinAlgError):
+            ecs_grassmann_cover_analytic_spectrum(
+                matrix,
+                retained_rank=1,
+                outer_rank=4,
+                rcond=1.0e-12,
+                precomputed_singular_values=singular_values,
+            )
+
+    def test_ecs_cover_relative_rank_policy_is_scale_invariant(self):
+        rng = np.random.default_rng(7312)
+        matrix = rng.normal(size=(4, 7))
+        original = ecs_grassmann_cover_analytic_spectrum(
+            matrix,
+            retained_rank=2,
+            outer_rank=4,
+            rcond=1.0e-9,
+        )
+        scale = 1.0e-12
+        scaled = ecs_grassmann_cover_analytic_spectrum(
+            scale * matrix,
+            retained_rank=2,
+            outer_rank=4,
+            rcond=1.0e-9,
+        )
+        np.testing.assert_allclose(
+            scaled.singular_amplitudes,
+            original.singular_amplitudes / scale,
+            rtol=2.0e-12,
+            atol=1.0e-2,
+        )
+
     def test_normalized_gram_analytic_spectrum_matches_explicit_jacobian(self):
         rng = np.random.default_rng(88)
         for shape in ((4, 2), (2, 4), (2, 2)):

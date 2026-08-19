@@ -542,6 +542,11 @@ def save_analysis_frames(method_slug, *, operators, fits, traces):
         "fit_row_count": int(len(fits)),
         "trace_row_count": int(len(traces)),
     }
+    provenance_manifest["analysis_contract_tokens"] = sorted(
+        fits["analysis_contract_token"].dropna().astype(str).unique().tolist()
+        if "analysis_contract_token" in fits.columns
+        else []
+    )
     operators.to_csv(destination / "operator_rows.csv", index=False)
     fits.to_csv(destination / "powerlaw_fits.csv", index=False)
     traces.to_csv(destination / "trace_log_independent_support.csv", index=False)
@@ -1255,6 +1260,353 @@ def resolved_training_config(seed_dir):
     config = TangentRGConfig(**values)
     config.validate()
     return config
+"""
+
+
+ECS_COVER_METRIC_HELPERS = r"""
+ECS_COVER_SOURCE_KIND = (
+    "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics"
+)
+ECS_PRIMARY_TRACE_QUALIFICATION_ROLE = "preregistered_independent_fit_support"
+
+
+def _strict_bool(value):
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "1"}:
+        return True
+    if normalized in {"false", "0"}:
+        return False
+    raise ValueError(f"Expected a serialized boolean, found {value!r}")
+
+
+def _strict_integer_metric(value, *, name):
+    numeric = pd.to_numeric(pd.Series([value]), errors="coerce").iloc[0]
+    if pd.isna(numeric):
+        raise ValueError(f"{name} is missing or nonnumeric")
+    rounded = int(round(float(numeric)))
+    if not np.isclose(float(numeric), rounded, rtol=0.0, atol=1.0e-9):
+        raise ValueError(f"{name} must be integer-valued, found {value!r}")
+    return rounded
+
+
+def load_verified_ecs_metric_tables(optimizer_slug, seed, expected_fingerprint):
+    identity = _VERIFIED_RUN_IDENTITIES.get((str(optimizer_slug), int(seed)))
+    if identity is None:
+        raise RuntimeError(
+            f"Run identity was not verified for optimizer={optimizer_slug}, seed={seed}"
+        )
+    source_seed_dir = Path(identity["source_seed_dir"]).resolve()
+    metrics_dir = source_seed_dir / "metrics"
+    fit_path = require_path(
+        metrics_dir / "weightwatcher_fits.csv",
+        description="WeightWatcher fit table used for exact ECS ranks",
+    )
+    trace_path = require_path(
+        metrics_dir / "trace_log.csv",
+        description="trace-log table used to audit exact ECS ranks",
+    )
+    fits = pd.read_csv(fit_path)
+    traces = pd.read_csv(trace_path)
+    for label, frame, path, diagnostic_columns in (
+        (
+            "WeightWatcher",
+            fits,
+            fit_path,
+            {"fit_ok", "detX_num"},
+        ),
+        (
+            "trace-log",
+            traces,
+            trace_path,
+            {
+                "qualification_role", "sensitivity_only",
+                "certification_eligible", "support_rank_source",
+                "support_rank", "support_window_start_descending_zero_based",
+                "support_window_end_descending_exclusive",
+            },
+        ),
+    ):
+        required = {
+            "optimizer", "seed", "protocol_fingerprint", "epoch",
+            "global_step", "layer", "fit_variant",
+        } | diagnostic_columns
+        missing = required - set(frame.columns)
+        if missing:
+            raise KeyError(f"{path} lacks ECS identity columns {sorted(missing)}")
+        identity_columns = [
+            "optimizer", "seed", "protocol_fingerprint", "epoch",
+            "global_step", "layer", "fit_variant",
+        ]
+        if frame[identity_columns].isna().any().any():
+            raise RuntimeError(f"{label} ECS identity contains nulls in {path}")
+        identity_checks = {
+            "optimizer": (set(frame["optimizer"].dropna().astype(str)), {str(optimizer_slug)}),
+            "seed": (set(frame["seed"].dropna().astype(int)), {int(seed)}),
+            "protocol_fingerprint": (
+                set(frame["protocol_fingerprint"].dropna().astype(str)),
+                {str(expected_fingerprint)},
+            ),
+        }
+        mismatches = [
+            f"{field}: observed={sorted(observed)}, expected={sorted(expected)}"
+            for field, (observed, expected) in identity_checks.items()
+            if observed != expected
+        ]
+        if mismatches:
+            raise RuntimeError(
+                f"{label} ECS identity mismatch in {path}: " + "; ".join(mismatches)
+            )
+    return fits, traces, str(fit_path), str(trace_path)
+
+
+def exact_ecs_cover_rank_record(
+    fits,
+    traces,
+    *,
+    optimizer_slug,
+    seed,
+    epoch,
+    global_step,
+    layer,
+    maximum_rank,
+    fit_path,
+    trace_path,
+):
+    identity_mask_fits = (
+        fits["optimizer"].astype(str).eq(str(optimizer_slug))
+        & pd.to_numeric(fits["seed"], errors="coerce").eq(int(seed))
+        & pd.to_numeric(fits["epoch"], errors="coerce").eq(int(epoch))
+        & pd.to_numeric(fits["global_step"], errors="coerce").eq(int(global_step))
+        & fits["layer"].astype(str).eq(str(layer))
+        & fits["fit_variant"].astype(str).eq("clip_xmax")
+    )
+    fit_rows = fits.loc[identity_mask_fits]
+    base = {
+        "ecs_rank_status": "unavailable",
+        "ecs_rank_metrics_available": False,
+        "ecs_full_shell_available": False,
+        "ecs_detx_shell_available": False,
+        "ecs_rank_fit_variant": "clip_xmax",
+        "ecs_rank_fit_path": str(fit_path),
+        "ecs_rank_trace_path": str(trace_path),
+        "ecs_rank_exact_match_required": True,
+        "ecs_rank_exact_epoch_match_found": False,
+        "ecs_rank_exact_global_step_match_found": False,
+        "ecs_rank_exact_weightwatcher_state_found": False,
+        "ecs_rank_exact_trace_state_found": False,
+        "ecs_rank_nearest_or_forward_fill_used": False,
+    }
+    if fit_rows.empty:
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "no exact sparse WeightWatcher state",
+        }
+    if len(fit_rows) != 1:
+        raise RuntimeError(
+            "Expected one exact clip_xmax WeightWatcher row for "
+            f"{optimizer_slug}/seed={seed}/epoch={epoch}/{layer}; found {len(fit_rows)}"
+        )
+    base.update({
+        "ecs_rank_exact_epoch_match_found": True,
+        "ecs_rank_exact_global_step_match_found": True,
+        "ecs_rank_exact_weightwatcher_state_found": True,
+    })
+    identity_mask_traces = (
+        traces["optimizer"].astype(str).eq(str(optimizer_slug))
+        & pd.to_numeric(traces["seed"], errors="coerce").eq(int(seed))
+        & pd.to_numeric(traces["epoch"], errors="coerce").eq(int(epoch))
+        & pd.to_numeric(traces["global_step"], errors="coerce").eq(int(global_step))
+        & traces["layer"].astype(str).eq(str(layer))
+        & traces["fit_variant"].astype(str).eq("clip_xmax")
+    )
+    exact_traces = traces.loc[identity_mask_traces]
+    if not exact_traces.empty:
+        base["ecs_rank_exact_trace_state_found"] = True
+    fit = fit_rows.iloc[0]
+    if "fit_ok" not in fit_rows.columns or not _strict_bool(fit["fit_ok"]):
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "exact WeightWatcher fit is not fit_ok",
+            "weightwatcher_status": str(fit.get("weightwatcher_status", fit.get("status", "unknown"))),
+        }
+
+    primary = exact_traces.loc[
+        exact_traces["qualification_role"].astype(str).eq(
+            ECS_PRIMARY_TRACE_QUALIFICATION_ROLE
+        )
+        & ~exact_traces["sensitivity_only"].map(_strict_bool)
+    ]
+    if len(primary) != 1:
+        if len(primary) > 1:
+            raise RuntimeError(
+                f"Duplicate primary ECS support rows at epoch={epoch}, layer={layer}"
+            )
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "no exact certifying primary trace support",
+        }
+    primary = primary.iloc[0]
+    if not _strict_bool(primary["certification_eligible"]):
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "primary trace support is not certification eligible",
+        }
+    detx_rows = exact_traces.loc[
+        exact_traces["support_rank_source"].astype(str).eq("weightwatcher_detX")
+    ]
+    if len(detx_rows) != 1:
+        if len(detx_rows) > 1:
+            raise RuntimeError(
+                f"Duplicate detX ECS support rows at epoch={epoch}, layer={layer}"
+            )
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "no exact detX trace audit row",
+        }
+    detx_row = detx_rows.iloc[0]
+    midpoint_rows = exact_traces.loc[
+        exact_traces["support_rank_source"].astype(str).eq(
+            "weightwatcher_midpoint"
+        )
+    ]
+    if len(midpoint_rows) != 1:
+        if len(midpoint_rows) > 1:
+            raise RuntimeError(
+                f"Duplicate midpoint ECS audit rows at epoch={epoch}, layer={layer}"
+            )
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "no exact WeightWatcher midpoint audit row",
+        }
+    midpoint_row = midpoint_rows.iloc[0]
+
+    detx_value = pd.to_numeric(pd.Series([fit.get("detX_num")]), errors="coerce").iloc[0]
+    start_value = pd.to_numeric(
+        pd.Series([primary.get("support_window_start_descending_zero_based")]),
+        errors="coerce",
+    ).iloc[0]
+    end_value = pd.to_numeric(
+        pd.Series([primary.get("support_window_end_descending_exclusive")]),
+        errors="coerce",
+    ).iloc[0]
+    tail_value = pd.to_numeric(pd.Series([primary.get("support_rank")]), errors="coerce").iloc[0]
+    if not all(pd.notna(value) for value in (detx_value, start_value, end_value, tail_value)):
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": "nonfinite PL-window or detX rank",
+        }
+    try:
+        k_pl = _strict_integer_metric(end_value, name="PL support-window end")
+        k_tl = _strict_integer_metric(detx_value, name="WeightWatcher detX_num")
+        window_start = _strict_integer_metric(
+            start_value, name="PL support-window start"
+        )
+        effective_tail = _strict_integer_metric(
+            tail_value, name="PL effective-tail rank"
+        )
+        detx_trace = _strict_integer_metric(
+            detx_row["support_rank"], name="trace detX support rank"
+        )
+        persisted_midpoint = _strict_integer_metric(
+            midpoint_row["support_rank"], name="trace WeightWatcher midpoint rank"
+        )
+    except ValueError as error:
+        raise RuntimeError(
+            f"Malformed exact ECS rank metric at epoch={epoch}, layer={layer}: {error}"
+        ) from error
+    if k_pl != window_start + effective_tail:
+        raise RuntimeError("ECS PL boundary is not window_start + effective_tail")
+    recorded_pl_boundaries = []
+    for name, value in (
+        ("WeightWatcher pl_support_rank", fit.get("pl_support_rank")),
+        (
+            "trace pl_support_rank_before_finger_clip",
+            primary.get("pl_support_rank_before_finger_clip"),
+        ),
+    ):
+        numeric = pd.to_numeric(pd.Series([value]), errors="coerce").iloc[0]
+        if pd.notna(numeric):
+            try:
+                recorded_pl_boundaries.append(
+                    (name, _strict_integer_metric(numeric, name=name))
+                )
+            except ValueError as error:
+                raise RuntimeError(
+                    f"Malformed exact ECS rank metric at epoch={epoch}, "
+                    f"layer={layer}: {error}"
+                ) from error
+    mismatched_pl_boundaries = [
+        f"{name}={value}" for name, value in recorded_pl_boundaries
+        if value != k_pl
+    ]
+    if mismatched_pl_boundaries:
+        raise RuntimeError(
+            "ECS top-mode PL boundary disagrees with recorded preclip support: "
+            + ", ".join(mismatched_pl_boundaries)
+        )
+    if detx_trace != k_tl:
+        raise RuntimeError(
+            "Exact detX fit field disagrees with trace audit; fallback is refused"
+        )
+    expected_persisted_midpoint = int(np.floor((effective_tail + k_tl) / 2.0))
+    if persisted_midpoint != expected_persisted_midpoint:
+        raise RuntimeError(
+            "Persisted WeightWatcher midpoint audit disagrees with its declared "
+            "effective-tail/detX convention"
+        )
+    try:
+        selection = single_checkpoint.select_ecs_cover_ranks(
+            k_pl,
+            k_tl,
+            maximum_rank=int(maximum_rank),
+        )
+    except (TypeError, ValueError) as error:
+        return {
+            **base,
+            "ecs_rank_unavailable_reason": f"invalid exact ECS boundaries: {error}",
+            "k_pl": k_pl,
+            "k_tl": k_tl,
+        }
+    result = {
+        **base,
+        "ecs_rank_status": "ok",
+        "ecs_rank_metrics_available": True,
+        "ecs_full_shell_available": bool(k_pl < int(maximum_rank)),
+        "ecs_detx_shell_available": bool(selection.available),
+        "ecs_rank_unavailable_reason": "",
+        "ecs_full_shell_unavailable_reason": (
+            "" if k_pl < int(maximum_rank)
+            else "power-law retained boundary reaches checkpoint numerical rank"
+        ),
+        "ecs_detx_shell_unavailable_reason": selection.unavailable_reason,
+        "k_pl": selection.power_law_rank,
+        "k_boundary_mid": selection.boundary_midpoint_rank,
+        "weightwatcher_midpoint_rank": persisted_midpoint,
+        "k_tl": selection.trace_log_rank,
+        "retained_rank": selection.retained_rank,
+        "retained_rank_source": selection.retained_rank_source,
+        "full_shell_outer_rank": int(maximum_rank),
+        "full_shell_outer_rank_source": "checkpoint_numerical_rank",
+        "full_shell_rank": max(0, int(maximum_rank) - selection.retained_rank),
+        "detx_shell_outer_rank": selection.outer_rank,
+        "detx_shell_outer_rank_source": selection.outer_rank_source,
+        "detx_shell_rank": selection.shell_rank,
+        "rank_selection_rule": selection.selection_rule,
+        "pl_boundary_definition": (
+            "top-mode boundary index = clipped support window start + effective tail rank; "
+            "required by V_k=[v_1,...,v_k]"
+        ),
+        "pl_effective_tail_rank": effective_tail,
+        "pl_support_window_start": window_start,
+        "pl_support_window_end": k_pl,
+        "pl_support_rank_source": str(primary["support_rank_source"]),
+        "pl_support_window_source": str(primary.get("support_window_source", "unknown")),
+        "n_fingers_removed": int(round(float(primary.get("n_fingers_removed", window_start)))),
+        "detx_rank_source": "finite detX_num in exact WeightWatcher row, cross-audited in trace_log.csv",
+    }
+    return result
 """
 
 
@@ -3455,10 +3807,13 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             """
             # Single-checkpoint analytic map Jacobians
 
-            Starting from one saved weight matrix `W`, define five explicit
-            candidate RG maps and form the actual Jacobian of every map:
+            Starting from one saved weight matrix `W`, define six explicit
+            candidate RG map families and form the actual Jacobian of every map:
             angular polar, normalized Gram, centered trace-log Gram, centered
-            log-singular radial, and the exact configured finite Muon NS5 map.
+            log-singular radial, the exact configured finite Muon NS5 map, and
+            the restricted retracted-core ECS Grassmann Cartan cover for wide
+            `fc1.weight`. The ECS family is evaluated with the requested full
+            numerical row shell and with a detX-bounded shell sensitivity.
             The notebook fits only spectra of these derivatives--never the ESD
             of an undifferentiated quotient or a checkpoint displacement.
             Every trained matrix is read from the verified final-100 cache;
@@ -3472,7 +3827,14 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
             MINIMUM_TAIL = 8
             MAXIMUM_CHECKPOINTS = 100
-            NUMERICAL_SHAPE = [8, 6]
+            NUMERICAL_SHAPE = [6, 8]
+            ECS_COVER_LAYER = "fc1.weight"
+            ECS_VALIDATION_RETAINED_RANK = 3
+            ECS_VALIDATION_OUTER_RANK = 5
+            ECS_RANK_RCOND = 1e-9
+            ECS_FIT_CONTRACT_TOKEN = (
+                "ecs_grassmann_cartan_cover_group_qualified_v1"
+            )
             NS_STEPS = 5
             NS_EPS = 1e-7
             METHOD_SLUG = "single_checkpoint_map_jacobians"
@@ -3484,12 +3846,74 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
         caveat(
             "Declared single-point maps",
             "single_checkpoint_algebraic_map_derivative_bundle",
-            "J_i(W)=D F_i(W) for polar, normalized Gram, centered log-Gram, centered log-singular, and finite NS5 maps.",
+            "J_i(W)=D F_i(W) for the first five maps; "
+            "J_ECS(W)=D_E Phi_W(0) for the checkpoint-anchored retracted "
+            "ECS Grassmann Cartan cover.",
             "Every fitted object is the singular spectrum of an actual derivative of a "
             "declared candidate RG map computable from W alone. Numerical materialization "
             "is restricted to fixed small formula-validation matrices.",
         ),
-        code(COMMON_HELPERS + "\n" + TAIL_CHECKPOINT_CACHE_HELPERS + "\n" + CHECKPOINT_HELPERS),
+        markdown(
+            r"""
+            ## Wide-FC1 ECS Grassmann Cartan cover
+
+            For the checkpoint SVD $W=U\Sigma V^T$, take
+            $V_k=[v_1,\ldots,v_k]$ and
+            $V_c=[v_{k+1},\ldots,v_q]$. Radial changes of
+            $\Sigma_k$, left-angular motion, and rotations internal to
+            $V_k$ are null directions. An ambient perturbation $E$ is
+            reduced to the quotient coordinate
+
+            \[
+            K_W(E)=V_c^T E^T U_k\Sigma_k^{-1}.
+            \]
+
+            The notebook differentiates the nonlinear, checkpoint-anchored
+            retraction
+
+            \[
+            V(K)=(V_k+V_cK)(I+K^TK)^{-1/2},\quad
+            R_W(K)=U_k\Sigma_kV(K)^T,
+            \]
+            \[
+            \Phi_W(E)=V_c^T\{2P_{\rm row}[R_W(K_W(E))]-I\}V_k.
+            \]
+
+            Thus $D_E\Phi_W(0)[E]=2K_W(E)$, a true Jacobian with
+            amplitudes $2/\sigma_i$, energies $4/\sigma_i^2$, and rank
+            $k(q-k)$. The factor two is the one-cross-block Cartan
+            convention; canonical $K$ would give $1/\sigma_i$, while the
+            full projector tangent in Frobenius norm gives
+            $\sqrt{2}/\sigma_i$.
+
+            Rank diagnostics are admitted only from exact checkpoint matches.
+            The finger-aware power-law top-mode boundary defines $k$. The
+            requested primary cover takes $q$ to be the checkpoint numerical
+            row rank; a separately labelled sensitivity takes $q$ from finite
+            `detX_num`. Both use the same exact trace-audited states, and roles
+            are never swapped. Missing, coincident, or reversed detX
+            boundaries are audit rows, never nearest-state fills.
+            At fixed $k$, changing $q$ only changes the uniform multiplicity
+            $q-k$ of every $2/\sigma_i$ amplitude. The detX-$q$ construction is
+            therefore a shell-dimension/multiplicity sensitivity, not an
+            independent spectral-shape or alpha corroboration. Finger
+            sensitivities remove whole $(q-k)$-mode core groups, never partial
+            degenerate blocks. A fit is retained only when the
+            package-selected tail contains at least `MINIMUM_TAIL` retained-core
+            groups; the expanded mode count alone cannot qualify it.
+            Repeated shell modes and checkpoints are not independent samples;
+            uncertainty is computed across complete seeded runs.
+            """
+        ),
+        code(
+            COMMON_HELPERS
+            + "\n"
+            + TAIL_CHECKPOINT_CACHE_HELPERS
+            + "\n"
+            + CHECKPOINT_HELPERS
+            + "\n"
+            + ECS_COVER_METRIC_HELPERS
+        ),
         markdown("## Exact large-layer spectra and small numerical validation"),
         code(
             """
@@ -3499,6 +3923,14 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                 for seed in SEEDS:
                     seed_dir = require_tail_checkpoint_cache(optimizer, seed)
                     run_fingerprint = verified_run_fingerprint(optimizer, seed)
+                    (
+                        ecs_metric_fits,
+                        ecs_metric_traces,
+                        ecs_fit_path,
+                        ecs_trace_path,
+                    ) = load_verified_ecs_metric_tables(
+                        optimizer, seed, run_fingerprint
+                    )
                     cache_refs = analysis_checkpoint_refs(seed_dir)
                     final_cache_epoch = int(cache_refs[-1].epoch)
                     print(
@@ -3576,30 +4008,228 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                              "ns_steps": int(NS_STEPS), "ns_eps": float(NS_EPS)},
                         ])
                         candidates = [
-                            ("polar_pullback", polar_record.singular_amplitudes, polar_record),
-                            ("normalized_gram_pullback", gram_record.singular_amplitudes, gram_record),
-                            ("centered_log_gram_pullback", log_gram_record.singular_amplitudes, log_gram_record),
-                            ("centered_log_singular_radial_pullback", radial_record.singular_amplitudes, radial_record),
-                            ("finite_muon_ns5_pullback", ns5_record.singular_amplitudes, ns5_record),
+                            ("polar_pullback", polar_record.singular_amplitudes, polar_record, base),
+                            ("normalized_gram_pullback", gram_record.singular_amplitudes, gram_record, base),
+                            ("centered_log_gram_pullback", log_gram_record.singular_amplitudes, log_gram_record, base),
+                            ("centered_log_singular_radial_pullback", radial_record.singular_amplitudes, radial_record, base),
+                            ("finite_muon_ns5_pullback", ns5_record.singular_amplitudes, ns5_record, base),
                         ]
-                        for method, spectrum, record in candidates:
+                        if layer == ECS_COVER_LAYER:
+                            rank_tolerance = (
+                                float(ECS_RANK_RCOND)
+                                * float(checkpoint_singular_values[0])
+                            )
+                            checkpoint_rank = int(
+                                np.count_nonzero(
+                                    checkpoint_singular_values > rank_tolerance
+                                )
+                            )
+                            ecs_ranks = exact_ecs_cover_rank_record(
+                                ecs_metric_fits,
+                                ecs_metric_traces,
+                                optimizer_slug=optimizer,
+                                seed=seed,
+                                epoch=int(selected.epoch),
+                                global_step=int(selected.global_step),
+                                layer=layer,
+                                maximum_rank=checkpoint_rank,
+                                fit_path=ecs_fit_path,
+                                trace_path=ecs_trace_path,
+                            )
+                            cover_common = {
+                                **base,
+                                **ecs_ranks,
+                                "source_artifact_kind": ECS_COVER_SOURCE_KIND,
+                                "checkpoint_numerical_rank": checkpoint_rank,
+                                "checkpoint_rank_rcond": float(ECS_RANK_RCOND),
+                                "checkpoint_rank_tolerance": rank_tolerance,
+                            }
+                            cover_variants = (
+                                (
+                                    "ecs_grassmann_cartan_cover_full_row_shell_pullback",
+                                    "full_checkpoint_numerical_row_shell",
+                                    bool(ecs_ranks["ecs_full_shell_available"]),
+                                    ecs_ranks.get("full_shell_outer_rank"),
+                                    ecs_ranks.get("full_shell_outer_rank_source"),
+                                    ecs_ranks.get("full_shell_unavailable_reason", ""),
+                                ),
+                                (
+                                    "ecs_grassmann_cartan_cover_detx_shell_pullback",
+                                    "detx_bounded_outer_shell_sensitivity",
+                                    bool(ecs_ranks["ecs_detx_shell_available"]),
+                                    ecs_ranks.get("detx_shell_outer_rank"),
+                                    ecs_ranks.get("detx_shell_outer_rank_source"),
+                                    ecs_ranks.get("detx_shell_unavailable_reason", ""),
+                                ),
+                            )
+                            for (
+                                cover_method,
+                                shell_variant,
+                                cover_available,
+                                cover_outer_rank,
+                                cover_outer_source,
+                                variant_unavailable_reason,
+                            ) in cover_variants:
+                                cover_base = {
+                                    **cover_common,
+                                    "method": cover_method,
+                                    "ecs_shell_variant": shell_variant,
+                                    "ecs_shell_comparison_role": (
+                                        "primary_full_numerical_row_shell"
+                                        if shell_variant
+                                        == "full_checkpoint_numerical_row_shell"
+                                        else "shell_dimension_multiplicity_sensitivity_only"
+                                    ),
+                                    "ecs_normalized_esd_shape_invariant_to_q_at_fixed_k": True,
+                                    "ecs_alpha_across_q_not_independent_corroboration": True,
+                                    "ecs_finger_clipping_unit": (
+                                        "whole_retained_core_groups_of_q_minus_k_modes"
+                                    ),
+                                    "ecs_minimum_tail_unit": "retained_core_amplitude_groups",
+                                    "analysis_contract_token": ECS_FIT_CONTRACT_TOKEN,
+                                    "outer_rank": cover_outer_rank,
+                                    "outer_rank_source": cover_outer_source,
+                                    "shell_rank": (
+                                        int(cover_outer_rank)
+                                        - int(ecs_ranks["retained_rank"])
+                                        if cover_available else 0
+                                    ),
+                                }
+                                if cover_available:
+                                    cover_record = (
+                                        single_checkpoint.ecs_grassmann_cover_analytic_spectrum(
+                                            W,
+                                            retained_rank=int(ecs_ranks["retained_rank"]),
+                                            outer_rank=int(cover_outer_rank),
+                                            rcond=float(ECS_RANK_RCOND),
+                                            precomputed_singular_values=checkpoint_singular_values,
+                                        )
+                                    )
+                                    cover_base.update({
+                                        "ambient_row_dimension": cover_record.ambient_row_dimension,
+                                        "ambient_cover_dimension": cover_record.ambient_cover_dimension,
+                                        "restricted_cover_dimension": cover_record.restricted_cover_dimension,
+                                        "excluded_ambient_dimension": int(
+                                            cover_record.retained_rank
+                                            * (cover_record.ambient_row_dimension - cover_record.outer_rank)
+                                        ),
+                                        "core_amplitude_group_count": cover_record.core_amplitude_group_count,
+                                        "numerically_distinct_core_amplitude_count": (
+                                            cover_record.numerically_distinct_core_amplitude_count
+                                        ),
+                                        "deterministic_shell_multiplicity": cover_record.deterministic_shell_multiplicity,
+                                        "boundary_singular_gap": cover_record.boundary_singular_gap,
+                                        "outer_boundary_singular_gap": cover_record.outer_boundary_singular_gap,
+                                        "cover_coordinate_scale": cover_record.coordinate_scale,
+                                        "cover_metric_convention": cover_record.metric_convention,
+                                        "deterministic_replication_warning": (
+                                            "k retained-core amplitude groups, each repeated q-k times; "
+                                            "only complete seeded training runs are independent--"
+                                            "checkpoints and (i,a) copies are repeated observations"
+                                        ),
+                                    })
+                                    operator_records.append({
+                                        **cover_base,
+                                        "operator_kind": cover_record.operator_kind,
+                                        "map_definition": cover_record.map_definition,
+                                        "derivative_rank": cover_record.derivative_rank,
+                                        "zero_count": cover_record.zero_count,
+                                        "available": True,
+                                    })
+                                    candidates.append((
+                                        cover_method,
+                                        cover_record.singular_amplitudes,
+                                        cover_record,
+                                        cover_base,
+                                    ))
+                                else:
+                                    operator_records.append({
+                                        **cover_base,
+                                        "operator_kind": (
+                                            "unavailable_exact_sparse_ecs_grassmann_cartan_cover"
+                                        ),
+                                        "map_definition": (
+                                            "requested anchored retracted-core cover "
+                                            "J[E]=2V_c^T E^T U_k Sigma_k^-1"
+                                        ),
+                                        "available": False,
+                                        "variant_unavailable_reason": (
+                                            variant_unavailable_reason
+                                            or ecs_ranks.get(
+                                                "ecs_rank_unavailable_reason",
+                                                "exact ECS rank metrics unavailable",
+                                            )
+                                        ),
+                                    })
+                        for method, spectrum, record, candidate_base in candidates:
                             positive = np.asarray(spectrum, dtype=float)
                             positive = positive[np.isfinite(positive) & (positive > 0)]
                             if positive.size < 2:
                                 continue
-                            metadata = {**base, "method": method}
+                            metadata = {**candidate_base, "method": method}
+                            fit_top_k_values = TOP_K_VALUES
+                            is_ecs_cover = method.startswith(
+                                "ecs_grassmann_cartan_cover_"
+                            )
+                            if is_ecs_cover:
+                                shell_multiplicity = int(
+                                    record.deterministic_shell_multiplicity
+                                )
+                                core_group_count = int(
+                                    record.core_amplitude_group_count
+                                )
+                                feasible_group_clips = tuple(
+                                    int(group_count)
+                                    for group_count in TOP_K_VALUES
+                                    if int(group_count) <= core_group_count - 2
+                                )
+                                if not feasible_group_clips or feasible_group_clips[0] != 0:
+                                    feasible_group_clips = (0,)
+                                fit_top_k_values = tuple(
+                                    group_count * shell_multiplicity
+                                    for group_count in feasible_group_clips
+                                )
                             fits, traces = fit_spectrum_with_trace(
                                 positive,
                                 operator_kind=record.operator_kind,
                                 map_definition=record.map_definition,
                                 spectrum_kind="amplitude",
                                 metadata=metadata,
-                                top_k_values=TOP_K_VALUES,
+                                top_k_values=fit_top_k_values,
                                 minimum_tail=MINIMUM_TAIL,
                             )
+                            if is_ecs_cover:
+                                core_amplitudes = (
+                                    2.0
+                                    / np.asarray(
+                                        record.retained_singular_values,
+                                        dtype=float,
+                                    )
+                                )
+                                fits = powerlaw_fit.qualify_replicated_group_fits(
+                                    fits,
+                                    core_amplitudes,
+                                    group_multiplicity=shell_multiplicity,
+                                    minimum_tail_groups=MINIMUM_TAIL,
+                                )
+                                fits["ecs_clip_core_groups"] = fits[
+                                    "clip_group_count"
+                                ]
+                                fits["ecs_tail_core_group_count"] = fits[
+                                    "tail_group_count"
+                                ]
+                                fits["ecs_minimum_tail_core_groups"] = fits[
+                                    "minimum_tail_groups"
+                                ]
+                                fits["ecs_group_tail_qualified"] = fits[
+                                    "group_tail_qualified"
+                                ]
+                                fits["ecs_mode_level_fit_ok_before_group_gate"] = fits[
+                                    "mode_level_fit_ok_before_group_gate"
+                                ]
                             fit_frames.append(fits); trace_frames.append(traces)
                             # Fits cover every selected state.  Persist only final-state
-                            # arrays so the five exact Jacobian families do not retain
+                            # arrays so the six exact Jacobian families do not retain
                             # the full trajectory (many GiB for the 3x3 long campaign).
                             if int(selected.epoch) == final_cache_epoch:
                                 spectral_arrays[
@@ -3610,6 +4240,39 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             small = rng.normal(size=tuple(NUMERICAL_SHAPE))
             small[:min(small.shape), :min(small.shape)] += 2.0 * np.eye(min(small.shape))
             maximum_dimension = int(np.prod(NUMERICAL_SHAPE))
+            cover_coordinate_direction = rng.normal(
+                size=(
+                    int(ECS_VALIDATION_OUTER_RANK - ECS_VALIDATION_RETAINED_RANK),
+                    int(ECS_VALIDATION_RETAINED_RANK),
+                )
+            )
+            cover_validation_epsilon = 1e-6
+            cover_plus = single_checkpoint.ecs_grassmann_retracted_core(
+                small,
+                cover_validation_epsilon * cover_coordinate_direction,
+                retained_rank=ECS_VALIDATION_RETAINED_RANK,
+                outer_rank=ECS_VALIDATION_OUTER_RANK,
+                rcond=ECS_RANK_RCOND,
+            )
+            cover_minus = single_checkpoint.ecs_grassmann_retracted_core(
+                small,
+                -cover_validation_epsilon * cover_coordinate_direction,
+                retained_rank=ECS_VALIDATION_RETAINED_RANK,
+                outer_rank=ECS_VALIDATION_OUTER_RANK,
+                rcond=ECS_RANK_RCOND,
+            )
+            cover_retraction_derivative = (
+                cover_plus.cartan_cross_block - cover_minus.cartan_cross_block
+            ) / (2.0 * cover_validation_epsilon)
+            cover_retraction_relative_error = float(
+                np.linalg.norm(
+                    cover_retraction_derivative - 2.0 * cover_coordinate_direction
+                )
+                / max(
+                    np.linalg.norm(2.0 * cover_coordinate_direction),
+                    np.finfo(float).tiny,
+                )
+            )
             validations = [
                 (
                     "polar",
@@ -3667,6 +4330,35 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                         small, steps=NS_STEPS, eps=NS_EPS
                     ),
                 ),
+                (
+                    "ecs_grassmann_cartan_cover",
+                    polar.central_difference_jacobian(
+                        lambda value: single_checkpoint.ecs_grassmann_cover_map(
+                            small,
+                            value,
+                            retained_rank=ECS_VALIDATION_RETAINED_RANK,
+                            outer_rank=ECS_VALIDATION_OUTER_RANK,
+                            rcond=ECS_RANK_RCOND,
+                        ).value,
+                        np.zeros_like(small),
+                        max_input_dimension=maximum_dimension,
+                        rank_rtol=1e-9,
+                        operator_kind=(
+                            "explicit_numerical_retracted_core_ecs_grassmann_"
+                            "cartan_cover_jacobian"
+                        ),
+                        map_definition=(
+                            "central-difference materialization of the nonlinear "
+                            "checkpoint-anchored retracted ECS Cartan cover map"
+                        ),
+                    ),
+                    single_checkpoint.ecs_grassmann_cover_analytic_spectrum(
+                        small,
+                        retained_rank=ECS_VALIDATION_RETAINED_RANK,
+                        outer_rank=ECS_VALIDATION_OUTER_RANK,
+                        rcond=ECS_RANK_RCOND,
+                    ),
+                ),
             ]
             for validation_name, numerical, analytic in validations:
                 analytic_amplitudes = np.asarray(analytic.singular_amplitudes, dtype=float)
@@ -3695,12 +4387,22 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                     "relative_spectral_error": agreement,
                     "numeric_rank": int(numerical.numerical_rank),
                     "analytic_rank": int(analytic.derivative_rank),
+                    "retracted_core_directional_error": (
+                        cover_retraction_relative_error
+                        if validation_name == "ecs_grassmann_cartan_cover"
+                        else np.nan
+                    ),
                     "fc3_rank10_warning": False,
                 })
                 if agreement > 1e-5:
                     raise RuntimeError(
                         f"analytic/numerical {validation_name} spectrum mismatch: {agreement:.3e}"
                     )
+            if cover_retraction_relative_error > 1e-5:
+                raise RuntimeError(
+                    "ECS Grassmann retraction/Cartan derivative mismatch: "
+                    f"{cover_retraction_relative_error:.3e}"
+                )
             if not fit_frames:
                 raise RuntimeError("No single-checkpoint spectrum was fit")
             """
@@ -3710,6 +4412,132 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             """
             np.savez_compressed(analysis_dir / "positive_spectra.npz", **spectral_arrays)
             display(save_spectrum_ccdf_gallery(spectral_arrays, method_slug=METHOD_SLUG))
+            cover_rank_audit = operator_rows[
+                operator_rows["method"].astype(str).isin({
+                    "ecs_grassmann_cartan_cover_full_row_shell_pullback",
+                    "ecs_grassmann_cartan_cover_detx_shell_pullback",
+                })
+            ].copy()
+            if cover_rank_audit.empty:
+                raise RuntimeError("No FC1 ECS cover rank attempts were audited")
+            cover_rank_audit["available"] = cover_rank_audit["available"].map(
+                _strict_bool
+            )
+            for column in (
+                "ecs_rank_exact_weightwatcher_state_found",
+                "ecs_rank_exact_trace_state_found",
+            ):
+                cover_rank_audit[column] = cover_rank_audit[column].map(_strict_bool)
+            cover_coverage = (
+                cover_rank_audit.groupby(
+                    ["method", "optimizer", "seed"], as_index=False
+                )
+                .agg(
+                    cache_states_audited=("state_index", "count"),
+                    exact_weightwatcher_states=(
+                        "ecs_rank_exact_weightwatcher_state_found", "sum"
+                    ),
+                    exact_trace_states=("ecs_rank_exact_trace_state_found", "sum"),
+                    rank_eligible_cover_states=("available", "sum"),
+                )
+            )
+            cover_method_mask = (
+                fit_rows["method"].astype(str).eq(
+                    "ecs_grassmann_cartan_cover_full_row_shell_pullback"
+                )
+                | fit_rows["method"].astype(str).eq(
+                    "ecs_grassmann_cartan_cover_detx_shell_pullback"
+                )
+            )
+            cover_primary_fits = fit_rows[
+                cover_method_mask
+                & fit_rows["spectrum_kind"].astype(str).eq("amplitude")
+                & fit_rows["clip_top_k"].eq(0)
+            ].copy()
+            if "fit_ok" not in cover_primary_fits.columns:
+                raise RuntimeError("ECS cover primary fits lack fit_ok status")
+            cover_fit_attempt_counts = (
+                cover_primary_fits
+                .groupby(["method", "optimizer", "seed"])["state_index"]
+                .nunique()
+                .rename("primary_fit_attempt_states")
+                .reset_index()
+            )
+            cover_success_counts = (
+                cover_primary_fits[boolean_series(cover_primary_fits["fit_ok"])]
+                .groupby(["method", "optimizer", "seed"])["state_index"]
+                .nunique()
+                .rename("successful_primary_fit_states")
+                .reset_index()
+            )
+            cover_coverage = cover_coverage.merge(
+                cover_fit_attempt_counts,
+                on=["method", "optimizer", "seed"],
+                how="left",
+                validate="one_to_one",
+            ).merge(
+                cover_success_counts,
+                on=["method", "optimizer", "seed"],
+                how="left",
+                validate="one_to_one",
+            )
+            for column in (
+                "primary_fit_attempt_states", "successful_primary_fit_states"
+            ):
+                cover_coverage[column] = cover_coverage[column].fillna(0).astype(int)
+            cover_rank_audit.to_csv(
+                analysis_dir / "ecs_cover_exact_rank_audit.csv", index=False
+            )
+            cover_coverage.to_csv(
+                analysis_dir / "ecs_cover_coverage_by_run.csv", index=False
+            )
+            fig, ax = plt.subplots(figsize=(10.0, 4.5))
+            labels = [
+                (
+                    f"{'full-q' if 'full_row' in row.method else 'detX-q'}:"
+                    f"{row.optimizer}/s{int(row.seed)}"
+                )
+                for row in cover_coverage.itertuples(index=False)
+            ]
+            positions = np.arange(len(labels))
+            width = 0.24
+            ax.bar(
+                positions - width,
+                cover_coverage["exact_weightwatcher_states"].to_numpy(dtype=float),
+                width=width,
+                label="exact WW states",
+            )
+            ax.bar(
+                positions,
+                cover_coverage["exact_trace_states"].to_numpy(dtype=float),
+                width=width,
+                label="exact trace states",
+            )
+            ax.bar(
+                positions + width,
+                cover_coverage["rank_eligible_cover_states"].to_numpy(dtype=float),
+                width=width,
+                label="rank-eligible cover states",
+            )
+            ax.scatter(
+                positions + width,
+                cover_coverage["successful_primary_fit_states"].to_numpy(dtype=float),
+                color="black",
+                marker="x",
+                label="successful primary fits",
+            )
+            ax.set_xticks(positions, labels, rotation=45, ha="right")
+            ax.set_ylabel("checkpoint states")
+            ax.set_title("ECS cover: exact sparse-rank coverage in final-100 cache")
+            ax.grid(axis="y", alpha=0.25)
+            ax.legend()
+            fig.tight_layout()
+            fig.savefig(analysis_dir / "ecs_cover_exact_rank_coverage.png", dpi=180)
+            if SHOW_PLOTS:
+                plt.show()
+            else:
+                plt.close(fig)
+            display(cover_coverage)
             numerical_audit = operator_rows[
                 operator_rows["method"].astype(str).str.startswith("small_explicit_")
             ]
@@ -3719,11 +4547,18 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
         ),
         markdown(
             """
-            The five explicit numerical Jacobians are formula validations on
-            `8x6`, not MLP estimates. The large-layer spectra are exact analytic
-            pullback spectra of the same five maps, avoiding full Jacobian
+            The six explicit Jacobian families are formula validations on
+            `6x8`, not MLP estimates. The large-layer spectra are exact analytic
+            pullback spectra of the same six maps, avoiding full Jacobian
             materialization. Any apparent alpha near two belongs to the named
-            candidate RG map only.
+            candidate RG map only. The ECS cover uses only exact intersections
+            between the final-100 cache and sparse WeightWatcher/trace states;
+            missing rank states are audited and never filled from neighbors.
+            Its full-$q$ and detX-$q$ rows differ only in deterministic shell
+            multiplicity at fixed $k$, so detX-$q$ is not an independent alpha
+            check. ECS clipping removes complete core-amplitude groups and
+            `fit_ok` additionally requires at least `MINIMUM_TAIL` physical
+            retained-core groups above the package-selected `xmin`.
             """
         ),
     ]
@@ -4093,9 +4928,18 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                 "two_checkpoint_finite_flow": ["verified_tail_checkpoint_cache_model_only"],
                 "muon_update_stiefel_tangent": ["verified_dense_update_capture"],
                 "radial_angular_quotients": ["verified_tail_checkpoint_cache_model_only"],
-                "single_checkpoint_map_jacobians": ["verified_tail_checkpoint_cache_model_only"],
+                "single_checkpoint_map_jacobians": [
+                    "verified_tail_checkpoint_cache_model_only",
+                    "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
+                ],
                 "calibrated_local_training_map": ["verified_calibrated_dense_capture"],
             }
+            REQUIRED_ECS_PRIMARY_METHOD = (
+                "ecs_grassmann_cartan_cover_full_row_shell_pullback"
+            )
+            REQUIRED_ECS_FIT_CONTRACT_TOKEN = (
+                "ecs_grassmann_cartan_cover_group_qualified_v1"
+            )
             TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
             MINIMUM_TAIL = 8
             METHOD_SLUG = "method_nulls_stability"
@@ -4165,6 +5009,11 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                         sorted(REQUIRED_METHOD_SOURCES[method_slug]),
                     ),
                 }
+                if method_slug == "single_checkpoint_map_jacobians":
+                    provenance_checks["analysis_contract_tokens"] = (
+                        method_provenance.get("analysis_contract_tokens"),
+                        [REQUIRED_ECS_FIT_CONTRACT_TOKEN],
+                    )
                 provenance_mismatches = [
                     f"{name}: observed={observed!r}, expected={expected!r}"
                     for name, (observed, expected) in provenance_checks.items()
@@ -4183,11 +5032,68 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                 required = {
                     "optimizer", "seed", "protocol_fingerprint",
                     "source_artifact_kind", "operator_kind", "map_definition",
-                    "alpha", "clip_top_k", "spectrum_kind",
+                    "method", "alpha", "clip_top_k", "spectrum_kind", "fit_ok",
                 }
                 missing = required - set(frame.columns)
                 if missing:
                     raise ValueError(f"{fit_path} missing {sorted(missing)}")
+                if method_slug == "single_checkpoint_map_jacobians":
+                    ecs_contract_columns = {
+                        "analysis_contract_token",
+                        "ecs_clip_core_groups",
+                        "ecs_tail_core_group_count",
+                        "ecs_minimum_tail_core_groups",
+                        "ecs_group_tail_qualified",
+                        "ecs_mode_level_fit_ok_before_group_gate",
+                        "mode_group_count_consistency_verified",
+                    }
+                    missing_ecs_contract = ecs_contract_columns - set(frame.columns)
+                    if missing_ecs_contract:
+                        raise RuntimeError(
+                            "Stale single-checkpoint fit artifact lacks ECS group "
+                            f"qualification fields: {sorted(missing_ecs_contract)}"
+                        )
+                    ecs_contract_rows = frame[
+                        frame["method"].astype(str).str.startswith(
+                            "ecs_grassmann_cartan_cover_"
+                        )
+                    ].copy()
+                    if ecs_contract_rows.empty:
+                        raise RuntimeError(
+                            "Single-checkpoint artifact contains no ECS cover fit rows"
+                        )
+                    observed_contract_tokens = set(
+                        ecs_contract_rows["analysis_contract_token"]
+                        .dropna().astype(str)
+                    )
+                    if observed_contract_tokens != {
+                        REQUIRED_ECS_FIT_CONTRACT_TOKEN
+                    }:
+                        raise RuntimeError(
+                            "Single-checkpoint ECS fit contract token is stale: "
+                            f"{sorted(observed_contract_tokens)}"
+                        )
+                    if ecs_contract_rows[
+                        [
+                            "ecs_clip_core_groups",
+                            "ecs_tail_core_group_count",
+                            "ecs_minimum_tail_core_groups",
+                            "ecs_group_tail_qualified",
+                            "ecs_mode_level_fit_ok_before_group_gate",
+                            "mode_group_count_consistency_verified",
+                        ]
+                    ].isna().any().any():
+                        raise RuntimeError(
+                            "Single-checkpoint ECS group qualification contains nulls"
+                        )
+                    if not boolean_series(
+                        ecs_contract_rows[
+                            "mode_group_count_consistency_verified"
+                        ]
+                    ).all():
+                        raise RuntimeError(
+                            "Single-checkpoint ECS mode/group count invariant failed"
+                        )
                 identity_columns = [
                     "optimizer", "seed", "protocol_fingerprint",
                     "source_artifact_kind",
@@ -4226,8 +5132,43 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                 prior_fits["clip_top_k"].eq(0)
                 & prior_fits["spectrum_kind"].astype(str).eq("energy_derived_from_amplitude")
             ].copy()
-            if "fit_ok" in prior_primary:
-                prior_primary = prior_primary[boolean_series(prior_primary["fit_ok"])]
+            prior_primary = prior_primary[
+                boolean_series(prior_primary["fit_ok"])
+            ]
+            expected_ecs_primary_grid = {
+                (str(optimizer), int(seed))
+                for optimizer in OPTIMIZER_SLUGS
+                for seed in SEEDS
+            }
+            successful_ecs_primary = prior_primary[
+                prior_primary["analysis_method"].astype(str).eq(
+                    "single_checkpoint_map_jacobians"
+                )
+                & prior_primary["method"].astype(str).eq(
+                    REQUIRED_ECS_PRIMARY_METHOD
+                )
+                & boolean_series(prior_primary["ecs_group_tail_qualified"])
+            ].copy()
+            observed_ecs_primary_grid = {
+                (str(row.optimizer), int(row.seed))
+                for row in successful_ecs_primary[
+                    ["optimizer", "seed"]
+                ].drop_duplicates().itertuples(index=False)
+            }
+            if observed_ecs_primary_grid != expected_ecs_primary_grid:
+                missing_ecs_primary = sorted(
+                    expected_ecs_primary_grid - observed_ecs_primary_grid
+                )
+                unexpected_ecs_primary = sorted(
+                    observed_ecs_primary_grid - expected_ecs_primary_grid
+                )
+                raise RuntimeError(
+                    "Method comparison is incomplete: the primary full-q ECS "
+                    "Grassmann cover lacks a successful group-qualified "
+                    "energy fit for the exact optimizer/seed grid. "
+                    f"missing={missing_ecs_primary}, "
+                    f"unexpected={unexpected_ecs_primary}"
+                )
             calibrated_mask = prior_primary["analysis_method"].astype(str).eq(
                 "calibrated_local_training_map"
             )
