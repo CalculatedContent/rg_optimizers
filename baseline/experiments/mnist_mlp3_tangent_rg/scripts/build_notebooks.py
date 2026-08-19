@@ -3455,14 +3455,14 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             """
             # Single-checkpoint analytic map Jacobians
 
-            A weight matrix alone cannot identify the network training map.
-            It can identify Jacobians of explicitly chosen algebraic maps. This
-            notebook compares the exact polar pullback spectrum, a scale-free
-            normalized-Gram derivative, and a Gram translation quotient, then
-            validates the polar formula against an explicit small numerical
-            Jacobian without materializing a full MLP-layer Jacobian. Every
-            trained matrix is read from the verified final-100 cache; this
-            notebook cannot launch or resume training.
+            Starting from one saved weight matrix `W`, define five explicit
+            candidate RG maps and form the actual Jacobian of every map:
+            angular polar, normalized Gram, centered trace-log Gram, centered
+            log-singular radial, and the exact configured finite Muon NS5 map.
+            The notebook fits only spectra of these derivatives--never the ESD
+            of an undifferentiated quotient or a checkpoint displacement.
+            Every trained matrix is read from the verified final-100 cache;
+            this notebook cannot launch or resume training.
             """
         ),
         parameters(
@@ -3473,6 +3473,8 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             MINIMUM_TAIL = 8
             MAXIMUM_CHECKPOINTS = 100
             NUMERICAL_SHAPE = [8, 6]
+            NS_STEPS = 5
+            NS_EPS = 1e-7
             METHOD_SLUG = "single_checkpoint_map_jacobians"
             PLOT_TITLE = "Single-checkpoint declared-map spectra: alpha with 95% seed CI"
             """
@@ -3482,9 +3484,10 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
         caveat(
             "Declared single-point maps",
             "single_checkpoint_algebraic_map_derivative_bundle",
-            "W -> polar(W), W -> d G(W)/||W||_F^2, and W -> G(W)-lambda_min(G)I.",
-            "These are identifiable algebraic maps, not a loss/optimizer/training Jacobian. "
-            "Numerical full Jacobians are restricted to a fixed small synthetic matrix.",
+            "J_i(W)=D F_i(W) for polar, normalized Gram, centered log-Gram, centered log-singular, and finite NS5 maps.",
+            "Every fitted object is the singular spectrum of an actual derivative of a "
+            "declared candidate RG map computable from W alone. Numerical materialization "
+            "is restricted to fixed small formula-validation matrices.",
         ),
         code(COMMON_HELPERS + "\n" + TAIL_CHECKPOINT_CACHE_HELPERS + "\n" + CHECKPOINT_HELPERS),
         markdown("## Exact large-layer spectra and small numerical validation"),
@@ -3496,9 +3499,11 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                 for seed in SEEDS:
                     seed_dir = require_tail_checkpoint_cache(optimizer, seed)
                     run_fingerprint = verified_run_fingerprint(optimizer, seed)
+                    cache_refs = analysis_checkpoint_refs(seed_dir)
+                    final_cache_epoch = int(cache_refs[-1].epoch)
                     print(
                         f"{optimizer} seed={seed}: analyzing "
-                        f"{len(analysis_checkpoint_refs(seed_dir))} verified cache states "
+                        f"{len(cache_refs)} verified cache states "
                         f"with payload LRU={CHECKPOINT_PAYLOAD_CACHE_SIZE}"
                     )
                     for selected, layer, W, selection_rule, selection_role in selected_trajectory_matrices(
@@ -3506,9 +3511,30 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                         layers=LAYERS,
                         maximum_checkpoints=MAXIMUM_CHECKPOINTS,
                     ):
-                        polar_record = polar.polar_pullback_spectrum(W)
-                        gram_record = single_checkpoint.normalized_gram_analytic_spectrum(W)
-                        translation = single_checkpoint.gram_translation_quotient(W)
+                        checkpoint_singular_values = np.linalg.svd(W, compute_uv=False)
+                        polar_record = polar.polar_pullback_spectrum(
+                            W,
+                            precomputed_singular_values=checkpoint_singular_values,
+                            include_mode_labels=False,
+                        )
+                        gram_record = single_checkpoint.normalized_gram_analytic_spectrum(
+                            W,
+                            precomputed_singular_values=checkpoint_singular_values,
+                        )
+                        log_gram_record = single_checkpoint.centered_log_gram_analytic_spectrum(
+                            W,
+                            precomputed_singular_values=checkpoint_singular_values,
+                        )
+                        radial_record = single_checkpoint.centered_log_singular_analytic_spectrum(
+                            W,
+                            precomputed_singular_values=checkpoint_singular_values,
+                        )
+                        ns5_record = polar.muon_newton_schulz_analytic_spectrum(
+                            W,
+                            steps=NS_STEPS,
+                            eps=NS_EPS,
+                            precomputed_singular_values=checkpoint_singular_values,
+                        )
                         base = {
                             "optimizer": optimizer, "seed": int(seed), "layer": layer,
                             "protocol_fingerprint": run_fingerprint,
@@ -3529,16 +3555,32 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                              "map_definition": gram_record.map_definition,
                              "derivative_rank": gram_record.derivative_rank,
                              "zero_count": gram_record.zero_count,
-                             "scale_null_residual": single_checkpoint.normalized_gram_jvp(W, W).scale_direction_residual},
-                            {**base, "method": "gram_translation", "operator_kind": translation.operator_kind,
-                             "map_definition": translation.map_definition,
-                             "translated_rank": translation.numerical_rank,
-                             "lambda_min": translation.lambda_min},
+                             "scale_null_residual": 0.0,
+                             "scale_null_audit": "analytic identity D F_W[W]=0"},
+                            {**base, "method": "centered_log_gram_pullback", "operator_kind": log_gram_record.operator_kind,
+                             "map_definition": log_gram_record.map_definition,
+                             "derivative_rank": log_gram_record.derivative_rank,
+                             "zero_count": log_gram_record.zero_count,
+                             "scale_null_residual": 0.0,
+                             "scale_null_audit": "analytic identity D L_W[W]=0"},
+                            {**base, "method": "centered_log_singular_radial_pullback", "operator_kind": radial_record.operator_kind,
+                             "map_definition": radial_record.map_definition,
+                             "derivative_rank": radial_record.derivative_rank,
+                             "zero_count": radial_record.zero_count,
+                             "scale_null_residual": 0.0,
+                             "scale_null_audit": "analytic identity D R_W[W]=0"},
+                            {**base, "method": "finite_muon_ns5_pullback", "operator_kind": ns5_record.operator_kind,
+                             "map_definition": ns5_record.map_definition,
+                             "derivative_rank": ns5_record.derivative_rank,
+                             "zero_count": ns5_record.zero_count,
+                             "ns_steps": int(NS_STEPS), "ns_eps": float(NS_EPS)},
                         ])
                         candidates = [
                             ("polar_pullback", polar_record.singular_amplitudes, polar_record),
                             ("normalized_gram_pullback", gram_record.singular_amplitudes, gram_record),
-                            ("gram_translation_esd", np.sqrt(np.maximum(translation.translated_eigenvalues, 0.0)), translation),
+                            ("centered_log_gram_pullback", log_gram_record.singular_amplitudes, log_gram_record),
+                            ("centered_log_singular_radial_pullback", radial_record.singular_amplitudes, radial_record),
+                            ("finite_muon_ns5_pullback", ns5_record.singular_amplitudes, ns5_record),
                         ]
                         for method, spectrum, record in candidates:
                             positive = np.asarray(spectrum, dtype=float)
@@ -3556,33 +3598,109 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                                 minimum_tail=MINIMUM_TAIL,
                             )
                             fit_frames.append(fits); trace_frames.append(traces)
-                            spectral_arrays[f"{optimizer}_{seed}_{layer}_{selected.global_step}_{method}"] = positive
+                            # Fits cover every selected state.  Persist only final-state
+                            # arrays so the five exact Jacobian families do not retain
+                            # the full trajectory (many GiB for the 3x3 long campaign).
+                            if int(selected.epoch) == final_cache_epoch:
+                                spectral_arrays[
+                                    f"{optimizer}_{seed}_{layer}_{selected.global_step}_{method}"
+                                ] = positive
 
             rng = np.random.default_rng(20260819)
             small = rng.normal(size=tuple(NUMERICAL_SHAPE))
             small[:min(small.shape), :min(small.shape)] += 2.0 * np.eye(min(small.shape))
-            numerical = polar.explicit_polar_jacobian(
-                small, max_input_dimension=int(np.prod(NUMERICAL_SHAPE))
-            )
-            analytic = polar.polar_pullback_spectrum(small)
-            numeric_positive = numerical.jt_j_eigenvalues[numerical.jt_j_eigenvalues > 1e-12]
-            analytic_positive = analytic.jt_j_nonzero_eigenvalues
-            if numeric_positive.size != analytic_positive.size:
-                raise RuntimeError("small polar Jacobian rank mismatch")
-            agreement = float(np.linalg.norm(np.sort(numeric_positive) - np.sort(analytic_positive)) /
-                              max(np.linalg.norm(analytic_positive), np.finfo(float).tiny))
-            operator_records.append({
-                "optimizer": "synthetic", "seed": int(SEEDS[0]), "layer": str(tuple(NUMERICAL_SHAPE)),
-                "protocol_fingerprint": "not_applicable_synthetic_formula_validation",
-                "source_artifact_kind": "fixed_seed_synthetic_formula_validation",
-                "state_index": 0, "method": "small_explicit_polar_validation",
-                "operator_kind": numerical.operator_kind,
-                "map_definition": numerical.map_definition,
-                "relative_spectral_error": agreement,
-                "fc3_rank10_warning": False,
-            })
-            if agreement > 1e-5:
-                raise RuntimeError(f"analytic/numerical polar spectrum mismatch: {agreement:.3e}")
+            maximum_dimension = int(np.prod(NUMERICAL_SHAPE))
+            validations = [
+                (
+                    "polar",
+                    polar.explicit_polar_jacobian(
+                        small, max_input_dimension=maximum_dimension, rank_rtol=1e-9
+                    ),
+                    polar.polar_pullback_spectrum(small),
+                ),
+                (
+                    "normalized_gram",
+                    polar.central_difference_jacobian(
+                        lambda value: single_checkpoint.normalized_gram_map(value).value,
+                        small,
+                        max_input_dimension=maximum_dimension,
+                        rank_rtol=1e-9,
+                        operator_kind="explicit_numerical_normalized_gram_jacobian",
+                        map_definition="central-difference validation of D[dG/||W||_F^2]",
+                    ),
+                    single_checkpoint.normalized_gram_analytic_spectrum(small),
+                ),
+                (
+                    "centered_log_gram",
+                    polar.central_difference_jacobian(
+                        lambda value: single_checkpoint.centered_log_gram_map(value).value,
+                        small,
+                        max_input_dimension=maximum_dimension,
+                        rank_rtol=1e-9,
+                        operator_kind="explicit_numerical_centered_log_gram_jacobian",
+                        map_definition="central-difference validation of the centered log-Gram candidate RG Jacobian",
+                    ),
+                    single_checkpoint.centered_log_gram_analytic_spectrum(small),
+                ),
+                (
+                    "centered_log_singular_radial",
+                    polar.central_difference_jacobian(
+                        lambda value: single_checkpoint.centered_log_singular_map(value).value,
+                        small,
+                        max_input_dimension=maximum_dimension,
+                        rank_rtol=1e-9,
+                        operator_kind="explicit_numerical_centered_log_singular_jacobian",
+                        map_definition="central-difference validation of the centered log-singular candidate RG Jacobian",
+                    ),
+                    single_checkpoint.centered_log_singular_analytic_spectrum(small),
+                ),
+                (
+                    "finite_muon_ns5",
+                    polar.explicit_muon_newton_schulz_jacobian(
+                        small,
+                        steps=NS_STEPS,
+                        eps=NS_EPS,
+                        max_input_dimension=maximum_dimension,
+                        rank_rtol=1e-9,
+                    ),
+                    polar.muon_newton_schulz_analytic_spectrum(
+                        small, steps=NS_STEPS, eps=NS_EPS
+                    ),
+                ),
+            ]
+            for validation_name, numerical, analytic in validations:
+                analytic_amplitudes = np.asarray(analytic.singular_amplitudes, dtype=float)
+                numerical_amplitudes = np.asarray(
+                    numerical.singular_values[: analytic_amplitudes.size], dtype=float
+                )
+                if numerical.numerical_rank != analytic.derivative_rank:
+                    raise RuntimeError(
+                        f"small {validation_name} Jacobian rank mismatch: "
+                        f"numeric={numerical.numerical_rank}, analytic={analytic.derivative_rank}"
+                    )
+                agreement = float(
+                    np.linalg.norm(numerical_amplitudes - analytic_amplitudes)
+                    / max(np.linalg.norm(analytic_amplitudes), np.finfo(float).tiny)
+                )
+                operator_records.append({
+                    "optimizer": "synthetic", "seed": int(SEEDS[0]),
+                    "layer": str(tuple(NUMERICAL_SHAPE)),
+                    "protocol_fingerprint": "not_applicable_synthetic_formula_validation",
+                    "source_artifact_kind": "fixed_seed_synthetic_formula_validation",
+                    "state_index": 0,
+                    "method": f"small_explicit_{validation_name}_validation",
+                    "operator_kind": numerical.operator_kind,
+                    "map_definition": numerical.map_definition,
+                    "analytic_operator_kind": analytic.operator_kind,
+                    "relative_spectral_error": agreement,
+                    "numeric_rank": int(numerical.numerical_rank),
+                    "analytic_rank": int(analytic.derivative_rank),
+                    "fc3_rank10_warning": False,
+                })
+                if agreement > 1e-5:
+                    raise RuntimeError(
+                        f"analytic/numerical {validation_name} spectrum mismatch: {agreement:.3e}"
+                    )
             if not fit_frames:
                 raise RuntimeError("No single-checkpoint spectrum was fit")
             """
@@ -3593,7 +3711,7 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             np.savez_compressed(analysis_dir / "positive_spectra.npz", **spectral_arrays)
             display(save_spectrum_ccdf_gallery(spectral_arrays, method_slug=METHOD_SLUG))
             numerical_audit = operator_rows[
-                operator_rows["method"].eq("small_explicit_polar_validation")
+                operator_rows["method"].astype(str).str.startswith("small_explicit_")
             ]
             numerical_audit.to_csv(analysis_dir / "small_numerical_validation.csv", index=False)
             display(numerical_audit)
@@ -3601,10 +3719,11 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
         ),
         markdown(
             """
-            The explicit numerical Jacobian is a formula validation on `8x6`,
-            not an MLP estimate. Exact large-layer spectra avoid the
-            prohibitive and misleading full Jacobian materialization. Any
-            apparent alpha near two belongs to the named algebraic map only.
+            The five explicit numerical Jacobians are formula validations on
+            `8x6`, not MLP estimates. The large-layer spectra are exact analytic
+            pullback spectra of the same five maps, avoiding full Jacobian
+            materialization. Any apparent alpha near two belongs to the named
+            candidate RG map only.
             """
         ),
     ]
