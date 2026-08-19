@@ -12,7 +12,8 @@ import yaml
 
 from .runtime import is_tpu_environment
 
-SUPPORTED_OPTIMIZERS = ("sgd_momentum", "adamw", "muon")
+BASELINE_OPTIMIZERS = ("sgd_momentum", "adamw", "muon")
+SUPPORTED_OPTIMIZERS = BASELINE_OPTIMIZERS
 DEFAULT_ROOT = Path("/tmp/rg-nanogpt-one-head")
 TPU_ROOT_ENV = "RG_NANOGPT_ONE_HEAD_TPU_ROOT"
 TPU_PERSISTENT_ENV = "RG_TPU_PERSISTENT_ROOT"
@@ -246,9 +247,15 @@ def validate_config(cfg: dict[str, Any]) -> None:
 
     profiles = cfg["optimizer_profiles"]
     target_epochs = float(training["target_epochs"])
-    for name in SUPPORTED_OPTIMIZERS:
+    # Optional launchers may extend SUPPORTED_OPTIMIZERS at runtime.  Those
+    # extensions must not make their profile mandatory in the historical
+    # three-optimizer reference config; validate them only when declared.
+    for name in BASELINE_OPTIMIZERS:
         if name not in profiles:
             raise ValueError(f"missing optimizer profile: {name}")
+    for name in SUPPORTED_OPTIMIZERS:
+        if name not in profiles:
+            continue
         profile = {**profiles[name], "name": name}
         validate_optimizer_profile(profile)
         schedule_epochs = float(profile.get("lr_schedule_epochs", target_epochs))

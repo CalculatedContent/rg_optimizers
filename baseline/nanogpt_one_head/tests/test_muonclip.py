@@ -53,6 +53,13 @@ def test_historical_launcher_remains_three_optimizer_reference() -> None:
     )
 
 
+def test_extension_does_not_require_muonclip_in_historical_config() -> None:
+    from rg_nanogpt_one_head.config import load_config
+
+    config = load_config(EXPERIMENT_ROOT / "configs" / "reference.yaml")
+    assert "muon_clip" not in config["optimizer_profiles"]
+
+
 def test_muonclip_configs_use_reported_scaling_and_threshold() -> None:
     reference = yaml.safe_load(
         (EXPERIMENT_ROOT / "configs" / "muonclip_reference.yaml").read_text()
