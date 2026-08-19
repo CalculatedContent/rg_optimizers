@@ -99,6 +99,79 @@ The unit of replication is a complete seeded training run. Layers, matrices,
 checkpoints, minibatches, null draws, finite-difference probes, and fit points
 are repeated measurements rather than additional replicates.
 
+## One-command MuonClip-RMS Jacobian experiment
+
+The portable runner
+`scripts/run_muonclip_jacobians.sh` performs the complete MuonClip-only pilot:
+
+1. creates or reuses an isolated Python 3.11 Conda environment;
+2. installs NumPy, Torch, and TorchVision from one pip-wheel ecosystem to avoid
+   duplicate `libomp` runtimes on macOS;
+3. trains the 1,000-epoch MuonClip-RMS arm for seeds `1337`, `2027`, and
+   `31415`;
+4. verifies exactly 100 cached checkpoints per seed, covering epochs
+   `901`--`1000`; and
+5. executes every notebook that computes a genuine Jacobian for this suite.
+
+From a fresh clone on macOS or Linux (or Linux under WSL), with Conda already
+installed and available on `PATH`, run:
+
+```bash
+git clone https://github.com/CalculatedContent/rg_optimizers.git /tmp/rg_optimizers
+cd /tmp/rg_optimizers
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_muonclip_jacobians.sh
+```
+
+Persistent training artifacts default to
+`~/rg-mnist-mlp3-tangent-runs`. The final-100 analysis cache defaults to
+`/tmp/rg-mnist-mlp3-tangent-checkpoints`. Because the cache is ephemeral and
+cannot be reconstructed from the sparse persistent checkpoints, keep it until
+all notebooks finish or back it up before the host clears `/tmp`. Three seeds
+produce 100 cached states per seed, or 300 checkpoint files total.
+
+The runner executes these Jacobian notebooks:
+
+- `11_Muon_Update_Stiefel_Tangent.ipynb`;
+- `13_Single_Checkpoint_Map_Jacobians.ipynb`;
+- `14_Calibrated_Local_Training_Map.ipynb`;
+- `16_Additional_Weight_Only_ECS_Jacobians.ipynb`; and
+- `17_Data_Dependent_ECS_Jacobians.ipynb`.
+
+Notebook `10` is a two-checkpoint finite-flow control, not a Jacobian. Notebook
+`12` contains radial/angular quotient controls rather than another Jacobian.
+They are intentionally not included in the Jacobian-only runner.
+
+The default mode is restart-safe: a new run starts when no artifacts exist and
+a compatible interrupted run resumes. Useful invocations are:
+
+```bash
+# Deliberately replace the selected MuonClip seed artifacts.
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_muonclip_jacobians.sh \
+  --overwrite
+
+# Train and verify checkpoints without running Papermill.
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_muonclip_jacobians.sh \
+  --training-only
+
+# Analyze previously completed training artifacts and the verified /tmp cache.
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_muonclip_jacobians.sh \
+  --analysis-only --skip-setup
+
+# Override paths, device, environment name, or seed subset.
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_muonclip_jacobians.sh \
+  --run-root /persistent/rg-runs \
+  --cache-root /tmp/rg-mnist-checkpoints \
+  --data-root /persistent/mnist \
+  --device auto \
+  --env-name rg-muonclip-run \
+  --seeds 1337,2027,31415
+```
+
+Run `scripts/run_muonclip_jacobians.sh --help` for the complete option list.
+The script refuses to run the notebooks unless every selected seed has exactly
+100 cached checkpoint files. The package's strict cache loader then validates
+the manifest, run identity, epoch/step grid, file sizes, and SHA-256 hashes.
+
 ### Optimizer arms
 
 1. **AdamW.** The existing audited MLP3 AdamW recipe and parameter grouping.
