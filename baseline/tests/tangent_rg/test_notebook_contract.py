@@ -246,6 +246,37 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("observed_fit_grid != expected_method_grid", all_source)
         self.assertIn("fit_row_count", all_source)
 
+    def test_single_checkpoint_notebook_fits_only_five_declared_jacobians(self) -> None:
+        notebook = json.loads(
+            (NOTEBOOK_ROOT / "13_Single_Checkpoint_Map_Jacobians.ipynb").read_text(
+                encoding="utf-8"
+            )
+        )
+        all_source = "\n".join(_source_text(cell) for cell in notebook["cells"])
+        for method in (
+            "polar_pullback",
+            "normalized_gram_pullback",
+            "centered_log_gram_pullback",
+            "centered_log_singular_radial_pullback",
+            "finite_muon_ns5_pullback",
+        ):
+            self.assertIn(f'("{method}",', all_source)
+        self.assertIn("muon_newton_schulz_analytic_spectrum", all_source)
+        self.assertIn("centered_log_gram_analytic_spectrum", all_source)
+        self.assertIn("centered_log_singular_analytic_spectrum", all_source)
+        self.assertEqual(all_source.count("np.linalg.svd(W, compute_uv=False)"), 1)
+        self.assertIn(
+            "precomputed_singular_values=checkpoint_singular_values",
+            all_source,
+        )
+        self.assertNotIn("gram_translation_esd", all_source)
+        self.assertIn(
+            "fits only spectra of these derivatives--never the ESD",
+            all_source,
+        )
+        self.assertIn("if int(selected.epoch) == final_cache_epoch", all_source)
+        self.assertIn("Fits cover every selected state", all_source)
+
     def test_generated_notebooks_are_up_to_date(self) -> None:
         builder = _load_builder()
         generated = dict(builder.build_all_notebooks())

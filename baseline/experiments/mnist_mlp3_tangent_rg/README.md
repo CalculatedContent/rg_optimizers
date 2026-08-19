@@ -300,6 +300,13 @@ Every derived row and plot must display both `operator_kind` and
 - A difference divided by the step interval is a beta surrogate.
 - `D Pi(W)` is the Jacobian of a specified projection such as the polar map
   `Pi(W)=UV^T`.
+- Notebook `13` treats five maps computable from one checkpoint as candidate
+  RG transformations and forms the actual derivative of every one: the polar
+  map, normalized smaller-Gram map, centered matrix-log Gram map, centered
+  log-singular radial map, and the exact configured finite Muon NS5 map applied
+  directly to `W`. Only the nonzero singular spectrum of each Jacobian is fit;
+  an undifferentiated Gram translation or checkpoint displacement is not
+  admitted as a single-checkpoint Jacobian candidate.
 - A calibrated local optimizer response is the derivative of the fully
   specified training step, including its loss batch, optimizer state, and
   calibration perturbation.

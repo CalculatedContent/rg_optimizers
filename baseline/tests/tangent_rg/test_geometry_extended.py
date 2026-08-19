@@ -16,12 +16,21 @@ from rg_baselines.tangent_rg.nulls import (
 from rg_baselines.tangent_rg.polar import (
     central_difference_jacobian,
     explicit_muon_newton_schulz_jacobian,
+    muon_newton_schulz_analytic_spectrum,
+    muon_newton_schulz_frechet_derivative,
     muon_newton_schulz_map,
     muon_quintic_orthogonalizer,
+    polar_pullback_spectrum,
 )
 from rg_baselines.tangent_rg.single_checkpoint import (
     calibrated_training_map_finite_difference,
+    centered_log_gram_analytic_spectrum,
+    centered_log_gram_jvp,
+    centered_log_gram_map,
+    centered_log_singular_analytic_spectrum,
     centered_log_singular_flow,
+    centered_log_singular_jvp,
+    centered_log_singular_map,
     gram_translation_quotient,
     normalized_gram_analytic_spectrum,
     normalized_gram_map,
@@ -91,6 +100,46 @@ class MuonFiniteOrthogonalizerTests(unittest.TestCase):
         self.assertIn("finite_muon", explicit.operator_kind)
         self.assertIn("do not identify", explicit.map_definition)
 
+    def test_full_checkpoint_ns5_analytic_jacobian_matches_explicit_spectrum(self):
+        rng = np.random.default_rng(7301)
+        for shape in ((4, 2), (2, 4), (3, 3)):
+            with self.subTest(shape=shape):
+                matrix = rng.normal(size=shape)
+                matrix[: min(shape), : min(shape)] += 2.0 * np.eye(min(shape))
+                analytic = muon_newton_schulz_analytic_spectrum(matrix)
+                numerical = explicit_muon_newton_schulz_jacobian(
+                    matrix,
+                    max_input_dimension=matrix.size,
+                    rank_rtol=1.0e-9,
+                )
+                self.assertEqual(analytic.derivative_rank, numerical.numerical_rank)
+                np.testing.assert_allclose(
+                    analytic.singular_amplitudes,
+                    numerical.singular_values[: analytic.derivative_rank],
+                    rtol=2.0e-5,
+                    atol=2.0e-7,
+                )
+                self.assertEqual(analytic.zero_count, 1)
+                self.assertIn("checkpoint W", analytic.map_definition)
+
+    def test_full_checkpoint_ns5_frechet_derivative_matches_directional_difference(self):
+        rng = np.random.default_rng(7302)
+        matrix = rng.normal(size=(4, 3)) + np.eye(4, 3)
+        direction = rng.normal(size=matrix.shape)
+        analytic = muon_newton_schulz_frechet_derivative(matrix, direction)
+        epsilon = 1.0e-6
+        numerical = (
+            muon_quintic_orthogonalizer(matrix + epsilon * direction)
+            - muon_quintic_orthogonalizer(matrix - epsilon * direction)
+        ) / (2.0 * epsilon)
+        np.testing.assert_allclose(
+            analytic.derivative,
+            numerical,
+            rtol=2.0e-5,
+            atol=2.0e-7,
+        )
+        self.assertLess(analytic.scale_direction_residual, 1.0e-12)
+
 
 class RelativePolarAngularTests(unittest.TestCase):
     def test_square_flow_has_zero_tilt_but_nonzero_twist(self):
@@ -158,6 +207,159 @@ class SingleCheckpointMapTests(unittest.TestCase):
                     analytic.derivative_rank + analytic.zero_count,
                     matrix.size,
                 )
+
+    def test_centered_log_gram_jacobian_matches_explicit_tall_wide_square(self):
+        rng = np.random.default_rng(7303)
+        for shape in ((4, 2), (2, 4), (3, 3)):
+            with self.subTest(shape=shape):
+                matrix = rng.normal(size=shape)
+                matrix[: min(shape), : min(shape)] += 2.0 * np.eye(min(shape))
+                analytic = centered_log_gram_analytic_spectrum(matrix)
+                numerical = central_difference_jacobian(
+                    lambda value: centered_log_gram_map(value).value,
+                    matrix,
+                    max_input_dimension=matrix.size,
+                    rank_rtol=1.0e-9,
+                )
+                self.assertEqual(analytic.derivative_rank, numerical.numerical_rank)
+                np.testing.assert_allclose(
+                    analytic.singular_amplitudes,
+                    numerical.singular_values[: analytic.derivative_rank],
+                    rtol=2.0e-5,
+                    atol=2.0e-7,
+                )
+                direction = rng.normal(size=shape)
+                jvp = centered_log_gram_jvp(matrix, direction)
+                epsilon = 1.0e-6
+                finite = (
+                    centered_log_gram_map(matrix + epsilon * direction).value
+                    - centered_log_gram_map(matrix - epsilon * direction).value
+                ) / (2.0 * epsilon)
+                np.testing.assert_allclose(jvp.jvp, finite, rtol=2.0e-5, atol=2.0e-7)
+                self.assertLess(jvp.scale_direction_residual, 1.0e-12)
+                self.assertLess(jvp.trace_derivative_residual, 1.0e-12)
+
+    def test_centered_log_singular_jacobian_matches_explicit(self):
+        rng = np.random.default_rng(7304)
+        for shape in ((4, 2), (2, 4), (3, 3)):
+            with self.subTest(shape=shape):
+                matrix = rng.normal(size=shape)
+                matrix[: min(shape), : min(shape)] += 2.0 * np.eye(min(shape))
+                analytic = centered_log_singular_analytic_spectrum(matrix)
+                numerical = central_difference_jacobian(
+                    lambda value: centered_log_singular_map(value).value,
+                    matrix,
+                    max_input_dimension=matrix.size,
+                    rank_rtol=1.0e-9,
+                )
+                self.assertEqual(analytic.derivative_rank, numerical.numerical_rank)
+                np.testing.assert_allclose(
+                    analytic.singular_amplitudes,
+                    numerical.singular_values[: analytic.derivative_rank],
+                    rtol=2.0e-5,
+                    atol=2.0e-7,
+                )
+                direction = rng.normal(size=shape)
+                jvp = centered_log_singular_jvp(matrix, direction)
+                epsilon = 1.0e-6
+                finite = (
+                    centered_log_singular_map(matrix + epsilon * direction).value
+                    - centered_log_singular_map(matrix - epsilon * direction).value
+                ) / (2.0 * epsilon)
+                np.testing.assert_allclose(jvp.jvp, finite, rtol=2.0e-5, atol=2.0e-7)
+                self.assertLess(jvp.scale_direction_residual, 1.0e-12)
+                self.assertLess(jvp.sum_derivative_residual, 1.0e-12)
+        repeated = np.eye(3)
+        with self.assertRaises(np.linalg.LinAlgError):
+            centered_log_singular_jvp(repeated, np.ones_like(repeated))
+        with self.assertRaises(np.linalg.LinAlgError):
+            centered_log_singular_analytic_spectrum(repeated)
+
+    def test_single_checkpoint_candidate_spectra_are_orthogonal_gauge_invariant(self):
+        rng = np.random.default_rng(7305)
+
+        def orthogonal(size):
+            q, r = np.linalg.qr(rng.normal(size=(size, size)))
+            signs = np.sign(np.where(np.diag(r) == 0.0, 1.0, np.diag(r)))
+            return q * signs[None, :]
+
+        for shape in ((5, 3), (3, 5), (4, 4)):
+            with self.subTest(shape=shape):
+                matrix = rng.normal(size=shape)
+                transformed = orthogonal(shape[0]) @ matrix @ orthogonal(shape[1]).T
+                original_spectra = (
+                    centered_log_gram_analytic_spectrum(matrix).singular_amplitudes,
+                    centered_log_singular_analytic_spectrum(matrix).singular_amplitudes,
+                    muon_newton_schulz_analytic_spectrum(matrix).singular_amplitudes,
+                )
+                transformed_spectra = (
+                    centered_log_gram_analytic_spectrum(transformed).singular_amplitudes,
+                    centered_log_singular_analytic_spectrum(transformed).singular_amplitudes,
+                    muon_newton_schulz_analytic_spectrum(transformed).singular_amplitudes,
+                )
+                for original, changed in zip(original_spectra, transformed_spectra):
+                    np.testing.assert_allclose(
+                        changed,
+                        original,
+                        rtol=2.0e-11,
+                        atol=2.0e-12,
+                    )
+
+    def test_shared_checkpoint_svd_matches_independent_spectrum_calls(self):
+        rng = np.random.default_rng(7306)
+        matrix = rng.normal(size=(5, 3))
+        singular_values = np.linalg.svd(matrix, compute_uv=False)
+        comparisons = (
+            (
+                polar_pullback_spectrum(matrix).singular_amplitudes,
+                polar_pullback_spectrum(
+                    matrix,
+                    precomputed_singular_values=singular_values,
+                    include_mode_labels=False,
+                ).singular_amplitudes,
+            ),
+            (
+                normalized_gram_analytic_spectrum(matrix).singular_amplitudes,
+                normalized_gram_analytic_spectrum(
+                    matrix,
+                    precomputed_singular_values=singular_values,
+                ).singular_amplitudes,
+            ),
+            (
+                centered_log_gram_analytic_spectrum(matrix).singular_amplitudes,
+                centered_log_gram_analytic_spectrum(
+                    matrix,
+                    precomputed_singular_values=singular_values,
+                ).singular_amplitudes,
+            ),
+            (
+                centered_log_singular_analytic_spectrum(matrix).singular_amplitudes,
+                centered_log_singular_analytic_spectrum(
+                    matrix,
+                    precomputed_singular_values=singular_values,
+                ).singular_amplitudes,
+            ),
+            (
+                muon_newton_schulz_analytic_spectrum(matrix).singular_amplitudes,
+                muon_newton_schulz_analytic_spectrum(
+                    matrix,
+                    precomputed_singular_values=singular_values,
+                ).singular_amplitudes,
+            ),
+        )
+        for independent, shared in comparisons:
+            np.testing.assert_allclose(shared, independent, rtol=0.0, atol=0.0)
+        without_labels = polar_pullback_spectrum(
+            matrix,
+            precomputed_singular_values=singular_values,
+            include_mode_labels=False,
+        )
+        self.assertEqual(without_labels.mode_labels, ())
+        with self.assertRaises(ValueError):
+            polar_pullback_spectrum(
+                matrix,
+                precomputed_singular_values=singular_values[::-1],
+            )
 
     def test_gram_translation_quotient_ignores_scalar_gram_shift(self):
         rng = np.random.default_rng(102)

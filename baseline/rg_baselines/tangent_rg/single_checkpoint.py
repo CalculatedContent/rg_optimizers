@@ -70,6 +70,61 @@ class NormalizedGramSpectrumRecord:
 
 
 @dataclass(frozen=True)
+class SingleCheckpointJacobianSpectrumRecord:
+    singular_amplitudes: FloatArray
+    jt_j_nonzero_eigenvalues: FloatArray
+    zero_count: int
+    input_dimension: int
+    derivative_rank: int
+    side: str
+    matrix_singular_values: FloatArray
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class CenteredLogGramRecord:
+    value: FloatArray
+    normalized_gram: FloatArray
+    normalized_gram_eigenvalues: FloatArray
+    side: str
+    normalization_dimension: int
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class CenteredLogGramJVPRecord:
+    value: FloatArray
+    jvp: FloatArray
+    side: str
+    normalization_dimension: int
+    scale_direction_residual: float
+    trace_derivative_residual: float
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class CenteredLogSingularRecord:
+    value: FloatArray
+    singular_values: FloatArray
+    mean_log_singular_value: float
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
+class CenteredLogSingularJVPRecord:
+    value: FloatArray
+    jvp: FloatArray
+    scale_direction_residual: float
+    sum_derivative_residual: float
+    operator_kind: str
+    map_definition: str
+
+
+@dataclass(frozen=True)
 class CenteredLogSingularFlowRecord:
     singular_values: FloatArray
     instantaneous_log_singular_rates: FloatArray
@@ -127,6 +182,101 @@ def _side_and_gram(weight: FloatArray, side: str) -> tuple[str, FloatArray]:
     if selected == "left":
         return selected, weight @ weight.T
     raise ValueError("side must be auto, right/column, or left/row")
+
+
+def _full_rank_svd(
+    matrix: FloatArray,
+    *,
+    rcond: float | None,
+    map_name: str,
+) -> tuple[FloatArray, FloatArray, FloatArray, float]:
+    left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=False)
+    largest = float(singular_values[0])
+    if rcond is not None and rcond < 0.0:
+        raise ValueError("rcond must be non-negative")
+    tolerance = (
+        float(rcond) * max(largest, 1.0)
+        if rcond is not None
+        else max(matrix.shape)
+        * np.finfo(np.float64).eps
+        * max(largest, 1.0)
+    )
+    if np.any(singular_values <= tolerance):
+        raise np.linalg.LinAlgError(
+            f"{map_name} requires full rank on the smaller matrix side"
+        )
+    return left, singular_values, right_h, float(tolerance)
+
+
+def _positive_singular_amplitudes(operator: FloatArray) -> FloatArray:
+    amplitudes = np.linalg.svd(operator, compute_uv=False)
+    tolerance = (
+        max(operator.shape)
+        * np.finfo(np.float64).eps
+        * max(float(amplitudes[0]), 1.0)
+    )
+    return amplitudes[amplitudes > tolerance]
+
+
+def _spectrum_singular_values(
+    matrix: FloatArray,
+    *,
+    precomputed_singular_values: ArrayLike | None,
+    rcond: float | None,
+    map_name: str,
+) -> tuple[FloatArray, float]:
+    if precomputed_singular_values is None:
+        singular_values = np.linalg.svd(matrix, compute_uv=False)
+    else:
+        singular_values = np.asarray(
+            precomputed_singular_values,
+            dtype=np.float64,
+        )
+        expected = min(matrix.shape)
+        if singular_values.shape != (expected,):
+            raise ValueError(
+                f"precomputed_singular_values must have shape {(expected,)}"
+            )
+        if not np.all(np.isfinite(singular_values)):
+            raise ValueError("precomputed_singular_values contain non-finite values")
+        if np.any(np.diff(singular_values) > 0.0):
+            raise ValueError("precomputed_singular_values must be non-increasing")
+    largest = float(singular_values[0])
+    if rcond is not None and rcond < 0.0:
+        raise ValueError("rcond must be non-negative")
+    tolerance = (
+        float(rcond) * max(largest, 1.0)
+        if rcond is not None
+        else max(matrix.shape)
+        * np.finfo(np.float64).eps
+        * max(largest, 1.0)
+    )
+    if np.any(singular_values <= tolerance):
+        raise np.linalg.LinAlgError(
+            f"{map_name} requires full rank on the smaller matrix side"
+        )
+    return singular_values, float(tolerance)
+
+
+def _require_simple_singular_values(
+    singular_values: FloatArray,
+    *,
+    tolerance: float,
+    map_name: str,
+) -> None:
+    if singular_values.size > 1 and np.any(
+        np.abs(np.diff(singular_values)) <= tolerance
+    ):
+        raise np.linalg.LinAlgError(
+            f"{map_name} is not differentiable at repeated singular values"
+        )
+
+
+def _log_divided_difference(first: float, second: float) -> float:
+    scale = max(abs(first), abs(second), 1.0)
+    if abs(first - second) <= 32.0 * np.finfo(np.float64).eps * scale:
+        return 2.0 / (first + second)
+    return float((np.log(first) - np.log(second)) / (first - second))
 
 
 def gram_translation_quotient(
@@ -259,6 +409,7 @@ def normalized_gram_analytic_spectrum(
     *,
     side: str = "auto",
     rcond: float | None = None,
+    precomputed_singular_values: ArrayLike | None = None,
 ) -> NormalizedGramSpectrumRecord:
     """Exact nonzero singular amplitudes of the normalized-Gram derivative.
 
@@ -273,38 +424,21 @@ def normalized_gram_analytic_spectrum(
 
     matrix = _matrix(weight)
     selected, gram = _side_and_gram(matrix, side)
-    singular_values = np.linalg.svd(matrix, compute_uv=False)
-    dimension = int(gram.shape[0])
-    largest = float(singular_values[0])
-    tolerance = (
-        float(rcond) * max(largest, 1.0)
-        if rcond is not None
-        else max(matrix.shape)
-        * np.finfo(np.float64).eps
-        * max(largest, 1.0)
+    singular_values, _ = _spectrum_singular_values(
+        matrix,
+        precomputed_singular_values=precomputed_singular_values,
+        rcond=rcond,
+        map_name="analytic normalized-Gram spectrum",
     )
-    if rcond is not None and rcond < 0.0:
-        raise ValueError("rcond must be non-negative")
-    if singular_values.size != dimension or np.any(singular_values <= tolerance):
-        raise np.linalg.LinAlgError(
-            "analytic normalized-Gram spectrum requires full rank on the "
-            "selected smaller Gram side"
-        )
+    dimension = int(gram.shape[0])
+    if singular_values.size != dimension:
+        raise RuntimeError("selected Gram side is not the smaller matrix side")
     frobenius_sq = float(np.sum(singular_values**2))
     coefficient = float(dimension) / frobenius_sq
-    amplitudes: list[float] = []
-    for first in range(dimension):
-        for second in range(first + 1, dimension):
-            amplitudes.append(
-                coefficient
-                * np.sqrt(
-                    2.0
-                    * (
-                        singular_values[first] ** 2
-                        + singular_values[second] ** 2
-                    )
-                )
-            )
+    first, second = np.triu_indices(dimension, k=1)
+    pair_amplitudes = coefficient * np.sqrt(
+        2.0 * (singular_values[first] ** 2 + singular_values[second] ** 2)
+    )
     diagonal_operator = 2.0 * coefficient * (
         np.diag(singular_values)
         - np.outer(singular_values**2, singular_values) / frobenius_sq
@@ -318,12 +452,12 @@ def normalized_gram_analytic_spectrum(
         * np.finfo(np.float64).eps
         * max(float(diagonal_amplitudes[0]), 1.0)
     )
-    amplitudes.extend(
-        float(value)
-        for value in diagonal_amplitudes
-        if value > diagonal_tolerance
-    )
-    amplitude_array = np.sort(np.asarray(amplitudes, dtype=np.float64))[::-1]
+    diagonal_amplitudes = diagonal_amplitudes[
+        diagonal_amplitudes > diagonal_tolerance
+    ]
+    amplitude_array = np.sort(
+        np.concatenate([pair_amplitudes, diagonal_amplitudes])
+    )[::-1]
     expected_rank = dimension * (dimension + 1) // 2 - 1
     if int(amplitude_array.size) != expected_rank:
         raise RuntimeError("normalized-Gram analytic rank audit failed")
@@ -341,6 +475,286 @@ def normalized_gram_analytic_spectrum(
             "exact nonzero spectrum of (D F_W)^*D F_W for "
             "F(W)=dG/||W||_F^2; zeros include scale, rotations, and Gram-side "
             "complements; this is not a training Jacobian"
+        ),
+    )
+
+
+def centered_log_gram_map(
+    weight: ArrayLike,
+    *,
+    side: str = "auto",
+    rcond: float | None = None,
+) -> CenteredLogGramRecord:
+    """Single-checkpoint trace-log quotient of the normalized smaller Gram.
+
+    The map is ``L(W)=log(F(W))-tr(log(F(W))) I/d`` with
+    ``F(W)=d G(W)/||W||_F^2``.  Centering removes the uniform scale mode
+    exactly; unlike a list of log singular values, the matrix logarithm also
+    retains the response of the Gram eigenvectors.
+    """
+
+    matrix = _matrix(weight)
+    _full_rank_svd(
+        matrix,
+        rcond=rcond,
+        map_name="centered log-Gram map",
+    )
+    normalized = normalized_gram_map(matrix, side=side)
+    eigenvalues, eigenvectors = np.linalg.eigh(normalized.value)
+    if np.any(eigenvalues <= 0.0):
+        raise np.linalg.LinAlgError(
+            "centered log-Gram map requires a positive-definite smaller Gram"
+        )
+    log_eigenvalues = np.log(eigenvalues)
+    centered = log_eigenvalues - float(np.mean(log_eigenvalues))
+    value = (eigenvectors * centered[None, :]) @ eigenvectors.T
+    value = 0.5 * (value + value.T)
+    return CenteredLogGramRecord(
+        value=value,
+        normalized_gram=normalized.value,
+        normalized_gram_eigenvalues=eigenvalues[::-1],
+        side=normalized.side,
+        normalization_dimension=normalized.normalization_dimension,
+        operator_kind="single_checkpoint_centered_log_normalized_gram_map",
+        map_definition=(
+            "L(W)=log(d G(W)/||W||_F^2)-tr(log(d G(W)/||W||_F^2))I/d "
+            "on the smaller Gram side; a scale-free candidate RG map "
+            "defined by one checkpoint"
+        ),
+    )
+
+
+def centered_log_gram_jvp(
+    weight: ArrayLike,
+    direction: ArrayLike,
+    *,
+    side: str = "auto",
+    rcond: float | None = None,
+) -> CenteredLogGramJVPRecord:
+    """Analytic Frechet derivative of :func:`centered_log_gram_map`."""
+
+    matrix = _matrix(weight)
+    tangent = _matrix(direction, name="direction")
+    if tangent.shape != matrix.shape:
+        raise ValueError("weight and direction must have identical shapes")
+    mapped = centered_log_gram_map(matrix, side=side, rcond=rcond)
+    gram_jvp = normalized_gram_jvp(matrix, tangent, side=mapped.side)
+    eigenvalues, eigenvectors = np.linalg.eigh(mapped.normalized_gram)
+    rotated = eigenvectors.T @ gram_jvp.jvp @ eigenvectors
+    divided = np.empty((eigenvalues.size, eigenvalues.size), dtype=np.float64)
+    for first in range(eigenvalues.size):
+        for second in range(eigenvalues.size):
+            divided[first, second] = _log_divided_difference(
+                float(eigenvalues[first]),
+                float(eigenvalues[second]),
+            )
+    differential = eigenvectors @ (divided * rotated) @ eigenvectors.T
+    differential -= (
+        float(np.trace(differential)) / mapped.normalization_dimension
+    ) * np.eye(mapped.normalization_dimension)
+    differential = 0.5 * (differential + differential.T)
+
+    scale_gram_jvp = normalized_gram_jvp(matrix, matrix, side=mapped.side)
+    scale_rotated = eigenvectors.T @ scale_gram_jvp.jvp @ eigenvectors
+    scale_differential = eigenvectors @ (divided * scale_rotated) @ eigenvectors.T
+    scale_differential -= (
+        float(np.trace(scale_differential)) / mapped.normalization_dimension
+    ) * np.eye(mapped.normalization_dimension)
+    return CenteredLogGramJVPRecord(
+        value=mapped.value,
+        jvp=differential,
+        side=mapped.side,
+        normalization_dimension=mapped.normalization_dimension,
+        scale_direction_residual=float(np.linalg.norm(scale_differential)),
+        trace_derivative_residual=float(abs(np.trace(differential))),
+        operator_kind="analytic_centered_log_gram_candidate_rg_jvp",
+        map_definition=(
+            "D L_W[Z] for L(W)=log(F(W))-tr(log(F(W)))I/d and "
+            "F(W)=dG(W)/||W||_F^2; an actual Jacobian-vector product of "
+            "the declared single-checkpoint candidate RG map"
+        ),
+    )
+
+
+def centered_log_gram_analytic_spectrum(
+    weight: ArrayLike,
+    *,
+    side: str = "auto",
+    rcond: float | None = None,
+    precomputed_singular_values: ArrayLike | None = None,
+) -> SingleCheckpointJacobianSpectrumRecord:
+    """Exact nonzero singular spectrum of the centered log-Gram Jacobian."""
+
+    matrix = _matrix(weight)
+    singular_values, _ = _spectrum_singular_values(
+        matrix,
+        precomputed_singular_values=precomputed_singular_values,
+        rcond=rcond,
+        map_name="centered log-Gram Jacobian spectrum",
+    )
+    selected, gram = _side_and_gram(matrix, side)
+    dimension = int(gram.shape[0])
+    squared = singular_values**2
+    first, second = np.triu_indices(dimension, k=1)
+    difference = squared[first] - squared[second]
+    scale = np.maximum.reduce(
+        [
+            np.abs(squared[first]),
+            np.abs(squared[second]),
+            np.ones_like(difference),
+        ]
+    )
+    repeated = np.abs(difference) <= (
+        32.0 * np.finfo(np.float64).eps * scale
+    )
+    divided = np.empty_like(difference)
+    divided[repeated] = 2.0 / (
+        squared[first[repeated]] + squared[second[repeated]]
+    )
+    divided[~repeated] = (
+        np.log(squared[first[~repeated]])
+        - np.log(squared[second[~repeated]])
+    ) / difference[~repeated]
+    pair_amplitudes = (
+        np.sqrt(2.0)
+        * np.abs(divided)
+        * np.sqrt(squared[first] + squared[second])
+    )
+    centering = np.eye(dimension) - np.ones((dimension, dimension)) / dimension
+    diagonal_operator = 2.0 * centering @ np.diag(1.0 / singular_values)
+    diagonal_amplitudes = _positive_singular_amplitudes(diagonal_operator)
+    amplitude_array = np.sort(
+        np.concatenate([pair_amplitudes, diagonal_amplitudes])
+    )[::-1]
+    expected_rank = dimension * (dimension - 1) // 2 + dimension - 1
+    if amplitude_array.size != expected_rank:
+        raise RuntimeError("centered log-Gram analytic rank audit failed")
+    input_dimension = int(matrix.size)
+    return SingleCheckpointJacobianSpectrumRecord(
+        singular_amplitudes=amplitude_array,
+        jt_j_nonzero_eigenvalues=amplitude_array**2,
+        zero_count=input_dimension - expected_rank,
+        input_dimension=input_dimension,
+        derivative_rank=expected_rank,
+        side=selected,
+        matrix_singular_values=singular_values,
+        operator_kind="centered_log_gram_candidate_rg_jacobian_exact_spectrum",
+        map_definition=(
+            "exact nonzero spectrum of (D L_W)^*D L_W for the declared "
+            "single-checkpoint map L(W)=log(dG/||W||_F^2)-tr(log(dG/||W||_F^2))I/d; "
+            "includes diagonal radial and off-diagonal Gram-eigenvector modes"
+        ),
+    )
+
+
+def centered_log_singular_map(
+    weight: ArrayLike,
+    *,
+    rcond: float | None = None,
+) -> CenteredLogSingularRecord:
+    """Return centered log singular values from one checkpoint."""
+
+    matrix = _matrix(weight)
+    _, singular_values, _, _ = _full_rank_svd(
+        matrix,
+        rcond=rcond,
+        map_name="centered log-singular map",
+    )
+    logged = np.log(singular_values)
+    mean_log = float(np.mean(logged))
+    return CenteredLogSingularRecord(
+        value=logged - mean_log,
+        singular_values=singular_values,
+        mean_log_singular_value=mean_log,
+        operator_kind="single_checkpoint_centered_log_singular_radial_map",
+        map_definition=(
+            "R(W)=log(s(W))-mean(log(s(W))) on the full smaller-side singular "
+            "support; a scale-free radial candidate RG coordinate map"
+        ),
+    )
+
+
+def centered_log_singular_jvp(
+    weight: ArrayLike,
+    direction: ArrayLike,
+    *,
+    rcond: float | None = None,
+) -> CenteredLogSingularJVPRecord:
+    """Jacobian-vector product of the centered log-singular radial map."""
+
+    matrix = _matrix(weight)
+    tangent = _matrix(direction, name="direction")
+    if tangent.shape != matrix.shape:
+        raise ValueError("weight and direction must have identical shapes")
+    left, singular_values, right_h, tolerance = _full_rank_svd(
+        matrix,
+        rcond=rcond,
+        map_name="centered log-singular JVP",
+    )
+    _require_simple_singular_values(
+        singular_values,
+        tolerance=tolerance,
+        map_name="centered log-singular JVP",
+    )
+    raw = np.diag(left.T @ tangent @ right_h.T) / singular_values
+    differential = raw - float(np.mean(raw))
+    mapped = centered_log_singular_map(matrix, rcond=rcond)
+    scale_raw = np.diag(left.T @ matrix @ right_h.T) / singular_values
+    scale_differential = scale_raw - float(np.mean(scale_raw))
+    return CenteredLogSingularJVPRecord(
+        value=mapped.value,
+        jvp=differential,
+        scale_direction_residual=float(np.linalg.norm(scale_differential)),
+        sum_derivative_residual=float(abs(np.sum(differential))),
+        operator_kind="analytic_centered_log_singular_candidate_rg_jvp",
+        map_definition=(
+            "D R_W[Z] for R(W)=log(s(W))-mean(log(s(W))); an actual "
+            "Jacobian-vector product of the single-checkpoint radial map"
+        ),
+    )
+
+
+def centered_log_singular_analytic_spectrum(
+    weight: ArrayLike,
+    *,
+    rcond: float | None = None,
+    precomputed_singular_values: ArrayLike | None = None,
+) -> SingleCheckpointJacobianSpectrumRecord:
+    """Exact nonzero spectrum of the centered log-singular Jacobian."""
+
+    matrix = _matrix(weight)
+    singular_values, tolerance = _spectrum_singular_values(
+        matrix,
+        precomputed_singular_values=precomputed_singular_values,
+        rcond=rcond,
+        map_name="centered log-singular Jacobian spectrum",
+    )
+    _require_simple_singular_values(
+        singular_values,
+        tolerance=tolerance,
+        map_name="centered log-singular Jacobian spectrum",
+    )
+    rank = int(singular_values.size)
+    centering = np.eye(rank) - np.ones((rank, rank)) / rank
+    radial_operator = centering @ np.diag(1.0 / singular_values)
+    amplitudes = _positive_singular_amplitudes(radial_operator)
+    expected_rank = rank - 1
+    if amplitudes.size != expected_rank:
+        raise RuntimeError("centered log-singular analytic rank audit failed")
+    input_dimension = int(matrix.size)
+    return SingleCheckpointJacobianSpectrumRecord(
+        singular_amplitudes=amplitudes,
+        jt_j_nonzero_eigenvalues=amplitudes**2,
+        zero_count=input_dimension - expected_rank,
+        input_dimension=input_dimension,
+        derivative_rank=expected_rank,
+        side="thin_svd_radial_coordinates",
+        matrix_singular_values=singular_values,
+        operator_kind="centered_log_singular_candidate_rg_jacobian_exact_spectrum",
+        map_definition=(
+            "exact nonzero spectrum of (D R_W)^*D R_W for the declared "
+            "single-checkpoint radial map R(W)=log(s)-mean(log(s)); uniform "
+            "scale and all singular-vector directions are exact null modes"
         ),
     )
 
@@ -572,15 +986,26 @@ essential_centered_log_singular_flow = centered_log_singular_flow
 __all__ = [
     "CalibratedTrainingMapContract",
     "CalibratedTrainingMapDerivativeRecord",
+    "CenteredLogGramJVPRecord",
+    "CenteredLogGramRecord",
+    "CenteredLogSingularJVPRecord",
+    "CenteredLogSingularRecord",
     "CenteredLogSingularFlowRecord",
     "GramTranslationRecord",
     "NormalizedGramJVPRecord",
     "NormalizedGramRecord",
     "NormalizedGramSpectrumRecord",
+    "SingleCheckpointJacobianSpectrumRecord",
     "calibrated_training_map_contract",
     "calibrated_training_map_finite_difference",
     "calibrated_training_map_jvp",
     "centered_log_singular_flow",
+    "centered_log_gram_analytic_spectrum",
+    "centered_log_gram_jvp",
+    "centered_log_gram_map",
+    "centered_log_singular_analytic_spectrum",
+    "centered_log_singular_jvp",
+    "centered_log_singular_map",
     "essential_centered_log_singular_flow",
     "gram_translation_quotient",
     "normalized_gram_analytic_spectrum",
