@@ -74,7 +74,9 @@ so the root contains `mnist_mlp3_tangent_rg_v1_smoke/`,
 `mnist_mlp3_tangent_rg_v1_reference10000/`; pilot and reference artifacts
 cannot collide. In Jupyter, set `PROFILE` (or `CONFIG_PATH`) to the same stage,
 run notebook `00`, then `01`--`03`, `04`, analysis notebooks `10`--`14`, then
-`16` and `17`, and run the cross-method comparison `15` last. Training notebooks are launch-safe by default: set
+`16` and `17`, and run the cross-method comparison `15` last. Notebook `18`
+is an additional single-seed MuonClip diagnostic driver; it is not part of the
+three-seed comparison. Training notebooks are launch-safe by default: set
 `EXECUTE_TRAINING=True` explicitly, while analysis notebooks require completed
 artifacts. The checkpoint-based notebooks `10`, `12`, `13`, `15`, and `16` require
 the verified tail cache and never fall back to training or to the sparse
@@ -171,6 +173,54 @@ Run `scripts/run_muonclip_jacobians.sh --help` for the complete option list.
 The script refuses to run the notebooks unless every selected seed has exactly
 100 cached checkpoint files. The package's strict cache loader then validates
 the manifest, run identity, epoch/step grid, file sizes, and SHA-256 hashes.
+
+### Single-seed MuonClip Jacobian audit
+
+Notebook `18_Single_Run_MuonClip_Jacobian_Audit.ipynb` is the compact debugging
+and sharing workflow for one completed MuonClip seed. It runs notebooks `11`,
+`13`, `14`, `16`, and `17` as Papermill children, verifies every child
+provenance manifest against the selected run fingerprint, consolidates all
+declared Jacobian $J^*J$ energy fits, and creates a readable single-run report.
+It intentionally excludes notebook `10` (a two-checkpoint finite-flow
+operator) and notebook `12` (quotient/decomposition controls).
+
+The report includes all persisted WeightWatcher `raw` and
+`fix_fingers=clip_xmax` rows, independent continuous-MLE `powerlaw.Fit`
+analyses of saved weight ESDs, and explicit top-0 through top-5 finger
+sensitivities. It never chooses a finger count after inspecting fit quality.
+Because there is only one independent training run, it draws no confidence
+bands or error bars; checkpoints, probes, examples, and spectral modes are not
+treated as replicates.
+
+After the 1,000-epoch MuonClip baseline and its final-100 cache have completed,
+run the notebook from the repository root:
+
+```bash
+export RUNS="$HOME/rg-mnist-mlp3-tangent-runs"
+export CACHE="/tmp/rg-mnist-mlp3-tangent-checkpoints"
+mkdir -p "$RUNS/single-seed-notebooks"
+python -m ipykernel install --user \
+  --name rg-muonclip-run --display-name "Python (rg-muonclip-run)"
+
+papermill \
+  baseline/experiments/mnist_mlp3_tangent_rg/notebooks/18_Single_Run_MuonClip_Jacobian_Audit.ipynb \
+  "$RUNS/single-seed-notebooks/muonclip_seed_1337.executed.ipynb" \
+  -k rg-muonclip-run \
+  -p RUN_ROOT "$RUNS" \
+  -p CHECKPOINT_CACHE_ROOT "$CACHE" \
+  -p PROFILE pilot_1000_epochs \
+  -p OPTIMIZER_SLUG muonclip_rms \
+  -p SEED 1337 \
+  -p RUN_CHILD_NOTEBOOKS true \
+  -p SHOW_PLOTS false
+```
+
+The default report artifacts are written beneath
+`$RUNS/mnist_mlp3_tangent_rg_v1_pilot1000/notebook_outputs/` followed by
+`single_run_muonclip_jacobian_audit/muonclip_rms_seed_1337/`. To regenerate
+only the consolidated report from already verified child outputs, rerun with
+`-p RUN_CHILD_NOTEBOOKS false`. Clean notebooks remain checked in; executed
+notebooks and generated plots remain run artifacts.
 
 ### Optimizer arms
 
@@ -565,6 +615,12 @@ captures; they do not retrain a private notebook-local model. Specifically,
 `10`, `12`, `13`, `16`, and the checkpoint-derived nulls in `15` consume the cache;
 `11`, `14`, and `17` consume captures because their objects require optimizer and
 minibatch state not present in a model-only checkpoint.
+
+Notebook `18` is an optional single-run driver after training. It invokes only
+the genuine Jacobian notebooks `11`, `13`, `14`, `16`, and `17` for one
+MuonClip seed, then builds descriptive no-error-bar plots and independent
+WeightWatcher/`powerlaw.Fit` diagnostics. It does not replace notebook `15` or
+the preregistered three-seed comparisons.
 
 Every analysis method writes `method_provenance.json` with its exact suite,
 method, source-artifact kind, and optimizer/seed-to-protocol-fingerprint grid.

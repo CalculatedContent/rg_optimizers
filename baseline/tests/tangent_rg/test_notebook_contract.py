@@ -31,6 +31,7 @@ EXPECTED_NOTEBOOKS = {
     "15_Method_Nulls_Stability_Comparison.ipynb",
     "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
     "17_Data_Dependent_ECS_Jacobians.ipynb",
+    "18_Single_Run_MuonClip_Jacobian_Audit.ipynb",
 }
 
 ANALYSIS_NOTEBOOKS = EXPECTED_NOTEBOOKS - {
@@ -123,6 +124,38 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn('CACHE_ROOT="${RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT:-/tmp/', source)
         self.assertIn('RUN_MODE="--resume"', source)
         self.assertIn('checkpoint_count" != "100"', source)
+
+    def test_single_run_muonclip_audit_is_jacobian_only_and_no_ci(self) -> None:
+        path = NOTEBOOK_ROOT / "18_Single_Run_MuonClip_Jacobian_Audit.ipynb"
+        notebook = json.loads(path.read_text(encoding="utf-8"))
+        source = "\n".join(_source_text(cell) for cell in notebook["cells"])
+        expected_children = {
+            "11_Muon_Update_Stiefel_Tangent.ipynb",
+            "13_Single_Checkpoint_Map_Jacobians.ipynb",
+            "14_Calibrated_Local_Training_Map.ipynb",
+            "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+            "17_Data_Dependent_ECS_Jacobians.ipynb",
+        }
+        for child in expected_children:
+            self.assertEqual(source.count(f'"{child}"'), 1)
+        self.assertNotIn('"10_Two_Checkpoint_Finite_Flow.ipynb"', source)
+        self.assertNotIn('"12_Radial_Angular_Quotients.ipynb"', source)
+        self.assertIn("pm.execute_notebook", source)
+        self.assertIn("fit_clipping_sensitivity", source)
+        self.assertIn("fix_fingers=clip_xmax", source)
+        self.assertIn('UNCERTAINTY_POLICY = "no_seed_error_bars"', source)
+        self.assertIn('OPTIMIZER_SLUG = "muonclip_rms"', source)
+        self.assertIn("expected_grid =", source)
+        self.assertIn("protocol_fingerprint", source)
+        self.assertIn("single_run_audit_manifest.json", source)
+        self.assertIn("nonzero_eigenvalues_of_J_star_J", source)
+        report_plot_source = "\n".join(
+            _source_text(cell)
+            for cell in notebook["cells"]
+            if "jacobian_latest_alpha_heatmap.png" in _source_text(cell)
+        )
+        self.assertTrue(report_plot_source)
+        self.assertNotIn("fill_between", report_plot_source)
 
     def test_ecs_exact_rank_join_rejects_inexact_or_malformed_states(self) -> None:
         import numpy as np
