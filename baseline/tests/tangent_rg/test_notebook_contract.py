@@ -13,6 +13,9 @@ BASELINE_ROOT = Path(__file__).resolve().parents[2]
 EXPERIMENT_ROOT = BASELINE_ROOT / "experiments" / "mnist_mlp3_tangent_rg"
 NOTEBOOK_ROOT = EXPERIMENT_ROOT / "notebooks"
 BUILDER_PATH = EXPERIMENT_ROOT / "scripts" / "build_notebooks.py"
+MUONCLIP_RUNNER_PATH = (
+    EXPERIMENT_ROOT / "scripts" / "run_muonclip_jacobians.sh"
+)
 
 EXPECTED_NOTEBOOKS = {
     "00_Protocol_and_Smoke.ipynb",
@@ -102,6 +105,25 @@ def _load_single_checkpoint_module():
 
 
 class NotebookContractTests(unittest.TestCase):
+    def test_muonclip_runner_executes_only_declared_jacobian_notebooks(self) -> None:
+        self.assertTrue(MUONCLIP_RUNNER_PATH.is_file())
+        self.assertNotEqual(MUONCLIP_RUNNER_PATH.stat().st_mode & 0o111, 0)
+        source = MUONCLIP_RUNNER_PATH.read_text(encoding="utf-8")
+        expected = {
+            "11_Muon_Update_Stiefel_Tangent.ipynb",
+            "13_Single_Checkpoint_Map_Jacobians.ipynb",
+            "14_Calibrated_Local_Training_Map.ipynb",
+            "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+            "17_Data_Dependent_ECS_Jacobians.ipynb",
+        }
+        for notebook in expected:
+            self.assertEqual(source.count(notebook), 1)
+        self.assertNotIn("10_Two_Checkpoint_Finite_Flow.ipynb", source)
+        self.assertNotIn("12_Radial_Angular_Quotients.ipynb", source)
+        self.assertIn('CACHE_ROOT="${RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT:-/tmp/', source)
+        self.assertIn('RUN_MODE="--resume"', source)
+        self.assertIn('checkpoint_count" != "100"', source)
+
     def test_ecs_exact_rank_join_rejects_inexact_or_malformed_states(self) -> None:
         import numpy as np
         import pandas as pd
