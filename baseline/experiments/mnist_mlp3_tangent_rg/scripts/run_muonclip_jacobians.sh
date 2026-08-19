@@ -15,9 +15,9 @@ CONFIG_PATH="${EXPERIMENT_ROOT}/configs/pilot_1000_epochs.yaml"
 
 ENV_NAME="rg-muonclip-run"
 KERNEL_NAME="rg-muonclip-run"
-RUN_ROOT="${RG_MNIST_TANGENT_ROOT:-${HOME}/rg-mnist-mlp3-tangent-runs}"
+RUN_ROOT="${RG_MNIST_TANGENT_ROOT:-}"
 CACHE_ROOT="${RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT:-/tmp/rg-mnist-mlp3-tangent-checkpoints}"
-DATA_ROOT="${RG_MNIST_DATA_ROOT:-${HOME}/rg-mnist-data}"
+DATA_ROOT="${RG_MNIST_DATA_ROOT:-}"
 DEVICE="auto"
 SEEDS=(1337 2027 31415)
 DO_SETUP=1
@@ -175,6 +175,14 @@ run_in_env python -c \
   'import numpy, torch, torchvision; print("imports A:", numpy.__version__, torch.__version__, torchvision.__version__)'
 run_in_env python -c \
   'import torch, torchvision, numpy; print("imports B:", torch.__version__, torchvision.__version__, numpy.__version__)'
+
+USER_ROOT="$(run_in_env python -c 'import os; print(os.path.expanduser("~"))')"
+if [[ -z "$RUN_ROOT" ]]; then
+  RUN_ROOT="${USER_ROOT}/rg-mnist-mlp3-tangent-runs"
+fi
+if [[ -z "$DATA_ROOT" ]]; then
+  DATA_ROOT="${USER_ROOT}/rg-mnist-data"
+fi
 
 mkdir -p "$RUN_ROOT" "$CACHE_ROOT" "$DATA_ROOT"
 LOG_ROOT="${RUN_ROOT}/mnist_mlp3_tangent_rg_v1_pilot1000/logs/muonclip_rms"
