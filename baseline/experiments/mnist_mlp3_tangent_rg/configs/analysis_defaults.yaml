@@ -1,0 +1,75 @@
+# Shared, preregistered offline-analysis policy.  Training configs copy the
+# WeightWatcher fields that affect acquisition; this file governs qualification,
+# sensitivities, uncertainty, and plots without changing a trained trajectory.
+schema_version: 1
+
+weightwatcher:
+  version: 0.7.7
+  fit_variants: [raw, clip_xmax]
+  primary_variant: clip_xmax
+  fix_fingers: clip_xmax
+  max_fingers: 10
+  min_evals: 8
+  max_evals: null
+  svd_method: accurate
+  ERG: true
+  randomize: true
+  retain_raw_fit_as_required_audit: true
+  raw_audit_failure_policy: retain_warn_do_not_abort
+  fc3_low_rank_warning: true
+
+derived_spectra_powerlaw:
+  backend: powerlaw.Fit
+  discrete: false
+  package_selects_xmin: true
+  minimum_tail: 8
+  primary_clip_top_k: 0
+  clip_top_k_sensitivity: [0, 1, 2, 3, 4, 5]
+  select_k_by_fit_quality: false
+  amplitude_to_energy: exact_change_of_variables_not_refit
+  amplitude_density_alpha_reference: 3.0
+  energy_density_alpha_reference: 2.0
+
+trace_log:
+  primary_support_rank_source: weightwatcher_backend_xmax_exact_fit_tail
+  primary_clip_membership: saved_esd_xmin_le_lambda_le_backend_xmax
+  backend_xmax_missing_fallback: weightwatcher_inferred_internal_slice_fallback_tail
+  reported_finger_count_sensitivity: weightwatcher_reported_finger_count_sensitivity_only
+  inferred_internal_slice_sensitivity: weightwatcher_inferred_internal_slice_count_sensitivity_only
+  sensitivity_rows_can_certify: false
+  persist_both_fit_variants: [raw, clip_xmax]
+  legacy_raw_midpoint_audit: floor_mean_detX_num_and_num_pl_spikes
+  normalization: mean_one_positive_esd
+  trace_log_per_eval_tolerance: 0.10
+  same_curve_nearest_zero_is_diagnostic_only: true
+  same_curve_support_can_certify: false
+
+fixed_point:
+  observable: native_weight_gram_esd_energy_density
+  alpha_target: 2.0
+  alpha_half_width: 0.25
+  max_ks_D: 0.15
+  minimum_tail: 8
+  persistence_measurements: 5
+  required_fraction: 0.80
+  require_all_layers: true
+  fc3_cannot_carry_claim_alone: true
+
+replicates:
+  seeds: [1337, 2027, 31415]
+  unit: complete_seeded_training_run
+  confidence_level: 0.95
+  interval: two_sided_student_t
+  layers_or_checkpoints_are_replicates: false
+
+plots:
+  x_axis: optimizer_step
+  x_scale: symlog
+  native_weight_energy_alpha_reference: 2.0
+  derived_amplitude_alpha_reference: 3.0
+  derived_energy_alpha_reference: 2.0
+  trace_log_reference: 0.0
+  show_individual_seed_trajectories: true
+  show_mean_and_95ci: true
+  show_pdf_and_ccdf: true
+  show_fit_window_and_finger_policy: true

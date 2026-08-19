@@ -17,9 +17,15 @@ dependencies = [
 [project.optional-dependencies]
 experiment = [
   "matplotlib>=3.7",
+  "scipy>=1.10",
+  "powerlaw>=2.0.0,<3",
   "weightwatcher==0.7.7",
+  "PyYAML>=6",
+  "nbformat>=5.10",
+  "papermill>=2.6,<3",
   "jupyter>=1.0",
 ]
 
-[tool.setuptools]
-packages = ["rg_baselines"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rg_baselines*"]

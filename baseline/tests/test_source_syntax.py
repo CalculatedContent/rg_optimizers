@@ -12,12 +12,15 @@ from pathlib import Path
 BASELINE_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = BASELINE_ROOT / "rg_baselines"
 NOTEBOOK_ROOT = BASELINE_ROOT / "notebooks"
+EXPERIMENT_ROOT = BASELINE_ROOT / "experiments"
 
 
 class BaselineSourceSyntaxTests(unittest.TestCase):
     def test_all_python_sources_compile(self) -> None:
         failures: list[str] = []
-        for path in sorted(PACKAGE_ROOT.glob("*.py")):
+        python_sources = sorted(PACKAGE_ROOT.rglob("*.py"))
+        python_sources.extend(sorted(EXPERIMENT_ROOT.rglob("*.py")))
+        for path in python_sources:
             try:
                 py_compile.compile(str(path), doraise=True)
             except py_compile.PyCompileError as exc:
@@ -29,7 +32,8 @@ class BaselineSourceSyntaxTests(unittest.TestCase):
 
     def test_all_notebook_code_cells_parse(self) -> None:
         failures: list[str] = []
-        notebooks = sorted(NOTEBOOK_ROOT.glob("*.ipynb"))
+        notebooks = sorted(NOTEBOOK_ROOT.rglob("*.ipynb"))
+        notebooks.extend(sorted(EXPERIMENT_ROOT.rglob("*.ipynb")))
         self.assertTrue(notebooks, "No baseline notebooks were found")
         for path in notebooks:
             notebook = json.loads(path.read_text(encoding="utf-8"))
