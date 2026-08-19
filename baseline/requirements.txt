@@ -3,5 +3,10 @@ torchvision>=0.16
 numpy>=1.24
 pandas>=2.0
 matplotlib>=3.7
+scipy>=1.10
+powerlaw>=2.0.0,<3
 weightwatcher==0.7.7
+PyYAML>=6
+nbformat>=5.10
+papermill>=2.6,<3
 jupyter>=1.0

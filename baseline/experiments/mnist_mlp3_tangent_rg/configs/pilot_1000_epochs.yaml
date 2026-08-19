@@ -1,0 +1,87 @@
+protocol:
+  suite_name: mnist_mlp3_tangent_rg_v1_pilot1000
+  schema_version: 1
+  description: Preregistered 1000-epoch pilot with sparse fixed-point analysis
+
+training:
+  optimizer: muon
+  seed: 1337
+  epochs: 1000
+  lr_schedule_epochs: 30
+  batch_size: 128
+  validation_size: 5000
+  split_seed: 20260807
+  num_workers: 0
+  grad_clip_norm: 1.0
+  train_eval_max_batches: null
+  validation_every_epochs: 5
+  latest_every_epochs: 5
+  test_monitoring_only: true
+
+analysis:
+  log_points: 96
+  explicit_epochs: [0, 1, 2, 5, 10, 29, 30, 31, 100, 500, 900, 968, 999, 1000]
+  tail_start_epoch: 968
+  tail_every_epochs: 1
+  dense_burst_anchor_epochs: [0, 1, 10, 29, 30, 100, 500, 900, 999]
+  dense_burst_length_steps: 8
+  capture_parameter_names: [fc1.weight, fc2.weight]
+  weightwatcher_enabled: true
+  weightwatcher_required: true
+  weightwatcher_min_evals: 8
+  weightwatcher_max_evals: null
+  weightwatcher_max_fingers: 10
+  weightwatcher_svd_method: accurate
+  weightwatcher_randomize: true
+  weightwatcher_primary_variant: clip_xmax
+  weightwatcher_analysis_seed_offset: 904271
+
+runtime:
+  device: auto
+  data_dir: ./data
+  run_root: ./runs
+  tail_checkpoint_cache_root: /tmp/rg-mnist-mlp3-tangent-checkpoints
+
+optimizers:
+  adamw:
+    learning_rate: 0.001
+    min_learning_rate: 0.00001
+    warmup_epochs: 1
+    beta1: 0.9
+    beta2: 0.999
+    epsilon: 0.00000001
+    weight_decay: 0.01
+  muon:
+    matrix_learning_rate: 0.02
+    matrix_min_learning_rate: 0.002
+    warmup_epochs: 2
+    momentum: 0.95
+    nesterov: true
+    weight_decay: 0.01
+    newton_schulz_steps: 5
+    epsilon: 0.0000001
+    auxiliary_learning_rate: 0.0003
+    auxiliary_min_learning_rate: 0.00003
+    auxiliary_beta1: 0.9
+    auxiliary_beta2: 0.95
+    auxiliary_epsilon: 0.00000001
+    auxiliary_weight_decay: 0.01
+    parameter_names: [fc1.weight, fc2.weight]
+  muonclip_rms:
+    matrix_learning_rate: 0.0002
+    matrix_min_learning_rate: 0.00002
+    warmup_epochs: 1
+    momentum: 0.95
+    nesterov: false
+    weight_decay: 0.1
+    newton_schulz_steps: 5
+    epsilon: 0.0000001
+    rms_scale: 0.20
+    auxiliary_learning_rate: 0.0002
+    auxiliary_min_learning_rate: 0.00002
+    auxiliary_beta1: 0.9
+    auxiliary_beta2: 0.95
+    auxiliary_epsilon: 0.00000001
+    auxiliary_weight_decay: 0.1
+    parameter_names: [fc1.weight, fc2.weight]
+    qk_clipping_applicable: false

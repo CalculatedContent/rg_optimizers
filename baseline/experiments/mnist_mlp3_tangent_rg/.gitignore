@@ -1,0 +1,11 @@
+data/
+runs/
+outputs/
+artifacts/
+checkpoint_cache/
+tail_checkpoint_cache/
+*.out.ipynb
+*.executed.ipynb
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
