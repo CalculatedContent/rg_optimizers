@@ -73,12 +73,12 @@ so the root contains `mnist_mlp3_tangent_rg_v1_smoke/`,
 `mnist_mlp3_tangent_rg_v1_pilot1000/`, or
 `mnist_mlp3_tangent_rg_v1_reference10000/`; pilot and reference artifacts
 cannot collide. In Jupyter, set `PROFILE` (or `CONFIG_PATH`) to the same stage,
-run notebook `00`, then `01`--`03`, `04`, and finally `10`--`15` in numeric
-order. Training notebooks are launch-safe by default: set
+run notebook `00`, then `01`--`03`, `04`, analysis notebooks `10`--`14`, then
+`16` and `17`, and run the cross-method comparison `15` last. Training notebooks are launch-safe by default: set
 `EXECUTE_TRAINING=True` explicitly, while analysis notebooks require completed
-artifacts. The checkpoint-based notebooks `10`, `12`, `13`, and `15` require
+artifacts. The checkpoint-based notebooks `10`, `12`, `13`, `15`, and `16` require
 the verified tail cache and never fall back to training or to the sparse
-WeightWatcher checkpoint series. Notebooks `11` and `14` require already saved
+WeightWatcher checkpoint series. Notebooks `11`, `14`, and `17` require already saved
 dense captures because model-only checkpoint files do not contain update
 sources, minibatches, RNG state, or optimizer state.
 
@@ -172,7 +172,7 @@ Saving every MLP matrix after every update for 10,000 epochs is intentionally
 not part of the protocol. The final-100 cache stores one model-only state per
 trained epoch. It is ephemeral but required and cannot be reconstructed from
 the sparse persistent checkpoints. Keep the same cache through notebooks `10`,
-`12`, `13`, and `15`, or back it up and restore it byte-for-byte before
+`12`, `13`, `15`, and `16`, or back it up and restore it byte-for-byte before
 analysis. If it is lost after a run completes, recovery requires a full
 `--overwrite` retraining; `--resume` deliberately refuses a completed run with
 a missing cache. Cache and capture schedules and estimated storage are
@@ -330,6 +330,30 @@ Every derived row and plot must display both `operator_kind` and
 - A calibrated local optimizer response is the derivative of the fully
   specified training step, including its loss batch, optimizer state, and
   calibration perturbation.
+- Notebook `16` adds five further weight-only derivatives: the exact gap-aware
+  retained projector, a soft logistic ECS projector, the outer trace-free
+  log-Gram map, a multiscale trace-free resolvent, and the trace-free log of a
+  Feshbach/Schur effective core. The hard-cutoff ranks are joined only at exact
+  same-checkpoint WeightWatcher states. In the checkpoint SVD gauge the
+  Feshbach coupling block is zero, so its shell correction vanishes at first
+  order; that equality is recorded rather than presented as independent shell
+  information.
+- Notebook `17` adds five captured-minibatch derivatives: input-to-output,
+  Grassmann-parameter-to-output, per-example quotient loss, quotient
+  generalized Gauss--Newton, and the full replayed Muon/MuonClip one-step
+  quotient-stability map. The first four are exact on the selected examples.
+  The input-output control uses only the capture; the other quotient maps also
+  require an exact same-state ECS boundary and never use a neighboring rank.
+  The full step is an explicitly labelled central-difference restriction to a
+  preregistered orthonormal set of quotient probes and is replay-qualified
+  before fitting.
+
+For notebooks `13`, `16`, and `17`, the fitted energy sample is always the
+nonzero spectrum of `J^*J`. Empirical-Fisher
+rows already equal a Jacobian Gram. When the quotient GGN itself is treated as
+the declared curvature Jacobian, its `J^*J` energies are the squared nonzero
+GGN eigenvalues. Mode, minibatch, checkpoint, and probe counts never inflate
+the three independent seeded runs used for confidence intervals.
 
 Calibrated-map fitting is gated by an unperturbed replay on the manifest's
 original device. The replay must have finite maximum error no greater than the
@@ -414,12 +438,14 @@ The notebooks expect the package runtime to write:
       radial_angular_quotients/
       single_checkpoint_map_jacobians/
       calibrated_local_training_map/
+      additional_weight_only_ecs_jacobians/
+      data_dependent_ecs_jacobians/
       method_nulls_stability/
       # every method directory also contains method_provenance.json
 ```
 
 The independent, model-only trajectory consumed by notebooks `10`, `12`,
-`13`, and `15` is stored separately:
+`13`, `15`, and `16` is stored separately:
 
 ```text
 /tmp/rg-mnist-mlp3-tangent-checkpoints/
@@ -458,11 +484,13 @@ versioned here.
 ## Notebook order
 
 Run `00_Protocol_and_Smoke.ipynb` first. Then run the three training notebooks,
-followed by `04_Fixed_Point_Comparison.ipynb`. The numbered analysis notebooks
+followed by `04_Fixed_Point_Comparison.ipynb`, notebooks `10`--`14`, and the
+new Jacobian notebooks `16` and `17`; run notebook `15` last because it verifies
+and combines every preceding method. The analysis notebooks
 reuse the verified final-100 checkpoint cache or the pre-existing dense
 captures; they do not retrain a private notebook-local model. Specifically,
-`10`, `12`, `13`, and the checkpoint-derived nulls in `15` consume the cache;
-`11` and `14` consume captures because their objects require optimizer and
+`10`, `12`, `13`, `16`, and the checkpoint-derived nulls in `15` consume the cache;
+`11`, `14`, and `17` consume captures because their objects require optimizer and
 minibatch state not present in a model-only checkpoint.
 
 Every analysis method writes `method_provenance.json` with its exact suite,

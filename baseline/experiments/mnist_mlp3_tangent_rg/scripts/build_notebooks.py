@@ -4900,6 +4900,1011 @@ def calibrated_training_map_notebook() -> tuple[str, dict[str, object]]:
     return notebook("14_Calibrated_Local_Training_Map.ipynb", cells)
 
 
+def additional_weight_jacobians_notebook() -> tuple[str, dict[str, object]]:
+    cells = [
+        markdown(
+            r"""
+            # Additional weight-only ECS Jacobians
+
+            This notebook adds five actual single-checkpoint derivatives:
+            the gap-aware hard projector, soft logistic ECS projector, exact
+            outer trace-free log-Gram, multiscale trace-free resolvent, and
+            trace-free log Feshbach effective core. Every fitted observation is
+            a nonzero eigenvalue of $J^*J$, obtained by fitting the Jacobian
+            amplitudes once and applying the exact amplitude-to-energy change
+            of variables.
+
+            The checkpoint SVD frame is frozen wherever the map is anchored.
+            In that frame the Feshbach coupling block $B$ is zero, so its shell
+            terms vanish at first order. That collapse is saved as a result,
+            not hidden by rotating to an unrelated basis.
+            """
+        ),
+        parameters(
+            """
+            OPTIMIZER_SLUGS = ["adamw", "muon", "muonclip_rms"]
+            LAYERS = ["fc1.weight"]
+            MAXIMUM_CHECKPOINTS = 100
+            TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
+            MINIMUM_TAIL = 8
+            ECS_RANK_RCOND = 1e-9
+            SOFT_TEMPERATURE_GAP_RATIOS = [0.25, 0.5, 1.0, 2.0]
+            RESOLVENT_Z_BOUNDARY_RATIOS = [0.1, 1.0, 10.0]
+            FESHBACH_Z_SHELL_FLOOR_RATIO = 0.5
+            METHOD_SLUG = "additional_weight_only_ecs_jacobians"
+            ANALYSIS_CONTRACT_TOKEN = "additional_weight_only_ecs_jacobians_v1"
+            PLOT_TITLE = "Additional weight-only Jacobian energies: alpha with 95% seed CI"
+            """
+        ),
+        code(BOOTSTRAP),
+        code(
+            COMMON_IMPORTS
+            + "\n"
+            + ANALYSIS_IMPORTS
+            + "\nfrom rg_baselines.tangent_rg import ecs_jacobians"
+        ),
+        caveat(
+            "Five additional weight-only Jacobians",
+            "additional_single_checkpoint_ecs_jacobian_bundle",
+            "Exact derivatives of five explicitly defined spectral maps; all headline spectra are eigenvalues of J*J.",
+            "These maps are candidate RG observables, not an inferred training-flow Jacobian. "
+            "The Feshbach map is first-order shell-blind in the checkpoint SVD gauge because B=0.",
+        ),
+        code(
+            COMMON_HELPERS
+            + "\n"
+            + TAIL_CHECKPOINT_CACHE_HELPERS
+            + "\n"
+            + CHECKPOINT_HELPERS
+            + "\n"
+            + ECS_COVER_METRIC_HELPERS
+        ),
+        markdown("## Exact final-100 checkpoint intersections"),
+        code(
+            """
+            def _ratio_slug(value):
+                return str(float(value)).replace("-", "m").replace(".", "p")
+
+
+            operator_records, fit_frames, trace_frames = [], [], []
+            spectral_arrays = {}
+            for optimizer in OPTIMIZER_SLUGS:
+                for seed in SEEDS:
+                    seed_dir = require_tail_checkpoint_cache(optimizer, seed)
+                    run_fingerprint = verified_run_fingerprint(optimizer, seed)
+                    (
+                        ecs_metric_fits,
+                        ecs_metric_traces,
+                        ecs_fit_path,
+                        ecs_trace_path,
+                    ) = load_verified_ecs_metric_tables(
+                        optimizer, seed, run_fingerprint
+                    )
+                    refs = analysis_checkpoint_refs(seed_dir)
+                    final_epoch = int(refs[-1].epoch)
+                    for selected, layer, W, selection_rule, selection_role in selected_trajectory_matrices(
+                        seed_dir,
+                        layers=LAYERS,
+                        maximum_checkpoints=MAXIMUM_CHECKPOINTS,
+                    ):
+                        singular_values = np.linalg.svd(W, compute_uv=False)
+                        rank_tolerance = float(ECS_RANK_RCOND) * float(singular_values[0])
+                        numerical_rank = int(
+                            np.count_nonzero(singular_values > rank_tolerance)
+                        )
+                        ranks = exact_ecs_cover_rank_record(
+                            ecs_metric_fits,
+                            ecs_metric_traces,
+                            optimizer_slug=optimizer,
+                            seed=seed,
+                            epoch=int(selected.epoch),
+                            global_step=int(selected.global_step),
+                            layer=layer,
+                            maximum_rank=numerical_rank,
+                            fit_path=ecs_fit_path,
+                            trace_path=ecs_trace_path,
+                        )
+                        common = {
+                            "optimizer": optimizer,
+                            "seed": int(seed),
+                            "layer": layer,
+                            "protocol_fingerprint": run_fingerprint,
+                            "source_artifact_kind": ECS_COVER_SOURCE_KIND,
+                            "state_index": int(selected.global_step),
+                            "epoch": int(selected.epoch),
+                            "trajectory_selection_rule": selection_rule,
+                            "trajectory_selection_role": selection_role,
+                            "checkpoint_source": "verified_final_100_tail_cache",
+                            "checkpoint_cache_seed_dir": str(seed_dir),
+                            "analysis_contract_token": ANALYSIS_CONTRACT_TOKEN,
+                            "checkpoint_numerical_rank": numerical_rank,
+                            "checkpoint_rank_tolerance": rank_tolerance,
+                            **ranks,
+                        }
+                        candidates = []
+                        if not bool(ranks["ecs_full_shell_available"]):
+                            operator_records.append({
+                                **common,
+                                "method": "additional_weight_only_ecs_jacobians_unavailable",
+                                "operator_kind": "unavailable_exact_sparse_ecs_rank_state",
+                                "map_definition": "all five requested maps require an exact same-state retained ECS boundary",
+                                "available": False,
+                                "unavailable_reason": ranks.get(
+                                    "ecs_rank_unavailable_reason",
+                                    ranks.get("full_shell_unavailable_reason", "unknown"),
+                                ),
+                            })
+                            continue
+
+                        k = int(ranks["retained_rank"])
+                        shell_policies = [
+                            (
+                                "full_row_shell",
+                                int(ranks["full_shell_outer_rank"]),
+                                "primary_full_checkpoint_numerical_row_shell",
+                            )
+                        ]
+                        if bool(ranks["ecs_detx_shell_available"]):
+                            shell_policies.append((
+                                "detx_shell",
+                                int(ranks["detx_shell_outer_rank"]),
+                                "detx_bounded_shell_sensitivity_only",
+                            ))
+                        else:
+                            operator_records.append({
+                                **common,
+                                "method": "detx_shell_variants_unavailable",
+                                "operator_kind": "unavailable_detx_bounded_shell_sensitivity",
+                                "map_definition": "detX-q variants require k<q_detX; full-q primary remains available",
+                                "available": False,
+                                "unavailable_reason": ranks.get(
+                                    "detx_shell_unavailable_reason", "detX shell unavailable"
+                                ),
+                            })
+
+                        for shell_name, q, shell_role in shell_policies:
+                            shell_base = {
+                                **common,
+                                "retained_rank": k,
+                                "outer_rank": q,
+                                "shell_rank": q - k,
+                                "ecs_shell_variant": shell_name,
+                                "ecs_shell_selection_role": shell_role,
+                            }
+                            gap = ecs_jacobians.gap_aware_projector_spectrum(
+                                W,
+                                retained_rank=k,
+                                outer_rank=q,
+                                rcond=ECS_RANK_RCOND,
+                                precomputed_singular_values=singular_values,
+                            )
+                            candidates.append((
+                                f"gap_aware_grassmann_projector_{shell_name}",
+                                "gap_aware_grassmann_projector",
+                                gap,
+                                shell_base,
+                            ))
+                            log_gram = ecs_jacobians.outer_trace_free_log_gram_spectrum(
+                                W,
+                                outer_rank=q,
+                                rcond=ECS_RANK_RCOND,
+                                precomputed_singular_values=singular_values,
+                            )
+                            candidates.append((
+                                f"exact_trace_free_log_gram_{shell_name}",
+                                "exact_trace_free_log_gram",
+                                log_gram,
+                                shell_base,
+                            ))
+                            feshbach_z = (
+                                float(FESHBACH_Z_SHELL_FLOOR_RATIO)
+                                * float(singular_values[q - 1] ** 2)
+                            )
+                            feshbach = ecs_jacobians.feshbach_trace_free_log_spectrum(
+                                W,
+                                retained_rank=k,
+                                outer_rank=q,
+                                z=feshbach_z,
+                                rcond=ECS_RANK_RCOND,
+                            )
+                            candidates.append((
+                                f"feshbach_trace_free_log_core_{shell_name}",
+                                "feshbach_trace_free_log_effective_core",
+                                feshbach,
+                                {
+                                    **shell_base,
+                                    "feshbach_z": feshbach_z,
+                                    "first_order_shell_downfolding_active": False,
+                                    "feshbach_base_coupling_norm": feshbach.parameters[
+                                        "base_coupling_norm"
+                                    ],
+                                },
+                            ))
+                            boundary_scale = float(singular_values[k - 1] ** 2)
+                            for ratio in RESOLVENT_Z_BOUNDARY_RATIOS:
+                                z = float(ratio) * boundary_scale
+                                resolvent = ecs_jacobians.outer_resolvent_spectrum(
+                                    W,
+                                    outer_rank=q,
+                                    z=z,
+                                    trace_free=True,
+                                    rcond=ECS_RANK_RCOND,
+                                    precomputed_singular_values=singular_values,
+                                )
+                                candidates.append((
+                                    f"trace_free_resolvent_{shell_name}_zratio_{_ratio_slug(ratio)}",
+                                    "trace_free_resolvent",
+                                    resolvent,
+                                    {
+                                        **shell_base,
+                                        "resolvent_z": z,
+                                        "resolvent_z_boundary_ratio": float(ratio),
+                                        "resolvent_boundary_scale": boundary_scale,
+                                    },
+                                ))
+
+                        squared = singular_values**2
+                        boundary_gap = float(squared[k - 1] - squared[k])
+                        lambda_center = float(0.5 * (squared[k - 1] + squared[k]))
+                        for ratio in SOFT_TEMPERATURE_GAP_RATIOS:
+                            temperature = max(
+                                float(ratio) * boundary_gap,
+                                np.finfo(float).eps * float(squared[0]),
+                            )
+                            soft = ecs_jacobians.soft_ecs_projector_spectrum(
+                                W,
+                                lambda_center=lambda_center,
+                                temperature=temperature,
+                                rcond=ECS_RANK_RCOND,
+                                precomputed_singular_values=singular_values,
+                            )
+                            candidates.append((
+                                f"soft_ecs_projector_taugap_{_ratio_slug(ratio)}",
+                                "soft_ecs_projector",
+                                soft,
+                                {
+                                    **common,
+                                    "retained_rank": k,
+                                    "outer_rank": numerical_rank,
+                                    "ecs_shell_variant": "full_right_gram_soft_boundary",
+                                    "soft_lambda_center": lambda_center,
+                                    "soft_boundary_gap": boundary_gap,
+                                    "soft_temperature": temperature,
+                                    "soft_temperature_gap_ratio": float(ratio),
+                                },
+                            ))
+
+                        for method, family, record, candidate_base in candidates:
+                            amplitudes = np.asarray(
+                                record.singular_amplitudes, dtype=float
+                            )
+                            amplitudes = amplitudes[
+                                np.isfinite(amplitudes) & (amplitudes > 0.0)
+                            ]
+                            operator_row = {
+                                **candidate_base,
+                                "method": method,
+                                "jacobian_family": family,
+                                "operator_kind": record.operator_kind,
+                                "map_definition": record.map_definition,
+                                "derivative_rank": int(record.derivative_rank),
+                                "input_dimension": int(record.input_dimension),
+                                "output_dimension": int(record.output_dimension),
+                                "zero_count": int(record.zero_count),
+                                "available": bool(amplitudes.size >= 2),
+                                "energy_convention": "nonzero_eigenvalues_of_J_star_J",
+                                "jacobian_parameters": json.dumps(
+                                    dict(record.parameters), sort_keys=True
+                                ),
+                            }
+                            operator_records.append(operator_row)
+                            if amplitudes.size < 2:
+                                continue
+                            fits, traces = fit_spectrum_with_trace(
+                                amplitudes,
+                                operator_kind=record.operator_kind,
+                                map_definition=record.map_definition,
+                                spectrum_kind="amplitude",
+                                metadata={
+                                    **candidate_base,
+                                    "method": method,
+                                    "jacobian_family": family,
+                                    "energy_convention": "nonzero_eigenvalues_of_J_star_J",
+                                },
+                                top_k_values=TOP_K_VALUES,
+                                minimum_tail=MINIMUM_TAIL,
+                            )
+                            fit_frames.append(fits)
+                            trace_frames.append(traces)
+                            if int(selected.epoch) == final_epoch:
+                                spectral_arrays[
+                                    f"{optimizer}_{seed}_{layer}_{selected.global_step}_{method}"
+                                ] = amplitudes
+
+            # Independent small-matrix materialization of every declared map.
+            small = np.zeros((4, 6), dtype=float)
+            small[:4, :4] = np.diag([5.0, 3.0, 2.0, 1.0])
+            validation_cases = (
+                (
+                    "gap_aware_grassmann_projector",
+                    lambda candidate: ecs_jacobians.gap_aware_projector_map(
+                        small, candidate, retained_rank=2, outer_rank=4, rcond=1e-12
+                    ).value,
+                    ecs_jacobians.gap_aware_projector_spectrum(
+                        small, retained_rank=2, outer_rank=4, rcond=1e-12
+                    ),
+                ),
+                (
+                    "soft_ecs_projector",
+                    lambda candidate: ecs_jacobians.soft_ecs_projector_map(
+                        candidate, lambda_center=6.5, temperature=10.0
+                    ).value,
+                    ecs_jacobians.soft_ecs_projector_spectrum(
+                        small, lambda_center=6.5, temperature=10.0, rcond=1e-12
+                    ),
+                ),
+                (
+                    "exact_trace_free_log_gram",
+                    lambda candidate: ecs_jacobians.outer_trace_free_log_gram_map(
+                        small, candidate, outer_rank=4, rcond=1e-12
+                    ).value,
+                    ecs_jacobians.outer_trace_free_log_gram_spectrum(
+                        small, outer_rank=4, rcond=1e-12
+                    ),
+                ),
+                (
+                    "trace_free_resolvent",
+                    lambda candidate: ecs_jacobians.outer_resolvent_map(
+                        small, candidate, outer_rank=4, z=2.0,
+                        trace_free=True, rcond=1e-12
+                    ).value,
+                    ecs_jacobians.outer_resolvent_spectrum(
+                        small, outer_rank=4, z=2.0,
+                        trace_free=True, rcond=1e-12
+                    ),
+                ),
+                (
+                    "feshbach_trace_free_log_effective_core",
+                    lambda candidate: ecs_jacobians.feshbach_trace_free_log_map(
+                        small, candidate, retained_rank=2, outer_rank=4,
+                        z=0.5, rcond=1e-12
+                    ).value,
+                    ecs_jacobians.feshbach_trace_free_log_spectrum(
+                        small, retained_rank=2, outer_rank=4,
+                        z=0.5, rcond=1e-12
+                    ),
+                ),
+            )
+            for name, map_function, analytic in validation_cases:
+                numerical = polar.central_difference_jacobian(
+                    map_function,
+                    small,
+                    max_input_dimension=small.size,
+                    rank_rtol=1e-8,
+                    operator_kind=f"explicit_numerical_{name}_jacobian",
+                    map_definition=f"central-difference materialization of {name}",
+                )
+                expected = np.asarray(analytic.singular_amplitudes, dtype=float)
+                observed = numerical.singular_values[: expected.size]
+                relative_error = float(
+                    np.linalg.norm(observed - expected)
+                    / max(np.linalg.norm(expected), np.finfo(float).tiny)
+                )
+                operator_records.append({
+                    "optimizer": "synthetic",
+                    "seed": int(SEEDS[0]),
+                    "layer": str(tuple(small.shape)),
+                    "protocol_fingerprint": "not_applicable_synthetic_formula_validation",
+                    "source_artifact_kind": "fixed_seed_synthetic_formula_validation",
+                    "state_index": 0,
+                    "method": f"small_explicit_{name}_validation",
+                    "jacobian_family": name,
+                    "operator_kind": numerical.operator_kind,
+                    "map_definition": numerical.map_definition,
+                    "analytic_operator_kind": analytic.operator_kind,
+                    "numeric_rank": int(numerical.numerical_rank),
+                    "analytic_rank": int(analytic.derivative_rank),
+                    "relative_spectral_error": relative_error,
+                    "available": True,
+                })
+                if numerical.numerical_rank != analytic.derivative_rank:
+                    raise RuntimeError(
+                        f"{name} numerical rank {numerical.numerical_rank} "
+                        f"!= analytic rank {analytic.derivative_rank}"
+                    )
+                if relative_error > 2e-4:
+                    raise RuntimeError(
+                        f"{name} analytic/numerical spectrum mismatch {relative_error:.3e}"
+                    )
+            if not fit_frames:
+                raise RuntimeError("No additional weight-only Jacobian spectra were fit")
+            """
+        ),
+        code(ANALYSIS_SAVE_AND_PLOT),
+        code(
+            """
+            np.savez_compressed(analysis_dir / "positive_spectra.npz", **spectral_arrays)
+            display(save_spectrum_ccdf_gallery(spectral_arrays, method_slug=METHOD_SLUG))
+            validation_rows = operator_rows[
+                operator_rows["method"].astype(str).str.startswith("small_explicit_")
+            ].copy()
+            validation_rows.to_csv(
+                analysis_dir / "small_explicit_jacobian_validation.csv", index=False
+            )
+            availability = (
+                operator_rows[
+                    ~operator_rows["optimizer"].astype(str).eq("synthetic")
+                ]
+                .groupby(["optimizer", "seed", "jacobian_family"], dropna=False)
+                .agg(
+                    attempted_states=("state_index", "nunique"),
+                    available_rows=("available", lambda values: int(boolean_series(values).sum())),
+                )
+                .reset_index()
+            )
+            availability.to_csv(
+                analysis_dir / "jacobian_availability_by_run.csv", index=False
+            )
+            display(validation_rows)
+            display(availability)
+            """
+        ),
+        markdown(
+            r"""
+            `soft_ecs_projector` is differentiated on the full right Gram,
+            including active-to-null modes. Resolvent rows sweep a fixed
+            preregistered set of $z/sigma_k^2$ scales. The full-$q$ rows are
+            primary geometric definitions; detX-$q$ rows are shell-boundary
+            sensitivities. The Feshbach result must be interpreted literally:
+            in the SVD gauge $B=0$, hence shell downfolding first appears beyond
+            linear order and its Jacobian equals the retained trace-free
+            log-core response.
+            """
+        ),
+    ]
+    return notebook("16_Additional_Weight_Only_ECS_Jacobians.ipynb", cells)
+
+
+def data_dependent_ecs_jacobians_notebook() -> tuple[str, dict[str, object]]:
+    cells = [
+        markdown(
+            r"""
+            # Data-dependent ECS quotient Jacobians
+
+            Use the first dense capture in a burst, which contains the exact
+            minibatch, targets, pre-step model/optimizer state, clipping rule,
+            RNG state, and scheduled learning rates. The notebook forms five
+            declared derivatives: input-output, Grassmann parameter-output,
+            per-example quotient loss, quotient generalized Gauss--Newton, and
+            the full Muon/MuonClip one-step quotient stability map.
+
+            The first four are exact on the selected captured examples. The
+            full one-step map is central-differenced on a preregistered
+            orthonormal subspace of the canonical $K$ coordinates because the
+            full FC1 quotient dimension is too large to materialize. Its rows
+            are explicitly labelled a restricted-domain Jacobian spectrum.
+            This analysis consumes completed capture artifacts and never
+            launches or resumes training.
+            """
+        ),
+        parameters(
+            """
+            OPTIMIZER_SLUGS = ["adamw", "muon", "muonclip_rms"]
+            LAYER = "fc1.weight"
+            MAXIMUM_CALIBRATIONS = 1
+            MAXIMUM_EXAMPLES = 32
+            JACREV_CHUNK_SIZE = 8
+            STEP_PROBE_COUNT = 16
+            STEP_FINITE_DIFFERENCE_EPSILONS = [1e-3, 3e-3]
+            REPLAY_DEVICE = "manifest"
+            REPLAY_MAX_ABS_TOLERANCE = 1e-4
+            STRICT_REPLAY = True
+            TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
+            MINIMUM_TAIL = 8
+            ECS_RANK_RCOND = 1e-9
+            SIGMA_HAT_POLICY = "checkpoint_core_singular_values"
+            METHOD_SLUG = "data_dependent_ecs_jacobians"
+            ANALYSIS_CONTRACT_TOKEN = "data_dependent_ecs_jacobians_v1"
+            CAPTURE_ONLY_SOURCE_KIND = "verified_calibrated_dense_capture"
+            SOURCE_ARTIFACT_KIND = (
+                "verified_calibrated_dense_capture_plus_exact_sparse_weightwatcher_trace_metrics"
+            )
+            PLOT_TITLE = "Data-dependent ECS Jacobian energies: alpha with 95% seed CI"
+            """
+        ),
+        code(BOOTSTRAP),
+        code(
+            COMMON_IMPORTS
+            + "\n"
+            + ANALYSIS_IMPORTS
+            + "\nfrom rg_baselines.model import MLP3"
+            + "\nfrom rg_baselines.tangent_rg import data_jacobians"
+        ),
+        caveat(
+            "Captured-batch quotient derivatives",
+            "data_dependent_ecs_quotient_jacobian_bundle",
+            "Four exact captured-batch derivatives and one explicitly restricted-domain derivative of the fully specified Muon training step.",
+            "Batch observations and K probes are not independent training replicates. Only the three complete seeds enter confidence intervals. "
+            "The one-step map cannot be certified unless the unperturbed captured replay passes on the declared device.",
+        ),
+        code(
+            COMMON_HELPERS
+            + "\n"
+            + TAIL_CHECKPOINT_CACHE_HELPERS
+            + "\n"
+            + CHECKPOINT_HELPERS
+            + "\n"
+            + ECS_COVER_METRIC_HELPERS
+        ),
+        markdown("## Exact calibration, rank, and replay audit"),
+        code(
+            """
+            import torch
+
+            operator_records, fit_frames, trace_frames = [], [], []
+            spectral_arrays = {}
+            calibration_records = []
+            for optimizer in OPTIMIZER_SLUGS:
+                for seed in SEEDS:
+                    seed_dir = require_complete_seed(optimizer, seed)
+                    run_fingerprint = verified_run_fingerprint(optimizer, seed)
+                    config = resolved_training_config(seed_dir)
+                    manifest = json.loads(
+                        (Path(seed_dir) / "manifest.json").read_text(encoding="utf-8")
+                    )
+                    original_device = str(manifest.get("device", "unknown"))
+                    replay_device = (
+                        original_device
+                        if str(REPLAY_DEVICE).strip().lower() in {"", "manifest"}
+                        else str(REPLAY_DEVICE)
+                    )
+                    (
+                        ecs_metric_fits,
+                        ecs_metric_traces,
+                        ecs_fit_path,
+                        ecs_trace_path,
+                    ) = load_verified_ecs_metric_tables(
+                        optimizer, seed, run_fingerprint
+                    )
+                    captures = [
+                        (path, payload)
+                        for path, payload in capture_payloads(seed_dir)
+                        if isinstance(payload.get("calibration_state"), dict)
+                    ][-int(MAXIMUM_CALIBRATIONS):]
+                    if not captures:
+                        raise FileNotFoundError(
+                            f"No calibrated first-in-burst capture for {optimizer}, seed={seed}"
+                        )
+                    for capture_path, capture in captures:
+                        calibration = capture["calibration_state"]
+                        if LAYER not in calibration["model_state_before_step"]:
+                            raise KeyError(f"{capture_path} calibration lacks {LAYER}")
+                        base_tensor = (
+                            calibration["model_state_before_step"][LAYER]
+                            .detach().cpu()
+                        )
+                        W = base_tensor.double().numpy()
+                        singular_values = np.linalg.svd(W, compute_uv=False)
+                        rank_tolerance = float(ECS_RANK_RCOND) * float(singular_values[0])
+                        numerical_rank = int(
+                            np.count_nonzero(singular_values > rank_tolerance)
+                        )
+                        rank_record = exact_ecs_cover_rank_record(
+                            ecs_metric_fits,
+                            ecs_metric_traces,
+                            optimizer_slug=optimizer,
+                            seed=seed,
+                            epoch=int(capture["anchor_epoch"]),
+                            global_step=int(capture["global_step_before"]),
+                            layer=LAYER,
+                            maximum_rank=numerical_rank,
+                            fit_path=ecs_fit_path,
+                            trace_path=ecs_trace_path,
+                        )
+                        common = {
+                            "optimizer": optimizer,
+                            "seed": int(seed),
+                            "layer": LAYER,
+                            "protocol_fingerprint": run_fingerprint,
+                            "source_artifact_kind": CAPTURE_ONLY_SOURCE_KIND,
+                            "state_index": int(capture["global_step_before"]),
+                            "completed_step": int(capture["completed_step"]),
+                            "epoch": int(capture["anchor_epoch"]),
+                            "capture": str(capture_path),
+                            "analysis_contract_token": ANALYSIS_CONTRACT_TOKEN,
+                            "original_training_device": original_device,
+                            "replay_device": replay_device,
+                            "checkpoint_numerical_rank": numerical_rank,
+                            "checkpoint_rank_tolerance": rank_tolerance,
+                            **rank_record,
+                        }
+                        model = MLP3()
+                        model.load_state_dict(calibration["model_state_before_step"])
+                        model.to("cpu")
+                        model.eval()
+                        inputs = calibration["inputs"][:int(MAXIMUM_EXAMPLES)].cpu()
+                        targets = calibration["targets"][:int(MAXIMUM_EXAMPLES)].cpu()
+                        capture_base = {
+                            **common,
+                            "examples": int(inputs.shape[0]),
+                            "batch_selection_rule": "first_MAXIMUM_EXAMPLES_from_exact_captured_minibatch",
+                        }
+
+                        # The standard input-output control is data-dependent but
+                        # does not require an ECS rank boundary.
+                        input_output = data_jacobians.input_output_jacobian_spectrum(
+                            model,
+                            inputs,
+                            maximum_examples=MAXIMUM_EXAMPLES,
+                        )
+                        input_amplitudes = np.asarray(
+                            input_output.singular_amplitudes, dtype=float
+                        )
+                        input_row_base = {
+                            **capture_base,
+                            "method": "input_output_jacobian",
+                            "jacobian_family": "input_output",
+                            "restricted_domain": False,
+                            "energy_convention": "nonzero_eigenvalues_of_J_star_J",
+                        }
+                        operator_records.append({
+                            **input_row_base,
+                            "operator_kind": input_output.operator_kind,
+                            "map_definition": input_output.map_definition,
+                            "derivative_rank": int(input_output.derivative_rank),
+                            "input_dimension": int(input_output.input_dimension),
+                            "output_dimension": int(input_output.output_dimension),
+                            "available": bool(input_amplitudes.size >= 2),
+                            "jacobian_parameters": json.dumps(
+                                dict(input_output.parameters), sort_keys=True
+                            ),
+                        })
+                        if input_amplitudes.size >= 2:
+                            fits, traces = fit_spectrum_with_trace(
+                                input_amplitudes,
+                                operator_kind=input_output.operator_kind,
+                                map_definition=input_output.map_definition,
+                                spectrum_kind="amplitude",
+                                metadata=input_row_base,
+                                top_k_values=TOP_K_VALUES,
+                                minimum_tail=MINIMUM_TAIL,
+                            )
+                            fit_frames.append(fits)
+                            trace_frames.append(traces)
+                            spectral_arrays[
+                                f"{optimizer}_{seed}_{capture['global_step_before']}_input_output_jacobian"
+                            ] = input_amplitudes
+                        if not bool(rank_record["ecs_full_shell_available"]):
+                            operator_records.append({
+                                **common,
+                                "method": "data_dependent_ecs_jacobians_unavailable",
+                                "operator_kind": "unavailable_exact_capture_ecs_rank_intersection",
+                                "map_definition": "data Jacobians require exact capture state and exact same-state ECS boundary",
+                                "available": False,
+                                "unavailable_reason": rank_record.get(
+                                    "ecs_rank_unavailable_reason",
+                                    rank_record.get("full_shell_unavailable_reason", "unknown"),
+                                ),
+                            })
+                            calibration_records.append({
+                                **capture_base,
+                                "replay_qualified": False,
+                                "maximum_reference_abs_error": np.nan,
+                            })
+                            continue
+                        k = int(rank_record["retained_rank"])
+                        q = int(rank_record["full_shell_outer_rank"])
+                        basis = data_jacobians.grassmann_tangent_basis(
+                            dict(model.named_parameters())[LAYER].detach(),
+                            retained_rank=k,
+                            outer_rank=q,
+                            rcond=ECS_RANK_RCOND,
+                            sigma_hat_policy=SIGMA_HAT_POLICY,
+                        )
+                        data_base = {
+                            **capture_base,
+                            "source_artifact_kind": SOURCE_ARTIFACT_KIND,
+                            "retained_rank": k,
+                            "outer_rank": q,
+                            "shell_rank": q - k,
+                            "quotient_coordinate_dimension": basis.coordinate_dimension,
+                            "sigma_hat_policy": basis.sigma_hat_policy,
+                            "retained_boundary_gap": basis.retained_boundary_gap,
+                            "retained_boundary_relative_gap": basis.retained_boundary_relative_gap,
+                        }
+                        logit = data_jacobians.grassmann_parameter_output_jacobian(
+                            model,
+                            inputs,
+                            parameter_name=LAYER,
+                            basis=basis,
+                            maximum_examples=MAXIMUM_EXAMPLES,
+                            chunk_size=JACREV_CHUNK_SIZE,
+                        )
+                        per_example = data_jacobians.per_example_quotient_loss_jacobian(
+                            logit, targets
+                        )
+                        ggn = data_jacobians.quotient_generalized_gauss_newton(logit)
+                        exact_candidates = (
+                            (
+                                "grassmann_parameter_output_jacobian",
+                                "grassmann_parameter_output",
+                                logit.spectrum,
+                            ),
+                            (
+                                "per_example_quotient_loss_jacobian",
+                                "per_example_quotient_loss",
+                                per_example.spectrum,
+                            ),
+                            (
+                                "quotient_generalized_gauss_newton_jacobian",
+                                "quotient_loss_gradient_curvature",
+                                ggn.spectrum,
+                            ),
+                        )
+                        for method, family, spectrum in exact_candidates:
+                            amplitudes = np.asarray(
+                                spectrum.singular_amplitudes, dtype=float
+                            )
+                            amplitudes = amplitudes[
+                                np.isfinite(amplitudes) & (amplitudes > 0.0)
+                            ]
+                            row_base = {
+                                **data_base,
+                                "method": method,
+                                "jacobian_family": family,
+                                "restricted_domain": False,
+                                "energy_convention": "nonzero_eigenvalues_of_J_star_J",
+                            }
+                            operator_records.append({
+                                **row_base,
+                                "operator_kind": spectrum.operator_kind,
+                                "map_definition": spectrum.map_definition,
+                                "derivative_rank": int(spectrum.derivative_rank),
+                                "input_dimension": int(spectrum.input_dimension),
+                                "output_dimension": int(spectrum.output_dimension),
+                                "available": bool(amplitudes.size >= 2),
+                                "jacobian_parameters": json.dumps(
+                                    dict(spectrum.parameters), sort_keys=True
+                                ),
+                            })
+                            if amplitudes.size < 2:
+                                continue
+                            fits, traces = fit_spectrum_with_trace(
+                                amplitudes,
+                                operator_kind=spectrum.operator_kind,
+                                map_definition=spectrum.map_definition,
+                                spectrum_kind="amplitude",
+                                metadata=row_base,
+                                top_k_values=TOP_K_VALUES,
+                                minimum_tail=MINIMUM_TAIL,
+                            )
+                            fit_frames.append(fits)
+                            trace_frames.append(traces)
+                            spectral_arrays[
+                                f"{optimizer}_{seed}_{capture['global_step_before']}_{method}"
+                            ] = amplitudes
+
+                        replay_qualified = False
+                        replay_maximum_error = np.nan
+                        if optimizer in {"muon", "muonclip_rms"}:
+                            replay = replay_calibrated_step(
+                                capture,
+                                config,
+                                parameter_perturbations=None,
+                                device=replay_device,
+                                expected_fingerprint=run_fingerprint,
+                            )
+                            replay_errors = replay.get("reference_max_abs_error", {})
+                            replay_maximum_error = max(
+                                replay_errors.values(), default=np.nan
+                            )
+                            replay_qualified = bool(
+                                np.isfinite(replay_maximum_error)
+                                and replay_maximum_error <= REPLAY_MAX_ABS_TOLERANCE
+                            )
+                            operator_records.append({
+                                **data_base,
+                                "method": "full_muon_one_step_replay_audit",
+                                "jacobian_family": "full_muon_one_step_quotient_stability",
+                                "operator_kind": "unperturbed_full_muon_step_replay_audit",
+                                "map_definition": "exact captured batch/model/optimizer/RNG replay before finite differences",
+                                "maximum_reference_abs_error": replay_maximum_error,
+                                "replay_max_abs_tolerance": float(REPLAY_MAX_ABS_TOLERANCE),
+                                "replay_qualified": replay_qualified,
+                                "available": replay_qualified,
+                            })
+                            if bool(STRICT_REPLAY) and not replay_qualified:
+                                raise RuntimeError(
+                                    f"Unperturbed Muon replay failed at {capture_path}: "
+                                    f"error={replay_maximum_error}, device={replay_device}"
+                                )
+                        else:
+                            operator_records.append({
+                                **data_base,
+                                "method": "full_muon_one_step_quotient_stability_unavailable",
+                                "jacobian_family": "full_muon_one_step_quotient_stability",
+                                "operator_kind": "not_applicable_to_adamw_control",
+                                "map_definition": "the requested full one-step quotient map is Muon/MuonClip-specific",
+                                "available": False,
+                            })
+
+                        if replay_qualified:
+                            probe_count = min(
+                                int(STEP_PROBE_COUNT),
+                                int(basis.coordinate_dimension),
+                            )
+                            if probe_count < int(MINIMUM_TAIL):
+                                raise RuntimeError(
+                                    "full-step quotient probe count is below MINIMUM_TAIL"
+                                )
+                            probe_seed = (
+                                20_260_820
+                                + 10_000_019 * int(seed)
+                                + int(capture["global_step_before"])
+                            )
+                            rng = np.random.default_rng(probe_seed)
+                            raw = rng.normal(
+                                size=(basis.coordinate_dimension, probe_count)
+                            )
+                            orthonormal, _ = np.linalg.qr(raw, mode="reduced")
+                            coordinate_directions = orthonormal.T.reshape(
+                                probe_count, basis.shell_rank, basis.retained_rank
+                            )
+                            del raw, orthonormal
+
+                            def captured_step_map(coordinate):
+                                coordinate_tensor = torch.as_tensor(
+                                    coordinate,
+                                    dtype=base_tensor.dtype,
+                                    device=basis.left.device,
+                                )
+                                perturbation = data_jacobians.embed_grassmann_coordinate(
+                                    basis, coordinate_tensor
+                                ).detach().cpu()
+                                result = replay_calibrated_step(
+                                    capture,
+                                    config,
+                                    parameter_perturbations={LAYER: perturbation},
+                                    device=replay_device,
+                                    expected_fingerprint=run_fingerprint,
+                                )
+                                return (
+                                    result["model_state_after_step"][LAYER]
+                                    .detach().cpu().double().numpy()
+                                )
+
+                            step_definition = (
+                                f"Q(Phi_X(W+B(K))) for optimizer={optimizer}, "
+                                f"capture={capture_path.name}, batch_shape={tuple(calibration['inputs'].shape)}, "
+                                f"loss={calibration['loss_definition']}, clip={calibration['gradient_clipping']}, "
+                                f"device={replay_device}; exact optimizer/RNG state restored per evaluation"
+                            )
+                            for epsilon in STEP_FINITE_DIFFERENCE_EPSILONS:
+                                sketch = data_jacobians.step_quotient_jacobian_sketch(
+                                    captured_step_map,
+                                    coordinate_directions,
+                                    retained_rank=k,
+                                    outer_rank=q,
+                                    epsilon=float(epsilon),
+                                    rcond=ECS_RANK_RCOND,
+                                    map_definition=step_definition,
+                                )
+                                sketch_candidates = (
+                                    (
+                                        "full_muon_one_step_quotient_stability_jacobian",
+                                        "full_muon_one_step_quotient_stability",
+                                        sketch.combined_spectrum,
+                                    ),
+                                    (
+                                        "full_muon_one_step_radial_component_jacobian",
+                                        "full_muon_one_step_radial_component",
+                                        sketch.radial_spectrum,
+                                    ),
+                                    (
+                                        "full_muon_one_step_projector_component_jacobian",
+                                        "full_muon_one_step_projector_component",
+                                        sketch.projector_spectrum,
+                                    ),
+                                )
+                                for method, family, spectrum in sketch_candidates:
+                                    amplitudes = np.asarray(
+                                        spectrum.singular_amplitudes, dtype=float
+                                    )
+                                    row_base = {
+                                        **data_base,
+                                        "method": method,
+                                        "jacobian_family": family,
+                                        "epsilon": float(epsilon),
+                                        "probe_seed": int(probe_seed),
+                                        "probe_count": int(probe_count),
+                                        "restricted_domain": True,
+                                        "replay_qualified": True,
+                                        "maximum_reference_abs_error": replay_maximum_error,
+                                        "energy_convention": "nonzero_eigenvalues_of_restricted_J_star_J",
+                                    }
+                                    operator_records.append({
+                                        **row_base,
+                                        "operator_kind": spectrum.operator_kind,
+                                        "map_definition": spectrum.map_definition,
+                                        "derivative_rank": int(spectrum.derivative_rank),
+                                        "input_dimension": int(spectrum.input_dimension),
+                                        "output_dimension": int(spectrum.output_dimension),
+                                        "available": bool(amplitudes.size >= 2),
+                                    })
+                                    if amplitudes.size < 2:
+                                        continue
+                                    fits, traces = fit_spectrum_with_trace(
+                                        amplitudes,
+                                        operator_kind=spectrum.operator_kind,
+                                        map_definition=spectrum.map_definition,
+                                        spectrum_kind="amplitude",
+                                        metadata=row_base,
+                                        top_k_values=TOP_K_VALUES,
+                                        minimum_tail=MINIMUM_TAIL,
+                                    )
+                                    fit_frames.append(fits)
+                                    trace_frames.append(traces)
+                                    spectral_arrays[
+                                        f"{optimizer}_{seed}_{capture['global_step_before']}_{method}_eps{epsilon}"
+                                    ] = amplitudes
+                        calibration_records.append({
+                            **data_base,
+                            "replay_qualified": replay_qualified,
+                            "maximum_reference_abs_error": replay_maximum_error,
+                        })
+            if not fit_frames:
+                raise RuntimeError("No data-dependent ECS Jacobian spectra were fit")
+            calibration_audit = pd.DataFrame(calibration_records)
+            """
+        ),
+        code(ANALYSIS_SAVE_AND_PLOT),
+        code(
+            """
+            np.savez_compressed(analysis_dir / "positive_spectra.npz", **spectral_arrays)
+            display(save_spectrum_ccdf_gallery(spectral_arrays, method_slug=METHOD_SLUG))
+            calibration_audit.to_csv(
+                analysis_dir / "calibration_rank_replay_audit.csv", index=False
+            )
+            primary_energy = fit_rows[
+                fit_rows["clip_top_k"].eq(0)
+                & fit_rows["spectrum_kind"].astype(str).eq(
+                    "energy_derived_from_amplitude"
+                )
+            ].copy()
+            summary_groups = ["optimizer", "layer", "method"]
+            if "epsilon" in primary_energy.columns:
+                summary_groups.append("epsilon")
+            data_summary = ci_summary(
+                primary_energy,
+                groups=tuple(summary_groups),
+                metrics=("alpha", "ks_D", "n_tail"),
+                allow_incomplete=True,
+                incomplete_output_path=analysis_dir / "incomplete_data_jacobian_ci.csv",
+            )
+            data_summary.to_csv(
+                analysis_dir / "data_jacobian_energy_95ci.csv", index=False
+            )
+            display(calibration_audit)
+            display(data_summary)
+            """
+        ),
+        markdown(
+            r"""
+            The empirical-Fisher rows are $J_{ell,mathrm{Gr}}^*
+            J_{ell,mathrm{Gr}}$. For the quotient GGN, the stored Jacobian is
+            the PSD curvature operator itself, so its WeightWatcher-comparable
+            energy is $lambda_{mathrm{GGN}}^2$. The full step restores the
+            actual Muon/MuonClip optimizer and batch for every $+\epsilon$ and
+            $-\epsilon$ evaluation; it is not reconstructed from a weight-only
+            polar map. Its probe spectra are restrictions to the saved
+            orthonormal canonical-$K$ domain and are never labelled full-layer
+            ESDs.
+            """
+        ),
+    ]
+    return notebook("17_Data_Dependent_ECS_Jacobians.ipynb", cells)
+
+
 def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
     cells = [
         markdown(
@@ -4910,7 +5915,9 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
             energy-derived primary fits, and recompute matched scale, rotation,
             Gaussian, and Haar/Stiefel controls on the same final pair from the
             verified tail-checkpoint cache. Invariance controls and distributional nulls answer
-            different questions and are never pooled.
+            different questions and are never pooled. Despite its filename,
+            run this comparison after notebooks 16 and 17 because their strict
+            provenance manifests are mandatory inputs.
             """
         ),
         parameters(
@@ -4923,6 +5930,8 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                 "radial_angular_quotients",
                 "single_checkpoint_map_jacobians",
                 "calibrated_local_training_map",
+                "additional_weight_only_ecs_jacobians",
+                "data_dependent_ecs_jacobians",
             ]
             REQUIRED_METHOD_SOURCES = {
                 "two_checkpoint_finite_flow": ["verified_tail_checkpoint_cache_model_only"],
@@ -4933,12 +5942,48 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                     "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
                 ],
                 "calibrated_local_training_map": ["verified_calibrated_dense_capture"],
+                "additional_weight_only_ecs_jacobians": [
+                    "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
+                ],
+                "data_dependent_ecs_jacobians": [
+                    "verified_calibrated_dense_capture",
+                    "verified_calibrated_dense_capture_plus_exact_sparse_weightwatcher_trace_metrics",
+                ],
             }
             REQUIRED_ECS_PRIMARY_METHOD = (
                 "ecs_grassmann_cartan_cover_full_row_shell_pullback"
             )
             REQUIRED_ECS_FIT_CONTRACT_TOKEN = (
                 "ecs_grassmann_cartan_cover_group_qualified_v1"
+            )
+            REQUIRED_METHOD_CONTRACT_TOKENS = {
+                "single_checkpoint_map_jacobians": [
+                    REQUIRED_ECS_FIT_CONTRACT_TOKEN,
+                ],
+                "additional_weight_only_ecs_jacobians": [
+                    "additional_weight_only_ecs_jacobians_v1",
+                ],
+                "data_dependent_ecs_jacobians": [
+                    "data_dependent_ecs_jacobians_v1",
+                ],
+            }
+            REQUIRED_PRIMARY_FIT_METHODS = {
+                "additional_weight_only_ecs_jacobians": [
+                    "gap_aware_grassmann_projector_full_row_shell",
+                    "exact_trace_free_log_gram_full_row_shell",
+                    "feshbach_trace_free_log_core_full_row_shell",
+                    "trace_free_resolvent_full_row_shell_zratio_1p0",
+                    "soft_ecs_projector_taugap_1p0",
+                ],
+                "data_dependent_ecs_jacobians": [
+                    "input_output_jacobian",
+                    "grassmann_parameter_output_jacobian",
+                    "per_example_quotient_loss_jacobian",
+                    "quotient_generalized_gauss_newton_jacobian",
+                ],
+            }
+            REQUIRED_MUON_STEP_FIT_METHOD = (
+                "full_muon_one_step_quotient_stability_jacobian"
             )
             TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
             MINIMUM_TAIL = 8
@@ -5009,10 +6054,10 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                         sorted(REQUIRED_METHOD_SOURCES[method_slug]),
                     ),
                 }
-                if method_slug == "single_checkpoint_map_jacobians":
+                if method_slug in REQUIRED_METHOD_CONTRACT_TOKENS:
                     provenance_checks["analysis_contract_tokens"] = (
                         method_provenance.get("analysis_contract_tokens"),
-                        [REQUIRED_ECS_FIT_CONTRACT_TOKEN],
+                        REQUIRED_METHOD_CONTRACT_TOKENS[method_slug],
                     )
                 provenance_mismatches = [
                     f"{name}: observed={observed!r}, expected={expected!r}"
@@ -5128,6 +6173,59 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
                 frame["analysis_method"] = method_slug
                 prior_frames.append(frame)
             prior_fits = pd.concat(prior_frames, ignore_index=True, sort=False)
+            prior_primary_all_statuses = prior_fits[
+                prior_fits["clip_top_k"].eq(0)
+                & prior_fits["spectrum_kind"].astype(str).eq(
+                    "energy_derived_from_amplitude"
+                )
+            ].copy()
+            expected_all_run_grid = {
+                (str(optimizer), int(seed))
+                for optimizer in OPTIMIZER_SLUGS
+                for seed in SEEDS
+            }
+            for analysis_method, required_methods in REQUIRED_PRIMARY_FIT_METHODS.items():
+                method_rows = prior_primary_all_statuses[
+                    prior_primary_all_statuses["analysis_method"].astype(str).eq(
+                        analysis_method
+                    )
+                ]
+                for required_method in required_methods:
+                    observed = {
+                        (str(row.optimizer), int(row.seed))
+                        for row in method_rows[
+                            method_rows["method"].astype(str).eq(required_method)
+                        ][["optimizer", "seed"]].drop_duplicates().itertuples(index=False)
+                    }
+                    if observed != expected_all_run_grid:
+                        raise RuntimeError(
+                            f"{analysis_method} lacks primary clip=0 energy rows for "
+                            f"{required_method}: missing={sorted(expected_all_run_grid-observed)}, "
+                            f"unexpected={sorted(observed-expected_all_run_grid)}"
+                        )
+            expected_muon_step_grid = {
+                (optimizer, int(seed))
+                for optimizer in ("muon", "muonclip_rms")
+                for seed in SEEDS
+            }
+            observed_muon_step_grid = {
+                (str(row.optimizer), int(row.seed))
+                for row in prior_primary_all_statuses[
+                    prior_primary_all_statuses["analysis_method"].astype(str).eq(
+                        "data_dependent_ecs_jacobians"
+                    )
+                    & prior_primary_all_statuses["method"].astype(str).eq(
+                        REQUIRED_MUON_STEP_FIT_METHOD
+                    )
+                ][["optimizer", "seed"]].drop_duplicates().itertuples(index=False)
+            }
+            if observed_muon_step_grid != expected_muon_step_grid:
+                raise RuntimeError(
+                    "Data-dependent comparison lacks the replay-qualified full-step "
+                    "Muon/MuonClip primary grid: "
+                    f"missing={sorted(expected_muon_step_grid-observed_muon_step_grid)}, "
+                    f"unexpected={sorted(observed_muon_step_grid-expected_muon_step_grid)}"
+                )
             prior_primary = prior_fits[
                 prior_fits["clip_top_k"].eq(0)
                 & prior_fits["spectrum_kind"].astype(str).eq("energy_derived_from_amplitude")
@@ -5559,6 +6657,8 @@ def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
         radial_angular_notebook(),
         single_checkpoint_notebook(),
         calibrated_training_map_notebook(),
+        additional_weight_jacobians_notebook(),
+        data_dependent_ecs_jacobians_notebook(),
         nulls_stability_notebook(),
     )
 
@@ -5578,6 +6678,8 @@ def main() -> None:
         "13_Single_Checkpoint_Map_Jacobians.ipynb",
         "14_Calibrated_Local_Training_Map.ipynb",
         "15_Method_Nulls_Stability_Comparison.ipynb",
+        "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+        "17_Data_Dependent_ECS_Jacobians.ipynb",
     }
     observed = {name for name, _ in built}
     if observed != expected:

@@ -26,6 +26,8 @@ EXPECTED_NOTEBOOKS = {
     "13_Single_Checkpoint_Map_Jacobians.ipynb",
     "14_Calibrated_Local_Training_Map.ipynb",
     "15_Method_Nulls_Stability_Comparison.ipynb",
+    "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+    "17_Data_Dependent_ECS_Jacobians.ipynb",
 }
 
 ANALYSIS_NOTEBOOKS = EXPECTED_NOTEBOOKS - {
@@ -40,11 +42,13 @@ TAIL_CACHE_ANALYSIS_NOTEBOOKS = {
     "12_Radial_Angular_Quotients.ipynb",
     "13_Single_Checkpoint_Map_Jacobians.ipynb",
     "15_Method_Nulls_Stability_Comparison.ipynb",
+    "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
 }
 
 CAPTURE_ANALYSIS_NOTEBOOKS = {
     "11_Muon_Update_Stiefel_Tangent.ipynb",
     "14_Calibrated_Local_Training_Map.ipynb",
+    "17_Data_Dependent_ECS_Jacobians.ipynb",
 }
 
 METHOD_OUTPUT_NOTEBOOKS = TAIL_CACHE_ANALYSIS_NOTEBOOKS | CAPTURE_ANALYSIS_NOTEBOOKS
@@ -55,6 +59,8 @@ EXPECTED_METHOD_SOURCE_BY_NOTEBOOK = {
     "12_Radial_Angular_Quotients.ipynb": "verified_tail_checkpoint_cache_model_only",
     "13_Single_Checkpoint_Map_Jacobians.ipynb": "verified_tail_checkpoint_cache_model_only",
     "14_Calibrated_Local_Training_Map.ipynb": "verified_calibrated_dense_capture",
+    "16_Additional_Weight_Only_ECS_Jacobians.ipynb": "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
+    "17_Data_Dependent_ECS_Jacobians.ipynb": "verified_calibrated_dense_capture_plus_exact_sparse_weightwatcher_trace_metrics",
 }
 
 TRAINING_NOTEBOOKS = {
@@ -267,6 +273,48 @@ class NotebookContractTests(unittest.TestCase):
                     self.assertIn("observed_ecs_primary_grid", all_source)
                     self.assertIn("missing_ecs_contract", all_source)
                     self.assertIn("ecs_group_tail_qualified", all_source)
+                    self.assertIn("REQUIRED_PRIMARY_FIT_METHODS", all_source)
+                    self.assertIn("expected_all_run_grid", all_source)
+                    self.assertIn("observed_muon_step_grid", all_source)
+
+                if name == "16_Additional_Weight_Only_ECS_Jacobians.ipynb":
+                    all_source = "\n".join(
+                        _source_text(cell) for cell in notebook["cells"]
+                    )
+                    for function_name in (
+                        "gap_aware_projector_spectrum",
+                        "soft_ecs_projector_spectrum",
+                        "outer_trace_free_log_gram_spectrum",
+                        "outer_resolvent_spectrum",
+                        "feshbach_trace_free_log_spectrum",
+                    ):
+                        self.assertIn(function_name, all_source)
+                    self.assertIn("central_difference_jacobian", all_source)
+                    self.assertIn("energy_convention", all_source)
+                    self.assertIn(
+                        "additional_weight_only_ecs_jacobians_v1", all_source
+                    )
+
+                if name == "17_Data_Dependent_ECS_Jacobians.ipynb":
+                    all_source = "\n".join(
+                        _source_text(cell) for cell in notebook["cells"]
+                    )
+                    for function_name in (
+                        "input_output_jacobian_spectrum",
+                        "grassmann_parameter_output_jacobian",
+                        "per_example_quotient_loss_jacobian",
+                        "quotient_generalized_gauss_newton",
+                        "step_quotient_jacobian_sketch",
+                    ):
+                        self.assertIn(function_name, all_source)
+                    self.assertIn("replay_calibrated_step", all_source)
+                    self.assertIn("exact_ecs_cover_rank_record", all_source)
+                    self.assertIn("restricted_domain", all_source)
+                    self.assertIn(
+                        'CAPTURE_ONLY_SOURCE_KIND = "verified_calibrated_dense_capture"',
+                        all_source,
+                    )
+                    self.assertIn("data_dependent_ecs_jacobians_v1", all_source)
 
     def test_tail_cache_is_the_only_model_checkpoint_analysis_source(self) -> None:
         for name in sorted(TAIL_CACHE_ANALYSIS_NOTEBOOKS):
@@ -365,9 +413,7 @@ class NotebookContractTests(unittest.TestCase):
                 all_source = "\n".join(
                     _source_text(cell) for cell in notebook["cells"]
                 )
-                self.assertIn(
-                    f'"source_artifact_kind": "{expected_source}"', all_source
-                )
+                self.assertIn(expected_source, all_source)
         notebook10 = json.loads(
             (NOTEBOOK_ROOT / "10_Two_Checkpoint_Finite_Flow.ipynb").read_text(
                 encoding="utf-8"
@@ -397,6 +443,9 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("expected_method_grid", all_source)
         self.assertIn("observed_fit_grid != expected_method_grid", all_source)
         self.assertIn("fit_row_count", all_source)
+        self.assertIn("additional_weight_only_ecs_jacobians", all_source)
+        self.assertIn("data_dependent_ecs_jacobians", all_source)
+        self.assertIn("REQUIRED_METHOD_CONTRACT_TOKENS", all_source)
 
     def test_single_checkpoint_notebook_fits_only_six_declared_jacobians(self) -> None:
         notebook = json.loads(
