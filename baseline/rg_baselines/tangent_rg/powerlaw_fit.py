@@ -185,6 +185,121 @@ def fit_clipping_sensitivity(
     return frame
 
 
+def qualify_replicated_group_fits(
+    fits: pd.DataFrame,
+    group_amplitudes: Any,
+    *,
+    group_multiplicity: int,
+    minimum_tail_groups: int,
+) -> pd.DataFrame:
+    """Apply a group-level qualification to a deterministically repeated ESD.
+
+    Some analytic Jacobians contain one amplitude per physical coordinate
+    group, repeated a fixed number of times by symmetry.  ``powerlaw.Fit`` is
+    still run on the declared expanded ESD, but neither those copies nor a
+    partial removal of a degenerate block are independent evidence.  This
+    helper therefore requires clipping in whole groups and gates ``fit_ok`` on
+    the number of retained physical groups above the package-selected
+    ``xmin``.  It supports the amplitude rows and their exact squared-energy
+    transforms produced by :func:`amplitude_fit_to_energy`.
+    """
+
+    multiplicity = int(group_multiplicity)
+    minimum_groups = int(minimum_tail_groups)
+    if multiplicity < 1:
+        raise ValueError("group_multiplicity must be positive")
+    if minimum_groups < 2:
+        raise ValueError("minimum_tail_groups must be at least two")
+    required = {
+        "clip_top_k", "spectrum_kind", "xmin", "fit_ok", "n_used", "n_tail"
+    }
+    missing = required - set(fits.columns)
+    if missing:
+        raise ValueError(f"fit table lacks required columns: {sorted(missing)}")
+
+    # Keep a one-group spectrum as an auditable failed qualification rather
+    # than aborting the notebook.  ``minimum_tail_groups >= 2`` still makes it
+    # scientifically ineligible.
+    groups = positive_values(group_amplitudes, minimum_count=1)
+    result = fits.copy()
+    clip_group_counts: list[int] = []
+    used_group_counts: list[int] = []
+    tail_group_counts: list[int] = []
+    package_fit_statuses: list[bool] = []
+    qualified_statuses: list[bool] = []
+    warnings: list[str] = []
+    for row in result.to_dict(orient="records"):
+        clipped_modes = int(row["clip_top_k"])
+        if clipped_modes % multiplicity:
+            raise ValueError(
+                "clip_top_k must remove complete replicated groups: "
+                f"clip_top_k={clipped_modes}, multiplicity={multiplicity}"
+            )
+        clipped_groups = clipped_modes // multiplicity
+        if clipped_groups > groups.size - 1:
+            raise ValueError(
+                "group clipping must leave at least one physical group: "
+                f"groups={groups.size}, clipped_groups={clipped_groups}"
+            )
+        used_groups = groups[:-clipped_groups] if clipped_groups else groups.copy()
+        spectrum_kind = str(row["spectrum_kind"])
+        if spectrum_kind == "energy_derived_from_amplitude":
+            used_groups = used_groups**2
+        elif spectrum_kind != "amplitude":
+            raise ValueError(
+                "replicated-group qualification supports amplitude or exact "
+                f"derived-energy rows, not {spectrum_kind!r}"
+            )
+        xmin = float(row["xmin"])
+        tail_groups = (
+            int(np.count_nonzero(used_groups >= xmin))
+            if np.isfinite(xmin) and xmin > 0.0
+            else 0
+        )
+        expected_used_modes = int(used_groups.size * multiplicity)
+        expected_tail_modes = int(tail_groups * multiplicity)
+        if int(row["n_used"]) != expected_used_modes:
+            raise ValueError(
+                "expanded ESD used-mode count is inconsistent with complete "
+                f"groups: observed={row['n_used']}, expected={expected_used_modes}"
+            )
+        if int(row["n_tail"]) != expected_tail_modes:
+            raise ValueError(
+                "expanded ESD tail count is inconsistent with complete groups: "
+                f"observed={row['n_tail']}, expected={expected_tail_modes}"
+            )
+        package_ok = bool(row["fit_ok"])
+        group_ok = tail_groups >= minimum_groups
+        warning = str(row.get("warning", "") or "")
+        if not group_ok:
+            group_warning = (
+                f"package-selected tail has {tail_groups} physical groups; "
+                f"minimum_tail_groups={minimum_groups}"
+            )
+            warning = f"{warning}; {group_warning}" if warning else group_warning
+        clip_group_counts.append(clipped_groups)
+        used_group_counts.append(int(used_groups.size))
+        tail_group_counts.append(tail_groups)
+        package_fit_statuses.append(package_ok)
+        qualified_statuses.append(bool(package_ok and group_ok))
+        warnings.append(warning)
+
+    result["clip_group_count"] = clip_group_counts
+    result["group_multiplicity"] = multiplicity
+    result["used_group_count"] = used_group_counts
+    result["tail_group_count"] = tail_group_counts
+    result["minimum_tail_groups"] = minimum_groups
+    result["mode_level_fit_ok_before_group_gate"] = package_fit_statuses
+    result["group_tail_qualified"] = [
+        count >= minimum_groups for count in tail_group_counts
+    ]
+    result["fit_ok"] = qualified_statuses
+    result["clipping_unit"] = "whole_replicated_physical_groups"
+    result["mode_group_count_consistency_verified"] = True
+    result["warning"] = warnings
+    return result
+
+
 def amplitude_fit_to_energy(row: Mapping[str, Any]) -> dict[str, Any]:
     r"""Apply the exact change of variables ``e=b^2`` to a fit row.
 
