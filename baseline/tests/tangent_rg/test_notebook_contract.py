@@ -34,6 +34,7 @@ EXPECTED_NOTEBOOKS = {
     "18_Single_Run_MuonClip_Jacobian_Audit.ipynb",
     "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
     "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+    "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb",
 }
 
 ANALYSIS_NOTEBOOKS = EXPECTED_NOTEBOOKS - {
@@ -168,6 +169,41 @@ class NotebookContractTests(unittest.TestCase):
         )
         self.assertTrue(report_plot_source)
         self.assertNotIn("fill_between", report_plot_source)
+
+    def test_single_run_metrics_weightwatcher_audit_is_lightweight(self) -> None:
+        path = NOTEBOOK_ROOT / "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb"
+        notebook = json.loads(path.read_text(encoding="utf-8"))
+        source = "\n".join(_source_text(cell) for cell in notebook["cells"])
+        for required in (
+            "performance_by_analysis_epoch.csv",
+            "weightwatcher_fits.csv",
+            "test_accuracy_and_loss.png",
+            "train_validation_test_context.png",
+            "weightwatcher_alpha_raw_vs_clip_xmax.png",
+            "weightwatcher_fit_availability_by_checkpoint.csv",
+            "sanity_checks.csv",
+            "method_provenance.json",
+            '"raw"',
+            '"clip_xmax"',
+            "fix_fingers=clip_xmax",
+            "validate_run_identity(",
+            "verified_completed_run_saved_metrics_only",
+            "final performance row matches completion horizon",
+            "one_completed_seed_no_error_bars",
+        ):
+            self.assertIn(required, source)
+        for forbidden in (
+            "pm.execute_notebook",
+            "torch.load",
+            "np.load(",
+            "load_verified_tail_checkpoint_refs",
+            "run_cli_training(",
+            "run_training(",
+            "analyze_weightwatcher_dual(",
+            "fit_clipping_sensitivity(",
+            "fill_between(",
+        ):
+            self.assertNotIn(forbidden, source)
 
     def test_ecs_exact_rank_join_rejects_inexact_or_malformed_states(self) -> None:
         import numpy as np
@@ -631,6 +667,11 @@ class NotebookContractTests(unittest.TestCase):
                 self.assertIn("WeightQuotientUnavailable", all_source)
                 self.assertIn("RESUME_PARTIAL_RESULTS = True", all_source)
                 self.assertIn("load_resumable_tables", all_source)
+                self.assertIn("normalize_papermill_sequence", all_source)
+                self.assertIn("normalize_papermill_bool", all_source)
+                self.assertIn(
+                    'OPTIMIZER_SLUGS, name="OPTIMIZER_SLUGS"', all_source
+                )
                 self.assertIn("analysis_code_sha256", all_source)
                 self.assertIn("inspect.getsource(weightwatcher_fit)", all_source)
                 self.assertIn("WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_SHA256", all_source)
