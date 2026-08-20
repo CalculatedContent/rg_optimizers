@@ -75,10 +75,13 @@ so the root contains `mnist_mlp3_tangent_rg_v1_smoke/`,
 cannot collide. In Jupyter, set `PROFILE` (or `CONFIG_PATH`) to the same stage,
 run notebook `00`, then `01`--`03`, `04`, analysis notebooks `10`--`14`, then
 `16` and `17`, and run the cross-method comparison `15` last. Notebook `18`
-is an additional single-seed MuonClip diagnostic driver; it is not part of the
-three-seed comparison. Training notebooks are launch-safe by default: set
+is an additional single-seed MuonClip diagnostic driver. Weight-state quotient
+notebooks `19` (one seed) and `20` (three seeds with error bars) run post facto
+on the same verified final-100 checkpoint caches. Training notebooks are
+launch-safe by default: set
 `EXECUTE_TRAINING=True` explicitly, while analysis notebooks require completed
-artifacts. The checkpoint-based notebooks `10`, `12`, `13`, `15`, and `16` require
+artifacts. The checkpoint-based notebooks `10`, `12`, `13`, `15`, `16`, `19`,
+and `20` require
 the verified tail cache and never fall back to training or to the sparse
 WeightWatcher checkpoint series. Notebooks `11`, `14`, and `17` require already saved
 dense captures because model-only checkpoint files do not contain update
@@ -142,6 +145,8 @@ The runner executes these Jacobian notebooks:
 Notebook `10` is a two-checkpoint finite-flow control, not a Jacobian. Notebook
 `12` contains radial/angular quotient controls rather than another Jacobian.
 They are intentionally not included in the Jacobian-only runner.
+Notebooks `19` and `20` are also excluded because they materialize and fit
+weight-state quotient hypotheses rather than Jacobians.
 
 The default mode is restart-safe: a new run starts when no artifacts exist and
 a compatible interrupted run resumes. Useful invocations are:
@@ -221,6 +226,73 @@ The default report artifacts are written beneath
 only the consolidated report from already verified child outputs, rerun with
 `-p RUN_CHILD_NOTEBOOKS false`. Clean notebooks remain checked in; executed
 notebooks and generated plots remain run artifacts.
+
+### Post-facto Muon/MuonClip weight-quotient notebooks
+
+Notebook `19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb` is the exploratory
+one-seed analysis. It defaults to seed `1337`, scans the declared parameter
+profiles, and plots all 100 checkpoint trajectories without confidence bands.
+Notebook `20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb` applies the frozen
+primary profile to seeds `1337`, `2027`, and `31415`, then reports two-sided
+95% Student-t intervals across the three complete runs. Both notebooks analyze
+the `muon` and `muonclip_rms` arms by default; `OPTIMIZER_SLUGS` can select one
+arm when only that completed cache is available.
+
+Each notebook first runs the original checkpoint matrix through the existing
+dual WeightWatcher path and fixes the midpoint ECS rank from the standardized
+`clip_xmax` row. It then reconstructs a full-shape transformed FC1, FC2, and
+FC3 matrix for each method and calls the same dual path again:
+
+1. `fix_fingers=False`;
+2. `fix_fingers="clip_xmax"`, with the backend `xmax` defining exact tail
+   membership.
+
+Every transformed matrix is the rectangular-diagonal canonical representative
+of its diagnostic `O(out) x O(in)` singular-spectrum orbit. This removes the
+left/right basis coordinates that WeightWatcher's ESD does not observe and
+keeps the declared zero modes exactly zero after the float32 model copy. It is
+not an exact hidden-unit symmetry of the ReLU MLP, and the transformed models
+are never used for forward predictions or accuracy comparisons.
+WeightWatcher's entry-randomization fields are still computed to preserve the
+audited baseline API, but they are explicitly labelled gauge-dependent and are
+not interpreted as invariants of this quotient. The ESD and power-law fit are
+the quotient observables.
+
+The five cells are scalar Gram ridge subtraction, blockwise singular shifts,
+anchor-frozen Feshbach downfolding, empirical rectangular D-transform
+deconvolution, and a discarded-bulk-calibrated monotone MP shrinker. Raw full
+weights, midpoint ECS truncation, and the uniform singular-translation rule
+are retained as explicit controls. The D-transform method scans the lower-bulk
+fraction used for its empirical noise law and is labelled a separated-spike
+approximation; it is not presented as unrestricted full-rank rectangular free
+deconvolution. FC3 remains a low-rank auxiliary-AdamW control
+and may be unavailable when a method requires at least eight discarded modes.
+
+The default clean invocation after the baseline and its cache have completed
+is:
+
+```bash
+papermill \
+  baseline/experiments/mnist_mlp3_tangent_rg/notebooks/19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb \
+  /tmp/weight_quotients_seed_1337.executed.ipynb \
+  -p RUN_ROOT "$RG_MNIST_TANGENT_ROOT" \
+  -p CHECKPOINT_CACHE_ROOT "$RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT" \
+  -p PROFILE pilot_1000_epochs \
+  -p SEED 1337
+```
+
+Use notebook `20` after all three complete seed caches are available. Its
+error bars use seeded runs only; checkpoints, layers, modes, fit variants, and
+parameter values are never treated as replicates. It plots both raw and
+`clip_xmax` fits and saves incomplete/failed-seed coverage separately. Before
+pooling, it runs the suite's device/software/determinism provenance audit.
+
+Both notebooks default to `RESUME_PARTIAL_RESULTS=True`. After every completed
+checkpoint/profile dual-WeightWatcher call, the fit and operator tables are
+atomically replaced. A rerun reuses a group only when its checkpoint identity,
+run fingerprint, parameter JSON, source kind, and analysis-code hash all
+match. `method_provenance.json` is marked incomplete at startup and becomes a
+completed manifest only after the exact Cartesian result grid passes.
 
 ### Optimizer arms
 
@@ -564,11 +636,13 @@ The notebooks expect the package runtime to write:
       additional_weight_only_ecs_jacobians/
       data_dependent_ecs_jacobians/
       method_nulls_stability/
+      weight_only_muon_quotients_one_seed/
+      weight_only_muon_quotients_three_seed/
       # every method directory also contains method_provenance.json
 ```
 
 The independent, model-only trajectory consumed by notebooks `10`, `12`,
-`13`, `15`, and `16` is stored separately:
+`13`, `15`, `16`, `19`, and `20` is stored separately:
 
 ```text
 /tmp/rg-mnist-mlp3-tangent-checkpoints/
@@ -612,7 +686,8 @@ new Jacobian notebooks `16` and `17`; run notebook `15` last because it verifies
 and combines every preceding method. The analysis notebooks
 reuse the verified final-100 checkpoint cache or the pre-existing dense
 captures; they do not retrain a private notebook-local model. Specifically,
-`10`, `12`, `13`, `16`, and the checkpoint-derived nulls in `15` consume the cache;
+`10`, `12`, `13`, `16`, `19`, `20`, and the checkpoint-derived nulls in `15`
+consume the cache;
 `11`, `14`, and `17` consume captures because their objects require optimizer and
 minibatch state not present in a model-only checkpoint.
 
@@ -621,6 +696,11 @@ the genuine Jacobian notebooks `11`, `13`, `14`, `16`, and `17` for one
 MuonClip seed, then builds descriptive no-error-bar plots and independent
 WeightWatcher/`powerlaw.Fit` diagnostics. It does not replace notebook `15` or
 the preregistered three-seed comparisons.
+
+Run notebook `19` when only one completed seed is available, or notebook `20`
+when the complete three-seed Muon/MuonClip grid is available. These notebooks
+are independent of notebook `15`: they test state-level quotient/deconvolution
+hypotheses and always retain the raw weight ESD as the assumption-free control.
 
 Every analysis method writes `method_provenance.json` with its exact suite,
 method, source-artifact kind, and optimizer/seed-to-protocol-fingerprint grid.

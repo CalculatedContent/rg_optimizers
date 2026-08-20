@@ -56,6 +56,7 @@ from .training import (
     scheduled_learning_rates,
     set_scheduled_learning_rates,
 )
+from . import weight_quotients
 
 
 __all__ = [
@@ -103,4 +104,5 @@ __all__ = [
     "verify_tail_checkpoint_cache",
     "verify_tail_checkpoint_cache_prefix",
     "validate_disjoint_checkpoint_layouts",
+    "weight_quotients",
 ]

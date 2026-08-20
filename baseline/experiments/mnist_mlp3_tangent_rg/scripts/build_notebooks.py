@@ -2915,6 +2915,850 @@ print("analysis outputs:", analysis_dir)
 """
 
 
+WEIGHT_QUOTIENT_IMPORTS = r"""
+import copy
+import hashlib
+
+import torch
+
+from rg_baselines.model import MLP3
+from rg_baselines.statistics import summarize_numeric_metrics
+from rg_baselines.tangent_rg import weight_quotients, weightwatcher_fit
+from rg_baselines.tangent_rg.weightwatcher_fit import (
+    analyze_weightwatcher_dual,
+    validate_weightwatcher_measurement,
+)
+"""
+
+
+WEIGHT_QUOTIENT_HELPERS = r"""
+EXPECTED_WEIGHT_LAYERS = ("fc1.weight", "fc2.weight", "fc3.weight")
+EXPECTED_QUOTIENT_METHODS = (
+    "gram_ridge",
+    "blockwise_singular",
+    "feshbach_downfolding",
+    "rectangular_d_transform",
+    "calibrated_mp_shrinker",
+)
+REFERENCE_METHODS = (
+    "midpoint_ecs_control",
+    "uniform_singular_translation",
+)
+FINAL_SPECTRUM_INDEX_COLUMNS = (
+    "spectrum_key", "optimizer", "seed", "epoch", "global_step",
+    "layer", "method", "profile_id",
+)
+WEIGHT_QUOTIENT_ANALYSIS_VERSION = "weight_quotient_notebooks_v2"
+WEIGHT_QUOTIENT_RUNTIME_DEPENDENCY_SHA256 = hashlib.sha256(
+    (
+        WEIGHT_QUOTIENT_ANALYSIS_VERSION
+        + inspect.getsource(weight_quotients)
+        + inspect.getsource(weightwatcher_fit)
+    ).encode("utf-8")
+).hexdigest()
+
+
+def _jsonable(value):
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(item) for item in value]
+    if isinstance(value, np.ndarray):
+        return [_jsonable(item) for item in value.tolist()]
+    if isinstance(value, (np.integer,)):
+        return int(value)
+    if isinstance(value, (float, np.floating)):
+        converted = float(value)
+        return converted if np.isfinite(converted) else None
+    if isinstance(value, (np.bool_,)):
+        return bool(value)
+    return value
+
+
+WEIGHT_QUOTIENT_ANALYSIS_SETTINGS = {
+    "schema_version": 1,
+    "weightwatcher": {
+        "min_evals": int(WW_MIN_EVALS),
+        "max_evals": (
+            None if WW_MAX_EVALS is None else int(WW_MAX_EVALS)
+        ),
+        "max_fingers": int(WW_MAX_FINGERS),
+        "svd_method": str(WW_SVD_METHOD),
+        "randomize": True,
+        "primary_variant": "clip_xmax",
+    },
+    "expected_layers": list(EXPECTED_WEIGHT_LAYERS),
+}
+WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_JSON = json.dumps(
+    _jsonable(WEIGHT_QUOTIENT_ANALYSIS_SETTINGS),
+    sort_keys=True,
+    separators=(",", ":"),
+)
+WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_SHA256 = hashlib.sha256(
+    WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_JSON.encode("utf-8")
+).hexdigest()
+
+
+def stable_slug(value):
+    return re.sub(r"[^A-Za-z0-9_.-]+", "_", str(value)).strip("_")
+
+
+def parameter_profile(profile):
+    values = dict(profile)
+    profile_id = str(values.pop("profile_id"))
+    return profile_id, values
+
+
+def choose_profiles(primary, scan):
+    selected = list(scan if bool(RUN_PARAMETER_SCANS) else primary)
+    if not selected:
+        raise ValueError("Every quotient method requires at least one parameter profile")
+    profile_ids = [str(item.get("profile_id", "")) for item in selected]
+    if any(not value for value in profile_ids) or len(set(profile_ids)) != len(profile_ids):
+        raise ValueError(f"Parameter profile IDs must be non-empty and unique: {selected}")
+    return selected
+
+
+def stable_analysis_seed(*parts):
+    digest = hashlib.sha256("|".join(map(str, parts)).encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "little", signed=False)
+
+
+def spectrum_sha256(values):
+    array = np.asarray(values, dtype="<f8").reshape(-1)
+    array = np.sort(array[np.isfinite(array) & (array > 0.0)])
+    array = np.ascontiguousarray(array)
+    return hashlib.sha256(array.tobytes()).hexdigest()
+
+
+def atomic_csv(frame, path):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    frame.to_csv(temporary, index=False)
+    temporary.replace(path)
+    return path
+
+
+def atomic_npz(arrays, path):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("wb") as handle:
+        np.savez_compressed(handle, **dict(arrays))
+    temporary.replace(path)
+    return path
+
+
+def atomic_json(payload, path):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(_jsonable(payload), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+    return path
+
+
+def checkpoint_model(path):
+    payload = load_checkpoint_payload(path)
+    model = MLP3().to("cpu")
+    model.load_state_dict(checkpoint_state_dict(payload), strict=True)
+    model.eval()
+    return model
+
+
+def matrix_from_model(model, layer):
+    value = dict(model.named_parameters())[str(layer)]
+    return value.detach().cpu().double().numpy()
+
+
+def replace_model_matrix(model, layer, matrix):
+    parameter = dict(model.named_parameters())[str(layer)]
+    candidate = torch.as_tensor(np.asarray(matrix), dtype=parameter.dtype)
+    if tuple(candidate.shape) != tuple(parameter.shape):
+        raise ValueError(
+            f"Transformed {layer} shape {tuple(candidate.shape)} != {tuple(parameter.shape)}"
+        )
+    with torch.no_grad():
+        parameter.copy_(candidate)
+
+
+def model_layer_esd(model, layer):
+    parameter = dict(model.named_parameters())[str(layer)]
+    matrix = parameter.detach().float().cpu().numpy()
+    values = np.linalg.svd(matrix, compute_uv=False) ** 2
+    return np.sort(values[np.isfinite(values) & (values > 0.0)])
+
+
+def numeric(row, name, default=np.nan):
+    result = pd.to_numeric(pd.Series([row.get(name, default)]), errors="coerce").iloc[0]
+    return float(result) if pd.notna(result) else float("nan")
+
+
+def truthy_series(values):
+    return values.astype(str).str.strip().str.lower().isin(("true", "1", "yes"))
+
+
+def midpoint_record(measurement, *, layer, metadata):
+    rows = measurement.details[
+        (measurement.details["layer"].astype(str) == str(layer))
+        & (measurement.details["fit_variant"].astype(str) == "clip_xmax")
+    ]
+    if len(rows) != 1:
+        raise RuntimeError(
+            f"Expected exactly one clip_xmax row for {layer}; observed {len(rows)}"
+        )
+    row = rows.iloc[0]
+    maximum_rank = int(np.asarray(measurement.esds[str(layer)]).size)
+    pl_rank_value = numeric(row, "n_tail")
+    detx_value = numeric(row, "detX_num", numeric(row, "detx_num"))
+    if not np.isfinite(pl_rank_value) or not np.isfinite(detx_value):
+        raise RuntimeError(
+            f"Midpoint ECS unavailable for {layer}: n_tail={pl_rank_value}, "
+            f"detX_num={detx_value}"
+        )
+    pl_rank = int(np.clip(round(pl_rank_value), 1, maximum_rank))
+    detx_rank = int(np.clip(round(detx_value), 1, maximum_rank))
+    midpoint = weight_quotients.midpoint_ecs_rank(
+        pl_rank, detx_rank, maximum_rank=maximum_rank
+    )
+    return {
+        **dict(metadata),
+        "layer": str(layer),
+        "maximum_rank": maximum_rank,
+        "k_pl": pl_rank,
+        "k_detx": detx_rank,
+        "k_mid": midpoint,
+        "midpoint_rule": "floor((max(1,k_pl)+k_detx)/2)",
+        "midpoint_fit_variant": "clip_xmax",
+        "midpoint_selected_before_quotient": True,
+    }
+
+
+def weightwatcher_rows(measurement, *, metadata, spectrum_hashes):
+    frame = measurement.details.copy()
+    for key, value in dict(metadata).items():
+        frame[key] = value
+    frame["transformed_spectrum_sha256"] = frame["layer"].map(spectrum_hashes)
+    frame["weightwatcher_pair_contract"] = (
+        "same_transformed_model_for_raw_and_fix_fingers_clip_xmax"
+    )
+    return frame
+
+
+def unavailable_fit_rows(*, metadata, layer, reason, spectrum_hash=""):
+    return pd.DataFrame(
+        [
+            {
+                **dict(metadata),
+                "layer": str(layer),
+                "fit_variant": variant,
+                "finger_policy": (
+                    "none" if variant == "raw" else "fix_fingers=clip_xmax"
+                ),
+                "fit_ok": False,
+                "weightwatcher_status": "quotient_unavailable_before_fit",
+                "weightwatcher_error": str(reason),
+                "alpha": np.nan,
+                "ks_D": np.nan,
+                "xmin": np.nan,
+                "xmax": np.nan,
+                "backend_xmax": np.nan,
+                "n_tail": np.nan,
+                "tail_decades": np.nan,
+                "transformed_spectrum_sha256": str(spectrum_hash),
+                "weightwatcher_pair_contract": (
+                    "same_transformed_model_for_raw_and_fix_fingers_clip_xmax"
+                ),
+            }
+            for variant in ("raw", "clip_xmax")
+        ]
+    )
+
+
+CHECKPOINT_ID_COLUMNS = ("optimizer", "seed", "epoch", "global_step")
+
+
+def checkpoint_identity(row):
+    return (
+        str(row["optimizer"]),
+        int(row["seed"]),
+        int(row["epoch"]),
+        int(row["global_step"]),
+    )
+
+
+def checkpoint_profile_identity(row):
+    return checkpoint_identity(row) + (str(row["profile_id"]),)
+
+
+def _read_resume_csv(path):
+    path = Path(path)
+    if not bool(RESUME_PARTIAL_RESULTS) or not path.is_file():
+        return pd.DataFrame()
+    try:
+        frame = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
+    if "analysis_code_sha256" not in frame:
+        return pd.DataFrame()
+    if set(frame["analysis_code_sha256"].astype(str)) != {
+        WEIGHT_QUOTIENT_ANALYSIS_CODE_SHA256
+    }:
+        print("Ignoring stale partial table with a different analysis hash:", path)
+        return pd.DataFrame()
+    return frame
+
+
+def load_resumable_tables(
+    *, fit_path, secondary_path, contexts, method, profiles
+):
+    fits = _read_resume_csv(fit_path)
+    secondary = _read_resume_csv(secondary_path)
+    if fits.empty or secondary.empty:
+        return pd.DataFrame(), pd.DataFrame(), set()
+    active_fingerprints = {
+        checkpoint_identity(row): str(row["protocol_fingerprint"])
+        for _, row in contexts.iterrows()
+    }
+    active_analysis_settings = {
+        checkpoint_identity(row): str(row["analysis_settings_sha256"])
+        for _, row in contexts.iterrows()
+    }
+    active_keys = set(active_fingerprints)
+    profile_definitions = {}
+    for profile in profiles:
+        profile_id, options = parameter_profile(profile)
+        profile_definitions[profile_id] = json.dumps(
+            _jsonable(options), sort_keys=True
+        )
+
+    def eligible(row):
+        profile_id = str(row.get("profile_id", ""))
+        return (
+            checkpoint_identity(row) in active_keys
+            and str(row.get("protocol_fingerprint", ""))
+            == active_fingerprints.get(checkpoint_identity(row), "")
+            and str(row.get("source_artifact_kind", ""))
+            == "verified_final_100_tail_cache"
+            and str(row.get("analysis_settings_sha256", ""))
+            == active_analysis_settings.get(checkpoint_identity(row), "")
+            and str(row.get("method", "")) == str(method)
+            and profile_id in profile_definitions
+            and str(row.get("parameter_profile", ""))
+            == profile_definitions[profile_id]
+        )
+
+    fits = fits.loc[[eligible(row) for _, row in fits.iterrows()]].copy()
+    secondary = secondary.loc[
+        [eligible(row) for _, row in secondary.iterrows()]
+    ].copy()
+    complete_fit_keys = set()
+    for identity, group in fits.groupby(
+        [*CHECKPOINT_ID_COLUMNS, "profile_id"], dropna=False
+    ):
+        if len(group) != 2 * len(EXPECTED_WEIGHT_LAYERS):
+            continue
+        valid = True
+        for layer in EXPECTED_WEIGHT_LAYERS:
+            rows = group[group["layer"].astype(str) == str(layer)]
+            if len(rows) != 2 or set(rows["fit_variant"].astype(str)) != {
+                "raw", "clip_xmax"
+            }:
+                valid = False
+                break
+            if len(set(rows["transformed_spectrum_sha256"].fillna("").astype(str))) != 1:
+                valid = False
+                break
+        if valid:
+            complete_fit_keys.add(
+                (str(identity[0]), int(identity[1]), int(identity[2]),
+                 int(identity[3]), str(identity[4]))
+            )
+    complete_secondary_keys = {
+        (str(identity[0]), int(identity[1]), int(identity[2]),
+         int(identity[3]), str(identity[4]))
+        for identity, group in secondary.groupby(
+            [*CHECKPOINT_ID_COLUMNS, "profile_id"], dropna=False
+        )
+        if len(group) == len(EXPECTED_WEIGHT_LAYERS)
+        and set(group["layer"].astype(str)) == set(EXPECTED_WEIGHT_LAYERS)
+    }
+    complete = complete_fit_keys & complete_secondary_keys
+    fits = fits.loc[
+        [checkpoint_profile_identity(row) in complete for _, row in fits.iterrows()]
+    ].copy()
+    secondary = secondary.loc[
+        [
+            checkpoint_profile_identity(row) in complete
+            for _, row in secondary.iterrows()
+        ]
+    ].copy()
+    if complete:
+        print(
+            f"Resuming {method}: {len(complete)} complete checkpoint/profile groups"
+        )
+    return fits, secondary, complete
+
+
+def selected_refs(seed_dir):
+    refs = tuple(analysis_checkpoint_refs(seed_dir))
+    maximum = int(MAXIMUM_CHECKPOINTS)
+    if maximum < 1 or maximum > 100:
+        raise ValueError("MAXIMUM_CHECKPOINTS must lie in [1,100]")
+    return refs[-min(maximum, len(refs)):]
+
+
+def build_checkpoint_contexts():
+    rows = []
+    for optimizer in OPTIMIZER_SLUGS:
+        for seed in ACTIVE_SEEDS:
+            seed_dir = require_tail_checkpoint_cache(optimizer, seed)
+            fingerprint = verified_run_fingerprint(optimizer, seed)
+            refs = selected_refs(seed_dir)
+            if int(MAXIMUM_CHECKPOINTS) == 100 and len(refs) != 100:
+                raise RuntimeError(
+                    f"Requested complete final-100 cache, observed {len(refs)} for "
+                    f"optimizer={optimizer}, seed={seed}"
+                )
+            for index, ref in enumerate(refs):
+                rows.append({
+                    "optimizer": str(optimizer),
+                    "seed": int(seed),
+                    "epoch": int(ref.epoch),
+                    "global_step": int(ref.global_step),
+                    "checkpoint_path": str(Path(ref.path).resolve()),
+                    "protocol_fingerprint": str(fingerprint),
+                    "checkpoint_index": int(index),
+                    "checkpoint_count": int(len(refs)),
+                    "is_anchor": bool(index == 0),
+                    "is_final": bool(index == len(refs) - 1),
+                    "source_artifact_kind": "verified_final_100_tail_cache",
+                    "analysis_code_sha256": WEIGHT_QUOTIENT_ANALYSIS_CODE_SHA256,
+                    "analysis_settings_sha256": (
+                        WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_SHA256
+                    ),
+                    "analysis_settings_json": (
+                        WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_JSON
+                    ),
+                })
+    frame = pd.DataFrame(rows).sort_values(
+        ["optimizer", "seed", "epoch", "global_step"]
+    ).reset_index(drop=True)
+    if frame.empty:
+        raise RuntimeError("No verified checkpoint contexts were constructed")
+    return frame
+
+
+def active_run_manifests():
+    manifests = []
+    for optimizer in OPTIMIZER_SLUGS:
+        for seed in ACTIVE_SEEDS:
+            identity = _VERIFIED_RUN_IDENTITIES.get((str(optimizer), int(seed)))
+            if identity is None:
+                raise RuntimeError(
+                    f"Run identity was not verified for {optimizer}/seed_{seed}"
+                )
+            source = Path(identity["source_seed_dir"]) / "manifest.json"
+            manifests.append(json.loads(source.read_text(encoding="utf-8")))
+    return manifests
+
+
+def run_raw_weightwatcher_controls(contexts):
+    fit_path = QUOTIENT_ANALYSIS_DIR / "raw_weightwatcher_dual_fits.csv"
+    midpoint_path = QUOTIENT_ANALYSIS_DIR / "midpoint_ecs_ranks.csv"
+    raw_profiles = ({"profile_id": "raw_full_weight"},)
+    resumed_fits, resumed_midpoints, complete = load_resumable_tables(
+        fit_path=fit_path,
+        secondary_path=midpoint_path,
+        contexts=contexts,
+        method="raw_weight_control",
+        profiles=raw_profiles,
+    )
+    fit_frames = [resumed_fits] if not resumed_fits.empty else []
+    midpoint_frames = [resumed_midpoints] if not resumed_midpoints.empty else []
+    for position, context in contexts.iterrows():
+        resume_key = checkpoint_identity(context) + ("raw_full_weight",)
+        if resume_key in complete:
+            continue
+        model = checkpoint_model(context["checkpoint_path"])
+        metadata = {
+            **context.to_dict(),
+            "method": "raw_weight_control",
+            "profile_id": "raw_full_weight",
+            "parameter_profile": "{}",
+            "operator_kind": "weight_esd",
+            "map_definition": "identity W -> W",
+            "selection_role": "assumption_free_raw_control",
+            "randomized_diagnostics_interpretation": (
+                "original_matrix_entry_shuffle_baseline_audit"
+            ),
+        }
+        measurement = analyze_weightwatcher_dual(
+            model,
+            min_evals=int(WW_MIN_EVALS),
+            max_evals=WW_MAX_EVALS,
+            max_fingers=int(WW_MAX_FINGERS),
+            svd_method=str(WW_SVD_METHOD),
+            randomize=True,
+            analysis_seed=stable_analysis_seed(
+                context["optimizer"], context["seed"], context["epoch"], "raw"
+            ),
+            primary_variant="clip_xmax",
+        )
+        validation = validate_weightwatcher_measurement(
+            measurement,
+            primary_variant="clip_xmax",
+            expected_layers=EXPECTED_WEIGHT_LAYERS,
+        )
+        metadata["weightwatcher_structural_errors"] = json.dumps(
+            list(validation.structural_errors)
+        )
+        metadata["weightwatcher_primary_fit_failures"] = json.dumps(
+            list(validation.primary_fit_failures)
+        )
+        hashes = {
+            layer: spectrum_sha256(measurement.esds[layer])
+            for layer in EXPECTED_WEIGHT_LAYERS
+        }
+        fit_frames.append(
+            weightwatcher_rows(measurement, metadata=metadata, spectrum_hashes=hashes)
+        )
+        checkpoint_midpoints = []
+        for layer in EXPECTED_WEIGHT_LAYERS:
+            record = midpoint_record(
+                measurement,
+                layer=layer,
+                metadata=metadata,
+            )
+            record["final_materialized_gram_eigenvalues_json"] = (
+                json.dumps(
+                    _jsonable(np.asarray(measurement.esds[layer], dtype=float))
+                )
+                if bool(context["is_final"])
+                else ""
+            )
+            checkpoint_midpoints.append(record)
+        midpoint_frames.append(pd.DataFrame(checkpoint_midpoints))
+        atomic_csv(pd.concat(fit_frames, ignore_index=True, sort=False), fit_path)
+        atomic_csv(
+            pd.concat(midpoint_frames, ignore_index=True, sort=False), midpoint_path
+        )
+        if (position + 1) % 10 == 0 or position + 1 == len(contexts):
+            print(f"raw WeightWatcher: {position + 1}/{len(contexts)} checkpoints")
+    fits = pd.concat(fit_frames, ignore_index=True, sort=False)
+    midpoints = pd.concat(midpoint_frames, ignore_index=True, sort=False)
+    atomic_csv(fits, fit_path)
+    atomic_csv(midpoints, midpoint_path)
+    final_spectra = {}
+    final_spectrum_index = []
+    final_rows = midpoints[
+        midpoints["is_final"].astype(str).str.lower().eq("true")
+    ]
+    for _, row in final_rows.iterrows():
+        payload = str(row.get("final_materialized_gram_eigenvalues_json", ""))
+        if not payload or payload.lower() == "nan":
+            raise RuntimeError("Resumable raw final spectrum payload is missing")
+        values = np.asarray(json.loads(payload), dtype=float)
+        key = stable_slug(
+            f"{row['optimizer']}_{int(row['seed'])}_{row['layer']}_raw_weight_control"
+        )
+        final_spectra[key] = values
+        final_spectrum_index.append({
+            "spectrum_key": key,
+            "optimizer": str(row["optimizer"]),
+            "seed": int(row["seed"]),
+            "epoch": int(row["epoch"]),
+            "global_step": int(row["global_step"]),
+            "layer": str(row["layer"]),
+            "method": "raw_weight_control",
+            "profile_id": "raw_full_weight",
+        })
+    atomic_npz(
+        final_spectra,
+        QUOTIENT_ANALYSIS_DIR / "raw_weight_final_spectra.npz",
+    )
+    atomic_csv(
+        pd.DataFrame(final_spectrum_index, columns=FINAL_SPECTRUM_INDEX_COLUMNS),
+        QUOTIENT_ANALYSIS_DIR / "raw_weight_final_spectra_index.csv",
+    )
+    return fits, midpoints
+
+
+def _midpoint_lookup(midpoints):
+    keys = ["optimizer", "seed", "epoch", "global_step", "layer"]
+    if midpoints.duplicated(keys).any():
+        raise RuntimeError("Midpoint table contains duplicate checkpoint/layer rows")
+    return {
+        tuple(row[key] for key in keys): int(row["k_mid"])
+        for _, row in midpoints.iterrows()
+    }
+
+
+def _anchor_paths(contexts):
+    anchors = contexts[contexts["is_anchor"].astype(bool)]
+    if anchors.duplicated(["optimizer", "seed"]).any():
+        raise RuntimeError("Multiple anchor checkpoints found for one run")
+    return {
+        (str(row["optimizer"]), int(row["seed"])): str(row["checkpoint_path"])
+        for _, row in anchors.iterrows()
+    }
+
+
+def run_quotient_method(method, profiles, *, contexts, midpoints):
+    method = str(method)
+    if method not in set(EXPECTED_QUOTIENT_METHODS) | set(REFERENCE_METHODS):
+        raise ValueError(f"Undeclared quotient method {method!r}")
+    profiles = tuple(dict(profile) for profile in profiles)
+    profile_ids = tuple(str(profile.get("profile_id", "")) for profile in profiles)
+    if not profiles or any(not value for value in profile_ids):
+        raise ValueError(f"{method} has an empty or unnamed parameter profile")
+    if len(set(profile_ids)) != len(profile_ids):
+        raise ValueError(f"{method} has duplicate profile IDs: {profile_ids}")
+    if method in METHOD_PROFILE_IDS:
+        raise RuntimeError(f"{method} was already run in this notebook")
+    METHOD_PROFILE_IDS[method] = profile_ids
+    lookup = _midpoint_lookup(midpoints)
+    anchors = _anchor_paths(contexts)
+    fit_path = QUOTIENT_ANALYSIS_DIR / f"{method}_weightwatcher_dual_fits.csv"
+    operator_path = QUOTIENT_ANALYSIS_DIR / f"{method}_operator_rows.csv"
+    resumed_fits, resumed_operators, complete = load_resumable_tables(
+        fit_path=fit_path,
+        secondary_path=operator_path,
+        contexts=contexts,
+        method=method,
+        profiles=profiles,
+    )
+    fit_frames = [resumed_fits] if not resumed_fits.empty else []
+    operator_rows = (
+        resumed_operators.to_dict("records") if not resumed_operators.empty else []
+    )
+    for position, context in contexts.iterrows():
+        base_model = None
+        anchor_model = None
+        for raw_profile in profiles:
+            profile_id, options = parameter_profile(raw_profile)
+            resume_key = checkpoint_identity(context) + (profile_id,)
+            if resume_key in complete:
+                continue
+            if base_model is None:
+                base_model = checkpoint_model(context["checkpoint_path"])
+                anchor_model = checkpoint_model(
+                    anchors[(str(context["optimizer"]), int(context["seed"]))]
+                )
+            model = copy.deepcopy(base_model)
+            available_layers = []
+            unavailable = {}
+            hashes = {}
+            for layer in EXPECTED_WEIGHT_LAYERS:
+                key = (
+                    str(context["optimizer"]),
+                    int(context["seed"]),
+                    int(context["epoch"]),
+                    int(context["global_step"]),
+                    str(layer),
+                )
+                k = int(lookup[key])
+                weight = matrix_from_model(base_model, layer)
+                anchor_weight = matrix_from_model(anchor_model, layer)
+                common = {
+                    **context.to_dict(),
+                    "method": method,
+                    "profile_id": profile_id,
+                    "layer": str(layer),
+                    "ecs_rank": k,
+                    "selection_role": "declared_quotient_hypothesis",
+                    "parameter_profile": json.dumps(_jsonable(options), sort_keys=True),
+                    "randomized_diagnostics_interpretation": (
+                        "gauge_dependent_entry_shuffle_audit_not_a_quotient_invariant"
+                    ),
+                }
+                try:
+                    result = weight_quotients.apply_weight_quotient(
+                        method,
+                        weight,
+                        ecs_rank=k,
+                        anchor_weight=anchor_weight,
+                        parameters=options,
+                    )
+                    if int(result.retained_rank) < int(WW_MIN_EVALS):
+                        raise weight_quotients.WeightQuotientUnavailable(
+                            f"retained rank {result.retained_rank} is below "
+                            f"WW_MIN_EVALS={WW_MIN_EVALS}"
+                        )
+                    replace_model_matrix(model, layer, result.weight)
+                    actual_esd = model_layer_esd(model, layer)
+                    declared = np.sort(
+                        np.asarray(result.gram_eigenvalues, dtype=float)
+                    )[::-1]
+                    observed = actual_esd[::-1]
+                    if observed.size != declared.size or not np.allclose(
+                        observed, declared,
+                        rtol=5.0e-5, atol=1.0e-10,
+                    ):
+                        raise RuntimeError(
+                            "float32 canonical matrix disagrees with the declared "
+                            "transformed ECS spectrum or retained rank"
+                        )
+                    digest = spectrum_sha256(actual_esd)
+                    hashes[layer] = digest
+                    available_layers.append(layer)
+                    operator_rows.append({
+                        **common,
+                        "operator_kind": result.operator_kind,
+                        "map_definition": result.map_definition,
+                        "retained_rank": int(result.retained_rank),
+                        "available": True,
+                        "unavailable_reason": "",
+                        "materialized_weight_dtype": str(
+                            dict(model.named_parameters())[layer].dtype
+                        ),
+                        "materialized_positive_esd_count": int(actual_esd.size),
+                        "materialized_orthogonal_gauge": (
+                            "rectangular_diagonal_canonical_section"
+                        ),
+                        "quotient_parameters": json.dumps(
+                            _jsonable(result.parameters), sort_keys=True
+                        ),
+                        "transformed_spectrum_sha256": digest,
+                        "final_materialized_gram_eigenvalues_json": (
+                            json.dumps(_jsonable(actual_esd))
+                            if bool(context["is_final"])
+                            else ""
+                        ),
+                    })
+                except weight_quotients.WeightQuotientUnavailable as error:
+                    unavailable[layer] = f"{type(error).__name__}: {error}"
+                    operator_rows.append({
+                        **common,
+                        "operator_kind": f"{method}_unavailable",
+                        "map_definition": "declared quotient could not produce a valid WW matrix",
+                        "retained_rank": 0,
+                        "available": False,
+                        "unavailable_reason": unavailable[layer],
+                        "quotient_parameters": json.dumps(_jsonable(options), sort_keys=True),
+                        "transformed_spectrum_sha256": "",
+                        "final_materialized_gram_eigenvalues_json": "",
+                    })
+            fit_metadata = {
+                **context.to_dict(),
+                "method": method,
+                "profile_id": profile_id,
+                "selection_role": "declared_quotient_hypothesis",
+                "parameter_profile": json.dumps(_jsonable(options), sort_keys=True),
+                "randomized_diagnostics_interpretation": (
+                    "gauge_dependent_entry_shuffle_audit_not_a_quotient_invariant"
+                ),
+            }
+            if available_layers:
+                measurement = analyze_weightwatcher_dual(
+                    model,
+                    min_evals=int(WW_MIN_EVALS),
+                    max_evals=WW_MAX_EVALS,
+                    max_fingers=int(WW_MAX_FINGERS),
+                    svd_method=str(WW_SVD_METHOD),
+                    randomize=True,
+                    analysis_seed=stable_analysis_seed(
+                        context["optimizer"], context["seed"], context["epoch"],
+                        method, profile_id,
+                    ),
+                    primary_variant="clip_xmax",
+                )
+                validation = validate_weightwatcher_measurement(
+                    measurement,
+                    primary_variant="clip_xmax",
+                    expected_layers=EXPECTED_WEIGHT_LAYERS,
+                )
+                if validation.structural_errors:
+                    raise RuntimeError(
+                        "Transformed WeightWatcher acquisition is structurally "
+                        f"invalid: {validation.structural_errors}"
+                    )
+                measured = weightwatcher_rows(
+                    measurement,
+                    metadata=fit_metadata,
+                    spectrum_hashes=hashes,
+                )
+                measured["weightwatcher_primary_fit_failures"] = json.dumps(
+                    list(validation.primary_fit_failures)
+                )
+                measured["weightwatcher_raw_audit_warnings"] = json.dumps(
+                    list(validation.raw_audit_warnings)
+                )
+                for layer in available_layers:
+                    observed_digest = spectrum_sha256(measurement.esds[layer])
+                    if observed_digest != hashes[layer]:
+                        raise RuntimeError(
+                            f"WeightWatcher analyzed a different ESD for {layer}: "
+                            f"expected={hashes[layer]}, observed={observed_digest}"
+                        )
+                measured = measured[measured["layer"].isin(available_layers)].copy()
+                fit_frames.append(measured)
+            for layer, reason in unavailable.items():
+                fit_frames.append(
+                    unavailable_fit_rows(
+                        metadata=fit_metadata,
+                        layer=layer,
+                        reason=reason,
+                    )
+                )
+            atomic_csv(
+                pd.concat(fit_frames, ignore_index=True, sort=False),
+                fit_path,
+            )
+            atomic_csv(pd.DataFrame(operator_rows), operator_path)
+        if (position + 1) % 10 == 0 or position + 1 == len(contexts):
+            print(f"{method}: {position + 1}/{len(contexts)} checkpoints")
+    fits = pd.concat(fit_frames, ignore_index=True, sort=False)
+    operators = pd.DataFrame(operator_rows)
+    atomic_csv(fits, fit_path)
+    atomic_csv(operators, operator_path)
+    final_spectra = {}
+    final_spectrum_index = []
+    final_rows = operators[
+        operators["is_final"].astype(str).str.lower().eq("true")
+        & operators["available"].astype(str).str.lower().eq("true")
+    ]
+    for _, row in final_rows.iterrows():
+        payload = str(row.get("final_materialized_gram_eigenvalues_json", ""))
+        if not payload or payload.lower() == "nan":
+            raise RuntimeError(
+                f"Resumable final spectrum payload is missing for {method}"
+            )
+        values = np.asarray(json.loads(payload), dtype=float)
+        spectrum_key = stable_slug(
+            f"{row['optimizer']}_{int(row['seed'])}_{row['layer']}_{method}_{row['profile_id']}"
+        )
+        final_spectra[spectrum_key] = values
+        final_spectrum_index.append({
+            "spectrum_key": spectrum_key,
+            "optimizer": str(row["optimizer"]),
+            "seed": int(row["seed"]),
+            "epoch": int(row["epoch"]),
+            "global_step": int(row["global_step"]),
+            "layer": str(row["layer"]),
+            "method": method,
+            "profile_id": str(row["profile_id"]),
+        })
+    # Always overwrite both files. An empty current result must not fall back
+    # to a stale archive from an earlier execution in the same output folder.
+    atomic_npz(
+        final_spectra,
+        QUOTIENT_ANALYSIS_DIR / f"{method}_final_spectra.npz",
+    )
+    atomic_csv(
+        pd.DataFrame(final_spectrum_index, columns=FINAL_SPECTRUM_INDEX_COLUMNS),
+        QUOTIENT_ANALYSIS_DIR / f"{method}_final_spectra_index.csv",
+    )
+    METHOD_FIT_FRAMES[method] = fits
+    METHOD_OPERATOR_FRAMES[method] = operators
+    return fits, operators
+"""
+
+
 def two_checkpoint_notebook() -> tuple[str, dict[str, object]]:
     cells = [
         markdown(
@@ -7571,6 +8415,764 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
     return notebook("15_Method_Nulls_Stability_Comparison.ipynb", cells)
 
 
+def weight_quotient_notebook(*, three_seed: bool) -> tuple[str, dict[str, object]]:
+    builder_source_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    if three_seed:
+        filename = "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb"
+        title = "Three-seed Muon/MuonClip weight-quotient validation"
+        run_variant = "three_seed"
+        uncertainty_policy = "student_t_95_ci_across_complete_seeded_runs"
+        scan_default = "False"
+        active_seed_source = """
+ACTIVE_SEEDS = tuple(int(seed) for seed in SEEDS)
+if ACTIVE_SEEDS != (1337, 2027, 31415):
+    raise ValueError(
+        "The confirmatory notebook requires seeds (1337, 2027, 31415); "
+        f"observed {ACTIVE_SEEDS}"
+    )
+"""
+    else:
+        filename = "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb"
+        title = "One-seed Muon/MuonClip weight-quotient search"
+        run_variant = "one_seed"
+        uncertainty_policy = "no_seed_error_bars"
+        scan_default = "True"
+        active_seed_source = """
+ACTIVE_SEEDS = (int(SEED),)
+if len(ACTIVE_SEEDS) != 1:
+    raise RuntimeError("The one-seed notebook must analyze exactly one complete run")
+"""
+
+    if three_seed:
+        provenance_source = """
+cross_run_provenance = validate_cross_run_provenance(active_run_manifests())
+atomic_csv(
+    cross_run_provenance,
+    QUOTIENT_ANALYSIS_DIR / "cross_run_provenance_audit.csv",
+)
+CROSS_RUN_PROVENANCE_AUDITED = True
+"""
+    else:
+        provenance_source = """
+CROSS_RUN_PROVENANCE_AUDITED = False
+"""
+
+    parameter_source = (
+        ("SEED = 1337\n" if not three_seed else "")
+        + f"RUN_PARAMETER_SCANS = {scan_default}\n"
+        + """
+OPTIMIZER_SLUGS = ["muon", "muonclip_rms"]
+LAYERS = ["fc1.weight", "fc2.weight", "fc3.weight"]
+MAXIMUM_CHECKPOINTS = 100
+RESUME_PARTIAL_RESULTS = True
+
+# Exact existing WeightWatcher contract. Both fits analyze the same transformed model.
+WW_MIN_EVALS = 8
+WW_MAX_EVALS = None
+WW_MAX_FINGERS = 10
+WW_SVD_METHOD = "accurate"
+
+# The primary profile is used by the three-seed notebook. The one-seed notebook
+# defaults to the explicit scan profiles. Expand these lists rather than hiding
+# additional optimization inside a helper.
+UNIFORM_SINGULAR_PRIMARY = [
+    {"profile_id": "mu_fraction_0p50", "shift_fraction": 0.50},
+]
+UNIFORM_SINGULAR_SCAN = [
+    {"profile_id": "mu_fraction_0p25", "shift_fraction": 0.25},
+    {"profile_id": "mu_fraction_0p50", "shift_fraction": 0.50},
+    {"profile_id": "mu_fraction_0p75", "shift_fraction": 0.75},
+]
+GRAM_RIDGE_PRIMARY = [
+    {"profile_id": "tau_fraction_0p50", "tau_fraction": 0.50},
+]
+GRAM_RIDGE_SCAN = [
+    {"profile_id": "tau_fraction_0p25", "tau_fraction": 0.25},
+    {"profile_id": "tau_fraction_0p50", "tau_fraction": 0.50},
+    {"profile_id": "tau_fraction_0p75", "tau_fraction": 0.75},
+]
+BLOCKWISE_PRIMARY = [
+    {"profile_id": "blocks_2_shift_0p50", "block_count": 2, "shift_fraction": 0.50},
+]
+BLOCKWISE_SCAN = [
+    {"profile_id": "blocks_2_shift_0p25", "block_count": 2, "shift_fraction": 0.25},
+    {"profile_id": "blocks_2_shift_0p50", "block_count": 2, "shift_fraction": 0.50},
+    {"profile_id": "blocks_3_shift_0p50", "block_count": 3, "shift_fraction": 0.50},
+]
+FESHBACH_PRIMARY = [
+    {"profile_id": "ridge_ratio_1em2", "regularization_ratio": 1.0e-2, "minimum_anchor_gap_ratio": 1.0e-6},
+]
+FESHBACH_SCAN = [
+    {"profile_id": "ridge_ratio_1em4", "regularization_ratio": 1.0e-4, "minimum_anchor_gap_ratio": 1.0e-6},
+    {"profile_id": "ridge_ratio_1em2", "regularization_ratio": 1.0e-2, "minimum_anchor_gap_ratio": 1.0e-6},
+    {"profile_id": "ridge_ratio_1em1", "regularization_ratio": 1.0e-1, "minimum_anchor_gap_ratio": 1.0e-6},
+]
+RECTANGULAR_D_PRIMARY = [
+    {"profile_id": "bulk_fraction_1p00", "minimum_noise_modes": 8, "noise_bulk_fraction": 1.00, "minimum_relative_separation": 0.01, "denominator_ridge": 1.0e-12},
+]
+RECTANGULAR_D_SCAN = [
+    {"profile_id": "bulk_fraction_0p50", "minimum_noise_modes": 8, "noise_bulk_fraction": 0.50, "minimum_relative_separation": 0.01, "denominator_ridge": 1.0e-12},
+    {"profile_id": "bulk_fraction_0p75", "minimum_noise_modes": 8, "noise_bulk_fraction": 0.75, "minimum_relative_separation": 0.01, "denominator_ridge": 1.0e-12},
+    {"profile_id": "bulk_fraction_1p00", "minimum_noise_modes": 8, "noise_bulk_fraction": 1.00, "minimum_relative_separation": 0.01, "denominator_ridge": 1.0e-12},
+]
+CALIBRATED_SHRINKER_PRIMARY = [
+    {"profile_id": "MP_scale_1p00", "minimum_noise_modes": 8, "noise_scale_multiplier": 1.00},
+]
+CALIBRATED_SHRINKER_SCAN = [
+    {"profile_id": "MP_scale_0p75", "minimum_noise_modes": 8, "noise_scale_multiplier": 0.75},
+    {"profile_id": "MP_scale_1p00", "minimum_noise_modes": 8, "noise_scale_multiplier": 1.00},
+    {"profile_id": "MP_scale_1p25", "minimum_noise_modes": 8, "noise_scale_multiplier": 1.25},
+]
+"""
+    )
+
+    setup_source = f"""
+RUN_VARIANT = {run_variant!r}
+METHOD_SLUG = "weight_only_muon_quotients_" + RUN_VARIANT
+UNCERTAINTY_POLICY = {uncertainty_policy!r}
+NOTEBOOK_BUILDER_SOURCE_SHA256 = {builder_source_sha256!r}
+WEIGHT_QUOTIENT_ANALYSIS_CODE_SHA256 = hashlib.sha256(
+    (
+        WEIGHT_QUOTIENT_ANALYSIS_VERSION
+        + WEIGHT_QUOTIENT_RUNTIME_DEPENDENCY_SHA256
+        + NOTEBOOK_BUILDER_SOURCE_SHA256
+    ).encode("utf-8")
+).hexdigest()
+{active_seed_source}
+if tuple(LAYERS) != EXPECTED_WEIGHT_LAYERS:
+    raise ValueError(f"LAYERS must remain {{EXPECTED_WEIGHT_LAYERS}}; observed {{LAYERS}}")
+QUOTIENT_ANALYSIS_DIR = OUTPUT_ROOT_PATH / METHOD_SLUG
+QUOTIENT_ANALYSIS_DIR.mkdir(parents=True, exist_ok=True)
+atomic_json(
+    {{
+        "schema_version": 1,
+        "method_slug": METHOD_SLUG,
+        "run_variant": RUN_VARIANT,
+        "completed": False,
+        "analysis_version": WEIGHT_QUOTIENT_ANALYSIS_VERSION,
+        "analysis_code_sha256": WEIGHT_QUOTIENT_ANALYSIS_CODE_SHA256,
+        "analysis_settings_sha256": WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_SHA256,
+        "analysis_settings": WEIGHT_QUOTIENT_ANALYSIS_SETTINGS,
+        "notebook_builder_source_sha256": NOTEBOOK_BUILDER_SOURCE_SHA256,
+        "status": "analysis_in_progress_or_interrupted",
+    }},
+    QUOTIENT_ANALYSIS_DIR / "method_provenance.json",
+)
+METHOD_FIT_FRAMES = {{}}
+METHOD_OPERATOR_FRAMES = {{}}
+METHOD_PROFILE_IDS = {{}}
+
+checkpoint_contexts = build_checkpoint_contexts()
+{provenance_source}
+raw_fit_rows, midpoint_rows = run_raw_weightwatcher_controls(checkpoint_contexts)
+display(checkpoint_contexts.head())
+display(midpoint_rows.head())
+print("uncertainty policy:", UNCERTAINTY_POLICY)
+print("quotient outputs:", QUOTIENT_ANALYSIS_DIR)
+"""
+
+    cells = [
+        markdown(
+            f"""
+            # {title}
+
+            Analyze the verified final-100 model-only checkpoints after the
+            baseline run. The midpoint ECS is selected once from the raw
+            `fix_fingers=clip_xmax` WeightWatcher row at each checkpoint and is
+            then frozen before any quotient transformation. Every candidate is
+            materialized as the full-shape rectangular-diagonal canonical
+            representative of its diagnostic `O(out) x O(in)` orbit and passed
+            to WeightWatcher twice: `fix_fingers=False` and
+            `fix_fingers="clip_xmax"`.
+
+            This notebook tests five nuisance models rather than asserting that
+            an unknown Muon history has an exact non-trivial quotient. FC3 is
+            retained as a ten-mode auxiliary-AdamW control; FC1 and FC2 are the
+            Muon/MuonClip matrices. This orthogonal orbit is a spectral
+            diagnostic quotient, not a ReLU-network reparameterization
+            symmetry; transformed models are never evaluated for forward
+            accuracy. Entry-randomization diagnostics remain enabled for API
+            compatibility but are labelled gauge-dependent; only the ESD fit
+            is an orbit invariant. Completed checkpoint/profile groups are
+            atomically resumable under a code, parameter and run-fingerprint
+            identity check.
+            """
+        ),
+        parameters(parameter_source),
+        code(BOOTSTRAP),
+        code(COMMON_IMPORTS + "\n" + ANALYSIS_IMPORTS + "\n" + WEIGHT_QUOTIENT_IMPORTS),
+        caveat(
+            "Weight-state quotient hypotheses",
+            "midpoint_ECS_weight_representatives_fit_by_dual_WeightWatcher",
+            "P_mid(W_raw) is frozen; each method chooses the rectangular-diagonal canonical representative of [W_q] under O(m)xO(n); WeightWatcher fits its Gram energies.",
+            "Muon polar-normalizes an update before adding it to W. The five maps below are falsifiable inverse models, not an exact quotient by arbitrary unknown semiorthogonal histories.",
+        ),
+        code(
+            COMMON_HELPERS
+            + "\n"
+            + TAIL_CHECKPOINT_CACHE_HELPERS
+            + "\n"
+            + CHECKPOINT_HELPERS
+            + "\n"
+            + WEIGHT_QUOTIENT_HELPERS
+        ),
+        code(setup_source),
+        markdown(
+            r"""
+            ## Reference controls: midpoint truncation and the polar singular shift
+
+            The raw full weight is already saved above. The first reference is
+            pure midpoint-ECS truncation. The second is the previously proposed
+            one-coordinate polar quotient
+
+            \[
+            \lambda_i'=(\sqrt{\lambda_i}-\mu)^2.
+            \]
+
+            These references are not counted among the five alternative cells.
+            """
+        ),
+        code(
+            """
+midpoint_control_fits, midpoint_control_operators = run_quotient_method(
+    "midpoint_ecs_control",
+    [{"profile_id": "midpoint_ecs_no_counterterm"}],
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+uniform_singular_fits, uniform_singular_operators = run_quotient_method(
+    "uniform_singular_translation",
+    choose_profiles(UNIFORM_SINGULAR_PRIMARY, UNIFORM_SINGULAR_SCAN),
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+display(uniform_singular_fits.head())
+"""
+        ),
+        markdown(
+            r"""
+            ## 1. Gram ridge counterterm
+
+            Test the isotropic covariance hypothesis
+
+            \[
+            \lambda_i'=(\lambda_i-\tau)_+.
+            \]
+
+            This is exact only for a scalar Gram contribution. The full scan is
+            preserved; no candidate is selected by proximity to \(\alpha=2\).
+            """
+        ),
+        code(
+            """
+gram_ridge_fits, gram_ridge_operators = run_quotient_method(
+    "gram_ridge",
+    choose_profiles(GRAM_RIDGE_PRIMARY, GRAM_RIDGE_SCAN),
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+display(gram_ridge_fits.head())
+"""
+        ),
+        markdown(
+            r"""
+            ## 2. Blockwise singular counterterms
+
+            Split the ordered midpoint ECS into a fixed number of contiguous
+            bands and apply \(s_i'=(s_i-\mu_b)_+\). A declared PAVA projection
+            restores non-increasing order if a block shift creates crossings;
+            its correction norm is recorded.
+            """
+        ),
+        code(
+            """
+blockwise_fits, blockwise_operators = run_quotient_method(
+    "blockwise_singular",
+    choose_profiles(BLOCKWISE_PRIMARY, BLOCKWISE_SCAN),
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+display(blockwise_fits.head())
+"""
+        ),
+        markdown(
+            r"""
+            ## 3. Anchor-frozen Feshbach downfolding
+
+            Freeze the smaller-Gram basis at the earliest verified tail
+            checkpoint of the same optimizer/seed/layer, then evaluate
+
+            \[
+            H_{\mathrm{eff}}(-\delta)=A-B(C+\delta I)^{-1}B^T.
+            \]
+
+            The solve condition number, residual and coupling norm are saved.
+            At the anchor itself, \(B=0\) and this must reduce exactly to ECS
+            truncation. Later nonzero coupling measures rotation relative to
+            that anchor; this is therefore trajectory-dependent, not a strict
+            single-checkpoint quotient.
+            """
+        ),
+        code(
+            """
+feshbach_fits, feshbach_operators = run_quotient_method(
+    "feshbach_downfolding",
+    choose_profiles(FESHBACH_PRIMARY, FESHBACH_SCAN),
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+display(feshbach_operators.head())
+"""
+        ),
+        markdown(
+            r"""
+            ## 4. Rectangular empirical D-transform deconvolution
+
+            Estimate the rectangular noise law from a declared lower fraction
+            of the discarded singular modes and map a retained spike using
+            \(D(s)^{-1/2}\). This is an
+            empirical separated-spike approximation to the incoherent/free
+            additive-noise hypothesis, not an unrestricted full-rank free
+            deconvolution solver. The scan varies the operative bulk window;
+            rows lacking eight selected noise modes or a separated edge remain
+            explicitly unavailable.
+            """
+        ),
+        code(
+            """
+rectangular_d_fits, rectangular_d_operators = run_quotient_method(
+    "rectangular_d_transform",
+    choose_profiles(RECTANGULAR_D_PRIMARY, RECTANGULAR_D_SCAN),
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+display(rectangular_d_operators.head())
+"""
+        ),
+        markdown(
+            r"""
+            ## 5. Calibrated monotone MP shrinker
+
+            Calibrate a white-noise scale from the discarded spectral edge and
+            apply the analytic monotone optimal Frobenius shrinker. The
+            calibration never uses WeightWatcher \(\alpha\), KS distance,
+            `xmin`, fingers or trace-log. This is the reproducible baseline for
+            a later shrinker calibrated on recorded Muon corruptions.
+            """
+        ),
+        code(
+            """
+calibrated_fits, calibrated_operators = run_quotient_method(
+    "calibrated_mp_shrinker",
+    choose_profiles(CALIBRATED_SHRINKER_PRIMARY, CALIBRATED_SHRINKER_SCAN),
+    contexts=checkpoint_contexts,
+    midpoints=midpoint_rows,
+)
+display(calibrated_operators.head())
+"""
+        ),
+        markdown(
+            """
+            ## Exact-grid and dual-WeightWatcher audit
+
+            Consolidate every row, verify that the five declared methods and
+            both references ran, and prove that raw/fixed-finger fits share the
+            identical transformed spectrum hash.
+            """
+        ),
+        code(
+            """
+expected_methods = set(EXPECTED_QUOTIENT_METHODS) | set(REFERENCE_METHODS)
+if set(METHOD_FIT_FRAMES) != expected_methods:
+    raise RuntimeError(
+        f"Quotient inventory drift: observed={sorted(METHOD_FIT_FRAMES)}, "
+        f"expected={sorted(expected_methods)}"
+    )
+quotient_fit_rows = pd.concat(
+    [raw_fit_rows, *METHOD_FIT_FRAMES.values()], ignore_index=True, sort=False
+)
+quotient_operator_rows = pd.concat(
+    list(METHOD_OPERATOR_FRAMES.values()), ignore_index=True, sort=False
+)
+pair_keys = [
+    "optimizer", "seed", "epoch", "global_step", "method", "profile_id", "layer"
+]
+for identity, group in quotient_fit_rows.groupby(pair_keys, dropna=False):
+    variants = set(group["fit_variant"].astype(str))
+    if variants != {"raw", "clip_xmax"}:
+        raise RuntimeError(f"Incomplete dual WeightWatcher pair {identity}: {variants}")
+    hashes = set(group["transformed_spectrum_sha256"].fillna("").astype(str))
+    if len(hashes) != 1:
+        raise RuntimeError(
+            f"Raw and clip_xmax fits used different transformed spectra: {identity}"
+        )
+grid_columns = pair_keys + ["fit_variant"]
+if quotient_fit_rows.duplicated(grid_columns).any():
+    duplicates = quotient_fit_rows.loc[
+        quotient_fit_rows.duplicated(grid_columns, keep=False), grid_columns
+    ].head(20)
+    raise RuntimeError(f"Duplicate quotient fit rows:\\n{duplicates}")
+expected_profile_ids = {
+    "raw_weight_control": ("raw_full_weight",),
+    **METHOD_PROFILE_IDS,
+}
+observed_methods = set(quotient_fit_rows["method"].astype(str))
+if observed_methods != set(expected_profile_ids):
+    raise RuntimeError(
+        f"Fit method inventory drift: observed={sorted(observed_methods)}, "
+        f"expected={sorted(expected_profile_ids)}"
+    )
+expected_grid = {
+    (
+        str(context["optimizer"]), int(context["seed"]), int(context["epoch"]),
+        int(context["global_step"]), str(method), str(profile_id), str(layer),
+        str(fit_variant),
+    )
+    for _, context in checkpoint_contexts.iterrows()
+    for method, profile_ids in expected_profile_ids.items()
+    for profile_id in profile_ids
+    for layer in EXPECTED_WEIGHT_LAYERS
+    for fit_variant in ("raw", "clip_xmax")
+}
+observed_grid = {
+    (
+        str(row.optimizer), int(row.seed), int(row.epoch), int(row.global_step),
+        str(row.method), str(row.profile_id), str(row.layer), str(row.fit_variant),
+    )
+    for row in quotient_fit_rows[grid_columns].itertuples(index=False)
+}
+if observed_grid != expected_grid:
+    raise RuntimeError(
+        f"Incomplete quotient grid: missing={len(expected_grid-observed_grid)}, "
+        f"unexpected={len(observed_grid-expected_grid)}"
+    )
+atomic_csv(
+    quotient_fit_rows,
+    QUOTIENT_ANALYSIS_DIR / "all_weightwatcher_dual_fits.csv",
+)
+atomic_csv(
+    quotient_operator_rows,
+    QUOTIENT_ANALYSIS_DIR / "all_quotient_operator_rows.csv",
+)
+availability_summary = (
+    quotient_operator_rows.assign(
+        available=truthy_series(quotient_operator_rows["available"])
+    )
+    .groupby(["optimizer", "method", "profile_id", "layer"], as_index=False)
+    .agg(
+        available_checkpoint_count=("available", "sum"),
+        expected_checkpoint_count=("available", "size"),
+        availability_fraction=("available", "mean"),
+    )
+)
+atomic_csv(
+    availability_summary,
+    QUOTIENT_ANALYSIS_DIR / "quotient_availability_summary.csv",
+)
+manifest = {
+    "schema_version": 1,
+    "completed": False,
+    "status": "exact_grid_validated_reporting_in_progress",
+    "suite_name": PROTOCOL_SLUG,
+    "method_slug": METHOD_SLUG,
+    "analysis_version": WEIGHT_QUOTIENT_ANALYSIS_VERSION,
+    "analysis_code_sha256": WEIGHT_QUOTIENT_ANALYSIS_CODE_SHA256,
+    "analysis_settings_sha256": WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_SHA256,
+    "analysis_settings": WEIGHT_QUOTIENT_ANALYSIS_SETTINGS,
+    "notebook_builder_source_sha256": NOTEBOOK_BUILDER_SOURCE_SHA256,
+    "run_variant": RUN_VARIANT,
+    "uncertainty_policy": UNCERTAINTY_POLICY,
+    "cross_run_provenance_audited": bool(CROSS_RUN_PROVENANCE_AUDITED),
+    "optimizer_slugs": list(OPTIMIZER_SLUGS),
+    "seeds": list(ACTIVE_SEEDS),
+    "optimizer_seed_protocol_fingerprints": {
+        f"{row.optimizer}/seed_{int(row.seed)}": str(row.protocol_fingerprint)
+        for row in checkpoint_contexts[
+            ["optimizer", "seed", "protocol_fingerprint"]
+        ].drop_duplicates().itertuples(index=False)
+    },
+    "source_artifact_kinds": sorted(
+        checkpoint_contexts["source_artifact_kind"].astype(str).unique().tolist()
+    ),
+    "checkpoint_count_per_run": int(MAXIMUM_CHECKPOINTS),
+    "layers": list(EXPECTED_WEIGHT_LAYERS),
+    "five_quotient_methods": list(EXPECTED_QUOTIENT_METHODS),
+    "reference_methods": list(REFERENCE_METHODS),
+    "method_profile_ids": {
+        method: list(profile_ids)
+        for method, profile_ids in METHOD_PROFILE_IDS.items()
+    },
+    "weightwatcher_fit_variants": ["raw", "clip_xmax"],
+    "fixed_finger_policy": "fix_fingers=clip_xmax",
+    "resume_partial_results": bool(RESUME_PARTIAL_RESULTS),
+    "orthogonal_quotient_group": "O(out) x O(in)",
+    "canonical_section": "rectangular_diagonal",
+    "randomized_diagnostics_policy": (
+        "computed_for_baseline_API_compatibility_but_gauge_dependent_and_not_"
+        "interpreted_as_quotient_invariants"
+    ),
+    "run_parameter_scans": bool(RUN_PARAMETER_SCANS),
+    "midpoint_selected_before_quotient": True,
+    "global_rescaling_used_to_change_alpha": False,
+    "method_claim": "falsifiable_weight_only_inverse_models_not_exact_unknown_Muon_quotient",
+}
+atomic_json(manifest, QUOTIENT_ANALYSIS_DIR / "method_provenance.json")
+display(quotient_fit_rows.head(30))
+display(quotient_operator_rows.head(30))
+"""
+        ),
+    ]
+
+    if three_seed:
+        cells.extend(
+            [
+                markdown(
+                    """
+                    ## Three-seed trajectories and 95% error bars
+
+                    A checkpoint is a repeated measurement. Independent
+                    complete seeded runs are the replicates. At each matched
+                    optimizer/method/profile/layer/checkpoint point, report the
+                    two-sided 95% Student-t interval across exactly three seeds.
+                    """
+                ),
+                code(
+                    """
+numeric_fits = quotient_fit_rows.copy()
+for column in ("alpha", "ks_D", "n_tail", "tail_decades"):
+    numeric_fits[column] = pd.to_numeric(numeric_fits[column], errors="coerce")
+numeric_fits["fit_success"] = truthy_series(numeric_fits["fit_ok"])
+availability_by_checkpoint = (
+    numeric_fits.groupby(
+        [
+            "optimizer", "method", "profile_id", "layer", "fit_variant",
+            "epoch", "global_step",
+        ],
+        as_index=False,
+    )
+    .agg(
+        observed_seed_count=("seed", "nunique"),
+        successful_seed_count=("fit_success", "sum"),
+    )
+)
+availability_by_checkpoint["expected_seed_count"] = len(ACTIVE_SEEDS)
+atomic_csv(
+    availability_by_checkpoint,
+    QUOTIENT_ANALYSIS_DIR / "fit_availability_by_checkpoint.csv",
+)
+qualified_fits = numeric_fits[numeric_fits["fit_success"]].copy()
+summary = summarize_numeric_metrics(
+    qualified_fits,
+    group_columns=(
+        "optimizer", "method", "profile_id", "layer", "fit_variant",
+        "epoch", "global_step",
+    ),
+    metrics=("alpha", "ks_D", "n_tail", "tail_decades"),
+    confidence=0.95,
+)
+summary["uncertainty_policy"] = UNCERTAINTY_POLICY
+atomic_csv(summary, QUOTIENT_ANALYSIS_DIR / "metric_summary_95ci.csv")
+atomic_csv(
+    summary[summary["n"].astype(int) < len(ACTIVE_SEEDS)].copy(),
+    QUOTIENT_ANALYSIS_DIR / "incomplete_metric_ci_groups.csv",
+)
+
+alpha_summary = summary[
+    (summary["metric"] == "alpha")
+    & (summary["n"].astype(int) == len(ACTIVE_SEEDS))
+].copy()
+for (optimizer, layer, fit_variant), panel in alpha_summary.groupby(
+    ["optimizer", "layer", "fit_variant"]
+):
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    for (method, profile_id), curve in panel.groupby(["method", "profile_id"]):
+        curve = curve.sort_values("epoch")
+        x = curve["epoch"].to_numpy(dtype=float)
+        mean = curve["mean"].to_numpy(dtype=float)
+        low = curve["ci_low"].to_numpy(dtype=float)
+        high = curve["ci_high"].to_numpy(dtype=float)
+        label = f"{method}:{profile_id}"
+        line = ax.plot(x, mean, linewidth=1.5, label=label)[0]
+        ax.fill_between(x, low, high, color=line.get_color(), alpha=0.14)
+    ax.axhline(2.0, color="#222222", linestyle="--", linewidth=1.2)
+    ax.set(
+        xlabel="epoch",
+        ylabel="WeightWatcher alpha",
+        title=f"{optimizer} {layer}: quotient alpha, {fit_variant}, 95% seed CI",
+    )
+    ax.grid(True, alpha=0.25)
+    ax.legend(fontsize=6, ncol=2)
+    fig.tight_layout()
+    fig.savefig(
+        QUOTIENT_ANALYSIS_DIR
+        / f"alpha_95ci_{stable_slug(optimizer)}_{stable_slug(layer)}_{stable_slug(fit_variant)}.png",
+        dpi=180,
+        bbox_inches="tight",
+    )
+    if SHOW_PLOTS:
+        plt.show()
+    else:
+        plt.close(fig)
+display(summary.head(30))
+"""
+                ),
+            ]
+        )
+    else:
+        cells.extend(
+            [
+                markdown(
+                    """
+                    ## One-seed trajectories
+
+                    Plot the complete checkpoint trajectory without confidence
+                    intervals. Checkpoints, layers, modes and finger choices are
+                    not independent replicates and cannot create error bars.
+                    """
+                ),
+                code(
+                    """
+one_seed = quotient_fit_rows.copy()
+one_seed["alpha"] = pd.to_numeric(one_seed["alpha"], errors="coerce")
+one_seed["fit_success"] = truthy_series(one_seed["fit_ok"]) & np.isfinite(one_seed["alpha"])
+atomic_csv(
+    one_seed[~one_seed["fit_success"]].copy(),
+    QUOTIENT_ANALYSIS_DIR / "failed_or_unavailable_one_seed_fits.csv",
+)
+one_seed = one_seed[one_seed["fit_success"]].copy()
+for (optimizer, layer, fit_variant), panel in one_seed.groupby(
+    ["optimizer", "layer", "fit_variant"]
+):
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    for (method, profile_id), curve in panel.groupby(["method", "profile_id"]):
+        curve = curve.sort_values("epoch")
+        ax.plot(
+            curve["epoch"], curve["alpha"], linewidth=1.4,
+            label=f"{method}:{profile_id}",
+        )
+    ax.axhline(2.0, color="#222222", linestyle="--", linewidth=1.2)
+    ax.set(
+        xlabel="epoch",
+        ylabel="WeightWatcher alpha",
+        title=f"{optimizer} {layer}: {fit_variant} quotient alpha (one seed; no CI)",
+    )
+    ax.grid(True, alpha=0.25)
+    ax.legend(fontsize=6, ncol=2)
+    fig.tight_layout()
+    fig.savefig(
+        QUOTIENT_ANALYSIS_DIR
+        / f"alpha_one_seed_{stable_slug(optimizer)}_{stable_slug(layer)}_{stable_slug(fit_variant)}.png",
+        dpi=180,
+        bbox_inches="tight",
+    )
+    if SHOW_PLOTS:
+        plt.show()
+    else:
+        plt.close(fig)
+print("No error bars were computed:", UNCERTAINTY_POLICY)
+"""
+                ),
+            ]
+        )
+
+    cells.extend(
+        [
+            markdown(
+                """
+                ## Final-checkpoint spectral-density gallery
+
+                Plot the empirical CCDFs of the exact Gram eigenvalues supplied
+                to WeightWatcher. This is an ESD visualization, not an extra fit.
+                Both raw and `clip_xmax` fit rows reference these same spectra.
+                """
+            ),
+            code(
+                """
+spectrum_rows = []
+spectrum_stems = ["raw_weight_final_spectra"] + [
+    f"{method}_final_spectra" for method in sorted(METHOD_FIT_FRAMES)
+]
+for stem in spectrum_stems:
+    index_path = require_path(
+        QUOTIENT_ANALYSIS_DIR / f"{stem}_index.csv",
+        description=f"{stem} index",
+    )
+    archive_path = QUOTIENT_ANALYSIS_DIR / f"{stem}.npz"
+    archive = np.load(require_path(archive_path, description="final spectrum archive"))
+    index = pd.read_csv(index_path)
+    for _, row in index.iterrows():
+        values = np.asarray(archive[str(row["spectrum_key"])], dtype=float)
+        values = np.sort(values[np.isfinite(values) & (values > 0.0)])
+        spectrum_rows.append({**row.to_dict(), "values": values})
+final_spectrum_index = pd.DataFrame(
+    [{key: value for key, value in row.items() if key != "values"} for row in spectrum_rows]
+)
+atomic_csv(final_spectrum_index, QUOTIENT_ANALYSIS_DIR / "all_final_spectra_index.csv")
+
+for optimizer in OPTIMIZER_SLUGS:
+    for layer in EXPECTED_WEIGHT_LAYERS:
+        selected = [
+            row for row in spectrum_rows
+            if str(row["optimizer"]) == str(optimizer) and str(row["layer"]) == str(layer)
+        ]
+        if not selected:
+            continue
+        fig, ax = plt.subplots(figsize=(9.5, 6.0))
+        for row in selected:
+            values = row["values"]
+            ccdf = np.arange(values.size, 0, -1, dtype=float) / values.size
+            ax.loglog(
+                values,
+                ccdf,
+                linewidth=1.0,
+                alpha=0.70,
+                label=f"s{row['seed']} {row['method']}:{row['profile_id']}",
+            )
+        ax.set(
+            xlabel="Gram eigenvalue",
+            ylabel="empirical CCDF",
+            title=f"{optimizer} {layer}: final quotient ESDs",
+        )
+        ax.grid(True, which="both", alpha=0.22)
+        ax.legend(fontsize=5.5, ncol=2)
+        fig.tight_layout()
+        fig.savefig(
+            QUOTIENT_ANALYSIS_DIR
+            / f"final_esd_ccdf_{stable_slug(optimizer)}_{stable_slug(layer)}.png",
+            dpi=180,
+            bbox_inches="tight",
+        )
+        if SHOW_PLOTS:
+            plt.show()
+        else:
+            plt.close(fig)
+display(final_spectrum_index.head(30))
+manifest["completed"] = True
+manifest["status"] = "complete"
+manifest["fit_row_count"] = int(len(quotient_fit_rows))
+manifest["operator_row_count"] = int(len(quotient_operator_rows))
+manifest["final_spectrum_count"] = int(len(final_spectrum_index))
+atomic_json(manifest, QUOTIENT_ANALYSIS_DIR / "method_provenance.json")
+print("complete quotient analysis:", QUOTIENT_ANALYSIS_DIR)
+"""
+            ),
+            markdown(
+                """
+                ### Interpretation contract
+
+                A lower KS distance or an alpha nearer two does not establish
+                that a method inverted Muon. Promote a rule only after planted
+                corruption recovery, non-power-law negative controls, stable
+                interior parameters, retained-rank checks, and independent-seed
+                reproduction. The raw weight ESD remains the assumption-free
+                state observable.
+                """
+            ),
+        ]
+    )
+    return notebook(filename, cells)
+
+
 def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
     return (
         smoke_notebook(),
@@ -7605,6 +9207,8 @@ def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
         data_dependent_ecs_jacobians_notebook(),
         single_run_muonclip_audit_notebook(),
         nulls_stability_notebook(),
+        weight_quotient_notebook(three_seed=False),
+        weight_quotient_notebook(three_seed=True),
     )
 
 
@@ -7626,6 +9230,8 @@ def main() -> None:
         "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
         "17_Data_Dependent_ECS_Jacobians.ipynb",
         "18_Single_Run_MuonClip_Jacobian_Audit.ipynb",
+        "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+        "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
     }
     observed = {name for name, _ in built}
     if observed != expected:
