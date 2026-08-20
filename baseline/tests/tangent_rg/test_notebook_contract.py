@@ -32,6 +32,8 @@ EXPECTED_NOTEBOOKS = {
     "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
     "17_Data_Dependent_ECS_Jacobians.ipynb",
     "18_Single_Run_MuonClip_Jacobian_Audit.ipynb",
+    "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+    "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
 }
 
 ANALYSIS_NOTEBOOKS = EXPECTED_NOTEBOOKS - {
@@ -47,6 +49,8 @@ TAIL_CACHE_ANALYSIS_NOTEBOOKS = {
     "13_Single_Checkpoint_Map_Jacobians.ipynb",
     "15_Method_Nulls_Stability_Comparison.ipynb",
     "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+    "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+    "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
 }
 
 CAPTURE_ANALYSIS_NOTEBOOKS = {
@@ -65,6 +69,8 @@ EXPECTED_METHOD_SOURCE_BY_NOTEBOOK = {
     "14_Calibrated_Local_Training_Map.ipynb": "verified_calibrated_dense_capture",
     "16_Additional_Weight_Only_ECS_Jacobians.ipynb": "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
     "17_Data_Dependent_ECS_Jacobians.ipynb": "verified_calibrated_dense_capture_plus_exact_sparse_weightwatcher_trace_metrics",
+    "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb": "verified_final_100_tail_cache",
+    "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb": "verified_final_100_tail_cache",
 }
 
 TRAINING_NOTEBOOKS = {
@@ -565,6 +571,98 @@ class NotebookContractTests(unittest.TestCase):
             "verified_tail_checkpoint_cache_plus_exact_sparse_weightwatcher_trace_metrics",
             notebook15_source,
         )
+
+    def test_weight_quotient_notebooks_materialize_all_five_methods(self) -> None:
+        names = (
+            "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+            "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+        )
+        methods = (
+            "gram_ridge",
+            "blockwise_singular",
+            "feshbach_downfolding",
+            "rectangular_d_transform",
+            "calibrated_mp_shrinker",
+        )
+        for name in names:
+            with self.subTest(notebook=name):
+                notebook = json.loads((NOTEBOOK_ROOT / name).read_text(encoding="utf-8"))
+                all_source = "\n".join(
+                    _source_text(cell) for cell in notebook["cells"]
+                )
+                code_sources = [
+                    _source_text(cell)
+                    for cell in notebook["cells"]
+                    if cell.get("cell_type") == "code"
+                ]
+                method_cells = {}
+                for method in methods:
+                    token = f'run_quotient_method(\n    "{method}"'
+                    matching = [
+                        index for index, source in enumerate(code_sources)
+                        if token in source
+                    ]
+                    self.assertEqual(matching, [matching[0]] if matching else [])
+                    self.assertEqual(len(matching), 1, method)
+                    method_cells[method] = matching[0]
+                self.assertEqual(len(set(method_cells.values())), len(methods))
+                self.assertIn("MAXIMUM_CHECKPOINTS = 100", all_source)
+                self.assertIn("load_verified_tail_checkpoint_refs", all_source)
+                self.assertIn("analyze_weightwatcher_dual", all_source)
+                self.assertIn("replace_model_matrix(model, layer, result.weight)", all_source)
+                self.assertIn("rectangular_diagonal_canonical_section", all_source)
+                self.assertIn("O(out) x O(in)", all_source)
+                self.assertIn("fix_fingers=clip_xmax", all_source)
+                self.assertIn('for variant in ("raw", "clip_xmax")', all_source)
+                self.assertIn("same_transformed_model_for_raw_and_fix_fingers_clip_xmax", all_source)
+                self.assertIn("transformed_spectrum_sha256", all_source)
+                self.assertIn("Raw and clip_xmax fits used different transformed spectra", all_source)
+                self.assertIn("expected_grid", all_source)
+                self.assertIn("observed_grid", all_source)
+                self.assertIn("model_layer_esd", all_source)
+                self.assertIn("WeightWatcher analyzed a different ESD", all_source)
+                self.assertIn("validate_weightwatcher_measurement", all_source)
+                self.assertIn("WeightQuotientUnavailable", all_source)
+                self.assertIn("RESUME_PARTIAL_RESULTS = True", all_source)
+                self.assertIn("load_resumable_tables", all_source)
+                self.assertIn("analysis_code_sha256", all_source)
+                self.assertIn("inspect.getsource(weightwatcher_fit)", all_source)
+                self.assertIn("WEIGHT_QUOTIENT_ANALYSIS_SETTINGS_SHA256", all_source)
+                self.assertIn('"analysis_settings_sha256"', all_source)
+                self.assertIn('"completed": False', all_source)
+                self.assertIn('manifest["completed"] = True', all_source)
+                self.assertNotIn('glob("*_final_spectra_index.csv")', all_source)
+                self.assertIn("GRAM_RIDGE_SCAN", all_source)
+                self.assertIn("BLOCKWISE_SCAN", all_source)
+                self.assertIn("FESHBACH_SCAN", all_source)
+                self.assertIn("RECTANGULAR_D_SCAN", all_source)
+                self.assertIn("CALIBRATED_SHRINKER_SCAN", all_source)
+                self.assertNotIn("run_cli_training(", all_source)
+                self.assertNotIn("run_training(", all_source)
+
+        one_seed = json.loads((NOTEBOOK_ROOT / names[0]).read_text(encoding="utf-8"))
+        one_source = "\n".join(_source_text(cell) for cell in one_seed["cells"])
+        one_plot_source = next(
+            _source_text(cell)
+            for cell in one_seed["cells"]
+            if "one_seed = quotient_fit_rows.copy()" in _source_text(cell)
+        )
+        self.assertIn("RUN_PARAMETER_SCANS = True", one_source)
+        self.assertIn("UNCERTAINTY_POLICY = 'no_seed_error_bars'", one_source)
+        self.assertNotIn("fill_between(", one_plot_source)
+
+        three_seed = json.loads((NOTEBOOK_ROOT / names[1]).read_text(encoding="utf-8"))
+        three_source = "\n".join(
+            _source_text(cell) for cell in three_seed["cells"]
+        )
+        self.assertIn("RUN_PARAMETER_SCANS = False", three_source)
+        self.assertIn("ACTIVE_SEEDS != (1337, 2027, 31415)", three_source)
+        self.assertIn("student_t_95_ci_across_complete_seeded_runs", three_source)
+        self.assertIn("validate_cross_run_provenance(active_run_manifests())", three_source)
+        self.assertIn("summarize_numeric_metrics(", three_source)
+        self.assertIn('qualified_fits = numeric_fits[numeric_fits["fit_success"]]', three_source)
+        self.assertIn("fit_availability_by_checkpoint.csv", three_source)
+        self.assertIn("fill_between(", three_source)
 
     def test_generated_notebooks_are_up_to_date(self) -> None:
         builder = _load_builder()
