@@ -155,6 +155,12 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("protocol_fingerprint", source)
         self.assertIn("single_run_audit_manifest.json", source)
         self.assertIn("nonzero_eigenvalues_of_J_star_J", source)
+        self.assertIn(']["source_seed_dir"]', source)
+        self.assertIn("_VERIFIED_TAIL_CACHE_REFS[Path(seed_dir).resolve()]", source)
+        self.assertNotIn(
+            "validate_run_identity(\n    seed_dir, optimizer_slug=OPTIMIZER_SLUG, seed=SEED",
+            source,
+        )
         report_plot_source = "\n".join(
             _source_text(cell)
             for cell in notebook["cells"]
