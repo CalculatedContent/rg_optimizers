@@ -2975,6 +2975,42 @@ def _jsonable(value):
     return value
 
 
+def normalize_papermill_sequence(value, *, name):
+    # Accept a sequence or the JSON-list string produced by Papermill -p.
+
+    parsed = value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value.strip())
+        except json.JSONDecodeError as error:
+            raise ValueError(
+                f"{name} must be a JSON list when supplied as a string; "
+                f"observed {value!r}"
+            ) from error
+    if isinstance(parsed, (str, bytes)) or not isinstance(parsed, (list, tuple)):
+        raise TypeError(
+            f"{name} must be a list or tuple; observed {type(parsed).__name__}"
+        )
+    result = tuple(parsed)
+    if not result:
+        raise ValueError(f"{name} must not be empty")
+    return result
+
+
+def normalize_papermill_bool(value, *, name):
+    # Do not treat the Papermill string "false" as truthy.
+
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes"}:
+            return True
+        if normalized in {"false", "0", "no"}:
+            return False
+    raise TypeError(f"{name} must be a boolean; observed {value!r}")
+
+
 WEIGHT_QUOTIENT_ANALYSIS_SETTINGS = {
     "schema_version": 1,
     "weightwatcher": {
@@ -8429,7 +8465,10 @@ def weight_quotient_notebook(*, three_seed: bool) -> tuple[str, dict[str, object
         uncertainty_policy = "student_t_95_ci_across_complete_seeded_runs"
         scan_default = "False"
         active_seed_source = """
-ACTIVE_SEEDS = tuple(int(seed) for seed in SEEDS)
+ACTIVE_SEEDS = tuple(
+    int(seed)
+    for seed in normalize_papermill_sequence(SEEDS, name="SEEDS")
+)
 if ACTIVE_SEEDS != (1337, 2027, 31415):
     raise ValueError(
         "The confirmatory notebook requires seeds (1337, 2027, 31415); "
@@ -8543,6 +8582,22 @@ WEIGHT_QUOTIENT_ANALYSIS_CODE_SHA256 = hashlib.sha256(
         + NOTEBOOK_BUILDER_SOURCE_SHA256
     ).encode("utf-8")
 ).hexdigest()
+OPTIMIZER_SLUGS = [
+    str(optimizer)
+    for optimizer in normalize_papermill_sequence(
+        OPTIMIZER_SLUGS, name="OPTIMIZER_SLUGS"
+    )
+]
+LAYERS = [
+    str(layer)
+    for layer in normalize_papermill_sequence(LAYERS, name="LAYERS")
+]
+RUN_PARAMETER_SCANS = normalize_papermill_bool(
+    RUN_PARAMETER_SCANS, name="RUN_PARAMETER_SCANS"
+)
+RESUME_PARTIAL_RESULTS = normalize_papermill_bool(
+    RESUME_PARTIAL_RESULTS, name="RESUME_PARTIAL_RESULTS"
+)
 {active_seed_source}
 if tuple(LAYERS) != EXPECTED_WEIGHT_LAYERS:
     raise ValueError(f"LAYERS must remain {{EXPECTED_WEIGHT_LAYERS}}; observed {{LAYERS}}")
@@ -9178,6 +9233,677 @@ print("complete quotient analysis:", QUOTIENT_ANALYSIS_DIR)
     return notebook(filename, cells)
 
 
+def single_run_metrics_weightwatcher_audit_notebook() -> tuple[str, dict[str, object]]:
+    cells = [
+        markdown(
+            r"""
+            # Single-run metrics and WeightWatcher sanity audit
+
+            This lightweight notebook reads one **completed** run's saved
+            metric tables. It does not load model checkpoints, run Jacobians,
+            invoke WeightWatcher, or launch child notebooks. Its purpose is a
+            fast visual and structural check while heavier analyses run.
+
+            The two plotted WeightWatcher series are the rows persisted during
+            training: `raw` means no finger correction, and `clip_xmax` means
+            `fix_fingers=clip_xmax`. Failed fits remain visible as marked points
+            when their reported alpha is finite; they are never silently
+            promoted to successful fits.
+
+            **`operator_kind`: `saved_training_metric_and_weight_esd_fit_audit`**
+
+            **`map_definition`: `identity read of completed-run CSV rows; no matrix transformation or refit`**
+
+            This is a one-seed diagnostic. Checkpoints and layers are not
+            independent replicates, so the notebook computes no error bars.
+            """
+        ),
+        parameters(
+            """
+            OPTIMIZER_SLUG = "muonclip_rms"
+            SEED = 1337
+            SEEDS = [1337]
+            METHOD_SLUG = "single_run_metrics_weightwatcher_audit"
+            EXPECTED_WEIGHT_LAYERS = ["fc1.weight", "fc2.weight", "fc3.weight"]
+            EXPECTED_FIT_VARIANTS = ["raw", "clip_xmax"]
+            """
+        ),
+        code(BOOTSTRAP),
+        code("from matplotlib.lines import Line2D"),
+        code(
+            r"""
+            def require_path(path, *, description="artifact"):
+                path = Path(path)
+                if not path.exists():
+                    raise FileNotFoundError(f"Missing {description}: {path}")
+                return path
+
+
+            def resolve_seed_dir(optimizer_slug, seed):
+                protocol = RUN_ROOT_PATH / PROTOCOL_SLUG
+                if not protocol.is_dir():
+                    protocol = RUN_ROOT_PATH
+                arm_candidates = [
+                    protocol / optimizer_slug,
+                    protocol / "results" / optimizer_slug,
+                    RUN_ROOT_PATH / optimizer_slug,
+                    RUN_ROOT_PATH / "results" / optimizer_slug,
+                ]
+                arm = next((path for path in arm_candidates if path.is_dir()), None)
+                if arm is None:
+                    raise FileNotFoundError(
+                        f"No completed {optimizer_slug!r} arm was found. Checked:\n"
+                        + "\n".join(f"  - {path}" for path in arm_candidates)
+                    )
+                seed_candidates = [
+                    arm / f"seed_{int(seed)}",
+                    arm / f"seed_{int(seed):05d}",
+                    arm / "seeds" / f"seed_{int(seed)}",
+                    arm / "seeds" / f"seed_{int(seed):05d}",
+                ]
+                for candidate in seed_candidates:
+                    if candidate.is_dir():
+                        return candidate
+                raise FileNotFoundError(
+                    f"Missing seed directory for optimizer={optimizer_slug}, seed={seed}. "
+                    f"Checked {seed_candidates}."
+                )
+
+
+            def validate_run_identity(seed_dir, *, optimizer_slug, seed):
+                seed_dir = Path(seed_dir)
+                manifest = json.loads(
+                    require_path(seed_dir / "manifest.json", description="run manifest")
+                    .read_text(encoding="utf-8")
+                )
+                resolved = json.loads(
+                    require_path(seed_dir / "resolved_config.json", description="resolved config")
+                    .read_text(encoding="utf-8")
+                )
+                completion = json.loads(
+                    require_path(seed_dir / "run_complete.json", description="completion marker")
+                    .read_text(encoding="utf-8")
+                )
+                config = dict(resolved.get("config", resolved))
+                checks = {
+                    "manifest suite": (manifest.get("suite_name"), PROTOCOL_SLUG),
+                    "resolved suite": (config.get("suite_name"), PROTOCOL_SLUG),
+                    "manifest optimizer": (manifest.get("optimizer"), optimizer_slug),
+                    "resolved optimizer": (config.get("optimizer"), optimizer_slug),
+                    "completion optimizer": (completion.get("optimizer"), optimizer_slug),
+                    "manifest seed": (manifest.get("seed"), int(seed)),
+                    "resolved seed": (config.get("seed"), int(seed)),
+                    "completion seed": (completion.get("seed"), int(seed)),
+                }
+                mismatches = [
+                    f"{label}: observed={observed!r}, expected={expected!r}"
+                    for label, (observed, expected) in checks.items()
+                    if str(observed) != str(expected)
+                ]
+                fingerprints = {
+                    str(manifest.get("protocol_fingerprint", "")),
+                    str(resolved.get("protocol_fingerprint", "")),
+                    str(completion.get("protocol_fingerprint", "")),
+                }
+                if "" in fingerprints or len(fingerprints) != 1:
+                    mismatches.append(
+                        "manifest/resolved/completion protocol fingerprints are missing or unequal"
+                    )
+                if completion.get("completed") is not True:
+                    mismatches.append("run_complete.json does not declare completed=true")
+                try:
+                    resolved_epochs = int(config["epochs"])
+                    completion_epochs = int(completion["epochs"])
+                    completion_step = int(completion["global_step"])
+                    best_validation_epoch = int(completion["best_validation_epoch"])
+                    analysis_plan = dict(resolved["analysis_plan"])
+                    steps_per_epoch = int(analysis_plan["steps_per_epoch"])
+                    total_steps = int(analysis_plan["total_steps"])
+                except (KeyError, TypeError, ValueError) as error:
+                    mismatches.append(
+                        "resolved/completion horizon metadata is missing or invalid: "
+                        f"{type(error).__name__}: {error}"
+                    )
+                else:
+                    if resolved_epochs < 1 or steps_per_epoch < 1:
+                        mismatches.append("epochs and steps_per_epoch must be positive")
+                    if total_steps != resolved_epochs * steps_per_epoch:
+                        mismatches.append("analysis_plan total_steps is inconsistent")
+                    if completion_epochs != resolved_epochs:
+                        mismatches.append("completion and resolved epoch horizons disagree")
+                    if completion_step != total_steps:
+                        mismatches.append("completion and resolved final steps disagree")
+                    if not 0 <= best_validation_epoch <= resolved_epochs:
+                        mismatches.append("best_validation_epoch lies outside the run horizon")
+                if mismatches:
+                    raise RuntimeError(
+                        f"Run identity/provenance mismatch beneath {seed_dir}:\n  - "
+                        + "\n  - ".join(mismatches)
+                    )
+                return manifest, resolved, completion
+
+
+            def boolean_series(values):
+                if getattr(values, "dtype", None) == bool:
+                    return values
+                return values.astype(str).str.strip().str.lower().isin(
+                    {"1", "true", "yes"}
+                )
+            """
+        ),
+        markdown(
+            r"""
+            ## Load only persisted completed-run tables
+
+            `performance_by_analysis_epoch.csv` contains the sparse scheduled
+            train/validation/test evaluations. `weightwatcher_fits.csv`
+            contains both standardized fit variants for each analyzed layer.
+            The manifest, resolved configuration, and completion marker must
+            agree before either table is used.
+            """
+        ),
+        code(
+            r"""
+            SEED = int(SEED)
+            EXPECTED_WEIGHT_LAYERS = tuple(str(value) for value in EXPECTED_WEIGHT_LAYERS)
+            EXPECTED_FIT_VARIANTS = tuple(str(value) for value in EXPECTED_FIT_VARIANTS)
+            if set(EXPECTED_FIT_VARIANTS) != {"raw", "clip_xmax"}:
+                raise ValueError("EXPECTED_FIT_VARIANTS must contain raw and clip_xmax")
+
+            seed_dir = resolve_seed_dir(OPTIMIZER_SLUG, SEED)
+            run_manifest, resolved_config, completion = validate_run_identity(
+                seed_dir, optimizer_slug=OPTIMIZER_SLUG, seed=SEED
+            )
+            run_fingerprint = str(run_manifest["protocol_fingerprint"])
+            metrics_dir = require_path(seed_dir / "metrics", description="metrics directory")
+            performance_path = require_path(
+                metrics_dir / "performance_by_analysis_epoch.csv",
+                description="saved sparse performance table",
+            )
+            weightwatcher_path = require_path(
+                metrics_dir / "weightwatcher_fits.csv",
+                description="saved dual WeightWatcher fit table",
+            )
+            performance = pd.read_csv(performance_path)
+            weightwatcher = pd.read_csv(weightwatcher_path)
+            if performance.empty:
+                raise RuntimeError(f"Performance table is empty: {performance_path}")
+            if weightwatcher.empty:
+                raise RuntimeError(f"WeightWatcher table is empty: {weightwatcher_path}")
+
+            audit_root = OUTPUT_ROOT_PATH / METHOD_SLUG / f"{OPTIMIZER_SLUG}_seed_{SEED}"
+            figure_root = audit_root / "figures"
+            figure_root.mkdir(parents=True, exist_ok=True)
+
+            required_performance = {
+                "optimizer", "seed", "epoch", "global_step", "protocol_fingerprint",
+                "train_loss", "train_accuracy", "validation_loss",
+                "validation_accuracy", "test_loss", "test_accuracy",
+                "test_monitoring_only", "test_used_for_selection",
+                "weightwatcher_status",
+            }
+            required_weightwatcher = {
+                "optimizer", "seed", "epoch", "global_step", "protocol_fingerprint",
+                "layer", "fit_variant", "finger_policy", "alpha", "fit_ok",
+                "operator_kind", "map_definition", "xmin", "xmax", "n_tail",
+            }
+            for label, frame, required in (
+                ("performance", performance, required_performance),
+                ("weightwatcher", weightwatcher, required_weightwatcher),
+            ):
+                missing = required - set(frame.columns)
+                if missing:
+                    raise RuntimeError(f"{label} table lacks required columns: {sorted(missing)}")
+                observed_optimizers = set(frame["optimizer"].dropna().astype(str))
+                observed_seeds = set(pd.to_numeric(frame["seed"], errors="coerce").dropna().astype(int))
+                observed_fingerprints = set(frame["protocol_fingerprint"].dropna().astype(str))
+                if observed_optimizers != {str(OPTIMIZER_SLUG)}:
+                    raise RuntimeError(f"{label} optimizer identity mismatch: {observed_optimizers}")
+                if observed_seeds != {int(SEED)}:
+                    raise RuntimeError(f"{label} seed identity mismatch: {observed_seeds}")
+                if observed_fingerprints != {run_fingerprint}:
+                    raise RuntimeError(
+                        f"{label} fingerprint mismatch: {observed_fingerprints} != {run_fingerprint}"
+                    )
+
+            performance_numeric = (
+                "epoch", "global_step", "train_loss", "train_accuracy",
+                "validation_loss", "validation_accuracy", "test_loss", "test_accuracy",
+            )
+            for column in performance_numeric:
+                performance[column] = pd.to_numeric(performance[column], errors="coerce")
+            for column in ("epoch", "global_step", "alpha", "xmin", "xmax", "n_tail"):
+                weightwatcher[column] = pd.to_numeric(weightwatcher[column], errors="coerce")
+            performance = performance.sort_values(["epoch", "global_step"]).reset_index(drop=True)
+            weightwatcher = weightwatcher.sort_values(
+                ["epoch", "global_step", "layer", "fit_variant"]
+            ).reset_index(drop=True)
+            weightwatcher["fit_ok_bool"] = boolean_series(weightwatcher["fit_ok"])
+
+            initial_provenance = {
+                "schema_version": 1,
+                "suite_name": str(PROTOCOL_SLUG),
+                "method_slug": str(METHOD_SLUG),
+                "optimizer_seed_protocol_fingerprints": {
+                    f"{OPTIMIZER_SLUG}:{SEED}": run_fingerprint
+                },
+                "source_artifact_kinds": ["verified_completed_run_saved_metrics_only"],
+                "source_seed_dir": str(Path(seed_dir).resolve()),
+                "performance_path": str(performance_path.resolve()),
+                "weightwatcher_path": str(weightwatcher_path.resolve()),
+                "completed": False,
+                "status": "running",
+            }
+            (audit_root / "method_provenance.json").write_text(
+                json.dumps(initial_provenance, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            print("completed run:", seed_dir)
+            print("performance rows:", len(performance))
+            print("WeightWatcher rows:", len(weightwatcher))
+            """
+        ),
+        markdown(
+            """
+            ## Sanity checks
+
+            Provenance and required-column failures stop execution. The table
+            below records scientific/data-quality checks without hiding the
+            plots: a failed power-law fit is an observed result, not a reason
+            to discard an otherwise valid checkpoint.
+            """
+        ),
+        code(
+            r"""
+            sanity_rows = []
+
+            def add_check(name, passed, *, severity="error", detail=""):
+                sanity_rows.append({
+                    "check": str(name),
+                    "passed": bool(passed),
+                    "severity": str(severity),
+                    "detail": str(detail),
+                })
+
+            performance_key_duplicates = performance.duplicated(
+                ["optimizer", "seed", "epoch", "global_step"], keep=False
+            )
+            ww_key_columns = [
+                "optimizer", "seed", "epoch", "global_step", "layer", "fit_variant"
+            ]
+            ww_key_duplicates = weightwatcher.duplicated(ww_key_columns, keep=False)
+            add_check(
+                "performance state keys are unique",
+                not performance_key_duplicates.any(),
+                detail=f"duplicate rows={int(performance_key_duplicates.sum())}",
+            )
+            add_check(
+                "WeightWatcher state/layer/variant keys are unique",
+                not ww_key_duplicates.any(),
+                detail=f"duplicate rows={int(ww_key_duplicates.sum())}",
+            )
+            add_check(
+                "performance epochs are strictly increasing",
+                bool(performance["epoch"].notna().all() and performance["epoch"].is_monotonic_increasing
+                     and not performance["epoch"].duplicated().any()),
+                detail=f"epoch range={performance['epoch'].min()}..{performance['epoch'].max()}",
+            )
+            add_check(
+                "performance global steps are strictly increasing",
+                bool(performance["global_step"].notna().all()
+                     and performance["global_step"].is_monotonic_increasing
+                     and not performance["global_step"].duplicated().any()),
+                detail=f"step range={performance['global_step'].min()}..{performance['global_step'].max()}",
+            )
+
+            metric_columns = [
+                "train_loss", "train_accuracy", "validation_loss",
+                "validation_accuracy", "test_loss", "test_accuracy",
+            ]
+            finite_metrics = np.isfinite(performance[metric_columns].to_numpy(dtype=float)).all()
+            add_check("all performance metrics are finite", finite_metrics)
+            loss_columns = ["train_loss", "validation_loss", "test_loss"]
+            accuracy_columns = ["train_accuracy", "validation_accuracy", "test_accuracy"]
+            add_check(
+                "all losses are nonnegative",
+                bool((performance[loss_columns] >= 0.0).all().all()),
+                detail=f"minimum={performance[loss_columns].min().min():.6g}",
+            )
+            add_check(
+                "all accuracies lie in [0, 1]",
+                bool(((performance[accuracy_columns] >= 0.0)
+                      & (performance[accuracy_columns] <= 1.0)).all().all()),
+                detail=(
+                    f"range={performance[accuracy_columns].min().min():.6g}.."
+                    f"{performance[accuracy_columns].max().max():.6g}"
+                ),
+            )
+            add_check(
+                "test metrics are monitoring-only",
+                bool(boolean_series(performance["test_monitoring_only"]).all()
+                     and not boolean_series(performance["test_used_for_selection"]).any()),
+            )
+
+            completion_epoch = int(completion["epochs"])
+            completion_step = int(completion["global_step"])
+            final_rows = performance[
+                performance["epoch"].eq(completion_epoch)
+                & performance["global_step"].eq(completion_step)
+            ]
+            final_matches_marker = len(final_rows) == 1
+            add_check(
+                "final performance row matches completion horizon",
+                final_matches_marker,
+                detail=f"expected epoch={completion_epoch}, step={completion_step}; rows={len(final_rows)}",
+            )
+            if final_matches_marker:
+                final_row = final_rows.iloc[0]
+                final_value_match = (
+                    np.isclose(
+                        float(final_row["test_accuracy"]),
+                        float(completion["final_test_accuracy_monitoring_only"]),
+                        rtol=0.0, atol=1e-12,
+                    )
+                    and np.isclose(
+                        float(final_row["test_loss"]),
+                        float(completion["final_test_loss_monitoring_only"]),
+                        rtol=0.0, atol=1e-12,
+                    )
+                )
+            else:
+                final_value_match = False
+            add_check("final test metrics match completion marker", final_value_match)
+
+            observed_layers = set(weightwatcher["layer"].dropna().astype(str))
+            observed_variants = set(weightwatcher["fit_variant"].dropna().astype(str))
+            add_check(
+                "WeightWatcher layer set is exact",
+                observed_layers == set(EXPECTED_WEIGHT_LAYERS),
+                detail=f"observed={sorted(observed_layers)}",
+            )
+            add_check(
+                "WeightWatcher variants are raw and clip_xmax",
+                observed_variants == set(EXPECTED_FIT_VARIANTS),
+                detail=f"observed={sorted(observed_variants)}",
+            )
+            policy_by_variant = {
+                variant: set(rows["finger_policy"].dropna().astype(str))
+                for variant, rows in weightwatcher.groupby("fit_variant")
+            }
+            add_check(
+                "raw rows use no finger correction",
+                policy_by_variant.get("raw", set()) == {"none"},
+                detail=str(policy_by_variant.get("raw", set())),
+            )
+            add_check(
+                "clip_xmax rows use fix_fingers=clip_xmax",
+                policy_by_variant.get("clip_xmax", set()) == {"fix_fingers=clip_xmax"},
+                detail=str(policy_by_variant.get("clip_xmax", set())),
+            )
+
+            performance_states = set(
+                performance[["epoch", "global_step"]].itertuples(index=False, name=None)
+            )
+            ww_states = set(
+                weightwatcher[["epoch", "global_step"]].itertuples(index=False, name=None)
+            )
+            add_check(
+                "WeightWatcher states belong to performance schedule",
+                ww_states.issubset(performance_states),
+                detail=f"unexpected states={sorted(ww_states - performance_states)}",
+            )
+            expected_grid = {
+                (float(epoch), float(step), layer, variant)
+                for epoch, step in performance_states
+                for layer in EXPECTED_WEIGHT_LAYERS
+                for variant in EXPECTED_FIT_VARIANTS
+            }
+            observed_grid = set(
+                weightwatcher[["epoch", "global_step", "layer", "fit_variant"]]
+                .itertuples(index=False, name=None)
+            )
+            missing_grid = expected_grid - observed_grid
+            unexpected_grid = observed_grid - expected_grid
+            add_check(
+                "dual WeightWatcher grid is complete at every performance state",
+                not missing_grid and not unexpected_grid,
+                severity="warning",
+                detail=f"missing={len(missing_grid)}, unexpected={len(unexpected_grid)}",
+            )
+
+            successful = weightwatcher[weightwatcher["fit_ok_bool"]]
+            successful_alpha = successful["alpha"].to_numpy(dtype=float)
+            add_check(
+                "successful WeightWatcher alphas are finite and positive",
+                bool(successful_alpha.size > 0
+                     and np.isfinite(successful_alpha).all()
+                     and (successful_alpha > 0.0).all()),
+                severity="warning",
+                detail=f"successful rows={len(successful)} of {len(weightwatcher)}",
+            )
+            valid_windows = (
+                np.isfinite(successful[["xmin", "xmax"]].to_numpy(dtype=float)).all()
+                and (successful["xmin"] > 0.0).all()
+                and (successful["xmax"] >= successful["xmin"]).all()
+                and (successful["n_tail"] >= 2.0).all()
+            ) if not successful.empty else False
+            add_check(
+                "successful WeightWatcher support windows are valid",
+                bool(valid_windows),
+                severity="warning",
+            )
+
+            sanity_checks = pd.DataFrame(sanity_rows)
+            fit_availability = (
+                weightwatcher.assign(fit_success=weightwatcher["fit_ok_bool"])
+                .groupby(["epoch", "global_step", "layer", "fit_variant"], as_index=False)
+                .agg(
+                    fit_success=("fit_success", "all"),
+                    alpha=("alpha", "first"),
+                    n_tail=("n_tail", "first"),
+                )
+            )
+            sanity_checks.to_csv(audit_root / "sanity_checks.csv", index=False)
+            fit_availability.to_csv(
+                audit_root / "weightwatcher_fit_availability_by_checkpoint.csv", index=False
+            )
+            performance.to_csv(audit_root / "performance_rows_used.csv", index=False)
+            weightwatcher.to_csv(audit_root / "weightwatcher_rows_used.csv", index=False)
+            display(sanity_checks)
+            display(
+                weightwatcher.groupby(["layer", "fit_variant"], as_index=False).agg(
+                    rows=("alpha", "size"),
+                    successful_fits=("fit_ok_bool", "sum"),
+                    finite_alpha=("alpha", lambda values: int(np.isfinite(values).sum())),
+                )
+            )
+            """
+        ),
+        markdown(
+            """
+            ## Test accuracy and loss
+
+            Test values are monitoring-only and were not used for checkpoint
+            selection. The first plot is intentionally restricted to the two
+            requested test trajectories; the second adds train and validation
+            curves as a compact overfit/data-pipeline sanity check.
+            """
+        ),
+        code(
+            r"""
+            try:
+                plt.style.use("seaborn-v0_8-whitegrid")
+            except OSError:
+                plt.style.use("default")
+
+            def save_figure(fig, filename):
+                fig.tight_layout()
+                target = figure_root / filename
+                fig.savefig(target, dpi=190, bbox_inches="tight", facecolor="white")
+                if SHOW_PLOTS:
+                    plt.show()
+                else:
+                    plt.close(fig)
+                return target
+
+            fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.4))
+            axes[0].plot(
+                performance["epoch"], performance["test_accuracy"],
+                color="#0072B2", linewidth=2.2, marker=".", markersize=4,
+            )
+            axes[0].set(xlabel="epoch", ylabel="test accuracy", title="Test accuracy (monitoring only)")
+            axes[0].set_ylim(0.0, 1.01)
+            axes[1].plot(
+                performance["epoch"], performance["test_loss"],
+                color="#D55E00", linewidth=2.2, marker=".", markersize=4,
+            )
+            axes[1].set(xlabel="epoch", ylabel="cross-entropy loss", title="Test loss (monitoring only)")
+            test_figure = save_figure(fig, "test_accuracy_and_loss.png")
+
+            fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.4))
+            curve_styles = (
+                ("train", "#009E73", "--", 1.3),
+                ("validation", "#CC79A7", "-.", 1.5),
+                ("test", "#0072B2", "-", 2.1),
+            )
+            for split, color, linestyle, width in curve_styles:
+                axes[0].plot(
+                    performance["epoch"], performance[f"{split}_accuracy"],
+                    color=color, linestyle=linestyle, linewidth=width, label=split,
+                )
+                axes[1].plot(
+                    performance["epoch"], performance[f"{split}_loss"],
+                    color=color, linestyle=linestyle, linewidth=width, label=split,
+                )
+            axes[0].set(xlabel="epoch", ylabel="accuracy", title="Accuracy context")
+            axes[0].set_ylim(0.0, 1.01)
+            axes[1].set(xlabel="epoch", ylabel="cross-entropy loss", title="Loss context")
+            for axis in axes:
+                axis.legend(frameon=False)
+            context_figure = save_figure(fig, "train_validation_test_context.png")
+            print(test_figure)
+            print(context_figure)
+            """
+        ),
+        markdown(
+            r"""
+            ## Per-layer WeightWatcher alpha: raw versus `clip_xmax`
+
+            Lines include every finite reported alpha. An `x` marks a row whose
+            standardized `fit_ok` flag is false, so gaps and failed fits remain
+            part of the audit. The dotted horizontal line at $\alpha=2$ is a
+            visual reference, not a target-selection rule.
+            """
+        ),
+        code(
+            r"""
+            variant_style = {
+                "raw": {"color": "#D55E00", "linestyle": "--", "linewidth": 1.4},
+                "clip_xmax": {"color": "#0072B2", "linestyle": "-", "linewidth": 2.1},
+            }
+            fig, axes = plt.subplots(
+                1, len(EXPECTED_WEIGHT_LAYERS),
+                figsize=(4.6 * len(EXPECTED_WEIGHT_LAYERS), 4.3), sharey=False,
+            )
+            axes = np.atleast_1d(axes)
+            for axis, layer in zip(axes, EXPECTED_WEIGHT_LAYERS):
+                layer_rows = weightwatcher[weightwatcher["layer"].astype(str).eq(layer)]
+                for variant in EXPECTED_FIT_VARIANTS:
+                    curve = layer_rows[
+                        layer_rows["fit_variant"].astype(str).eq(variant)
+                    ].sort_values("epoch")
+                    finite = curve[np.isfinite(curve["alpha"])]
+                    style = variant_style[variant]
+                    axis.plot(
+                        finite["epoch"], finite["alpha"],
+                        color=style["color"], linestyle=style["linestyle"],
+                        linewidth=style["linewidth"], marker=".", markersize=3,
+                    )
+                    rejected = finite[~finite["fit_ok_bool"]]
+                    if not rejected.empty:
+                        axis.scatter(
+                            rejected["epoch"], rejected["alpha"],
+                            color=style["color"], marker="x", s=30, linewidths=1.2,
+                            zorder=5,
+                        )
+                axis.axhline(2.0, color="#333333", linestyle=":", linewidth=1.0)
+                axis.set(
+                    xlabel="epoch",
+                    ylabel=r"WeightWatcher $\alpha$",
+                    title=layer.replace(".weight", ""),
+                )
+            legend_handles = [
+                Line2D([0], [0], color=variant_style["raw"]["color"], linestyle="--", linewidth=1.4),
+                Line2D([0], [0], color=variant_style["clip_xmax"]["color"], linestyle="-", linewidth=2.1),
+                Line2D([0], [0], color="#555555", marker="x", linestyle="None"),
+                Line2D([0], [0], color="#333333", linestyle=":", linewidth=1.0),
+            ]
+            fig.legend(
+                legend_handles,
+                ("raw (no finger correction)", "fix_fingers=clip_xmax", "fit_ok=false", r"$\alpha=2$"),
+                loc="lower center", bbox_to_anchor=(0.5, -0.03), ncol=4,
+                frameon=False, fontsize=8,
+            )
+            fig.tight_layout(rect=(0, 0.08, 1, 1))
+            alpha_figure = figure_root / "weightwatcher_alpha_raw_vs_clip_xmax.png"
+            fig.savefig(alpha_figure, dpi=190, bbox_inches="tight", facecolor="white")
+            if SHOW_PLOTS:
+                plt.show()
+            else:
+                plt.close(fig)
+            print(alpha_figure)
+            """
+        ),
+        markdown("## Final audit summary"),
+        code(
+            r"""
+            failed_checks = sanity_checks[~sanity_checks["passed"]].copy()
+            summary = {
+                "optimizer": str(OPTIMIZER_SLUG),
+                "seed": int(SEED),
+                "protocol_fingerprint": run_fingerprint,
+                "performance_row_count": int(len(performance)),
+                "weightwatcher_row_count": int(len(weightwatcher)),
+                "weightwatcher_successful_fit_count": int(weightwatcher["fit_ok_bool"].sum()),
+                "sanity_check_count": int(len(sanity_checks)),
+                "failed_sanity_check_count": int(len(failed_checks)),
+                "error_check_failure_count": int(
+                    ((~sanity_checks["passed"]) & sanity_checks["severity"].eq("error")).sum()
+                ),
+                "warning_check_failure_count": int(
+                    ((~sanity_checks["passed"]) & sanity_checks["severity"].eq("warning")).sum()
+                ),
+                "figures": sorted(path.name for path in figure_root.glob("*.png")),
+                "uncertainty_policy": "one_completed_seed_no_error_bars",
+            }
+            (audit_root / "audit_summary.json").write_text(
+                json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+            completed_provenance = {
+                **initial_provenance,
+                "completed": True,
+                "status": "complete",
+                "performance_row_count": int(len(performance)),
+                "weightwatcher_row_count": int(len(weightwatcher)),
+                "sanity_check_count": int(len(sanity_checks)),
+                "failed_sanity_check_count": int(len(failed_checks)),
+                "figure_count": int(len(summary["figures"])),
+            }
+            (audit_root / "method_provenance.json").write_text(
+                json.dumps(completed_provenance, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            display(pd.DataFrame([summary]))
+            if not failed_checks.empty:
+                print("Sanity-check failures are retained for inspection:")
+                display(failed_checks)
+            print("complete lightweight audit:", audit_root)
+            """
+        ),
+    ]
+    return notebook("21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb", cells)
+
+
 def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
     return (
         smoke_notebook(),
@@ -9214,6 +9940,7 @@ def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
         nulls_stability_notebook(),
         weight_quotient_notebook(three_seed=False),
         weight_quotient_notebook(three_seed=True),
+        single_run_metrics_weightwatcher_audit_notebook(),
     )
 
 
@@ -9237,6 +9964,7 @@ def main() -> None:
         "18_Single_Run_MuonClip_Jacobian_Audit.ipynb",
         "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
         "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+        "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb",
     }
     observed = {name for name, _ in built}
     if observed != expected:

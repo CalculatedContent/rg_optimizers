@@ -176,6 +176,25 @@ class WeightQuotientResumeTests(unittest.TestCase):
             self.assertTrue(loaded_operators.empty)
             self.assertFalse(completed)
 
+    def test_papermill_cli_parameter_strings_are_normalized(self) -> None:
+        namespace = self.helper_namespace()
+        normalize_sequence = namespace["normalize_papermill_sequence"]
+        normalize_bool = namespace["normalize_papermill_bool"]
+        self.assertEqual(
+            normalize_sequence('["muonclip_rms"]', name="OPTIMIZER_SLUGS"),
+            ("muonclip_rms",),
+        )
+        self.assertEqual(
+            normalize_sequence(["fc1.weight"], name="LAYERS"),
+            ("fc1.weight",),
+        )
+        self.assertFalse(normalize_bool("false", name="RUN_PARAMETER_SCANS"))
+        self.assertTrue(normalize_bool("true", name="RESUME_PARTIAL_RESULTS"))
+        with self.assertRaises(ValueError):
+            normalize_sequence("muonclip_rms", name="OPTIMIZER_SLUGS")
+        with self.assertRaises(TypeError):
+            normalize_bool("not-a-boolean", name="RUN_PARAMETER_SCANS")
+
     def test_transformed_matrix_dual_fit_and_resume_integration(self) -> None:
         namespace = self.helper_namespace()
 

@@ -146,7 +146,8 @@ Notebook `10` is a two-checkpoint finite-flow control, not a Jacobian. Notebook
 `12` contains radial/angular quotient controls rather than another Jacobian.
 They are intentionally not included in the Jacobian-only runner.
 Notebooks `19` and `20` are also excluded because they materialize and fit
-weight-state quotient hypotheses rather than Jacobians.
+weight-state quotient hypotheses rather than Jacobians. Notebook `21` is
+excluded because it only reads completed-run metric tables.
 
 The default mode is restart-safe: a new run starts when no artifacts exist and
 a compatible interrupted run resumes. Useful invocations are:
@@ -226,6 +227,42 @@ The default report artifacts are written beneath
 only the consolidated report from already verified child outputs, rerun with
 `-p RUN_CHILD_NOTEBOOKS false`. Clean notebooks remain checked in; executed
 notebooks and generated plots remain run artifacts.
+
+### Lightweight metrics and WeightWatcher audit
+
+Notebook `21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb` reads only the
+saved performance and WeightWatcher CSV files for one completed seed. It plots
+test accuracy and loss, a train/validation/test context check, and the per-layer
+`raw` versus `fix_fingers=clip_xmax` alpha trajectories. It also writes explicit
+provenance, completeness, bounds, finite-value, fit-availability, and
+final-horizon sanity checks. It loads no checkpoints, runs no Jacobians,
+launches no child notebooks, and performs no new WeightWatcher fits, so it can
+run alongside a heavier analysis notebook.
+
+Execute it from the repository root. `RUN_ROOT` is the persistent root that
+contains the protocol directory, not the optimizer or seed directory. No
+checkpoint-cache argument is needed:
+
+```bash
+export REPO="/private/tmp/rg_optimizers"
+export RUNS="$HOME/rg-mnist-mlp3-tangent-runs"
+mkdir -p "$RUNS/single-seed-notebooks"
+cd "$REPO"
+
+papermill \
+  baseline/experiments/mnist_mlp3_tangent_rg/notebooks/21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb \
+  "$RUNS/single-seed-notebooks/muonclip_seed_31415.metrics_ww_audit.ipynb" \
+  -k rg-muonclip-run \
+  -p RUN_ROOT "$RUNS" \
+  -p PROFILE pilot_1000_epochs \
+  -p OPTIMIZER_SLUG muonclip_rms \
+  -p SEED 31415 \
+  -p SHOW_PLOTS false
+```
+
+The CSV/JSON audit and PNG figures are written beneath
+`$RUNS/mnist_mlp3_tangent_rg_v1_pilot1000/notebook_outputs/` followed by
+`single_run_metrics_weightwatcher_audit/muonclip_rms_seed_31415/`.
 
 ### Post-facto Muon/MuonClip weight-quotient notebooks
 
@@ -638,6 +675,7 @@ The notebooks expect the package runtime to write:
       method_nulls_stability/
       weight_only_muon_quotients_one_seed/
       weight_only_muon_quotients_three_seed/
+      single_run_metrics_weightwatcher_audit/
       # every method directory also contains method_provenance.json
 ```
 
@@ -696,6 +734,10 @@ the genuine Jacobian notebooks `11`, `13`, `14`, `16`, and `17` for one
 MuonClip seed, then builds descriptive no-error-bar plots and independent
 WeightWatcher/`powerlaw.Fit` diagnostics. It does not replace notebook `15` or
 the preregistered three-seed comparisons.
+
+Notebook `21` is the fast one-seed metrics/WeightWatcher dashboard described
+above. It is independent of the checkpoint cache and can be run immediately
+after the selected training run has a valid completion marker.
 
 Run notebook `19` when only one completed seed is available, or notebook `20`
 when the complete three-seed Muon/MuonClip grid is available. These notebooks
