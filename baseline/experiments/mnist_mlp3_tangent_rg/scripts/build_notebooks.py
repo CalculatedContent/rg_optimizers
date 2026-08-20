@@ -9268,6 +9268,10 @@ def single_run_metrics_weightwatcher_audit_notebook() -> tuple[str, dict[str, ob
             EXPECTED_FIT_VARIANTS = ["raw", "clip_xmax"]
             """
         ),
+        code(
+            "SEEDS = [int(SEED)]\n"
+            "# Papermill injects SEED after the parameters cell; synchronize the shared bootstrap."
+        ),
         code(BOOTSTRAP),
         code("from matplotlib.lines import Line2D"),
         code(

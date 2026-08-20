@@ -204,6 +204,11 @@ class NotebookContractTests(unittest.TestCase):
             "fill_between(",
         ):
             self.assertNotIn(forbidden, source)
+        self.assertIn("SEEDS = [int(SEED)]", source)
+        self.assertLess(
+            source.index("SEEDS = [int(SEED)]"),
+            source.index("from pathlib import Path"),
+        )
 
     def test_ecs_exact_rank_join_rejects_inexact_or_malformed_states(self) -> None:
         import numpy as np
