@@ -6846,10 +6846,15 @@ def single_run_muonclip_audit_notebook() -> tuple[str, dict[str, object]]:
 
             seed_dir = require_tail_checkpoint_cache(OPTIMIZER_SLUG, SEED)
             run_fingerprint = verified_run_fingerprint(OPTIMIZER_SLUG, SEED)
-            run_manifest, resolved_run, completion = validate_run_identity(
-                seed_dir, optimizer_slug=OPTIMIZER_SLUG, seed=SEED
+            source_seed_dir = Path(
+                _VERIFIED_RUN_IDENTITIES[
+                    (str(OPTIMIZER_SLUG), int(SEED))
+                ]["source_seed_dir"]
             )
-            tail_refs = _VERIFIED_TAIL_CACHE_REFS[(OPTIMIZER_SLUG, SEED)]
+            run_manifest, resolved_run, completion = validate_run_identity(
+                source_seed_dir, optimizer_slug=OPTIMIZER_SLUG, seed=SEED
+            )
+            tail_refs = _VERIFIED_TAIL_CACHE_REFS[Path(seed_dir).resolve()]
             if len(tail_refs) != min(100, int(completion["epochs"])):
                 raise RuntimeError("The verified final-100 checkpoint cache is incomplete")
 
