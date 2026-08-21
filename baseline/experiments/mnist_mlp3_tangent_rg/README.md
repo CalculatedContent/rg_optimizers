@@ -264,6 +264,37 @@ The CSV/JSON audit and PNG figures are written beneath
 `$RUNS/mnist_mlp3_tangent_rg_v1_pilot1000/notebook_outputs/` followed by
 `single_run_metrics_weightwatcher_audit/muonclip_rms_seed_31415/`.
 
+### Ten-seed MuonClip-RMS versus AdamW comparison
+
+Notebook `22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb` compares the
+matched 100-epoch MuonClip-RMS and AdamW arms for seeds `101`, `202`, `303`,
+`404`, `505`, `606`, `707`, `808`, `909`, and `1010`. It reads only completed
+performance and WeightWatcher CSVs. Training/test accuracy and loss and the
+default per-layer `clip_xmax` WeightWatcher alpha are plotted as the cross-seed
+mean with Bollinger-style mean plus or minus two sample-standard-deviation
+bands. These are run-dispersion bands, not confidence intervals.
+
+From the repository root, run:
+
+```bash
+export REPO="/private/tmp/rg_optimizers"
+export RUNS="/private/tmp/rg-mnist-mlp3-short100-runs"
+mkdir -p "$RUNS/executed_notebooks"
+cd "$REPO"
+
+papermill \
+  baseline/experiments/mnist_mlp3_tangent_rg/notebooks/22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb \
+  "$RUNS/executed_notebooks/22_MuonClip_AdamW_10Seed_Bollinger_Comparison.executed.ipynb" \
+  -k rg-muonclip-run \
+  -p RUN_ROOT "$RUNS" \
+  -p PROTOCOL_SLUG mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed \
+  -p SHOW_PLOTS false
+```
+
+Figures and summary tables are written beneath
+`$RUNS/mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed/notebook_outputs/`
+followed by `muonclip_adamw_10seed_bollinger_comparison/`.
+
 ### Post-facto Muon/MuonClip weight-quotient notebooks
 
 Notebook `19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb` is the exploratory

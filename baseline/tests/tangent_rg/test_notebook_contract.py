@@ -35,6 +35,7 @@ EXPECTED_NOTEBOOKS = {
     "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
     "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
     "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb",
+    "22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb",
 }
 
 ANALYSIS_NOTEBOOKS = EXPECTED_NOTEBOOKS - {
@@ -209,6 +210,42 @@ class NotebookContractTests(unittest.TestCase):
             source.index("SEEDS = [int(SEED)]"),
             source.index("from pathlib import Path"),
         )
+
+    def test_muonclip_adamw_10seed_bollinger_comparison_contract(self) -> None:
+        path = NOTEBOOK_ROOT / "22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb"
+        notebook = json.loads(path.read_text(encoding="utf-8"))
+        source = "\n".join(_source_text(cell) for cell in notebook["cells"])
+        for required in (
+            'OPTIMIZER_SLUGS = ["muonclip_rms", "adamw"]',
+            "SEEDS = [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010]",
+            'PRIMARY_FIT_VARIANT = "clip_xmax"',
+            'BAND_STD_MULTIPLIER = 2.0',
+            "performance_by_analysis_epoch.csv",
+            "weightwatcher_fits.csv",
+            "train_test_accuracy_bollinger_2sd.png",
+            "train_test_loss_bollinger_2sd.png",
+            "default_weightwatcher_alpha_by_layer_bollinger_2sd.png",
+            "performance_bollinger_summary.csv",
+            "default_weightwatcher_alpha_bollinger_summary.csv",
+            "default_weightwatcher_fit_availability.csv",
+            "per_seed_peak_to_final_degradation.csv",
+            "fill_between",
+            "mean plus or minus two sample",
+            "fix_fingers=clip_xmax",
+            "test_monitoring_only",
+            "validate_run_identity(",
+        ):
+            self.assertIn(required, source)
+        for forbidden in (
+            "torch.load",
+            "np.load(",
+            "run_training(",
+            "run_cli_training(",
+            "analyze_weightwatcher_dual(",
+            "pm.execute_notebook",
+        ):
+            self.assertNotIn(forbidden, source)
+
 
     def test_ecs_exact_rank_join_rejects_inexact_or_malformed_states(self) -> None:
         import numpy as np
