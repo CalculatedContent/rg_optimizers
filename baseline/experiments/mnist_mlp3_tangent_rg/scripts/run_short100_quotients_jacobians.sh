@@ -32,6 +32,16 @@ for optimizer in "${OPTIMIZERS[@]}"; do
       echo "ERROR: missing completed run: ${source_seed_dir}/run_complete.json" >&2
       exit 1
     fi
+    capture_dir="${source_seed_dir}/captures"
+    capture_count="0"
+    if [[ -d "$capture_dir" ]]; then
+      capture_count="$(find "$capture_dir" -type f -name '*.pt' | wc -l | tr -d '[:space:]')"
+    fi
+    if [[ "$capture_count" == "0" ]]; then
+      echo "ERROR: no saved dense captures for ${optimizer} seed ${seed}: ${capture_dir}" >&2
+      echo "The complete Jacobian rerun requires the captures saved during baseline training." >&2
+      exit 1
+    fi
     if [[ ! -d "$cache_checkpoint_dir" ]]; then
       echo "ERROR: missing checkpoint cache: $cache_checkpoint_dir" >&2
       exit 1
@@ -78,9 +88,13 @@ run_notebook() {
     --parameters_file "$PARAMETER_FILE"
 }
 
-# Genuine weight-only Jacobians that can be reconstructed post facto from W.
+# Complete genuine-Jacobian suite used by the earlier audit. Notebooks 11, 14,
+# and 17 consume saved dense captures; notebooks 13 and 16 use saved weights.
+run_notebook "11_Muon_Update_Stiefel_Tangent.ipynb"
 run_notebook "13_Single_Checkpoint_Map_Jacobians.ipynb"
+run_notebook "14_Calibrated_Local_Training_Map.ipynb"
 run_notebook "16_Additional_Weight_Only_ECS_Jacobians.ipynb"
+run_notebook "17_Data_Dependent_ECS_Jacobians.ipynb"
 
 # Five quotient candidates plus raw/midpoint/uniform controls, all measured by
 # the same dual WeightWatcher raw and fix_fingers=clip_xmax path.

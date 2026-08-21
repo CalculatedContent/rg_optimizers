@@ -304,10 +304,12 @@ the ten independent seeds. It retains the raw-weight, midpoint-ECS, and uniform
 singular-translation controls and evaluates every matrix with the same dual
 WeightWatcher raw and `fix_fingers=clip_xmax` path.
 
-The post-facto runner also executes notebooks `13` and `16`, which contain the
-genuine weight-only Jacobians reconstructible from saved matrices. It does not
-run capture-dependent optimizer/minibatch Jacobians (`11`, `14`, or `17`) and
-never resumes training.
+The post-facto runner executes the complete genuine-Jacobian suite used by the
+earlier audit. Notebooks `13` and `16` contain weight-only Jacobians
+reconstructible from saved matrices; notebooks `11`, `14`, and `17` consume
+the dense optimizer/minibatch captures saved during baseline training. The
+runner never resumes training and stops before analysis if any run lacks its
+checkpoint cache or dense captures.
 
 ```bash
 export RG_MNIST_TANGENT_ROOT="/private/tmp/rg-mnist-mlp3-short100-runs"
