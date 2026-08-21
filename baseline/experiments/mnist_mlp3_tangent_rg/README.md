@@ -295,7 +295,7 @@ Figures and summary tables are written beneath
 `$RUNS/mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed/notebook_outputs/`
 followed by `muonclip_adamw_10seed_bollinger_comparison/`.
 
-### Short-100 ten-seed quotient and weight-only Jacobian rerun
+### Short-100 one-seed-per-optimizer quotient and weight-only Jacobian rerun
 
 Notebook `23_Short100_10Seed_Weight_Quotients.ipynb` applies the frozen primary
 profiles of the five quotient candidates to all 100 cached checkpoints from
@@ -304,7 +304,8 @@ the ten independent seeds. It retains the raw-weight, midpoint-ECS, and uniform
 singular-translation controls and evaluates every matrix with the same dual
 WeightWatcher raw and `fix_fingers=clip_xmax` path.
 
-The post-facto runner executes notebooks `13` and `16`, which contain the
+The post-facto runner analyzes seed `101` from each optimizer and executes
+notebooks `13` and `16`, which contain the
 genuine weight-only Jacobians reconstructible from the saved matrices. These
 completed short baselines did not save the dense optimizer/minibatch captures
 required by notebooks `11`, `14`, and `17`, so those maps cannot be recovered
@@ -318,8 +319,11 @@ export RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT="/private/tmp/rg-mnist-mlp3-short1
 bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_quotients_jacobians.sh
 ```
 
-The runner first verifies exactly 100 cached checkpoints for every one of the
-20 optimizer/seed runs. It is safely resumable inside the quotient notebook;
+The runner first verifies exactly 100 cached checkpoints for seed `101` in
+each of the two optimizer arms. The other nine saved seeds are not read or
+modified. Notebook `23` labels this as an exploratory subset and does not
+promote its one-seed summaries to confirmatory cross-seed intervals. The
+quotient calculation is safely resumable;
 executed notebooks are written beneath
 `$RG_MNIST_TANGENT_ROOT/executed_notebooks/short100_quotients_jacobians/`.
 Papermill autosaves the currently executing notebook every 30 seconds and

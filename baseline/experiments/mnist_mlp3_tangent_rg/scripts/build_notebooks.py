@@ -8614,10 +8614,22 @@ ACTIVE_SEEDS = tuple(
     for seed in normalize_papermill_sequence(SEEDS, name="SEEDS")
 )
 EXPECTED_SHORT100_SEEDS = (101, 202, 303, 404, 505, 606, 707, 808, 909, 1010)
-if ACTIVE_SEEDS != EXPECTED_SHORT100_SEEDS:
+if (
+    not ACTIVE_SEEDS
+    or len(set(ACTIVE_SEEDS)) != len(ACTIVE_SEEDS)
+    or not set(ACTIVE_SEEDS).issubset(EXPECTED_SHORT100_SEEDS)
+):
     raise ValueError(
-        f"The short-100 notebook requires seeds {EXPECTED_SHORT100_SEEDS}; "
+        f"The short-100 notebook accepts a nonempty unique subset of "
+        f"{EXPECTED_SHORT100_SEEDS}; "
         f"observed {ACTIVE_SEEDS}"
+    )
+SHORT100_FULL_CONFIRMATORY_GRID = ACTIVE_SEEDS == EXPECTED_SHORT100_SEEDS
+if not SHORT100_FULL_CONFIRMATORY_GRID:
+    print(
+        "WARNING: exploratory short-100 subset; cross-seed confidence intervals "
+        "are not confirmatory:",
+        ACTIVE_SEEDS,
     )
 """
     elif three_seed:

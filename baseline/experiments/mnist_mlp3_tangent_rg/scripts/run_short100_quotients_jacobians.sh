@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Post-facto weight-only quotient and Jacobian analysis for the matched
-# 100-epoch, ten-seed MuonClip-RMS/AdamW experiment. This script never trains.
+# Post-facto weight-only quotient and Jacobian analysis for one matched seed
+# from each arm of the 100-epoch MuonClip-RMS/AdamW experiment. This script
+# never trains or modifies the other nine saved seeds.
 
 set -euo pipefail
 
@@ -12,7 +13,7 @@ NOTEBOOK_ROOT="${REPO_ROOT}/baseline/experiments/mnist_mlp3_tangent_rg/notebooks
 RUN_ROOT="${RG_MNIST_TANGENT_ROOT:-/private/tmp/rg-mnist-mlp3-short100-runs}"
 CACHE_ROOT="${RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT:-/private/tmp/rg-mnist-mlp3-short100-checkpoints}"
 SUITE="mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed"
-SEEDS=(101 202 303 404 505 606 707 808 909 1010)
+SEEDS=(101)
 OPTIMIZERS=(muonclip_rms adamw)
 KERNEL_NAME="${RG_MNIST_JUPYTER_KERNEL:-rg-muonclip-run}"
 
@@ -55,7 +56,7 @@ payload = {
     "OUTPUT_ROOT": output_root,
     "CHECKPOINT_CACHE_ROOT": cache_root,
     "PROTOCOL_SLUG": suite,
-    "SEEDS": [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010],
+    "SEEDS": [101],
     "OPTIMIZER_SLUGS": ["muonclip_rms", "adamw"],
     "CHECKPOINT_PAYLOAD_CACHE_SIZE": 6,
     "SHOW_PLOTS": True,
