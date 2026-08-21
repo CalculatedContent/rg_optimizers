@@ -4861,12 +4861,14 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             def persist_live_seed(
                 optimizer,
                 seed,
+                layer,
                 *,
                 operator_start,
                 fit_start,
                 trace_start,
             ):
-                slug = f"{optimizer}_seed_{int(seed)}"
+                layer_slug = str(layer).replace(".weight", "").replace(".", "_")
+                slug = f"{optimizer}_seed_{int(seed)}_{layer_slug}"
                 atomic_live_csv(
                     pd.DataFrame(operator_records[operator_start:]),
                     live_progress_dir / f"{slug}_operators.csv",
@@ -4880,15 +4882,96 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                     live_progress_dir / f"{slug}_traces.csv",
                 )
 
-            total_seed_count = len(OPTIMIZER_SLUGS) * len(SEEDS)
-            completed_seed_count = 0
+            def display_live_optimizer_layer(
+                optimizer,
+                seed,
+                layer,
+                *,
+                operator_start,
+                fit_start,
+                trace_start,
+            ):
+                layer_slug = str(layer).replace(".weight", "").replace(".", "_")
+                slug = f"{optimizer}_seed_{int(seed)}_{layer_slug}"
+                operators = pd.DataFrame(operator_records[operator_start:])
+                fits = pd.concat(
+                    fit_frames[fit_start:], ignore_index=True, sort=False
+                )
+                traces = pd.concat(
+                    trace_frames[trace_start:], ignore_index=True, sort=False
+                )
+                atomic_live_csv(
+                    operators, live_progress_dir / f"{slug}_operators.csv"
+                )
+                atomic_live_csv(fits, live_progress_dir / f"{slug}_fits.csv")
+                atomic_live_csv(traces, live_progress_dir / f"{slug}_traces.csv")
+                display_columns = [
+                    name for name in (
+                        "optimizer", "seed", "epoch", "layer", "method",
+                        "spectrum_kind", "clip_top_k", "alpha", "ks_D",
+                        "n_tail", "fit_ok",
+                    ) if name in fits.columns
+                ]
+                display(fits[display_columns].tail(40))
+                primary = fits.copy()
+                if "clip_top_k" in primary.columns:
+                    primary = primary[
+                        pd.to_numeric(primary["clip_top_k"], errors="coerce").eq(0)
+                    ]
+                primary = primary[
+                    pd.to_numeric(primary["alpha"], errors="coerce").notna()
+                ].copy()
+                fig, axis = plt.subplots(figsize=(10.0, 5.0))
+                for identity, curve in primary.groupby(
+                    ["method", "spectrum_kind"], dropna=False
+                ):
+                    curve = curve.sort_values("epoch")
+                    axis.plot(
+                        curve["epoch"], curve["alpha"], marker="o",
+                        linewidth=1.5, markersize=3.5,
+                        label=f"{identity[0]} | {identity[1]}",
+                    )
+                axis.axhline(2.0, color="black", linestyle="--", linewidth=1.0)
+                axis.set(
+                    xlabel="epoch",
+                    ylabel="power-law alpha",
+                    title=f"Live Jacobian fits: {optimizer}, seed {seed}, {layer}",
+                )
+                axis.grid(True, alpha=0.25)
+                if not primary.empty:
+                    axis.legend(fontsize=7, ncol=2, frameon=False)
+                fig.tight_layout()
+                figure_path = live_progress_dir / f"{slug}_alpha.png"
+                fig.savefig(figure_path, dpi=170, bbox_inches="tight")
+                if SHOW_PLOTS:
+                    plt.show()
+                else:
+                    plt.close(fig)
+                print(
+                    f"Completed cell output: {optimizer}, seed={seed}, "
+                    f"layer={layer}; fits={len(fits)}; plot={figure_path}",
+                    flush=True,
+                )
+
+            total_block_count = (
+                len(OPTIMIZER_SLUGS) * len(SEEDS) * len(LAYERS)
+            )
+            completed_block_count = 0
             atomic_live_json({
                 "state": "starting",
                 "method_slug": METHOD_SLUG,
-                "completed_seed_count": 0,
-                "total_seed_count": total_seed_count,
+                "completed_block_count": 0,
+                "total_block_count": total_block_count,
             })
-            for optimizer in OPTIMIZER_SLUGS:
+
+            def analyze_optimizer_layer_block(optimizer, layer):
+                global completed_block_count
+                if optimizer not in OPTIMIZER_SLUGS or layer not in LAYERS:
+                    print(
+                        f"Skipping inactive cell optimizer={optimizer}, layer={layer}",
+                        flush=True,
+                    )
+                    return
                 for seed in SEEDS:
                     seed_dir = require_tail_checkpoint_cache(optimizer, seed)
                     run_fingerprint = verified_run_fingerprint(optimizer, seed)
@@ -4911,19 +4994,23 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                     )
                     expected_matrix_count = (
                         min(len(stride_cache_refs), int(MAXIMUM_CHECKPOINTS))
-                        * len(LAYERS)
                     )
                     print(
-                        f"{optimizer} seed={seed}: analyzing "
+                        f"CELL {optimizer} seed={seed} layer={layer}: analyzing "
+                        f"{expected_matrix_count} stride-selected states from "
                         f"{len(cache_refs)} verified cache states "
                         f"with payload LRU={CHECKPOINT_PAYLOAD_CACHE_SIZE}"
                     )
-                    for selected, layer, W, selection_rule, selection_role in selected_trajectory_matrices(
+                    for selected, selected_layer, W, selection_rule, selection_role in selected_trajectory_matrices(
                         seed_dir,
-                        layers=LAYERS,
+                        layers=(layer,),
                         maximum_checkpoints=MAXIMUM_CHECKPOINTS,
                         epoch_stride=ANALYSIS_EPOCH_STRIDE,
                     ):
+                        if selected_layer != layer:
+                            raise RuntimeError(
+                                f"Cell layer mismatch: {selected_layer} != {layer}"
+                            )
                         checkpoint_singular_values = np.linalg.svd(W, compute_uv=False)
                         polar_record = polar.polar_pullback_spectrum(
                             W,
@@ -5228,8 +5315,8 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                             "layer": layer,
                             "completed_matrix_count": completed_matrix_count,
                             "expected_matrix_count": expected_matrix_count,
-                            "completed_seed_count": completed_seed_count,
-                            "total_seed_count": total_seed_count,
+                            "completed_block_count": completed_block_count,
+                            "total_block_count": total_block_count,
                             "operator_row_count_current_seed": (
                                 len(operator_records) - seed_operator_start
                             ),
@@ -5248,6 +5335,7 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                             persist_live_seed(
                                 optimizer,
                                 seed,
+                                layer,
                                 operator_start=seed_operator_start,
                                 fit_start=seed_fit_start,
                                 trace_start=seed_trace_start,
@@ -5258,24 +5346,56 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                                 f"partials={live_progress_dir}",
                                 flush=True,
                             )
-                    completed_seed_count += 1
+                    display_live_optimizer_layer(
+                        optimizer,
+                        seed,
+                        layer,
+                        operator_start=seed_operator_start,
+                        fit_start=seed_fit_start,
+                        trace_start=seed_trace_start,
+                    )
+                    completed_block_count += 1
                     atomic_live_json({
-                        "state": "seed_complete",
+                        "state": "optimizer_layer_cell_complete",
                         "method_slug": METHOD_SLUG,
                         "optimizer": optimizer,
                         "seed": int(seed),
+                        "layer": layer,
                         "completed_matrix_count": completed_matrix_count,
                         "expected_matrix_count": expected_matrix_count,
-                        "completed_seed_count": completed_seed_count,
-                        "total_seed_count": total_seed_count,
+                        "completed_block_count": completed_block_count,
+                        "total_block_count": total_block_count,
                         "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
                     })
+            """
+        ),
+        markdown(
+            """
+            ## Incremental optimizer/layer cells
 
+            Each following cell analyzes one optimizer/layer block, writes its
+            own operator, fit, and trace CSVs, displays the newest fit rows, and
+            saves/shows an alpha trajectory before the next block begins.
+            Inactive optimizers or layers are skipped explicitly.
+            """
+        ),
+        *[
+            code(
+                f'''\
+                analyze_optimizer_layer_block("{optimizer}", "{layer}")
+                '''
+            )
+            for optimizer in ("muonclip_rms", "adamw", "muon")
+            for layer in ("fc2.weight", "fc1.weight", "fc3.weight")
+        ],
+        markdown("## Formula validation and consolidated outputs"),
+        code(
+            """
             atomic_live_json({
                 "state": "trajectory_complete_formula_validation_running",
                 "method_slug": METHOD_SLUG,
-                "completed_seed_count": completed_seed_count,
-                "total_seed_count": total_seed_count,
+                "completed_block_count": completed_block_count,
+                "total_block_count": total_block_count,
                 "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
             })
             rng = np.random.default_rng(20260819)
@@ -5450,8 +5570,8 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             atomic_live_json({
                 "state": "trajectory_and_formula_validation_complete",
                 "method_slug": METHOD_SLUG,
-                "completed_seed_count": completed_seed_count,
-                "total_seed_count": total_seed_count,
+                "completed_block_count": completed_block_count,
+                "total_block_count": total_block_count,
                 "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
             })
             """
@@ -5595,8 +5715,8 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             atomic_live_json({
                 "state": "notebook_complete",
                 "method_slug": METHOD_SLUG,
-                "completed_seed_count": completed_seed_count,
-                "total_seed_count": total_seed_count,
+                "completed_block_count": completed_block_count,
+                "total_block_count": total_block_count,
                 "analysis_dir": str(analysis_dir),
                 "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
             })
