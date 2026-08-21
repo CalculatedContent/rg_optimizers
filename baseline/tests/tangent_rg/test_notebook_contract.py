@@ -125,22 +125,20 @@ class NotebookContractTests(unittest.TestCase):
         self.assertNotEqual(SHORT100_RUNNER_PATH.stat().st_mode & 0o111, 0)
         source = SHORT100_RUNNER_PATH.read_text(encoding="utf-8")
         for notebook in (
+            "11_Muon_Update_Stiefel_Tangent.ipynb",
             "13_Single_Checkpoint_Map_Jacobians.ipynb",
+            "14_Calibrated_Local_Training_Map.ipynb",
             "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+            "17_Data_Dependent_ECS_Jacobians.ipynb",
             "23_Short100_10Seed_Weight_Quotients.ipynb",
         ):
             self.assertEqual(source.count(f'run_notebook "{notebook}"'), 1)
-        for forbidden in (
-            "11_Muon_Update_Stiefel_Tangent.ipynb",
-            "14_Calibrated_Local_Training_Map.ipynb",
-            "17_Data_Dependent_ECS_Jacobians.ipynb",
-            " rg_baselines.tangent_rg.cli train",
-            "$HOME",
-        ):
+        for forbidden in (" rg_baselines.tangent_rg.cli train", "$HOME"):
             self.assertNotIn(forbidden, source)
         self.assertIn("/private/tmp/rg-mnist-mlp3-short100-runs", source)
         self.assertIn("/private/tmp/rg-mnist-mlp3-short100-checkpoints", source)
         self.assertIn('checkpoint_count" != "100"', source)
+        self.assertIn('capture_count" == "0"', source)
 
     def test_muonclip_runner_executes_only_declared_jacobian_notebooks(self) -> None:
         self.assertTrue(MUONCLIP_RUNNER_PATH.is_file())
