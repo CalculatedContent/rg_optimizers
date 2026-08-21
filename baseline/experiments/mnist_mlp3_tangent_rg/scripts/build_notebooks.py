@@ -9908,6 +9908,675 @@ def single_run_metrics_weightwatcher_audit_notebook() -> tuple[str, dict[str, ob
     return notebook("21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb", cells)
 
 
+def muonclip_adamw_bollinger_comparison_notebook() -> tuple[str, dict[str, object]]:
+    cells = [
+        markdown(
+            r"""
+            # MuonClip-RMS versus AdamW: 10-seed performance and WeightWatcher comparison
+
+            This lightweight post-training notebook compares the matched
+            MuonClip-RMS and AdamW arms of the 100-epoch, 10-seed experiment.
+            It reads only the persisted performance and WeightWatcher CSVs;
+            it does not load checkpoints, retrain models, or rerun
+            WeightWatcher.
+
+            Every trajectory shows the mean across independent seeded runs and
+            a Bollinger-style band equal to **mean plus or minus two sample
+            standard deviations across seeds**. These bands describe run-to-run
+            dispersion. They are not standard errors or confidence intervals.
+
+            The default WeightWatcher series is the training protocol's
+            primary `clip_xmax` fit (`fix_fingers=clip_xmax`). Failed fits are
+            excluded from the alpha mean and band, while their reduced seed
+            counts are retained in an availability table.
+
+            **`operator_kind`: `saved_multiseed_performance_and_default_weightwatcher_comparison`**
+
+            **`map_definition`: `identity read of completed-run CSV rows followed by cross-seed mean and sample-standard-deviation aggregation`**
+            """
+        ),
+        parameters(
+            """
+            PROTOCOL_SLUG = "mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed"
+            SEEDS = [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010]
+            OPTIMIZER_SLUGS = ["muonclip_rms", "adamw"]
+            OPTIMIZER_LABELS = {
+                "muonclip_rms": "MuonClip-RMS",
+                "adamw": "AdamW",
+            }
+            EXPECTED_WEIGHT_LAYERS = ["fc1.weight", "fc2.weight", "fc3.weight"]
+            PRIMARY_FIT_VARIANT = "clip_xmax"
+            BAND_STD_MULTIPLIER = 2.0
+            METHOD_SLUG = "muonclip_adamw_10seed_bollinger_comparison"
+            """
+        ),
+        code(BOOTSTRAP),
+        code("from matplotlib.lines import Line2D"),
+        code(
+            r"""
+            def require_path(path, *, description="artifact"):
+                path = Path(path)
+                if not path.exists():
+                    raise FileNotFoundError(f"Missing {description}: {path}")
+                return path
+
+
+            def boolean_series(values):
+                if getattr(values, "dtype", None) == bool:
+                    return values
+                return values.astype(str).str.strip().str.lower().isin(
+                    {"1", "true", "yes"}
+                )
+
+
+            def resolve_seed_dir(optimizer_slug, seed):
+                protocol = RUN_ROOT_PATH / PROTOCOL_SLUG
+                if not protocol.is_dir():
+                    protocol = RUN_ROOT_PATH
+                candidates = [
+                    protocol / optimizer_slug / f"seed_{int(seed)}",
+                    protocol / optimizer_slug / f"seed_{int(seed):05d}",
+                    protocol / "results" / optimizer_slug / f"seed_{int(seed)}",
+                    protocol / "results" / optimizer_slug / f"seed_{int(seed):05d}",
+                    RUN_ROOT_PATH / optimizer_slug / f"seed_{int(seed)}",
+                    RUN_ROOT_PATH / "results" / optimizer_slug / f"seed_{int(seed)}",
+                ]
+                for candidate in candidates:
+                    if candidate.is_dir():
+                        return candidate
+                raise FileNotFoundError(
+                    f"Missing completed seed directory for optimizer={optimizer_slug}, "
+                    f"seed={seed}. Checked:\n"
+                    + "\n".join(f"  - {path}" for path in candidates)
+                )
+
+
+            def validate_run_identity(seed_dir, *, optimizer_slug, seed):
+                seed_dir = Path(seed_dir)
+                manifest = json.loads(
+                    require_path(seed_dir / "manifest.json", description="run manifest")
+                    .read_text(encoding="utf-8")
+                )
+                resolved = json.loads(
+                    require_path(
+                        seed_dir / "resolved_config.json",
+                        description="resolved configuration",
+                    ).read_text(encoding="utf-8")
+                )
+                completion = json.loads(
+                    require_path(
+                        seed_dir / "run_complete.json",
+                        description="completion marker",
+                    ).read_text(encoding="utf-8")
+                )
+                config = dict(resolved.get("config", resolved))
+                expected = {
+                    "suite": str(PROTOCOL_SLUG),
+                    "optimizer": str(optimizer_slug),
+                    "seed": int(seed),
+                }
+                observed = {
+                    "suite": str(manifest.get("suite_name")),
+                    "optimizer": str(manifest.get("optimizer")),
+                    "seed": int(manifest.get("seed", -1)),
+                }
+                failures = []
+                if observed != expected:
+                    failures.append(f"manifest identity={observed}, expected={expected}")
+                if str(config.get("suite_name")) != expected["suite"]:
+                    failures.append("resolved suite does not match")
+                if str(config.get("optimizer")) != expected["optimizer"]:
+                    failures.append("resolved optimizer does not match")
+                if int(config.get("seed", -1)) != expected["seed"]:
+                    failures.append("resolved seed does not match")
+                if str(completion.get("optimizer")) != expected["optimizer"]:
+                    failures.append("completion optimizer does not match")
+                if int(completion.get("seed", -1)) != expected["seed"]:
+                    failures.append("completion seed does not match")
+                if completion.get("completed") is not True:
+                    failures.append("completion marker does not declare completed=true")
+                fingerprints = {
+                    str(manifest.get("protocol_fingerprint", "")),
+                    str(resolved.get("protocol_fingerprint", "")),
+                    str(completion.get("protocol_fingerprint", "")),
+                }
+                if "" in fingerprints or len(fingerprints) != 1:
+                    failures.append("manifest/resolved/completion fingerprints disagree")
+                if int(completion.get("epochs", -1)) != int(config.get("epochs", -2)):
+                    failures.append("completion and resolved epoch horizons disagree")
+                if failures:
+                    raise RuntimeError(
+                        f"Run identity failure beneath {seed_dir}:\n  - "
+                        + "\n  - ".join(failures)
+                    )
+                return manifest, resolved, completion, fingerprints.pop()
+
+
+            def bollinger_summary(frame, *, groups, value, multiplier):
+                summary = (
+                    frame.groupby(list(groups), as_index=False, dropna=False)[value]
+                    .agg(n="count", mean="mean", std="std")
+                )
+                summary["band_multiplier"] = float(multiplier)
+                summary["band_low"] = summary["mean"] - float(multiplier) * summary["std"]
+                summary["band_high"] = summary["mean"] + float(multiplier) * summary["std"]
+                return summary
+            """
+        ),
+        markdown(
+            """
+            ## Load and verify the matched completed runs
+
+            Both optimizer arms must contain every requested seed and the same
+            epoch grid. Dataset split hashes, architecture, initialization,
+            analysis schedule, device, and software provenance must also agree.
+            """
+        ),
+        code(
+            r"""
+            OPTIMIZER_SLUGS = tuple(str(value) for value in OPTIMIZER_SLUGS)
+            EXPECTED_WEIGHT_LAYERS = tuple(str(value) for value in EXPECTED_WEIGHT_LAYERS)
+            ACTIVE_SEEDS = tuple(int(value) for value in SEEDS)
+            if len(ACTIVE_SEEDS) != 10 or len(set(ACTIVE_SEEDS)) != 10:
+                raise ValueError(f"Expected exactly 10 unique seeds; observed {ACTIVE_SEEDS}")
+            if set(OPTIMIZER_SLUGS) != {"muonclip_rms", "adamw"}:
+                raise ValueError(
+                    "OPTIMIZER_SLUGS must contain matched muonclip_rms and adamw arms"
+                )
+            if str(PRIMARY_FIT_VARIANT) != "clip_xmax":
+                raise ValueError(
+                    "The default WeightWatcher comparison is preregistered as clip_xmax"
+                )
+            if not np.isclose(float(BAND_STD_MULTIPLIER), 2.0):
+                raise ValueError("Bollinger bands must remain mean +/- 2 sample SD")
+
+            required_performance = {
+                "optimizer", "seed", "epoch", "global_step", "protocol_fingerprint",
+                "train_loss", "train_accuracy", "test_loss", "test_accuracy",
+                "test_monitoring_only", "test_used_for_selection",
+            }
+            required_weightwatcher = {
+                "optimizer", "seed", "epoch", "global_step", "protocol_fingerprint",
+                "layer", "fit_variant", "finger_policy", "alpha", "fit_ok",
+                "operator_kind", "map_definition",
+            }
+
+            performance_frames = []
+            weightwatcher_frames = []
+            provenance_rows = []
+            invariant_snapshots = []
+            for optimizer_slug in OPTIMIZER_SLUGS:
+                for seed in ACTIVE_SEEDS:
+                    seed_dir = resolve_seed_dir(optimizer_slug, seed)
+                    manifest, resolved, completion, fingerprint = validate_run_identity(
+                        seed_dir, optimizer_slug=optimizer_slug, seed=seed
+                    )
+                    metrics_dir = require_path(seed_dir / "metrics", description="metrics directory")
+                    performance_path = require_path(
+                        metrics_dir / "performance_by_analysis_epoch.csv",
+                        description="saved performance table",
+                    )
+                    weightwatcher_path = require_path(
+                        metrics_dir / "weightwatcher_fits.csv",
+                        description="saved WeightWatcher table",
+                    )
+                    performance_run = pd.read_csv(performance_path)
+                    weightwatcher_run = pd.read_csv(weightwatcher_path)
+                    for label, frame, required in (
+                        ("performance", performance_run, required_performance),
+                        ("WeightWatcher", weightwatcher_run, required_weightwatcher),
+                    ):
+                        missing = required - set(frame.columns)
+                        if missing:
+                            raise RuntimeError(
+                                f"{label} table {seed_dir} lacks columns {sorted(missing)}"
+                            )
+                        if frame.empty:
+                            raise RuntimeError(f"{label} table is empty beneath {seed_dir}")
+                        if set(frame["optimizer"].astype(str)) != {optimizer_slug}:
+                            raise RuntimeError(f"{label} optimizer mismatch beneath {seed_dir}")
+                        if set(pd.to_numeric(frame["seed"]).astype(int)) != {seed}:
+                            raise RuntimeError(f"{label} seed mismatch beneath {seed_dir}")
+                        if set(frame["protocol_fingerprint"].astype(str)) != {fingerprint}:
+                            raise RuntimeError(f"{label} fingerprint mismatch beneath {seed_dir}")
+                    performance_frames.append(performance_run)
+                    weightwatcher_frames.append(weightwatcher_run)
+                    provenance_rows.append({
+                        "optimizer": optimizer_slug,
+                        "seed": seed,
+                        "protocol_fingerprint": fingerprint,
+                        "seed_dir": str(seed_dir.resolve()),
+                        "performance_path": str(performance_path.resolve()),
+                        "weightwatcher_path": str(weightwatcher_path.resolve()),
+                        "completion_epoch": int(completion["epochs"]),
+                    })
+                    invariant_snapshots.append({
+                        "optimizer": optimizer_slug,
+                        "seed": seed,
+                        "suite_name": manifest.get("suite_name"),
+                        "dataset": manifest.get("dataset"),
+                        "model": manifest.get("model"),
+                        "initialization": manifest.get("initialization"),
+                        "normalization": manifest.get("normalization"),
+                        "train_indices_sha256": manifest.get("train_indices_sha256"),
+                        "validation_indices_sha256": manifest.get("validation_indices_sha256"),
+                        "analysis_plan": manifest.get("analysis_plan"),
+                        "device": manifest.get("device"),
+                        "software_versions": manifest.get("software_versions"),
+                        "determinism_settings": manifest.get("determinism_settings"),
+                        "test_monitoring_only": manifest.get("test_monitoring_only"),
+                    })
+
+            invariant_fields = [
+                "suite_name", "dataset", "model", "initialization", "normalization",
+                "train_indices_sha256", "validation_indices_sha256", "analysis_plan",
+                "device", "software_versions", "determinism_settings",
+                "test_monitoring_only",
+            ]
+            disagreements = []
+            for field in invariant_fields:
+                values = {
+                    json.dumps(row[field], sort_keys=True, default=str)
+                    for row in invariant_snapshots
+                }
+                if len(values) != 1:
+                    disagreements.append(field)
+            if disagreements:
+                raise RuntimeError(
+                    "Matched optimizer/seed runs disagree on provenance: "
+                    + ", ".join(disagreements)
+                )
+
+            performance = pd.concat(performance_frames, ignore_index=True, sort=False)
+            weightwatcher = pd.concat(weightwatcher_frames, ignore_index=True, sort=False)
+            provenance = pd.DataFrame(provenance_rows)
+            for column in (
+                "epoch", "global_step", "train_loss", "train_accuracy",
+                "test_loss", "test_accuracy",
+            ):
+                performance[column] = pd.to_numeric(performance[column], errors="coerce")
+            for column in ("epoch", "global_step", "alpha"):
+                weightwatcher[column] = pd.to_numeric(weightwatcher[column], errors="coerce")
+            weightwatcher["fit_ok_bool"] = boolean_series(weightwatcher["fit_ok"])
+
+            expected_optimizer_seed_grid = {
+                (optimizer, seed)
+                for optimizer in OPTIMIZER_SLUGS
+                for seed in ACTIVE_SEEDS
+            }
+            observed_performance_grid = set(
+                performance[["optimizer", "seed"]]
+                .drop_duplicates()
+                .assign(seed=lambda frame: frame["seed"].astype(int))
+                .itertuples(index=False, name=None)
+            )
+            observed_weightwatcher_grid = set(
+                weightwatcher[["optimizer", "seed"]]
+                .drop_duplicates()
+                .assign(seed=lambda frame: frame["seed"].astype(int))
+                .itertuples(index=False, name=None)
+            )
+            if observed_performance_grid != expected_optimizer_seed_grid:
+                raise RuntimeError("Performance optimizer/seed grid is incomplete")
+            if observed_weightwatcher_grid != expected_optimizer_seed_grid:
+                raise RuntimeError("WeightWatcher optimizer/seed grid is incomplete")
+            if performance.duplicated(["optimizer", "seed", "epoch", "global_step"]).any():
+                raise RuntimeError("Duplicate performance state rows were found")
+            if weightwatcher.duplicated(
+                ["optimizer", "seed", "epoch", "global_step", "layer", "fit_variant"]
+            ).any():
+                raise RuntimeError("Duplicate WeightWatcher state/layer/variant rows were found")
+
+            epoch_grids = {
+                (optimizer, seed): tuple(
+                    run.sort_values("epoch")["epoch"].astype(int).tolist()
+                )
+                for (optimizer, seed), run in performance.groupby(["optimizer", "seed"])
+            }
+            if len(set(epoch_grids.values())) != 1:
+                raise RuntimeError("Completed runs do not share an identical performance epoch grid")
+
+            comparison_root = OUTPUT_ROOT_PATH / METHOD_SLUG
+            figure_root = comparison_root / "figures"
+            figure_root.mkdir(parents=True, exist_ok=True)
+            performance.to_csv(comparison_root / "performance_rows_used.csv", index=False)
+            weightwatcher.to_csv(comparison_root / "weightwatcher_rows_used.csv", index=False)
+            provenance.to_csv(comparison_root / "cross_run_provenance.csv", index=False)
+            print("performance rows:", len(performance))
+            print("WeightWatcher rows:", len(weightwatcher))
+            display(provenance)
+            """
+        ),
+        markdown(
+            r"""
+            ## Aggregate independent seeds
+
+            The standard deviation is computed across the ten complete runs at
+            each epoch. It is not divided by the square root of the seed count.
+            For accuracy only, plotted band endpoints are clipped to the
+            physical interval $[0,1]$; the unmodified numeric bands remain in
+            the saved CSV.
+            """
+        ),
+        code(
+            r"""
+            performance_long = performance.melt(
+                id_vars=["optimizer", "seed", "epoch", "global_step"],
+                value_vars=["train_loss", "test_loss", "train_accuracy", "test_accuracy"],
+                var_name="metric",
+                value_name="value",
+            )
+            if not np.isfinite(performance_long["value"].to_numpy(dtype=float)).all():
+                raise RuntimeError("Performance comparison contains non-finite values")
+            performance_summary = bollinger_summary(
+                performance_long,
+                groups=("optimizer", "epoch", "metric"),
+                value="value",
+                multiplier=BAND_STD_MULTIPLIER,
+            )
+            if not performance_summary["n"].eq(len(ACTIVE_SEEDS)).all():
+                raise RuntimeError("A performance Bollinger group is missing one or more seeds")
+
+            default_weightwatcher = weightwatcher[
+                weightwatcher["fit_variant"].astype(str).eq(PRIMARY_FIT_VARIANT)
+                & weightwatcher["layer"].astype(str).isin(EXPECTED_WEIGHT_LAYERS)
+            ].copy()
+            expected_finger_policy = set(
+                default_weightwatcher["finger_policy"].dropna().astype(str)
+            )
+            if expected_finger_policy != {"fix_fingers=clip_xmax"}:
+                raise RuntimeError(
+                    f"Default WeightWatcher finger policy mismatch: {expected_finger_policy}"
+                )
+            default_weightwatcher["alpha_for_summary"] = default_weightwatcher["alpha"].where(
+                default_weightwatcher["fit_ok_bool"]
+                & np.isfinite(default_weightwatcher["alpha"])
+                & default_weightwatcher["alpha"].gt(0.0)
+            )
+            alpha_summary = bollinger_summary(
+                default_weightwatcher,
+                groups=("optimizer", "epoch", "layer"),
+                value="alpha_for_summary",
+                multiplier=BAND_STD_MULTIPLIER,
+            )
+            alpha_availability = (
+                default_weightwatcher.groupby(
+                    ["optimizer", "epoch", "global_step", "layer"], as_index=False
+                )
+                .agg(
+                    requested_seed_count=("seed", "nunique"),
+                    successful_seed_count=("alpha_for_summary", "count"),
+                )
+            )
+            if not alpha_availability["requested_seed_count"].eq(len(ACTIVE_SEEDS)).all():
+                raise RuntimeError("Default WeightWatcher grid is missing requested seed rows")
+
+            performance_summary.to_csv(
+                comparison_root / "performance_bollinger_summary.csv", index=False
+            )
+            alpha_summary.to_csv(
+                comparison_root / "default_weightwatcher_alpha_bollinger_summary.csv",
+                index=False,
+            )
+            alpha_availability.to_csv(
+                comparison_root / "default_weightwatcher_fit_availability.csv", index=False
+            )
+            display(performance_summary.head(12))
+            display(alpha_availability.groupby(["optimizer", "layer"], as_index=False).agg(
+                minimum_successful_seeds=("successful_seed_count", "min"),
+                maximum_successful_seeds=("successful_seed_count", "max"),
+            ))
+            """
+        ),
+        markdown(
+            """
+            ## Training and test accuracy and loss
+
+            Thin lines are individual runs. Thick lines are cross-seed means;
+            shading is the Bollinger-style mean plus or minus two seed standard
+            deviations.
+            """
+        ),
+        code(
+            r"""
+            try:
+                plt.style.use("seaborn-v0_8-whitegrid")
+            except OSError:
+                plt.style.use("default")
+
+            optimizer_style = {
+                "muonclip_rms": {"label": "MuonClip-RMS", "color": "#0072B2"},
+                "adamw": {"label": "AdamW", "color": "#D55E00"},
+            }
+
+            def save_figure(fig, filename, *, bottom=0.0):
+                fig.tight_layout(rect=(0, bottom, 1, 1))
+                target = figure_root / filename
+                fig.savefig(target, dpi=190, bbox_inches="tight", facecolor="white")
+                if SHOW_PLOTS:
+                    plt.show()
+                else:
+                    plt.close(fig)
+                return target
+
+
+            def plot_performance_pair(metrics, *, ylabel, title, filename, bounded=False):
+                fig, axes = plt.subplots(1, 2, figsize=(13.2, 4.7), sharex=True)
+                for axis, metric in zip(axes, metrics):
+                    raw_metric = performance_long[performance_long["metric"].eq(metric)]
+                    summary_metric = performance_summary[performance_summary["metric"].eq(metric)]
+                    for optimizer in OPTIMIZER_SLUGS:
+                        style = optimizer_style[optimizer]
+                        raw_optimizer = raw_metric[raw_metric["optimizer"].eq(optimizer)]
+                        for _, seed_curve in raw_optimizer.groupby("seed"):
+                            seed_curve = seed_curve.sort_values("epoch")
+                            axis.plot(
+                                seed_curve["epoch"], seed_curve["value"],
+                                color=style["color"], alpha=0.10, linewidth=0.65,
+                            )
+                        curve = summary_metric[
+                            summary_metric["optimizer"].eq(optimizer)
+                        ].sort_values("epoch")
+                        x = curve["epoch"].to_numpy(dtype=float)
+                        mean = curve["mean"].to_numpy(dtype=float)
+                        low = curve["band_low"].to_numpy(dtype=float)
+                        high = curve["band_high"].to_numpy(dtype=float)
+                        if bounded:
+                            low = np.clip(low, 0.0, 1.0)
+                            high = np.clip(high, 0.0, 1.0)
+                        else:
+                            low = np.maximum(low, 0.0)
+                        axis.fill_between(
+                            x, low, high, color=style["color"], alpha=0.18, linewidth=0,
+                        )
+                        axis.plot(
+                            x, mean, color=style["color"], linewidth=2.2,
+                            label=style["label"],
+                        )
+                    split = metric.split("_", 1)[0].title()
+                    axis.set(xlabel="epoch", ylabel=ylabel, title=f"{split} {title}")
+                    if bounded:
+                        axis.set_ylim(0.0, 1.01)
+                    axis.grid(True, alpha=0.25)
+                    axis.legend(frameon=False)
+                return save_figure(fig, filename)
+
+
+            accuracy_figure = plot_performance_pair(
+                ("train_accuracy", "test_accuracy"),
+                ylabel="accuracy",
+                title="accuracy",
+                filename="train_test_accuracy_bollinger_2sd.png",
+                bounded=True,
+            )
+            loss_figure = plot_performance_pair(
+                ("train_loss", "test_loss"),
+                ylabel="cross-entropy loss",
+                title="loss",
+                filename="train_test_loss_bollinger_2sd.png",
+                bounded=False,
+            )
+            print(accuracy_figure)
+            print(loss_figure)
+            """
+        ),
+        markdown(
+            r"""
+            ## Default WeightWatcher alpha by layer
+
+            These panels use only successful persisted `clip_xmax` fits. The
+            availability CSV gives the exact contributing seed count at every
+            epoch and layer. The horizontal $alpha=2$ line is a reference,
+            not a parameter-selection objective.
+            """
+        ),
+        code(
+            r"""
+            fig, axes = plt.subplots(
+                1, len(EXPECTED_WEIGHT_LAYERS),
+                figsize=(4.8 * len(EXPECTED_WEIGHT_LAYERS), 4.8),
+                sharex=True,
+            )
+            axes = np.atleast_1d(axes)
+            for axis, layer in zip(axes, EXPECTED_WEIGHT_LAYERS):
+                for optimizer in OPTIMIZER_SLUGS:
+                    style = optimizer_style[optimizer]
+                    curve = alpha_summary[
+                        alpha_summary["optimizer"].eq(optimizer)
+                        & alpha_summary["layer"].astype(str).eq(layer)
+                        & alpha_summary["n"].ge(2)
+                    ].sort_values("epoch")
+                    if curve.empty:
+                        continue
+                    x = curve["epoch"].to_numpy(dtype=float)
+                    mean = curve["mean"].to_numpy(dtype=float)
+                    low = curve["band_low"].to_numpy(dtype=float)
+                    high = curve["band_high"].to_numpy(dtype=float)
+                    axis.fill_between(
+                        x, low, high, color=style["color"], alpha=0.18, linewidth=0,
+                    )
+                    axis.plot(
+                        x, mean, color=style["color"], linewidth=2.1,
+                        label=style["label"],
+                    )
+                axis.axhline(2.0, color="#333333", linestyle=":", linewidth=1.1)
+                axis.set(
+                    xlabel="epoch",
+                    ylabel=r"WeightWatcher $\alpha$",
+                    title=layer.replace(".weight", ""),
+                )
+                axis.grid(True, alpha=0.25)
+                axis.legend(frameon=False)
+            alpha_figure = save_figure(
+                fig, "default_weightwatcher_alpha_by_layer_bollinger_2sd.png"
+            )
+            print(alpha_figure)
+            """
+        ),
+        markdown(
+            """
+            ## Peak-to-final test degradation
+
+            The table is descriptive only: test metrics remain monitoring-only
+            and do not select checkpoints or hyperparameters.
+            """
+        ),
+        code(
+            r"""
+            degradation_rows = []
+            for (optimizer, seed), run in performance.groupby(["optimizer", "seed"]):
+                run = run.sort_values("epoch")
+                peak_index = run["test_accuracy"].idxmax()
+                minimum_loss_index = run["test_loss"].idxmin()
+                peak = run.loc[peak_index]
+                minimum_loss = run.loc[minimum_loss_index]
+                final = run.iloc[-1]
+                degradation_rows.append({
+                    "optimizer": optimizer,
+                    "seed": int(seed),
+                    "peak_test_accuracy": float(peak["test_accuracy"]),
+                    "peak_test_accuracy_epoch": int(peak["epoch"]),
+                    "final_test_accuracy": float(final["test_accuracy"]),
+                    "peak_to_final_test_accuracy_change": float(
+                        final["test_accuracy"] - peak["test_accuracy"]
+                    ),
+                    "minimum_test_loss": float(minimum_loss["test_loss"]),
+                    "minimum_test_loss_epoch": int(minimum_loss["epoch"]),
+                    "final_test_loss": float(final["test_loss"]),
+                    "minimum_to_final_test_loss_change": float(
+                        final["test_loss"] - minimum_loss["test_loss"]
+                    ),
+                })
+            degradation = pd.DataFrame(degradation_rows)
+            degradation_summary = bollinger_summary(
+                degradation.melt(
+                    id_vars=["optimizer", "seed"],
+                    value_vars=[
+                        "peak_to_final_test_accuracy_change",
+                        "minimum_to_final_test_loss_change",
+                    ],
+                    var_name="metric",
+                    value_name="value",
+                ),
+                groups=("optimizer", "metric"),
+                value="value",
+                multiplier=BAND_STD_MULTIPLIER,
+            )
+            degradation.to_csv(
+                comparison_root / "per_seed_peak_to_final_degradation.csv", index=False
+            )
+            degradation_summary.to_csv(
+                comparison_root / "peak_to_final_degradation_bollinger_summary.csv",
+                index=False,
+            )
+            display(degradation_summary)
+            """
+        ),
+        markdown("## Completion and provenance"),
+        code(
+            r"""
+            output_files = sorted(
+                str(path.relative_to(comparison_root))
+                for path in comparison_root.rglob("*")
+                if path.is_file()
+            )
+            summary = {
+                "schema_version": 1,
+                "completed": True,
+                "status": "complete",
+                "suite_name": str(PROTOCOL_SLUG),
+                "method_slug": str(METHOD_SLUG),
+                "operator_kind": (
+                    "saved_multiseed_performance_and_default_weightwatcher_comparison"
+                ),
+                "map_definition": (
+                    "identity read of completed-run CSV rows followed by cross-seed "
+                    "mean and sample-standard-deviation aggregation"
+                ),
+                "optimizer_slugs": list(OPTIMIZER_SLUGS),
+                "seeds": list(ACTIVE_SEEDS),
+                "seed_count": len(ACTIVE_SEEDS),
+                "primary_weightwatcher_fit_variant": str(PRIMARY_FIT_VARIANT),
+                "finger_policy": "fix_fingers=clip_xmax",
+                "uncertainty_policy": "bollinger_mean_plus_or_minus_2_sample_sd_across_seeds",
+                "band_standard_deviation_multiplier": float(BAND_STD_MULTIPLIER),
+                "performance_row_count": int(len(performance)),
+                "weightwatcher_row_count": int(len(weightwatcher)),
+                "output_files": output_files,
+                "test_monitoring_only": True,
+            }
+            (comparison_root / "comparison_summary.json").write_text(
+                json.dumps(summary, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            display(pd.DataFrame([summary]))
+            print("complete comparison:", comparison_root)
+            """
+        ),
+    ]
+    return notebook("22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb", cells)
+
+
 def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
     return (
         smoke_notebook(),
@@ -9945,6 +10614,7 @@ def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
         weight_quotient_notebook(three_seed=False),
         weight_quotient_notebook(three_seed=True),
         single_run_metrics_weightwatcher_audit_notebook(),
+        muonclip_adamw_bollinger_comparison_notebook(),
     )
 
 
@@ -9969,6 +10639,7 @@ def main() -> None:
         "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
         "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
         "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb",
+        "22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb",
     }
     observed = {name for name, _ in built}
     if observed != expected:
