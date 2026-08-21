@@ -16,6 +16,9 @@ BUILDER_PATH = EXPERIMENT_ROOT / "scripts" / "build_notebooks.py"
 MUONCLIP_RUNNER_PATH = (
     EXPERIMENT_ROOT / "scripts" / "run_muonclip_jacobians.sh"
 )
+SHORT100_RUNNER_PATH = (
+    EXPERIMENT_ROOT / "scripts" / "run_short100_quotients_jacobians.sh"
+)
 
 EXPECTED_NOTEBOOKS = {
     "00_Protocol_and_Smoke.ipynb",
@@ -36,6 +39,7 @@ EXPECTED_NOTEBOOKS = {
     "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
     "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb",
     "22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb",
+    "23_Short100_10Seed_Weight_Quotients.ipynb",
 }
 
 ANALYSIS_NOTEBOOKS = EXPECTED_NOTEBOOKS - {
@@ -53,6 +57,7 @@ TAIL_CACHE_ANALYSIS_NOTEBOOKS = {
     "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
     "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
     "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+    "23_Short100_10Seed_Weight_Quotients.ipynb",
 }
 
 CAPTURE_ANALYSIS_NOTEBOOKS = {
@@ -73,6 +78,7 @@ EXPECTED_METHOD_SOURCE_BY_NOTEBOOK = {
     "17_Data_Dependent_ECS_Jacobians.ipynb": "verified_calibrated_dense_capture_plus_exact_sparse_weightwatcher_trace_metrics",
     "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb": "verified_final_100_tail_cache",
     "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb": "verified_final_100_tail_cache",
+    "23_Short100_10Seed_Weight_Quotients.ipynb": "verified_final_100_tail_cache",
 }
 
 TRAINING_NOTEBOOKS = {
@@ -114,6 +120,28 @@ def _load_single_checkpoint_module():
 
 
 class NotebookContractTests(unittest.TestCase):
+    def test_short100_runner_is_analysis_only_and_complete(self) -> None:
+        self.assertTrue(SHORT100_RUNNER_PATH.is_file())
+        self.assertNotEqual(SHORT100_RUNNER_PATH.stat().st_mode & 0o111, 0)
+        source = SHORT100_RUNNER_PATH.read_text(encoding="utf-8")
+        for notebook in (
+            "13_Single_Checkpoint_Map_Jacobians.ipynb",
+            "16_Additional_Weight_Only_ECS_Jacobians.ipynb",
+            "23_Short100_10Seed_Weight_Quotients.ipynb",
+        ):
+            self.assertEqual(source.count(f'run_notebook "{notebook}"'), 1)
+        for forbidden in (
+            "11_Muon_Update_Stiefel_Tangent.ipynb",
+            "14_Calibrated_Local_Training_Map.ipynb",
+            "17_Data_Dependent_ECS_Jacobians.ipynb",
+            " rg_baselines.tangent_rg.cli train",
+            "$HOME",
+        ):
+            self.assertNotIn(forbidden, source)
+        self.assertIn("/private/tmp/rg-mnist-mlp3-short100-runs", source)
+        self.assertIn("/private/tmp/rg-mnist-mlp3-short100-checkpoints", source)
+        self.assertIn('checkpoint_count" != "100"', source)
+
     def test_muonclip_runner_executes_only_declared_jacobian_notebooks(self) -> None:
         self.assertTrue(MUONCLIP_RUNNER_PATH.is_file())
         self.assertNotEqual(MUONCLIP_RUNNER_PATH.stat().st_mode & 0o111, 0)
@@ -667,6 +695,7 @@ class NotebookContractTests(unittest.TestCase):
         names = (
             "19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
             "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
+            "23_Short100_10Seed_Weight_Quotients.ipynb",
         )
         methods = (
             "gram_ridge",
@@ -759,6 +788,24 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn('qualified_fits = numeric_fits[numeric_fits["fit_success"]]', three_source)
         self.assertIn("fit_availability_by_checkpoint.csv", three_source)
         self.assertIn("fill_between(", three_source)
+
+        short_ten_seed = json.loads(
+            (NOTEBOOK_ROOT / names[2]).read_text(encoding="utf-8")
+        )
+        short_source = "\n".join(
+            _source_text(cell) for cell in short_ten_seed["cells"]
+        )
+        self.assertIn(
+            "SEEDS = [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010]",
+            short_source,
+        )
+        self.assertIn(
+            'OPTIMIZER_SLUGS = ["muonclip_rms", "adamw"]', short_source
+        )
+        self.assertIn("RUN_PARAMETER_SCANS = False", short_source)
+        self.assertIn("EXPECTED_SHORT100_SEEDS", short_source)
+        self.assertIn("student_t_95_ci_across_complete_seeded_runs", short_source)
+        self.assertIn("fill_between(", short_source)
 
     def test_generated_notebooks_are_up_to_date(self) -> None:
         builder = _load_builder()
