@@ -6,7 +6,9 @@ import importlib.util
 import json
 import sys
 import unittest
+from functools import lru_cache
 from pathlib import Path
+from types import SimpleNamespace
 
 
 BASELINE_ROOT = Path(__file__).resolve().parents[2]
@@ -143,8 +145,53 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn('checkpoint_count" != "100"', source)
         self.assertIn("SEEDS=(101)", source)
         self.assertIn('"SEEDS": [101]', source)
+        self.assertIn('"ANALYSIS_EPOCH_STRIDE": 10', source)
+        self.assertIn('"LIVE_PROGRESS_EVERY_MATRICES": 5', source)
         self.assertIn("--autosave-cell-every 30", source)
         self.assertIn("--log-output", source)
+
+    def test_checkpoint_epoch_stride_selects_exact_positive_multiples(self) -> None:
+        import numpy as np
+
+        builder = _load_builder()
+        seed_dir = Path("/tmp/contract_stride_seed")
+        refs = tuple(
+            SimpleNamespace(
+                epoch=epoch,
+                global_step=epoch * 10,
+                path=Path(f"/tmp/analysis_epoch_{epoch:06d}.pt"),
+            )
+            for epoch in range(0, 101)
+        )
+        namespace = {
+            "Path": Path,
+            "np": np,
+            "lru_cache": lru_cache,
+            "CHECKPOINT_PAYLOAD_CACHE_SIZE": 1,
+            "_VERIFIED_TAIL_CACHE_REFS": {seed_dir.resolve(): refs},
+        }
+        exec(builder.CHECKPOINT_HELPERS, namespace)
+        namespace["checkpoint_matrix"] = (
+            lambda path, layer: (str(path), str(layer))
+        )
+        selected = list(namespace["selected_trajectory_matrices"](
+            seed_dir,
+            layers=("fc1.weight",),
+            maximum_checkpoints=100,
+            epoch_stride=10,
+        ))
+        self.assertEqual(
+            [int(row[0].epoch) for row in selected],
+            list(range(10, 101, 10)),
+        )
+        self.assertTrue(all("epoch_stride=10" in row[3] for row in selected))
+        with self.assertRaises(ValueError):
+            list(namespace["selected_trajectory_matrices"](
+                seed_dir,
+                layers=("fc1.weight",),
+                maximum_checkpoints=100,
+                epoch_stride=0,
+            ))
 
     def test_muonclip_runner_executes_only_declared_jacobian_notebooks(self) -> None:
         self.assertTrue(MUONCLIP_RUNNER_PATH.is_file())
@@ -450,6 +497,7 @@ class NotebookContractTests(unittest.TestCase):
                     for live_progress_contract in (
                         "LIVE_PROGRESS_EVERY_MATRICES = 50",
                         'live_progress_dir / "status.json"',
+                        "epoch_stride=ANALYSIS_EPOCH_STRIDE",
                         "persist_live_seed(",
                         '"state": "running_trajectory"',
                         'flush=True',

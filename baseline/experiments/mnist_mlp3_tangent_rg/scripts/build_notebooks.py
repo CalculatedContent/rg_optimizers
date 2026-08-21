@@ -1044,15 +1044,40 @@ def selected_checkpoint_pairs_for_strides(seed_dir, *, strides, maximum_pairs=No
     return selected
 
 
-def selected_trajectory_matrices(seed_dir, *, layers, maximum_checkpoints):
+def checkpoint_refs_at_epoch_stride(seed_dir, *, epoch_stride=1):
     refs = analysis_checkpoint_refs(seed_dir)
+    stride = int(epoch_stride)
+    if stride < 1:
+        raise ValueError("ANALYSIS_EPOCH_STRIDE must be positive")
+    if stride == 1:
+        return refs
+    selected = tuple(
+        ref for ref in refs
+        if int(ref.epoch) > 0 and int(ref.epoch) % stride == 0
+    )
+    if len(selected) < 2:
+        raise RuntimeError(
+            f"Epoch stride {stride} selected fewer than two checkpoints from "
+            f"{seed_dir}: epochs={[int(ref.epoch) for ref in selected]}"
+        )
+    return selected
+
+
+def selected_trajectory_matrices(
+    seed_dir, *, layers, maximum_checkpoints, epoch_stride=1
+):
+    refs = checkpoint_refs_at_epoch_stride(
+        seed_dir, epoch_stride=epoch_stride
+    )
     budget = min(int(maximum_checkpoints), len(refs))
     if budget == len(refs):
         indices = list(range(len(refs)))
         roles = ["complete_verified_tail_state_grid" for _ in indices]
         rule = (
-            "all chronological states from the verified tail checkpoint cache: "
-            f"selected_count={len(indices)}, total_available={len(refs)}"
+            "all chronological states from the verified tail checkpoint cache "
+            "after exact positive epoch-modulus filtering: "
+            f"epoch_stride={int(epoch_stride)}, selected_count={len(indices)}, "
+            f"total_stride_eligible={len(refs)}"
         )
     else:
         tail_count = min(max(2, budget // 3), budget)
@@ -3346,7 +3371,11 @@ def load_resumable_tables(
 
 
 def selected_refs(seed_dir):
-    refs = tuple(analysis_checkpoint_refs(seed_dir))
+    refs = tuple(
+        checkpoint_refs_at_epoch_stride(
+            seed_dir, epoch_stride=ANALYSIS_EPOCH_STRIDE
+        )
+    )
     maximum = int(MAXIMUM_CHECKPOINTS)
     if maximum < 1 or maximum > 100:
         raise ValueError("MAXIMUM_CHECKPOINTS must lie in [1,100]")
@@ -3360,7 +3389,11 @@ def build_checkpoint_contexts():
             seed_dir = require_tail_checkpoint_cache(optimizer, seed)
             fingerprint = verified_run_fingerprint(optimizer, seed)
             refs = selected_refs(seed_dir)
-            if int(MAXIMUM_CHECKPOINTS) == 100 and len(refs) != 100:
+            if (
+                int(ANALYSIS_EPOCH_STRIDE) == 1
+                and int(MAXIMUM_CHECKPOINTS) == 100
+                and len(refs) != 100
+            ):
                 raise RuntimeError(
                     f"Requested complete final-100 cache, observed {len(refs)} for "
                     f"optimizer={optimizer}, seed={seed}"
@@ -4712,6 +4745,7 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
             MINIMUM_TAIL = 8
             MAXIMUM_CHECKPOINTS = 100
+            ANALYSIS_EPOCH_STRIDE = 1
             NUMERICAL_SHAPE = [6, 8]
             ECS_COVER_LAYER = "fc1.weight"
             ECS_VALIDATION_RETAINED_RANK = 3
@@ -4872,8 +4906,12 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                     seed_fit_start = len(fit_frames)
                     seed_trace_start = len(trace_frames)
                     completed_matrix_count = 0
+                    stride_cache_refs = checkpoint_refs_at_epoch_stride(
+                        seed_dir, epoch_stride=ANALYSIS_EPOCH_STRIDE
+                    )
                     expected_matrix_count = (
-                        min(len(cache_refs), int(MAXIMUM_CHECKPOINTS)) * len(LAYERS)
+                        min(len(stride_cache_refs), int(MAXIMUM_CHECKPOINTS))
+                        * len(LAYERS)
                     )
                     print(
                         f"{optimizer} seed={seed}: analyzing "
@@ -4884,6 +4922,7 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                         seed_dir,
                         layers=LAYERS,
                         maximum_checkpoints=MAXIMUM_CHECKPOINTS,
+                        epoch_stride=ANALYSIS_EPOCH_STRIDE,
                     ):
                         checkpoint_singular_values = np.linalg.svd(W, compute_uv=False)
                         polar_record = polar.polar_pullback_spectrum(
@@ -5943,6 +5982,7 @@ def additional_weight_jacobians_notebook() -> tuple[str, dict[str, object]]:
             OPTIMIZER_SLUGS = ["adamw", "muon", "muonclip_rms"]
             LAYERS = ["fc1.weight"]
             MAXIMUM_CHECKPOINTS = 100
+            ANALYSIS_EPOCH_STRIDE = 1
             TOP_K_VALUES = [0, 1, 2, 3, 4, 5]
             MINIMUM_TAIL = 8
             ECS_RANK_RCOND = 1e-9
@@ -6004,6 +6044,7 @@ def additional_weight_jacobians_notebook() -> tuple[str, dict[str, object]]:
                         seed_dir,
                         layers=LAYERS,
                         maximum_checkpoints=MAXIMUM_CHECKPOINTS,
+                        epoch_stride=ANALYSIS_EPOCH_STRIDE,
                     ):
                         singular_values = np.linalg.svd(W, compute_uv=False)
                         rank_tolerance = float(ECS_RANK_RCOND) * float(singular_values[0])
@@ -8689,6 +8730,7 @@ CROSS_RUN_PROVENANCE_AUDITED = False
         + """
 LAYERS = ["fc1.weight", "fc2.weight", "fc3.weight"]
 MAXIMUM_CHECKPOINTS = 100
+ANALYSIS_EPOCH_STRIDE = 1
 RESUME_PARTIAL_RESULTS = True
 
 # Exact existing WeightWatcher contract. Both fits analyze the same transformed model.
@@ -9135,7 +9177,10 @@ manifest = {
     "source_artifact_kinds": sorted(
         checkpoint_contexts["source_artifact_kind"].astype(str).unique().tolist()
     ),
-    "checkpoint_count_per_run": int(MAXIMUM_CHECKPOINTS),
+    "checkpoint_count_per_run": int(
+        checkpoint_contexts.groupby(["optimizer", "seed"]).size().min()
+    ),
+    "analysis_epoch_stride": int(ANALYSIS_EPOCH_STRIDE),
     "layers": list(EXPECTED_WEIGHT_LAYERS),
     "five_quotient_methods": list(EXPECTED_QUOTIENT_METHODS),
     "reference_methods": list(REFERENCE_METHODS),

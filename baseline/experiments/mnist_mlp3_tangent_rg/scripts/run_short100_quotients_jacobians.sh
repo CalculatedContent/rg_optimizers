@@ -58,6 +58,8 @@ payload = {
     "PROTOCOL_SLUG": suite,
     "SEEDS": [101],
     "OPTIMIZER_SLUGS": ["muonclip_rms", "adamw"],
+    "ANALYSIS_EPOCH_STRIDE": 10,
+    "LIVE_PROGRESS_EVERY_MATRICES": 5,
     "CHECKPOINT_PAYLOAD_CACHE_SIZE": 6,
     "SHOW_PLOTS": True,
     "REQUIRE_ARTIFACTS": True,
