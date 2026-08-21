@@ -295,6 +295,32 @@ Figures and summary tables are written beneath
 `$RUNS/mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed/notebook_outputs/`
 followed by `muonclip_adamw_10seed_bollinger_comparison/`.
 
+### Short-100 ten-seed quotient and weight-only Jacobian rerun
+
+Notebook `23_Short100_10Seed_Weight_Quotients.ipynb` applies the frozen primary
+profiles of the five quotient candidates to all 100 cached checkpoints from
+both the MuonClip-RMS and AdamW arms and reports 95% Student-t intervals across
+the ten independent seeds. It retains the raw-weight, midpoint-ECS, and uniform
+singular-translation controls and evaluates every matrix with the same dual
+WeightWatcher raw and `fix_fingers=clip_xmax` path.
+
+The post-facto runner also executes notebooks `13` and `16`, which contain the
+genuine weight-only Jacobians reconstructible from saved matrices. It does not
+run capture-dependent optimizer/minibatch Jacobians (`11`, `14`, or `17`) and
+never resumes training.
+
+```bash
+export RG_MNIST_TANGENT_ROOT="/private/tmp/rg-mnist-mlp3-short100-runs"
+export RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT="/private/tmp/rg-mnist-mlp3-short100-checkpoints"
+
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_quotients_jacobians.sh
+```
+
+The runner first verifies exactly 100 cached checkpoints for every one of the
+20 optimizer/seed runs. It is safely resumable inside the quotient notebook;
+executed notebooks are written beneath
+`$RG_MNIST_TANGENT_ROOT/executed_notebooks/short100_quotients_jacobians/`.
+
 ### Post-facto Muon/MuonClip weight-quotient notebooks
 
 Notebook `19_One_Seed_Muon_MuonClip_Weight_Quotients.ipynb` is the exploratory

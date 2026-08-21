@@ -8456,14 +8456,39 @@ def nulls_stability_notebook() -> tuple[str, dict[str, object]]:
     return notebook("15_Method_Nulls_Stability_Comparison.ipynb", cells)
 
 
-def weight_quotient_notebook(*, three_seed: bool) -> tuple[str, dict[str, object]]:
+def weight_quotient_notebook(
+    *, three_seed: bool, short_ten_seed: bool = False
+) -> tuple[str, dict[str, object]]:
     builder_source_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-    if three_seed:
+    if three_seed and short_ten_seed:
+        raise ValueError("A weight-quotient notebook cannot select both multi-seed modes")
+    multi_seed = bool(three_seed or short_ten_seed)
+    if short_ten_seed:
+        filename = "23_Short100_10Seed_Weight_Quotients.ipynb"
+        title = "Short-100 ten-seed MuonClip-RMS/AdamW weight-quotient comparison"
+        run_variant = "short100_ten_seed"
+        uncertainty_policy = "student_t_95_ci_across_complete_seeded_runs"
+        scan_default = "False"
+        optimizer_default = '["muonclip_rms", "adamw"]'
+        active_seed_source = """
+ACTIVE_SEEDS = tuple(
+    int(seed)
+    for seed in normalize_papermill_sequence(SEEDS, name="SEEDS")
+)
+EXPECTED_SHORT100_SEEDS = (101, 202, 303, 404, 505, 606, 707, 808, 909, 1010)
+if ACTIVE_SEEDS != EXPECTED_SHORT100_SEEDS:
+    raise ValueError(
+        f"The short-100 notebook requires seeds {EXPECTED_SHORT100_SEEDS}; "
+        f"observed {ACTIVE_SEEDS}"
+    )
+"""
+    elif three_seed:
         filename = "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb"
         title = "Three-seed Muon/MuonClip weight-quotient validation"
         run_variant = "three_seed"
         uncertainty_policy = "student_t_95_ci_across_complete_seeded_runs"
         scan_default = "False"
+        optimizer_default = '["muon", "muonclip_rms"]'
         active_seed_source = """
 ACTIVE_SEEDS = tuple(
     int(seed)
@@ -8481,13 +8506,14 @@ if ACTIVE_SEEDS != (1337, 2027, 31415):
         run_variant = "one_seed"
         uncertainty_policy = "no_seed_error_bars"
         scan_default = "True"
+        optimizer_default = '["muon", "muonclip_rms"]'
         active_seed_source = """
 ACTIVE_SEEDS = (int(SEED),)
 if len(ACTIVE_SEEDS) != 1:
     raise RuntimeError("The one-seed notebook must analyze exactly one complete run")
 """
 
-    if three_seed:
+    if multi_seed:
         provenance_source = """
 cross_run_provenance = validate_cross_run_provenance(active_run_manifests())
 atomic_csv(
@@ -8502,10 +8528,15 @@ CROSS_RUN_PROVENANCE_AUDITED = False
 """
 
     parameter_source = (
-        ("SEED = 1337\n" if not three_seed else "")
+        ("SEED = 1337\n" if not multi_seed else "")
+        + (
+            "SEEDS = [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010]\n"
+            if short_ten_seed
+            else ""
+        )
         + f"RUN_PARAMETER_SCANS = {scan_default}\n"
+        + "OPTIMIZER_SLUGS = " + optimizer_default + "\n"
         + """
-OPTIMIZER_SLUGS = ["muon", "muonclip_rms"]
 LAYERS = ["fc1.weight", "fc2.weight", "fc3.weight"]
 MAXIMUM_CHECKPOINTS = 100
 RESUME_PARTIAL_RESULTS = True
@@ -8983,17 +9014,17 @@ display(quotient_operator_rows.head(30))
         ),
     ]
 
-    if three_seed:
+    if multi_seed:
         cells.extend(
             [
                 markdown(
                     """
-                    ## Three-seed trajectories and 95% error bars
+                    ## Multi-seed trajectories and 95% error bars
 
                     A checkpoint is a repeated measurement. Independent
                     complete seeded runs are the replicates. At each matched
                     optimizer/method/profile/layer/checkpoint point, report the
-                    two-sided 95% Student-t interval across exactly three seeds.
+                    two-sided 95% Student-t interval across all requested seeds.
                     """
                 ),
                 code(
@@ -10638,6 +10669,7 @@ def build_all_notebooks() -> tuple[tuple[str, dict[str, object]], ...]:
         nulls_stability_notebook(),
         weight_quotient_notebook(three_seed=False),
         weight_quotient_notebook(three_seed=True),
+        weight_quotient_notebook(three_seed=False, short_ten_seed=True),
         single_run_metrics_weightwatcher_audit_notebook(),
         muonclip_adamw_bollinger_comparison_notebook(),
     )
@@ -10665,6 +10697,7 @@ def main() -> None:
         "20_Three_Seed_Muon_MuonClip_Weight_Quotients.ipynb",
         "21_Single_Run_Metrics_and_WeightWatcher_Audit.ipynb",
         "22_MuonClip_AdamW_10Seed_Bollinger_Comparison.ipynb",
+        "23_Short100_10Seed_Weight_Quotients.ipynb",
     }
     observed = {name for name, _ in built}
     if observed != expected:
