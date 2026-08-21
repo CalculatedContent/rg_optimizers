@@ -141,6 +141,8 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("/private/tmp/rg-mnist-mlp3-short100-runs", source)
         self.assertIn("/private/tmp/rg-mnist-mlp3-short100-checkpoints", source)
         self.assertIn('checkpoint_count" != "100"', source)
+        self.assertIn("--autosave-cell-every 30", source)
+        self.assertIn("--log-output", source)
 
     def test_muonclip_runner_executes_only_declared_jacobian_notebooks(self) -> None:
         self.assertTrue(MUONCLIP_RUNNER_PATH.is_file())
@@ -443,6 +445,14 @@ class NotebookContractTests(unittest.TestCase):
                     self.assertIn(
                         "shell-dimension/multiplicity sensitivity", all_source
                     )
+                    for live_progress_contract in (
+                        "LIVE_PROGRESS_EVERY_MATRICES = 50",
+                        'live_progress_dir / "status.json"',
+                        "persist_live_seed(",
+                        '"state": "running_trajectory"',
+                        'flush=True',
+                    ):
+                        self.assertIn(live_progress_contract, all_source)
 
                 if name == "15_Method_Nulls_Stability_Comparison.ipynb":
                     all_source = "\n".join(

@@ -4722,6 +4722,7 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             )
             NS_STEPS = 5
             NS_EPS = 1e-7
+            LIVE_PROGRESS_EVERY_MATRICES = 50
             METHOD_SLUG = "single_checkpoint_map_jacobians"
             PLOT_TITLE = "Single-checkpoint declared-map spectra: alpha with 95% seed CI"
             """
@@ -4804,6 +4805,55 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             """
             operator_records, fit_frames, trace_frames = [], [], []
             spectral_arrays = {}
+            live_progress_dir = (
+                OUTPUT_ROOT_PATH / "analyses" / METHOD_SLUG / "live_partials"
+            )
+            live_progress_dir.mkdir(parents=True, exist_ok=True)
+            live_status_path = live_progress_dir / "status.json"
+
+            def atomic_live_json(payload, path=live_status_path):
+                temporary = path.with_suffix(path.suffix + ".tmp")
+                temporary.write_text(
+                    json.dumps(payload, indent=2, sort_keys=True) + "\\n",
+                    encoding="utf-8",
+                )
+                temporary.replace(path)
+
+            def atomic_live_csv(frame, path):
+                temporary = path.with_suffix(path.suffix + ".tmp")
+                frame.to_csv(temporary, index=False)
+                temporary.replace(path)
+
+            def persist_live_seed(
+                optimizer,
+                seed,
+                *,
+                operator_start,
+                fit_start,
+                trace_start,
+            ):
+                slug = f"{optimizer}_seed_{int(seed)}"
+                atomic_live_csv(
+                    pd.DataFrame(operator_records[operator_start:]),
+                    live_progress_dir / f"{slug}_operators.csv",
+                )
+                atomic_live_csv(
+                    pd.concat(fit_frames[fit_start:], ignore_index=True, sort=False),
+                    live_progress_dir / f"{slug}_fits.csv",
+                )
+                atomic_live_csv(
+                    pd.concat(trace_frames[trace_start:], ignore_index=True, sort=False),
+                    live_progress_dir / f"{slug}_traces.csv",
+                )
+
+            total_seed_count = len(OPTIMIZER_SLUGS) * len(SEEDS)
+            completed_seed_count = 0
+            atomic_live_json({
+                "state": "starting",
+                "method_slug": METHOD_SLUG,
+                "completed_seed_count": 0,
+                "total_seed_count": total_seed_count,
+            })
             for optimizer in OPTIMIZER_SLUGS:
                 for seed in SEEDS:
                     seed_dir = require_tail_checkpoint_cache(optimizer, seed)
@@ -4818,6 +4868,13 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                     )
                     cache_refs = analysis_checkpoint_refs(seed_dir)
                     final_cache_epoch = int(cache_refs[-1].epoch)
+                    seed_operator_start = len(operator_records)
+                    seed_fit_start = len(fit_frames)
+                    seed_trace_start = len(trace_frames)
+                    completed_matrix_count = 0
+                    expected_matrix_count = (
+                        min(len(cache_refs), int(MAXIMUM_CHECKPOINTS)) * len(LAYERS)
+                    )
                     print(
                         f"{optimizer} seed={seed}: analyzing "
                         f"{len(cache_refs)} verified cache states "
@@ -5121,6 +5178,67 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                                     f"{optimizer}_{seed}_{layer}_{selected.global_step}_{method}"
                                 ] = positive
 
+                        completed_matrix_count += 1
+                        atomic_live_json({
+                            "state": "running_trajectory",
+                            "method_slug": METHOD_SLUG,
+                            "optimizer": optimizer,
+                            "seed": int(seed),
+                            "epoch": int(selected.epoch),
+                            "global_step": int(selected.global_step),
+                            "layer": layer,
+                            "completed_matrix_count": completed_matrix_count,
+                            "expected_matrix_count": expected_matrix_count,
+                            "completed_seed_count": completed_seed_count,
+                            "total_seed_count": total_seed_count,
+                            "operator_row_count_current_seed": (
+                                len(operator_records) - seed_operator_start
+                            ),
+                            "fit_frame_count_current_seed": (
+                                len(fit_frames) - seed_fit_start
+                            ),
+                            "trace_frame_count_current_seed": (
+                                len(trace_frames) - seed_trace_start
+                            ),
+                            "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
+                        })
+                        if (
+                            completed_matrix_count % int(LIVE_PROGRESS_EVERY_MATRICES) == 0
+                            or completed_matrix_count == expected_matrix_count
+                        ):
+                            persist_live_seed(
+                                optimizer,
+                                seed,
+                                operator_start=seed_operator_start,
+                                fit_start=seed_fit_start,
+                                trace_start=seed_trace_start,
+                            )
+                            print(
+                                f"LIVE {optimizer} seed={seed}: "
+                                f"{completed_matrix_count}/{expected_matrix_count} matrices; "
+                                f"partials={live_progress_dir}",
+                                flush=True,
+                            )
+                    completed_seed_count += 1
+                    atomic_live_json({
+                        "state": "seed_complete",
+                        "method_slug": METHOD_SLUG,
+                        "optimizer": optimizer,
+                        "seed": int(seed),
+                        "completed_matrix_count": completed_matrix_count,
+                        "expected_matrix_count": expected_matrix_count,
+                        "completed_seed_count": completed_seed_count,
+                        "total_seed_count": total_seed_count,
+                        "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
+                    })
+
+            atomic_live_json({
+                "state": "trajectory_complete_formula_validation_running",
+                "method_slug": METHOD_SLUG,
+                "completed_seed_count": completed_seed_count,
+                "total_seed_count": total_seed_count,
+                "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
+            })
             rng = np.random.default_rng(20260819)
             small = rng.normal(size=tuple(NUMERICAL_SHAPE))
             small[:min(small.shape), :min(small.shape)] += 2.0 * np.eye(min(small.shape))
@@ -5290,6 +5408,13 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
                 )
             if not fit_frames:
                 raise RuntimeError("No single-checkpoint spectrum was fit")
+            atomic_live_json({
+                "state": "trajectory_and_formula_validation_complete",
+                "method_slug": METHOD_SLUG,
+                "completed_seed_count": completed_seed_count,
+                "total_seed_count": total_seed_count,
+                "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
+            })
             """
         ),
         code(ANALYSIS_SAVE_AND_PLOT),
@@ -5428,6 +5553,14 @@ def single_checkpoint_notebook() -> tuple[str, dict[str, object]]:
             ]
             numerical_audit.to_csv(analysis_dir / "small_numerical_validation.csv", index=False)
             display(numerical_audit)
+            atomic_live_json({
+                "state": "notebook_complete",
+                "method_slug": METHOD_SLUG,
+                "completed_seed_count": completed_seed_count,
+                "total_seed_count": total_seed_count,
+                "analysis_dir": str(analysis_dir),
+                "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
+            })
             """
         ),
         markdown(

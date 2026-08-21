@@ -322,6 +322,19 @@ The runner first verifies exactly 100 cached checkpoints for every one of the
 20 optimizer/seed runs. It is safely resumable inside the quotient notebook;
 executed notebooks are written beneath
 `$RG_MNIST_TANGENT_ROOT/executed_notebooks/short100_quotients_jacobians/`.
+Papermill autosaves the currently executing notebook every 30 seconds and
+streams cell output to the terminal. Notebook `13` additionally writes an
+atomic live status file after every matrix and partial operator, fit, and trace
+tables every 50 matrices:
+
+```bash
+LIVE="$RG_MNIST_TANGENT_ROOT/mnist_mlp3_tangent_rg_v1_muonclip_short100_10seed/notebook_outputs/analyses/single_checkpoint_map_jacobians/live_partials"
+cat "$LIVE/status.json"
+ls -lh "$LIVE"
+```
+
+The per-seed partial CSVs are replaced atomically, so they are safe to inspect
+from another process while the notebook continues running.
 
 ### Post-facto Muon/MuonClip weight-quotient notebooks
 
