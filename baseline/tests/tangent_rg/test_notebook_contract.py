@@ -308,8 +308,8 @@ class NotebookContractTests(unittest.TestCase):
             {
                 **identity,
                 "fit_ok": True,
-                "detX_num": 8,
-                "pl_support_rank": 6,
+                "detX_num": 32,
+                "pl_support_rank": 27,
             }
         ])
         traces = pd.DataFrame([
@@ -319,10 +319,10 @@ class NotebookContractTests(unittest.TestCase):
                 "sensitivity_only": False,
                 "certification_eligible": True,
                 "support_rank_source": "weightwatcher_backend_xmax_exact_fit_tail",
-                "support_rank": 4,
+                "support_rank": 27,
                 "support_window_start_descending_zero_based": 2,
-                "support_window_end_descending_exclusive": 6,
-                "pl_support_rank_before_finger_clip": 6,
+                "support_window_end_descending_exclusive": 29,
+                "pl_support_rank_before_finger_clip": 27,
                 "n_fingers_removed": 2,
             },
             {
@@ -331,9 +331,9 @@ class NotebookContractTests(unittest.TestCase):
                 "sensitivity_only": False,
                 "certification_eligible": False,
                 "support_rank_source": "weightwatcher_detX",
-                "support_rank": 8,
+                "support_rank": 32,
                 "support_window_start_descending_zero_based": 0,
-                "support_window_end_descending_exclusive": 8,
+                "support_window_end_descending_exclusive": 32,
             },
             {
                 **identity,
@@ -341,9 +341,9 @@ class NotebookContractTests(unittest.TestCase):
                 "sensitivity_only": False,
                 "certification_eligible": False,
                 "support_rank_source": "weightwatcher_midpoint",
-                "support_rank": 6,
+                "support_rank": 29,
                 "support_window_start_descending_zero_based": 0,
-                "support_window_end_descending_exclusive": 6,
+                "support_window_end_descending_exclusive": 29,
             },
         ])
 
@@ -354,7 +354,7 @@ class NotebookContractTests(unittest.TestCase):
                 "epoch": 1000,
                 "global_step": 430000,
                 "layer": "fc1.weight",
-                "maximum_rank": 10,
+                "maximum_rank": 40,
                 "fit_path": "/runs/metrics/weightwatcher_fits.csv",
                 "trace_path": "/runs/metrics/trace_log.csv",
             }
@@ -365,12 +365,13 @@ class NotebookContractTests(unittest.TestCase):
         self.assertTrue(record["ecs_rank_metrics_available"])
         self.assertTrue(record["ecs_full_shell_available"])
         self.assertTrue(record["ecs_detx_shell_available"])
-        self.assertEqual(record["retained_rank"], 6)
-        self.assertEqual(record["full_shell_outer_rank"], 10)
-        self.assertEqual(record["detx_shell_outer_rank"], 8)
-        self.assertEqual(record["detx_shell_rank"], 2)
-        self.assertEqual(record["k_boundary_mid"], 7)
-        self.assertEqual(record["weightwatcher_midpoint_rank"], 6)
+        self.assertEqual(record["retained_rank"], 29)
+        self.assertEqual(record["full_shell_outer_rank"], 40)
+        self.assertEqual(record["detx_shell_outer_rank"], 32)
+        self.assertEqual(record["detx_shell_rank"], 3)
+        self.assertEqual(record["k_boundary_mid"], 30)
+        self.assertEqual(record["weightwatcher_midpoint_rank"], 29)
+        self.assertEqual(record["weightwatcher_pl_support_rank_recorded"], 27)
         self.assertTrue(record["ecs_rank_exact_weightwatcher_state_found"])
         self.assertTrue(record["ecs_rank_exact_trace_state_found"])
 
@@ -387,15 +388,15 @@ class NotebookContractTests(unittest.TestCase):
         detx_mismatch.loc[
             detx_mismatch["support_rank_source"].eq("weightwatcher_detX"),
             "support_rank",
-        ] = 9
+        ] = 33
         with self.assertRaises(RuntimeError):
             evaluate(fits, detx_mismatch)
         fractional = fits.astype({"detX_num": float})
-        fractional.loc[0, "detX_num"] = 8.25
+        fractional.loc[0, "detX_num"] = 32.25
         with self.assertRaises(RuntimeError):
             evaluate(fractional, traces)
         pl_mismatch = fits.copy()
-        pl_mismatch.loc[0, "pl_support_rank"] = 7
+        pl_mismatch.loc[0, "pl_support_rank"] = 28
         with self.assertRaises(RuntimeError):
             evaluate(pl_mismatch, traces)
 
