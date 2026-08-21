@@ -141,6 +141,8 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("/private/tmp/rg-mnist-mlp3-short100-runs", source)
         self.assertIn("/private/tmp/rg-mnist-mlp3-short100-checkpoints", source)
         self.assertIn('checkpoint_count" != "100"', source)
+        self.assertIn("SEEDS=(101)", source)
+        self.assertIn('"SEEDS": [101]', source)
         self.assertIn("--autosave-cell-every 30", source)
         self.assertIn("--log-output", source)
 
@@ -815,6 +817,8 @@ class NotebookContractTests(unittest.TestCase):
         )
         self.assertIn("RUN_PARAMETER_SCANS = False", short_source)
         self.assertIn("EXPECTED_SHORT100_SEEDS", short_source)
+        self.assertIn("issubset(EXPECTED_SHORT100_SEEDS)", short_source)
+        self.assertIn("SHORT100_FULL_CONFIRMATORY_GRID", short_source)
         self.assertIn("student_t_95_ci_across_complete_seeded_runs", short_source)
         self.assertIn("fill_between(", short_source)
 
