@@ -10363,8 +10363,14 @@ def muonclip_adamw_bollinger_comparison_notebook() -> tuple[str, dict[str, objec
             def plot_performance_pair(metrics, *, ylabel, title, filename, bounded=False):
                 fig, axes = plt.subplots(1, 2, figsize=(13.2, 4.7), sharex=True)
                 for axis, metric in zip(axes, metrics):
-                    raw_metric = performance_long[performance_long["metric"].eq(metric)]
-                    summary_metric = performance_summary[performance_summary["metric"].eq(metric)]
+                    raw_metric = performance_long[
+                        performance_long["metric"].eq(metric)
+                        & performance_long["epoch"].gt(0)
+                    ]
+                    summary_metric = performance_summary[
+                        performance_summary["metric"].eq(metric)
+                        & performance_summary["epoch"].gt(0)
+                    ]
                     for optimizer in OPTIMIZER_SLUGS:
                         style = optimizer_style[optimizer]
                         raw_optimizer = raw_metric[raw_metric["optimizer"].eq(optimizer)]
@@ -10394,7 +10400,12 @@ def muonclip_adamw_bollinger_comparison_notebook() -> tuple[str, dict[str, objec
                             label=style["label"],
                         )
                     split = metric.split("_", 1)[0].title()
-                    axis.set(xlabel="epoch", ylabel=ylabel, title=f"{split} {title}")
+                    axis.set(
+                        xlabel="epoch",
+                        ylabel=ylabel,
+                        title=f"{split} {title}",
+                        xlim=(1, None),
+                    )
                     if bounded:
                         axis.set_ylim(0.0, 1.01)
                     axis.grid(True, alpha=0.25)
