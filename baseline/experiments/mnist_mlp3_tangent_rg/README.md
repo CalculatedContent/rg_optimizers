@@ -309,6 +309,9 @@ notebooks `13` and `16`, which contain the
 genuine weight-only Jacobians reconstructible from the saved matrices. These
 analyses, and notebook `23`, select exactly epochs `10, 20, ..., 100`; they do
 not use a generic ten-checkpoint subsample.
+Notebook `13` runs each optimizer/layer pair in a separate cell. Every completed
+cell atomically writes layer-specific operator, fit, and trace CSVs, displays
+the latest fit table, and saves/shows an alpha trajectory before continuing.
 The completed short baselines did not save the dense optimizer/minibatch captures
 required by notebooks `11`, `14`, and `17`, so those maps cannot be recovered
 without retraining and are not fabricated. The runner never resumes training

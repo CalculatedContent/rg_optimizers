@@ -499,10 +499,31 @@ class NotebookContractTests(unittest.TestCase):
                         'live_progress_dir / "status.json"',
                         "epoch_stride=ANALYSIS_EPOCH_STRIDE",
                         "persist_live_seed(",
+                        "display_live_optimizer_layer(",
+                        "analyze_optimizer_layer_block(",
+                        'live_progress_dir / f"{slug}_alpha.png"',
+                        "Completed cell output:",
                         '"state": "running_trajectory"',
                         'flush=True',
                     ):
                         self.assertIn(live_progress_contract, all_source)
+                    incremental_calls = {
+                        _source_text(cell).strip()
+                        for cell in code_cells
+                        if _source_text(cell).strip().startswith(
+                            "analyze_optimizer_layer_block("
+                        )
+                    }
+                    self.assertEqual(
+                        incremental_calls,
+                        {
+                            f'analyze_optimizer_layer_block("{optimizer}", "{layer}")'
+                            for optimizer in ("muonclip_rms", "adamw", "muon")
+                            for layer in (
+                                "fc2.weight", "fc1.weight", "fc3.weight"
+                            )
+                        },
+                    )
 
                 if name == "15_Method_Nulls_Stability_Comparison.ipynb":
                     all_source = "\n".join(
