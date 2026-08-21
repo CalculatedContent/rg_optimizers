@@ -75,6 +75,8 @@ run_notebook() {
     "${EXECUTED_ROOT}/${filename%.ipynb}.executed.ipynb" \
     --kernel "$KERNEL_NAME" \
     --cwd "$REPO_ROOT" \
+    --autosave-cell-every 30 \
+    --log-output \
     --parameters_file "$PARAMETER_FILE"
 }
 
