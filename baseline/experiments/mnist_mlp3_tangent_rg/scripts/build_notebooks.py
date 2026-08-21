@@ -1537,15 +1537,18 @@ def exact_ecs_cover_rank_record(
                     f"Malformed exact ECS rank metric at epoch={epoch}, "
                     f"layer={layer}: {error}"
                 ) from error
-    mismatched_pl_boundaries = [
-        f"{name}={value}" for name, value in recorded_pl_boundaries
-        if value != k_pl
-    ]
-    if mismatched_pl_boundaries:
+    recorded_pl_support_values = {value for _, value in recorded_pl_boundaries}
+    if len(recorded_pl_support_values) > 1:
         raise RuntimeError(
-            "ECS top-mode PL boundary disagrees with recorded preclip support: "
-            + ", ".join(mismatched_pl_boundaries)
+            "WeightWatcher and trace recorded PL support counts disagree: "
+            + ", ".join(
+                f"{name}={value}" for name, value in recorded_pl_boundaries
+            )
         )
+    recorded_pl_support = (
+        next(iter(recorded_pl_support_values))
+        if recorded_pl_support_values else None
+    )
     if detx_trace != k_tl:
         raise RuntimeError(
             "Exact detX fit field disagrees with trace audit; fallback is refused"
@@ -1596,8 +1599,10 @@ def exact_ecs_cover_rank_record(
         "rank_selection_rule": selection.selection_rule,
         "pl_boundary_definition": (
             "top-mode boundary index = clipped support window start + effective tail rank; "
-            "required by V_k=[v_1,...,v_k]"
+            "required by V_k=[v_1,...,v_k]; the WeightWatcher-reported PL "
+            "support count is audited separately and is not an absolute index"
         ),
+        "weightwatcher_pl_support_rank_recorded": recorded_pl_support,
         "pl_effective_tail_rank": effective_tail,
         "pl_support_window_start": window_start,
         "pl_support_window_end": k_pl,
