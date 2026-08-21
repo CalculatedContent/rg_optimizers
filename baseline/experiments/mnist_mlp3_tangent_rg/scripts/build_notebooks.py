@@ -9947,6 +9947,8 @@ def muonclip_adamw_bollinger_comparison_notebook() -> tuple[str, dict[str, objec
             EXPECTED_WEIGHT_LAYERS = ["fc1.weight", "fc2.weight", "fc3.weight"]
             PRIMARY_FIT_VARIANT = "clip_xmax"
             BAND_STD_MULTIPLIER = 2.0
+            ACCURACY_Y_MIN = 0.90
+            ACCURACY_Y_MAX = 1.005
             METHOD_SLUG = "muonclip_adamw_10seed_bollinger_comparison"
             """
         ),
@@ -10089,6 +10091,15 @@ def muonclip_adamw_bollinger_comparison_notebook() -> tuple[str, dict[str, objec
                 )
             if not np.isclose(float(BAND_STD_MULTIPLIER), 2.0):
                 raise ValueError("Bollinger bands must remain mean +/- 2 sample SD")
+            if not (
+                0.0 <= float(ACCURACY_Y_MIN)
+                < float(ACCURACY_Y_MAX)
+                <= 1.01
+            ):
+                raise ValueError(
+                    "Accuracy y-axis limits must satisfy "
+                    "0 <= ACCURACY_Y_MIN < ACCURACY_Y_MAX <= 1.01"
+                )
 
             required_performance = {
                 "optimizer", "seed", "epoch", "global_step", "protocol_fingerprint",
@@ -10407,7 +10418,10 @@ def muonclip_adamw_bollinger_comparison_notebook() -> tuple[str, dict[str, objec
                         xlim=(1, None),
                     )
                     if bounded:
-                        axis.set_ylim(0.0, 1.01)
+                        axis.set_ylim(
+                            float(ACCURACY_Y_MIN),
+                            float(ACCURACY_Y_MAX),
+                        )
                     axis.grid(True, alpha=0.25)
                     axis.legend(frameon=False)
                 return save_figure(fig, filename)
