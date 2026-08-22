@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -44,3 +45,17 @@ def test_cli_duration_and_argument_defaults_are_observable_tmp_paths():
     assert str(args.output_root).startswith("/private/tmp/")
     assert args.epoch_stride == 10
     assert args.top_k == "0"
+
+
+def test_ecs_group_compression_removes_only_uniform_coordinate_copies():
+    module = load_cli_module()
+    record = SimpleNamespace(
+        deterministic_shell_multiplicity=4,
+        retained_singular_values=np.array([2.0, 4.0, 8.0]),
+        singular_amplitudes=np.repeat(np.array([1.0, 0.5, 0.25]), 4),
+    )
+    compressed, metadata = module.ecs_fit_amplitudes(record, compress_groups=True)
+    assert np.allclose(compressed, [1.0, 0.5, 0.25])
+    assert metadata["ecs_groups_compressed"] is True
+    assert metadata["ecs_uniform_group_multiplicity"] == 4
+    assert metadata["ecs_expanded_mode_count"] == 12
