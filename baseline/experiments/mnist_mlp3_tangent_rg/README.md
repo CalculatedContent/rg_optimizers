@@ -890,3 +890,48 @@ index. It includes an expected-versus-observed method coverage audit and a
 dedicated FC1/FC2 ECS plot whose marker positions are slightly offset for
 visibility when full-row and detX fits coincide; the underlying epoch values
 are never changed. Report generation does not recompute any Jacobian.
+
+For the complete notebook-free state/flow/local-response experiment, run:
+
+```bash
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_complete_rg_analysis.sh
+```
+
+This command executes three scientifically distinct analyses before rebuilding
+the static HTML report:
+
+1. **Weight-state quotient representatives.** On FC1 and FC2, it fixes the
+   midpoint ECS rank from the independently recorded `clip_xmax`/detX audit,
+   chooses the rectangular-diagonal canonical section of the two-sided
+   `O(m) x O(n)` orbit, and materializes three declared representatives:
+   midpoint truncation, the nonlinear Gram counterterm
+   `lambda -> max(lambda-tau,0)` scanned at
+   `tau/lambda_boundary in {0.25,0.50,0.75}`, and an
+   epoch-10-anchor-frozen Feshbach/Schur downfolding with ridge ratio `1e-2`.
+   Every materialized `W'` is passed through WeightWatcher both raw and with
+   `fix_fingers=clip_xmax`; this phase writes
+   `weight_quotient_weightwatcher_fits.csv`, `weight_quotient_spectra.csv`, and
+   `weight_quotient_operators.csv`.
+2. **Between-checkpoint RG flow.** Consecutive 10-epoch checkpoints produce
+   generalized-Gram radial rates, Procrustes-aligned transfer-core rates,
+   midpoint-ECS top-k Grassmann rates, and relative-polar tilt rates. These are
+   finite secant/transfer observables and are explicitly never labelled as the
+   optimizer Jacobian `D beta(W)`. The complete amplitudes and power-law fits
+   are written to `two_checkpoint_flow_*.csv`.
+   For the centered log-singular quotient coordinate it also compares the
+   observed secant `[R(W1)-R(W0)]/delta_s` with the true local map-Jacobian
+   prediction `D R_W0[W1-W0]/delta_s`, saving relative error and cosine in
+   `two_checkpoint_jacobian_transport.csv`.
+3. **Single-checkpoint Jacobians.** In addition to the centered log-singular
+   radial and exact ECS-cover derivatives, the reduced CLI evaluates the
+   gap-aware projector, trace-free log Gram, trace-free ridge resolvent, and
+   Feshbach trace-free log derivatives on the detX shell for FC1 and FC2.
+   Square FC2 is handled by the same right-singular top-k Grassmann geometry as
+   wide FC1.
+
+The single-checkpoint Feshbach map is an intentional collapse control. In the
+checkpoint's own SVD frame the P-Q Gram coupling is exactly zero, so its shell
+downfolding contribution vanishes at first order. The state-level Feshbach map
+avoids that triviality by freezing P/Q from the independent epoch-10 anchor.
+Neither construction is presented as the unique quotient of an unknown sum of
+Muon updates; they are falsifiable, fully specified quotient hypotheses.

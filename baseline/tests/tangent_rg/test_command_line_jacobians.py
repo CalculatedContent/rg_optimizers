@@ -14,6 +14,7 @@ SCRIPT = (
     / "scripts"
     / "run_short100_jacobians_cli.py"
 )
+EXPERIMENT_SCRIPTS = SCRIPT.parent
 
 
 def load_cli_module():
@@ -46,6 +47,8 @@ def test_cli_duration_and_argument_defaults_are_observable_tmp_paths():
     assert args.epoch_stride == 10
     assert args.top_k == "0"
     assert args.ecs_layers == "fc1.weight,fc2.weight"
+    assert args.ecs_rcond == 1e-9
+    assert args.extended_ecs_jacobians is False
 
 
 def test_ecs_group_compression_removes_only_uniform_coordinate_copies():
@@ -60,3 +63,17 @@ def test_ecs_group_compression_removes_only_uniform_coordinate_copies():
     assert metadata["ecs_groups_compressed"] is True
     assert metadata["ecs_uniform_group_multiplicity"] == 4
     assert metadata["ecs_expanded_mode_count"] == 12
+
+
+def test_complete_cli_separates_state_flow_and_local_jacobian_claims():
+    source = (EXPERIMENT_SCRIPTS / "run_short100_quotient_flow_cli.py").read_text()
+    wrapper = (EXPERIMENT_SCRIPTS / "run_short100_complete_rg_analysis.sh").read_text()
+    report = (EXPERIMENT_SCRIPTS / "build_short100_jacobian_report.py").read_text()
+    assert "analyze_weightwatcher_dual" in source
+    assert '"gram_ridge"' in source
+    assert '"feshbach_downfolding"' in source
+    assert '"is_training_jacobian": False' in source
+    assert "run_short100_quotient_flow_cli.py" in wrapper
+    assert "Case 1 — heavy tails on a weight quotient representative" in report
+    assert "Case 2a — flow between checkpoints" in report
+    assert "Case 2b — a Jacobian at one checkpoint" in report
