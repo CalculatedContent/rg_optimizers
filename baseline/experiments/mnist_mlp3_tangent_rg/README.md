@@ -981,3 +981,29 @@ The principal outputs under
   `quotient_flow.log`: live progress/ETA and full terminal-equivalent logs;
 - `report/index.html`: shareable documentation, separate MuonClip-RMS and AdamW
   plots, tables, method coverage, and saved-data links.
+
+
+## Detached command-line lifecycle manager
+
+Use the lifecycle manager instead of pasting shell strict-mode settings or attaching
+`tail -f` to the analysis.  The manager launches the complete four-stage analysis
+in a new OS session, redirects standard output and standard error to
+`/private/tmp`, and returns the terminal prompt immediately.
+
+```bash
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/manage_short100_complete_rg_analysis.sh start
+```
+
+The remaining commands are one-shot operations; none attaches a foreground job:
+
+```bash
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/manage_short100_complete_rg_analysis.sh status
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/manage_short100_complete_rg_analysis.sh log
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/manage_short100_complete_rg_analysis.sh stop
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/manage_short100_complete_rg_analysis.sh open
+```
+
+`stop` signals only the detached analysis session.  It also recognizes the
+previous `nohup` launcher and terminates only its recorded process tree, never
+the interactive shell or its process group.  Completed checkpoint units are
+resumable by the next `start`.
