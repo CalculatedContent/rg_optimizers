@@ -47,13 +47,40 @@ from rg_baselines.tangent_rg.weightwatcher_fit import analyze_weightwatcher_dual
 LAYERS = ("fc1.weight", "fc2.weight")
 QUOTIENT_PROFILES = (
     ("midpoint_ecs_control", "midpoint", {}),
+    ("gram_ridge", "tau_fraction_0p10", {"tau_fraction": 0.10}),
     ("gram_ridge", "tau_fraction_0p25", {"tau_fraction": 0.25}),
     ("gram_ridge", "tau_fraction_0p50", {"tau_fraction": 0.50}),
     ("gram_ridge", "tau_fraction_0p75", {"tau_fraction": 0.75}),
+    ("gram_ridge", "tau_fraction_0p90", {"tau_fraction": 0.90}),
+    (
+        "feshbach_downfolding",
+        "ridge_ratio_1em3",
+        {"regularization_ratio": 1.0e-3},
+    ),
     (
         "feshbach_downfolding",
         "ridge_ratio_1em2",
         {"regularization_ratio": 1.0e-2},
+    ),
+    (
+        "feshbach_downfolding",
+        "ridge_ratio_1em1",
+        {"regularization_ratio": 1.0e-1},
+    ),
+    (
+        "calibrated_mp_shrinker",
+        "mp_scale_0p75",
+        {"noise_scale_multiplier": 0.75},
+    ),
+    (
+        "calibrated_mp_shrinker",
+        "mp_scale_1p00",
+        {"noise_scale_multiplier": 1.00},
+    ),
+    (
+        "calibrated_mp_shrinker",
+        "mp_scale_1p25",
+        {"noise_scale_multiplier": 1.25},
     ),
 )
 
@@ -62,6 +89,16 @@ def atomic_frame(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     pd.DataFrame(rows).to_csv(temporary, index=False)
+    temporary.replace(path)
+
+
+def atomic_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n",
+        encoding="utf-8",
+    )
     temporary.replace(path)
 
 
@@ -164,13 +201,20 @@ def run_state_quotients(
     fits = read_rows(fit_path)
     spectra = read_rows(spectrum_path)
     operators = read_rows(operator_path)
-
-    for optimizer in optimizers:
-        identity = jacobian_cli.resolve_run_identity(run_root, optimizer, seed)
-        refs = jacobian_cli.selected_checkpoint_refs(
+    refs_by_optimizer = {
+        optimizer: jacobian_cli.selected_checkpoint_refs(
             cache_root, optimizer, seed, epoch_stride=epoch_stride,
             maximum_checkpoints=None,
         )
+        for optimizer in optimizers
+    }
+    total = sum(len(refs) * len(QUOTIENT_PROFILES) for refs in refs_by_optimizer.values())
+    progress = 0
+    phase_started = time.perf_counter()
+
+    for optimizer in optimizers:
+        identity = jacobian_cli.resolve_run_identity(run_root, optimizer, seed)
+        refs = refs_by_optimizer[optimizer]
         anchor_model = checkpoint_model(refs[0].path, identity["fingerprint"])
         for ref in refs:
             base_model = checkpoint_model(ref.path, identity["fingerprint"])
@@ -194,7 +238,11 @@ def run_state_quotients(
                     ) == key
                 }
                 if observed == {(layer, variant) for layer in LAYERS for variant in ("raw", "clip_xmax")}:
-                    logger.info("QUOTIENT SKIP optimizer=%s epoch=%d method=%s", optimizer, ref.epoch, method)
+                    progress += 1
+                    logger.info(
+                        "QUOTIENT SKIP %d/%d optimizer=%s epoch=%d method=%s",
+                        progress, total, optimizer, ref.epoch, method,
+                    )
                     continue
                 started = time.perf_counter()
                 logger.info("QUOTIENT START optimizer=%s epoch=%d method=%s profile=%s", optimizer, ref.epoch, method, profile_id)
@@ -276,7 +324,28 @@ def run_state_quotients(
                 atomic_frame(fit_path, fits)
                 atomic_frame(spectrum_path, spectra)
                 atomic_frame(operator_path, operators)
-                logger.info("QUOTIENT DONE optimizer=%s epoch=%d method=%s seconds=%.2f", optimizer, ref.epoch, method, time.perf_counter() - started)
+                progress += 1
+                elapsed = time.perf_counter() - phase_started
+                eta = elapsed / progress * (total - progress)
+                logger.info(
+                    "QUOTIENT DONE %d/%d optimizer=%s epoch=%d method=%s "
+                    "seconds=%.2f elapsed=%s ETA=%s",
+                    progress, total, optimizer, ref.epoch, method,
+                    time.perf_counter() - started,
+                    jacobian_cli.format_duration(elapsed),
+                    jacobian_cli.format_duration(eta),
+                )
+                atomic_json(root / "quotient_flow_status.json", {
+                    "state": "running_state_quotients",
+                    "completed_unit_count": progress,
+                    "total_unit_count": total,
+                    "percent_complete": 100.0 * progress / max(1, total),
+                    "last_optimizer": optimizer,
+                    "last_epoch": int(ref.epoch),
+                    "last_method": method,
+                    "elapsed_seconds": elapsed,
+                    "eta_seconds": eta,
+                })
 
 
 def ecs_topk_rates(first: np.ndarray, second: np.ndarray, rank: int, delta_s: float) -> np.ndarray:
@@ -300,12 +369,19 @@ def run_checkpoint_flows(
     spectra = read_rows(spectrum_path)
     operators = read_rows(operator_path)
     transports = read_rows(transport_path)
-    for optimizer in optimizers:
-        identity = jacobian_cli.resolve_run_identity(run_root, optimizer, seed)
-        refs = jacobian_cli.selected_checkpoint_refs(
+    refs_by_optimizer = {
+        optimizer: jacobian_cli.selected_checkpoint_refs(
             cache_root, optimizer, seed, epoch_stride=epoch_stride,
             maximum_checkpoints=None,
         )
+        for optimizer in optimizers
+    }
+    total = sum(max(0, len(refs) - 1) * len(LAYERS) for refs in refs_by_optimizer.values())
+    progress = 0
+    phase_started = time.perf_counter()
+    for optimizer in optimizers:
+        identity = jacobian_cli.resolve_run_identity(run_root, optimizer, seed)
+        refs = refs_by_optimizer[optimizer]
         for ref0, ref1 in zip(refs[:-1], refs[1:]):
             delta_s = float(ref1.epoch - ref0.epoch)
             for layer in LAYERS:
@@ -327,7 +403,11 @@ def run_checkpoint_flows(
                     ) == unit
                 }
                 if expected.issubset(observed):
-                    logger.info("FLOW SKIP optimizer=%s %d->%d layer=%s", optimizer, ref0.epoch, ref1.epoch, layer)
+                    progress += 1
+                    logger.info(
+                        "FLOW SKIP %d/%d optimizer=%s %d->%d layer=%s",
+                        progress, total, optimizer, ref0.epoch, ref1.epoch, layer,
+                    )
                     continue
                 started = time.perf_counter()
                 first = jacobian_cli.checkpoint_matrix(ref0.path, identity["fingerprint"], layer)
@@ -472,7 +552,29 @@ def run_checkpoint_flows(
                 atomic_frame(spectrum_path, spectra)
                 atomic_frame(operator_path, operators)
                 atomic_frame(transport_path, transports)
-                logger.info("FLOW DONE optimizer=%s %d->%d layer=%s seconds=%.2f", optimizer, ref0.epoch, ref1.epoch, layer, time.perf_counter() - started)
+                progress += 1
+                elapsed = time.perf_counter() - phase_started
+                eta = elapsed / progress * (total - progress)
+                logger.info(
+                    "FLOW DONE %d/%d optimizer=%s %d->%d layer=%s "
+                    "seconds=%.2f elapsed=%s ETA=%s",
+                    progress, total, optimizer, ref0.epoch, ref1.epoch, layer,
+                    time.perf_counter() - started,
+                    jacobian_cli.format_duration(elapsed),
+                    jacobian_cli.format_duration(eta),
+                )
+                atomic_json(root / "quotient_flow_status.json", {
+                    "state": "running_checkpoint_flows",
+                    "completed_unit_count": progress,
+                    "total_unit_count": total,
+                    "percent_complete": 100.0 * progress / max(1, total),
+                    "last_optimizer": optimizer,
+                    "last_epoch_start": int(ref0.epoch),
+                    "last_epoch_end": int(ref1.epoch),
+                    "last_layer": layer,
+                    "elapsed_seconds": elapsed,
+                    "eta_seconds": eta,
+                })
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -509,7 +611,15 @@ def main() -> int:
                 cache_root=args.cache_root.resolve(), optimizers=optimizers,
                 seed=args.seed, epoch_stride=args.epoch_stride, logger=logger,
             )
-        logger.info("COMPLETE seconds=%.2f", time.perf_counter() - started)
+        elapsed = time.perf_counter() - started
+        atomic_json(root / "quotient_flow_status.json", {
+            "state": "complete",
+            "state_quotients_ran": not args.skip_state_quotients,
+            "checkpoint_flows_ran": not args.skip_checkpoint_flows,
+            "elapsed_seconds": elapsed,
+            "completed_at_utc": datetime.now(timezone.utc).isoformat(),
+        })
+        logger.info("COMPLETE seconds=%.2f", elapsed)
         return 0
     except Exception:
         trace = traceback.format_exc()
@@ -518,6 +628,11 @@ def main() -> int:
             "failed_at_utc": datetime.now(timezone.utc).isoformat(),
             "exception_traceback": trace,
         }])
+        atomic_json(root / "quotient_flow_status.json", {
+            "state": "error",
+            "failed_at_utc": datetime.now(timezone.utc).isoformat(),
+            "exception_traceback": trace,
+        })
         return 1
 
 

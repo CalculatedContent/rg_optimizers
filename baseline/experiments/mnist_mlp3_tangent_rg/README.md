@@ -872,9 +872,13 @@ distance while preventing deterministic coordinate copies from inflating the
 effective sample size. Outputs default to
 `/private/tmp/rg-mnist-mlp3-short100-jacobians-reduced`.
 
-The reduced runner also persists every fitted spectral observation to
+The reduced runner persists every reported spectral observation to
 `jacobian_spectra.csv`; one row contains the amplitude, squared Gram
 eigenvalue, physical observation unit, and represented uniform multiplicity.
+For the Tikhonov grid, every candidate fit is kept in
+`jacobian_hyperparameter_search.csv`, while only the selected candidate's full
+mode spectrum is copied into `jacobian_spectra.csv`. This avoids a many-million
+row duplication without discarding the grid-search audit.
 After the reduced run completes, build the complete static comparison report:
 
 ```bash
@@ -897,17 +901,25 @@ For the complete notebook-free state/flow/local-response experiment, run:
 bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_complete_rg_analysis.sh
 ```
 
-This command executes three scientifically distinct analyses before rebuilding
-the static HTML report:
+This command prints and times four stages: exact single-checkpoint Jacobians,
+transformed-weight quotients, checkpoint flow/transport, and the static HTML
+report. Each completed checkpoint or quotient profile is saved atomically, so
+rerunning the same command resumes rather than starts over. Use `Ctrl-C` to
+interrupt; `Ctrl-Z` suspends the foreground job and is not the stop command.
+
+The command executes three scientifically distinct analyses before rebuilding
+the report:
 
 1. **Weight-state quotient representatives.** On FC1 and FC2, it fixes the
    midpoint ECS rank from the independently recorded `clip_xmax`/detX audit,
    chooses the rectangular-diagonal canonical section of the two-sided
-   `O(m) x O(n)` orbit, and materializes three declared representatives:
+   `O(m) x O(n)` orbit, and materializes four declared representative families:
    midpoint truncation, the nonlinear Gram counterterm
    `lambda -> max(lambda-tau,0)` scanned at
-   `tau/lambda_boundary in {0.25,0.50,0.75}`, and an
-   epoch-10-anchor-frozen Feshbach/Schur downfolding with ridge ratio `1e-2`.
+   `tau/lambda_boundary in {0.10,0.25,0.50,0.75,0.90}`, an
+   epoch-10-anchor-frozen Feshbach/Schur downfolding with ridge ratios
+   `{1e-3,1e-2,1e-1}`, and an MP-calibrated optimal Frobenius shrinker with
+   noise-scale multipliers `{0.75,1.00,1.25}`.
    Every materialized `W'` is passed through WeightWatcher both raw and with
    `fix_fingers=clip_xmax`; this phase writes
    `weight_quotient_weightwatcher_fits.csv`, `weight_quotient_spectra.csv`, and
@@ -924,10 +936,27 @@ the static HTML report:
    `two_checkpoint_jacobian_transport.csv`.
 3. **Single-checkpoint Jacobians.** In addition to the centered log-singular
    radial and exact ECS-cover derivatives, the reduced CLI evaluates the
-   gap-aware projector, trace-free log Gram, trace-free ridge resolvent, and
-   Feshbach trace-free log derivatives on the detX shell for FC1 and FC2.
+   gap-aware projector, trace-free log Gram, a grid-selected Tikhonov
+   resolvent, Feshbach trace-free log, an optimal-MP hard signal-space
+   projector, and trace-free log Gram restricted to that MP signal space on
+   FC1 and FC2.
    Square FC2 is handled by the same right-singular top-k Grassmann geometry as
    wide FC1.
+
+   The Tikhonov map is
+   `R_z(W)=Pi_tf[(V_o^T W^T W V_o + z I)^-1]` on the frozen detX space, with
+   `z/lambda_boundary in {0.03,0.10,0.30,1,3}`. Every fixed-`z` derivative is
+   exact. The selected curve is the valid PL fit with minimum KS distance,
+   breaking ties by larger tail span, larger tail count, and then grid order.
+   Distance of alpha from 2 is never used. Because selection uses the same
+   spectrum being reported, it is exploratory; all candidates are retained for
+   a later held-out-checkpoint confirmation.
+
+   The MP signal rank uses the empirical median Gram eigenvalue, the numerical
+   Marchenko-Pastur median, and the Gavish-Donoho asymptotically optimal
+   Frobenius hard threshold. That rank is frozen before differentiating both
+   MP-space maps. The rank-selection discontinuity is not differentiated, and
+   the report does not assume correlated Muon history is truly iid MP noise.
 
 The single-checkpoint Feshbach map is an intentional collapse control. In the
 checkpoint's own SVD frame the P-Q Gram coupling is exactly zero, so its shell
@@ -935,3 +964,20 @@ downfolding contribution vanishes at first order. The state-level Feshbach map
 avoids that triviality by freezing P/Q from the independent epoch-10 anchor.
 Neither construction is presented as the unique quotient of an unknown sum of
 Muon updates; they are falsifiable, fully specified quotient hypotheses.
+
+The principal outputs under
+`/private/tmp/rg-mnist-mlp3-short100-jacobians-reduced` are:
+
+- `jacobian_powerlaw_fits.csv`: one reported alpha per local-map method and fit
+  convention;
+- `jacobian_hyperparameter_search.csv`: all five Tikhonov candidates, fit
+  diagnostics, selection rank, and selected flag at every optimizer/layer/epoch;
+- `weight_quotient_weightwatcher_fits.csv`: raw and `clip_xmax` WeightWatcher
+  alphas for every materialized quotient representative;
+- `two_checkpoint_flow_fits.csv`: finite between-checkpoint flow alphas;
+- `two_checkpoint_jacobian_transport.csv`: observed quotient secant versus the
+  local Jacobian-vector prediction;
+- `status.json`, `quotient_flow_status.json`, `jacobians.log`, and
+  `quotient_flow.log`: live progress/ETA and full terminal-equivalent logs;
+- `report/index.html`: shareable documentation, separate MuonClip-RMS and AdamW
+  plots, tables, method coverage, and saved-data links.

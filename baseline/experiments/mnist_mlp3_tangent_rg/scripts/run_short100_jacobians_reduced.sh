@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# Fast scientific preset: the scale-quotiented radial Jacobian on every layer
-# plus both ECS/Grassmann covers on fc1 and fc2. ECS deterministic shell copies are
-# compressed to physical retained-core groups before the power-law fit.
+# Fast scientific preset: the scale-quotiented radial Jacobian on every layer;
+# both ECS/Grassmann covers on FC1/FC2; and the gap, Tikhonov-grid, Feshbach,
+# and optimal-MP local Jacobians on the audited detX shell. ECS deterministic
+# shell copies are compressed to physical retained-core groups before the PL fit.
 
 set -euo pipefail
 

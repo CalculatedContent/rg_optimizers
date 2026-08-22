@@ -35,8 +35,10 @@ METHOD_LABELS = {
     "ecs_grassmann_cartan_cover_detx_shell_pullback": "ECS detX shell",
     "gap_aware_projector_detx_shell_pullback": "Gap-aware projector (detX)",
     "trace_free_log_gram_detx_shell_pullback": "Trace-free log Gram (detX)",
-    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback": "Gram ridge resolvent (detX, z=0.5 boundary)",
+    "tikhonov_resolvent_detx_shell_grid_selected_pullback": "Tikhonov resolvent (best valid KS from grid)",
     "feshbach_trace_free_log_detx_shell_pullback": "Feshbach trace-free log (detX)",
+    "optimal_mp_projector_full_shell_pullback": "Optimal-MP signal-space projector",
+    "optimal_mp_signal_log_gram_pullback": "Trace-free log Gram in optimal-MP space",
 }
 METHOD_STYLES = {
     "centered_log_singular_radial_pullback": ("-", "o"),
@@ -44,10 +46,12 @@ METHOD_STYLES = {
     "ecs_grassmann_cartan_cover_detx_shell_pullback": (":", "^"),
     "gap_aware_projector_detx_shell_pullback": ("-.", "D"),
     "trace_free_log_gram_detx_shell_pullback": ((0, (5, 1)), "P"),
-    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback": (
+    "tikhonov_resolvent_detx_shell_grid_selected_pullback": (
         (0, (3, 1, 1, 1)), "X"
     ),
     "feshbach_trace_free_log_detx_shell_pullback": ((0, (1, 1)), "v"),
+    "optimal_mp_projector_full_shell_pullback": ((0, (5, 2)), "*"),
+    "optimal_mp_signal_log_gram_pullback": ((0, (2, 1)), "h"),
 }
 ECS_METHODS = (
     "ecs_grassmann_cartan_cover_full_row_shell_pullback",
@@ -56,8 +60,10 @@ ECS_METHODS = (
 EXTENDED_ECS_METHODS = (
     "gap_aware_projector_detx_shell_pullback",
     "trace_free_log_gram_detx_shell_pullback",
-    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback",
+    "tikhonov_resolvent_detx_shell_grid_selected_pullback",
     "feshbach_trace_free_log_detx_shell_pullback",
+    "optimal_mp_projector_full_shell_pullback",
+    "optimal_mp_signal_log_gram_pullback",
 )
 EXPECTED_METHODS_BY_LAYER = {
     "fc1.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS, *EXTENDED_ECS_METHODS),
@@ -68,13 +74,21 @@ QUOTIENT_LABELS = {
     "midpoint_ecs_control": "Midpoint ECS control",
     "gram_ridge": "Gram diagonal subtraction",
     "feshbach_downfolding": "Anchor-frozen Feshbach",
+    "calibrated_mp_shrinker": "Calibrated MP shrinker",
 }
 QUOTIENT_PROFILE_LABELS = {
     "midpoint": "no counterterm",
+    "tau_fraction_0p10": "τ=0.10 λboundary",
     "tau_fraction_0p25": "τ=0.25 λboundary",
     "tau_fraction_0p50": "τ=0.50 λboundary",
     "tau_fraction_0p75": "τ=0.75 λboundary",
+    "tau_fraction_0p90": "τ=0.90 λboundary",
+    "ridge_ratio_1em3": "ρ=0.001 anchor scale",
     "ridge_ratio_1em2": "ρ=0.01 anchor scale",
+    "ridge_ratio_1em1": "ρ=0.1 anchor scale",
+    "mp_scale_0p75": "MP scale=0.75",
+    "mp_scale_1p00": "MP scale=1.00",
+    "mp_scale_1p25": "MP scale=1.25",
 }
 FLOW_LABELS = {
     "two_checkpoint_generalized_gram_radial": "Generalized-Gram radial rate",
@@ -84,6 +98,22 @@ FLOW_LABELS = {
     "two_checkpoint_radial_quotient_observed_secant": "Observed radial quotient secant",
     "two_checkpoint_radial_jacobian_prediction": "Local radial Jacobian prediction",
 }
+ANALYSIS_EPOCHS = tuple(range(10, 101, 10))
+TIKHONOV_Z_RATIOS = (0.03, 0.10, 0.30, 1.00, 3.00)
+QUOTIENT_EXPECTED_PROFILES = (
+    ("midpoint_ecs_control", "midpoint"),
+    ("gram_ridge", "tau_fraction_0p10"),
+    ("gram_ridge", "tau_fraction_0p25"),
+    ("gram_ridge", "tau_fraction_0p50"),
+    ("gram_ridge", "tau_fraction_0p75"),
+    ("gram_ridge", "tau_fraction_0p90"),
+    ("feshbach_downfolding", "ridge_ratio_1em3"),
+    ("feshbach_downfolding", "ridge_ratio_1em2"),
+    ("feshbach_downfolding", "ridge_ratio_1em1"),
+    ("calibrated_mp_shrinker", "mp_scale_0p75"),
+    ("calibrated_mp_shrinker", "mp_scale_1p00"),
+    ("calibrated_mp_shrinker", "mp_scale_1p25"),
+)
 
 
 def configure_logging(report_root: Path) -> logging.Logger:
@@ -265,6 +295,56 @@ def plot_single_optimizer_jacobians(
     return save_figure(fig, path, bottom=0.18, top=0.93)
 
 
+def plot_tikhonov_search_by_optimizer(
+    search: pd.DataFrame, optimizer: str, path: Path
+) -> Path:
+    """Show every ridge candidate and identify the selected PL fit."""
+
+    frame = search[
+        search["optimizer"].astype(str).eq(optimizer)
+        & search["layer"].astype(str).isin(("fc1.weight", "fc2.weight"))
+    ].copy()
+    frame["selected_bool"] = bool_series(frame["selected"])
+    ratios = sorted(
+        pd.to_numeric(frame["tikhonov_z_boundary_ratio"], errors="coerce")
+        .dropna().unique()
+    )
+    palette = plt.get_cmap("viridis")
+    ratio_colors = {
+        float(ratio): palette(index / max(1, len(ratios) - 1))
+        for index, ratio in enumerate(ratios)
+    }
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.0), sharex=True)
+    for axis, layer in zip(axes, ("fc1.weight", "fc2.weight")):
+        subset = frame[frame["layer"].astype(str).eq(layer)]
+        for ratio, curve in subset.groupby("tikhonov_z_boundary_ratio"):
+            curve = curve.sort_values("epoch")
+            numeric_ratio = float(ratio)
+            axis.plot(
+                curve["epoch"], curve["alpha"],
+                color=ratio_colors[numeric_ratio], linewidth=1.25, alpha=0.78,
+                label=f"z/λboundary={numeric_ratio:g}",
+            )
+        selected = subset[subset["selected_bool"]].sort_values("epoch")
+        axis.scatter(
+            selected["epoch"], selected["alpha"],
+            color="black", marker="x", s=42, linewidth=1.5,
+            label="selected: valid minimum KS",
+            zorder=5,
+        )
+        axis.axhline(2.0, color="black", linestyle=(0, (1, 2)), linewidth=1.0)
+        axis.set(
+            title=layer.replace(".weight", ""), xlabel="epoch",
+            ylabel="Tikhonov Jacobian energy alpha",
+        )
+        axis.grid(True, alpha=0.25)
+    shared_legend(fig, axes, columns=3)
+    fig.suptitle(
+        f"{OPTIMIZER_LABELS[optimizer]} — Tikhonov grid; selection does not target α=2"
+    )
+    return save_figure(fig, path, bottom=0.20, top=0.92)
+
+
 def plot_weight_quotients_by_optimizer(
     quotient_fits: pd.DataFrame, optimizer: str, path: Path
 ) -> Path:
@@ -275,10 +355,17 @@ def plot_weight_quotients_by_optimizer(
     frame = frame[bool_series(frame["fit_ok"])]
     profile_colors = {
         "midpoint": "#4C78A8",
+        "tau_fraction_0p10": "#ECA82C",
         "tau_fraction_0p25": "#F2CF5B",
         "tau_fraction_0p50": "#F58518",
         "tau_fraction_0p75": "#B279A2",
+        "tau_fraction_0p90": "#8E6C8A",
+        "ridge_ratio_1em3": "#86BCB6",
         "ridge_ratio_1em2": "#54A24B",
+        "ridge_ratio_1em1": "#2E8B57",
+        "mp_scale_0p75": "#E45756",
+        "mp_scale_1p00": "#B44A99",
+        "mp_scale_1p25": "#7A5195",
     }
     fig, axes = plt.subplots(2, 2, figsize=(13.5, 8.4), sharex=True)
     variants = ("raw", "clip_xmax")
@@ -396,6 +483,109 @@ def build_method_coverage(primary: pd.DataFrame) -> pd.DataFrame:
                     "coverage_status": "complete" if len(epochs) == 10 else "INCOMPLETE",
                 })
     return pd.DataFrame(rows)
+
+
+def build_analysis_contract_coverage(
+    primary: pd.DataFrame,
+    tikhonov_search: pd.DataFrame,
+    quotient_fits: pd.DataFrame,
+    flow_fits: pd.DataFrame,
+    transport: pd.DataFrame,
+) -> pd.DataFrame:
+    """Audit every required alpha-producing unit before declaring success."""
+
+    def audit(name: str, expected: set[tuple], observed_values: list[tuple]) -> dict[str, object]:
+        observed = set(observed_values)
+        missing = sorted(expected - observed, key=str)
+        return {
+            "analysis_family": name,
+            "expected_unique_units": len(expected),
+            "observed_unique_units": len(observed & expected),
+            "unexpected_unique_units": len(observed - expected),
+            "duplicate_row_count": max(0, len(observed_values) - len(observed)),
+            "missing_unit_count": len(missing),
+            "missing_examples": "; ".join(map(str, missing[:8])),
+            "coverage_status": "complete" if not missing else "INCOMPLETE",
+        }
+
+    jacobian_expected = {
+        (optimizer, layer, epoch, method)
+        for optimizer in OPTIMIZERS
+        for layer, methods in EXPECTED_METHODS_BY_LAYER.items()
+        for epoch in ANALYSIS_EPOCHS
+        for method in methods
+    }
+    jacobian_observed = list(primary[[
+        "optimizer", "layer", "epoch", "method"
+    ]].itertuples(index=False, name=None))
+
+    tikhonov_expected = {
+        (optimizer, layer, epoch, ratio)
+        for optimizer in OPTIMIZERS
+        for layer in ("fc1.weight", "fc2.weight")
+        for epoch in ANALYSIS_EPOCHS
+        for ratio in TIKHONOV_Z_RATIOS
+    }
+    tikhonov_observed = [
+        (str(row.optimizer), str(row.layer), int(row.epoch), float(row.ratio))
+        for row in tikhonov_search.rename(
+            columns={"tikhonov_z_boundary_ratio": "ratio"}
+        )[["optimizer", "layer", "epoch", "ratio"]].itertuples(index=False)
+    ]
+    selected = tikhonov_search[bool_series(tikhonov_search["selected"])]
+    selected_expected = {
+        (optimizer, layer, epoch)
+        for optimizer in OPTIMIZERS
+        for layer in ("fc1.weight", "fc2.weight")
+        for epoch in ANALYSIS_EPOCHS
+    }
+    selected_observed = list(selected[[
+        "optimizer", "layer", "epoch"
+    ]].itertuples(index=False, name=None))
+
+    quotient_expected = {
+        (optimizer, layer, epoch, method, profile, variant)
+        for optimizer in OPTIMIZERS
+        for layer in ("fc1.weight", "fc2.weight")
+        for epoch in ANALYSIS_EPOCHS
+        for method, profile in QUOTIENT_EXPECTED_PROFILES
+        for variant in ("raw", "clip_xmax")
+    }
+    quotient_observed = list(quotient_fits[[
+        "optimizer", "layer", "epoch", "method", "profile_id", "fit_variant"
+    ]].itertuples(index=False, name=None))
+
+    flow_primary = flow_fits[
+        flow_fits["spectrum_kind"].astype(str).eq("energy_derived_from_amplitude")
+        & pd.to_numeric(flow_fits["clip_top_k"], errors="coerce").eq(0)
+    ]
+    flow_expected = {
+        (optimizer, layer, epoch_end, method)
+        for optimizer in OPTIMIZERS
+        for layer in ("fc1.weight", "fc2.weight")
+        for epoch_end in ANALYSIS_EPOCHS[1:]
+        for method in FLOW_LABELS
+    }
+    flow_observed = list(flow_primary[[
+        "optimizer", "layer", "epoch_end", "method"
+    ]].itertuples(index=False, name=None))
+    transport_expected = {
+        (optimizer, layer, epoch_end)
+        for optimizer in OPTIMIZERS
+        for layer in ("fc1.weight", "fc2.weight")
+        for epoch_end in ANALYSIS_EPOCHS[1:]
+    }
+    transport_observed = list(transport[[
+        "optimizer", "layer", "epoch_end"
+    ]].itertuples(index=False, name=None))
+    return pd.DataFrame([
+        audit("single_checkpoint_jacobian_alphas", jacobian_expected, jacobian_observed),
+        audit("tikhonov_grid_candidates", tikhonov_expected, tikhonov_observed),
+        audit("tikhonov_selected_curve", selected_expected, selected_observed),
+        audit("weight_quotient_weightwatcher_alphas", quotient_expected, quotient_observed),
+        audit("two_checkpoint_flow_alphas", flow_expected, flow_observed),
+        audit("two_checkpoint_jacobian_transport", transport_expected, transport_observed),
+    ])
 
 
 def plot_fit_quality(fits: pd.DataFrame, path: Path) -> Path:
@@ -554,6 +744,8 @@ def build_html(
     primary: pd.DataFrame,
     coverage: pd.DataFrame,
     inventory: dict[str, int],
+    tikhonov_search: pd.DataFrame,
+    contract_coverage: pd.DataFrame,
 ) -> Path:
     final = primary.sort_values("epoch").groupby(
         ["optimizer", "layer", "method"], as_index=False
@@ -562,6 +754,16 @@ def build_html(
         ["optimizer", "epoch", "layer", "method", "alpha", "ks_D", "n_tail", "tail_decades", "fit_ok"]
     ].to_html(index=False, float_format=lambda value: f"{value:.5g}")
     coverage_table = coverage.to_html(index=False)
+    contract_table = contract_coverage.to_html(index=False)
+    selected_tikhonov = tikhonov_search[
+        bool_series(tikhonov_search["selected"])
+    ].sort_values("epoch").groupby(
+        ["optimizer", "layer"], as_index=False
+    ).tail(1)
+    selected_tikhonov_table = selected_tikhonov[[
+        "optimizer", "epoch", "layer", "tikhonov_z_boundary_ratio",
+        "alpha", "ks_D", "n_tail", "tail_decades", "fit_ok",
+    ]].to_html(index=False, float_format=lambda value: f"{value:.5g}")
     figure_html = "\n".join(
         f'<section><h2>{escape(path.stem.replace("_", " ").title())}</h2>'
         f'<a href="{escape(relative(path, report_root))}">'
@@ -613,6 +815,12 @@ ECS figure keeps lines at the true epochs but offsets full-row and detX markers 
 <p>Every expected method should have ten observations. Any row marked
 <code>INCOMPLETE</code> means computation is genuinely missing; visual overlap is
 not classified as missing.</p>{coverage_table}
+<h2>End-to-end data contract</h2>
+<p>This audit separately requires all local-Jacobian alphas, all five Tikhonov
+candidates and exactly one selection per checkpoint, every transformed-weight
+WeightWatcher fit, every two-checkpoint flow alpha, and every Jacobian-transport
+comparison. The report command fails if any family is incomplete.</p>
+{contract_table}
 <h2>Scientific questions and what is actually identified</h2>
 <h3>Case 1 — heavy tails on a weight quotient representative</h3>
 <p>For the state-level experiment, the strictly identifiable quotient is the
@@ -629,14 +837,19 @@ unknown Muon time-orbit quotient.</p>
 sector without a counterterm.</li>
 <li><strong>Gram diagonal subtraction:</strong>
 <code>X=W Wᵀ</code> (or <code>WᵀW</code> on the smaller side) is transformed by
-<code>λᵢ↦max(λᵢ−τ,0)</code>, scanned at τ/λboundary = 0.25, 0.50, and
-0.75. This is nonlinear because of the positive-part threshold; it is not
+<code>λᵢ↦max(λᵢ−τ,0)</code>, scanned at τ/λboundary = 0.10, 0.25, 0.50,
+0.75, and 0.90. This is nonlinear because of the positive-part threshold; it is not
 a global rescaling and can change the fitted spectral shape.</li>
 <li><strong>Feshbach downfolding:</strong> an independent epoch-10 singular frame
 freezes P and Q, then
-<code>X_eff=A−B(C+ρI)⁻¹Bᵀ</code> with ρ=0.01 times the anchor boundary scale.
+<code>X_eff=A−B(C+ρI)⁻¹Bᵀ</code> with ρ/λanchor scanned at 0.001, 0.01,
+and 0.1.
 Freezing the anchor is essential: choosing P from the same X diagonalizes the
 Gram matrix and makes B=0, reducing the construction to truncation.</li>
+<li><strong>Calibrated MP shrinker:</strong> estimate a white-noise scale from the
+discarded midpoint-ECS bulk, then apply the analytic optimal Frobenius
+singular-value shrinker at scale multipliers 0.75, 1.00, and 1.25. This is an
+MP-like nuisance model, not a claim that Muon noise is actually iid.</li>
 </ul>
 <h3>Case 2a — flow between checkpoints</h3>
 <p>Two checkpoints identify finite flow/secant observables: generalized-Gram
@@ -656,16 +869,34 @@ it still does not turn that map derivative into <code>Dβ(W)</code>.</p>
 <h3>Case 2b — a Jacobian at one checkpoint</h3>
 <p>The single-checkpoint tables contain exact analytic derivatives of explicitly
 declared weight-only maps: centered log-singular radial, ECS Grassmann/Cartan,
-gap-aware projector, trace-free log Gram, ridge-resolvent, and Feshbach
-trace-free log. These are genuine Jacobians of those maps at W, but not the
+gap-aware projector, trace-free log Gram, a selected Tikhonov resolvent,
+Feshbach trace-free log, and two MP-selected signal-space maps. These are
+genuine Jacobians of those maps at W, but not the
 training-dynamics Jacobian unless the declared map is separately calibrated to
 the optimizer step.</p>
+<p><strong>Tikhonov grid.</strong> On the fixed detX outer space, the map is
+<code>R_z(W)=Π_tf(V_oᵀWᵀWV_o+zI)⁻¹</code>, with
+<code>z/λ_boundary∈{{0.03,0.10,0.30,1,3}}</code>. The derivative is exact for
+each fixed z. Selection ranks valid fits by minimum KS D, then larger tail span,
+then larger tail count, then grid order. It never uses closeness of α to 2.
+All candidates are saved in <code>jacobian_hyperparameter_search.csv</code>;
+the main Jacobian table contains the selected curve. This selection is
+exploratory and should be validated on held-out checkpoints.</p>
+<p><strong>Optimal MP space.</strong> The empirical median Gram eigenvalue and
+the Marchenko–Pastur median estimate the noise scale. The Gavish–Donoho
+asymptotically optimal Frobenius hard threshold fixes a signal rank. With that
+rank frozen, the report differentiates (i) the hard signal-space projector and
+(ii) trace-free log Gram restricted to the selected signal space. The
+discontinuous rank-selection step itself is not differentiated, and correlated
+Muon updates need not satisfy the MP white-noise assumptions.</p>
 <p>The single-checkpoint Feshbach result has a mandatory caveat: in the
 checkpoint's own SVD frame B=0, so shell-downfolding terms vanish at first
 order. The report keeps this curve as an explicit collapse/control. Nontrivial
 state-level Feshbach behavior comes from the independently frozen epoch-10
 anchor, while nontrivial first-order Feshbach dynamics would require a frozen
 frame not diagonalizing the evaluation checkpoint.</p>
+<h2>Final-checkpoint selected Tikhonov candidates</h2>
+{selected_tikhonov_table}
 <h2>Data inventory</h2><ul>{inventory_html}</ul>
 <h2>Analysis-ready tables</h2><ul>{table_html}</ul>
 <h2>Final checkpoint primary fits</h2>{final_table}
@@ -706,6 +937,9 @@ def main() -> int:
         fits = require_csv(analysis_root / "jacobian_powerlaw_fits.csv")
         spectra = require_csv(analysis_root / "jacobian_spectra.csv")
         operators = require_csv(analysis_root / "jacobian_operators.csv")
+        tikhonov_search = require_csv(
+            analysis_root / "jacobian_hyperparameter_search.csv"
+        )
         quotient_fits = require_csv(
             analysis_root / "weight_quotient_weightwatcher_fits.csv"
         )
@@ -738,11 +972,15 @@ def main() -> int:
 
         table_root.mkdir(parents=True, exist_ok=True)
         coverage = build_method_coverage(primary)
+        contract_coverage = build_analysis_contract_coverage(
+            primary, tikhonov_search, quotient_fits, flow_fits, flow_transport
+        )
         tables = [
             table_root / "jacobian_primary_energy_fits.csv",
             table_root / "jacobian_all_fits.csv",
             table_root / "jacobian_spectra_all_modes.csv",
             table_root / "jacobian_operator_metadata.csv",
+            table_root / "jacobian_hyperparameter_search.csv",
             table_root / "weightwatcher_raw_and_clip_xmax.csv",
             table_root / "performance_train_test.csv",
             table_root / "jacobian_method_coverage.csv",
@@ -753,21 +991,33 @@ def main() -> int:
             table_root / "two_checkpoint_flow_spectra.csv",
             table_root / "two_checkpoint_flow_operators.csv",
             table_root / "two_checkpoint_jacobian_transport.csv",
+            table_root / "analysis_contract_coverage.csv",
         ]
         primary.to_csv(tables[0], index=False)
         fits.to_csv(tables[1], index=False)
         spectra.to_csv(tables[2], index=False)
         operators.to_csv(tables[3], index=False)
-        weightwatcher.to_csv(tables[4], index=False)
-        performance.to_csv(tables[5], index=False)
-        coverage.to_csv(tables[6], index=False)
-        quotient_fits.to_csv(tables[7], index=False)
-        quotient_spectra.to_csv(tables[8], index=False)
-        quotient_operators.to_csv(tables[9], index=False)
-        flow_fits.to_csv(tables[10], index=False)
-        flow_spectra.to_csv(tables[11], index=False)
-        flow_operators.to_csv(tables[12], index=False)
-        flow_transport.to_csv(tables[13], index=False)
+        tikhonov_search.to_csv(tables[4], index=False)
+        weightwatcher.to_csv(tables[5], index=False)
+        performance.to_csv(tables[6], index=False)
+        coverage.to_csv(tables[7], index=False)
+        quotient_fits.to_csv(tables[8], index=False)
+        quotient_spectra.to_csv(tables[9], index=False)
+        quotient_operators.to_csv(tables[10], index=False)
+        flow_fits.to_csv(tables[11], index=False)
+        flow_spectra.to_csv(tables[12], index=False)
+        flow_operators.to_csv(tables[13], index=False)
+        flow_transport.to_csv(tables[14], index=False)
+        contract_coverage.to_csv(tables[15], index=False)
+        incomplete_contract = contract_coverage[
+            contract_coverage["coverage_status"].astype(str).ne("complete")
+        ]
+        if not incomplete_contract.empty:
+            raise RuntimeError(
+                "analysis data contract is incomplete; inspect "
+                f"{tables[15]}\n"
+                + incomplete_contract.to_string(index=False)
+            )
 
         figures = [
             plot_jacobian_metric(
@@ -798,6 +1048,10 @@ def main() -> int:
                     primary, optimizer,
                     figure_root / f"optimizer_views/{optimizer}_single_checkpoint_jacobians.png",
                 ),
+                plot_tikhonov_search_by_optimizer(
+                    tikhonov_search, optimizer,
+                    figure_root / f"optimizer_views/{optimizer}_tikhonov_grid_search.png",
+                ),
                 plot_weight_quotients_by_optimizer(
                     quotient_fits, optimizer,
                     figure_root / f"optimizer_views/{optimizer}_weight_quotients.png",
@@ -817,6 +1071,10 @@ def main() -> int:
             "all Jacobian fit rows": len(fits),
             "saved Jacobian spectral modes": len(spectra),
             "operator metadata rows": len(operators),
+            "Tikhonov grid candidate rows": len(tikhonov_search),
+            "complete analysis-contract families": int(
+                contract_coverage["coverage_status"].astype(str).eq("complete").sum()
+            ),
             "WeightWatcher control rows": len(weightwatcher),
             "performance rows": len(performance),
             "weight-quotient WeightWatcher rows": len(quotient_fits),
@@ -826,7 +1084,10 @@ def main() -> int:
             "Jacobian transport comparison rows": len(flow_transport),
             "figures": len(figures),
         }
-        index = build_html(report_root, figures, tables, primary, coverage, inventory)
+        index = build_html(
+            report_root, figures, tables, primary, coverage, inventory,
+            tikhonov_search, contract_coverage,
+        )
         (report_root / "report_manifest.json").write_text(
             json.dumps({
                 "analysis_root": str(analysis_root),
