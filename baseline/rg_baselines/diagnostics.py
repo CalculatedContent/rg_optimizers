@@ -58,11 +58,40 @@ def _sanitize_key(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", value)
 
 
-def clean_positive_eigenvalues(values: Any) -> np.ndarray:
-    """Return finite positive eigenvalues in ascending order."""
+def clean_positive_eigenvalues(
+    values: Any,
+    *,
+    expected_dimension: Optional[int] = None,
+) -> np.ndarray:
+    """Return positive eigenvalues in ascending order.
+
+    When ``expected_dimension`` is supplied, fail closed if the ESD is
+    incomplete, non-finite, or rank deficient. This preserves
+    WeightWatcher's full-M normalization instead of silently renormalizing a
+    filtered positive-rank spectrum.
+    """
 
     evals = np.asarray(values, dtype=float).reshape(-1)
-    evals = evals[np.isfinite(evals) & (evals > 0.0)]
+    if expected_dimension is not None:
+        expected = int(expected_dimension)
+        if expected < 2:
+            raise ValueError("expected spectral dimension must be at least two")
+        if evals.size != expected:
+            raise ValueError(
+                "ESD dimension mismatch: "
+                f"expected {expected} eigenvalues, received {evals.size}"
+            )
+        if not np.all(np.isfinite(evals)):
+            raise ValueError("full ESD contains non-finite eigenvalues")
+        if np.any(evals <= 0.0):
+            positive = int(np.count_nonzero(evals > 0.0))
+            raise ValueError(
+                "rank-deficient ESD: "
+                f"expected {expected} positive eigenvalues, found {positive}"
+            )
+    else:
+        evals = evals[np.isfinite(evals) & (evals > 0.0)]
+
     evals = np.sort(evals)
     if evals.size < 2:
         raise ValueError("fewer than two finite positive eigenvalues")
@@ -84,29 +113,62 @@ def spectral_metrics_from_esd(
     detx_num: int,
     num_pl_spikes: int,
     erg_gap: int,
+    expected_dimension: Optional[int] = None,
 ) -> dict[str, float | int]:
     """Compute transparent metrics from one WeightWatcher ESD.
 
     ``normalized_evals_ascending`` must be produced by WeightWatcher's own
-    ``RMT_Util.rescale_eigenvalues``.  The trace-log boundary and gap are not
+    ``RMT_Util.rescale_eigenvalues``. The trace-log boundary and gap are not
     recomputed here: the supplied ``detx_num``, ``num_pl_spikes``, and
     ``erg_gap`` must come from ``watcher.analyze(ERG=True)``.
+
+    ``expected_dimension`` is the full spectral dimension
+    ``min(weight.shape)``. Strict baseline measurements require all of those
+    eigenvalues to be finite and positive so WeightWatcher's normalization is
+    not silently changed by positive-eigenvalue filtering.
     """
 
-    raw = clean_positive_eigenvalues(raw_evals_ascending)
-    normalized = clean_positive_eigenvalues(normalized_evals_ascending)
+    raw = clean_positive_eigenvalues(
+        raw_evals_ascending,
+        expected_dimension=expected_dimension,
+    )
+    normalized = clean_positive_eigenvalues(
+        normalized_evals_ascending,
+        expected_dimension=expected_dimension,
+    )
     if raw.size != normalized.size:
         raise ValueError("raw and normalized ESDs have different sizes")
 
     count = int(raw.size)
-    m_detx = int(np.clip(int(detx_num), 1, count))
-    m_pl = int(np.clip(int(num_pl_spikes), 1, count))
+    normalized_sum = float(np.sum(normalized))
+    if not np.isclose(
+        normalized_sum,
+        float(count),
+        rtol=1e-10,
+        atol=1e-10 * max(count, 1),
+    ):
+        raise ValueError(
+            "WeightWatcher normalization audit failed: "
+            f"sum={normalized_sum:.17g}, expected={count}"
+        )
+
+    m_detx = int(detx_num)
+    m_pl = int(num_pl_spikes)
+    if not 1 <= m_detx <= count:
+        raise ValueError(
+            f"detX_num must lie in [1, {count}], received {m_detx}"
+        )
+    if not 1 <= m_pl <= count:
+        raise ValueError(
+            f"num_pl_spikes must lie in [1, {count}], received {m_pl}"
+        )
+
     expected_gap = m_detx - m_pl
     if int(erg_gap) != expected_gap:
         raise ValueError(
             f"WeightWatcher ERG_gap audit failed: {erg_gap} != {m_detx} - {m_pl}"
         )
-    m_midpoint = int(np.clip(math.floor((m_detx + m_pl) / 2.0), 1, count))
+    m_midpoint = int(math.floor((m_detx + m_pl) / 2.0))
 
     raw_desc = raw[::-1]
     normalized_desc = normalized[::-1]
@@ -151,8 +213,8 @@ def spectral_metrics_from_esd(
         "pl_energy_fraction": energy_fraction(m_pl),
         "detx_energy_fraction": energy_fraction(m_detx),
         "midpoint_energy_fraction": energy_fraction(m_midpoint),
-        "rescaled_eigenvalue_sum": float(np.sum(normalized)),
-        "rescale_sum_minus_num_eigenvalues": float(np.sum(normalized) - count),
+        "rescaled_eigenvalue_sum": normalized_sum,
+        "rescale_sum_minus_num_eigenvalues": float(normalized_sum - count),
         "normalized_lambda_max": float(normalized_desc[0]),
         "normalized_lambda_midpoint_cut": float(normalized_desc[m_midpoint - 1]),
     }
@@ -379,13 +441,20 @@ def measure_weightwatcher_checkpoint(
                 raise ValueError("WeightWatcher did not return ERG_gap")
             erg_gap = int(round(erg_gap_value))
 
+            parameter = parameter_map.get(parameter_name) if parameter_name else None
+            if parameter is None:
+                raise ValueError(
+                    "WeightWatcher layer could not be matched to a model matrix"
+                )
+            expected_dimension = int(min(parameter.shape))
             raw_esd = clean_positive_eigenvalues(
                 _get_esd_compat(
                     watcher,
                     model=model_cpu,
                     layer_id=int(layer_id),
                     params=get_esd_params,
-                )
+                ),
+                expected_dimension=expected_dimension,
             )
             normalized_esd, weight_scale = _rescale_with_weightwatcher(raw_esd)
             computed = spectral_metrics_from_esd(
@@ -394,9 +463,9 @@ def measure_weightwatcher_checkpoint(
                 detx_num=int(detx_num),
                 num_pl_spikes=int(num_pl_spikes),
                 erg_gap=erg_gap,
+                expected_dimension=expected_dimension,
             )
 
-            parameter = parameter_map.get(parameter_name) if parameter_name else None
             record = {
                 **base_record,
                 "status": "ok",
@@ -411,9 +480,9 @@ def measure_weightwatcher_checkpoint(
                 "weight_scale": weight_scale,
                 "xmin": _safe_float(_row_value(row, ("xmin",))),
                 "xmax": _safe_float(_row_value(row, ("xmax",))),
-                "layer_rows": int(parameter.shape[0]) if parameter is not None else np.nan,
-                "layer_cols": int(parameter.shape[1]) if parameter is not None else np.nan,
-                "layer_parameter_count": int(parameter.numel()) if parameter is not None else np.nan,
+                "layer_rows": int(parameter.shape[0]),
+                "layer_cols": int(parameter.shape[1]),
+                "layer_parameter_count": int(parameter.numel()),
                 **computed,
             }
             for column in (
