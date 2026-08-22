@@ -830,3 +830,26 @@ method, source-artifact kind, and optimizer/seed-to-protocol-fingerprint grid.
 Notebook `15` verifies every dependency manifest and every fit-table row
 against the currently completed run grid before combining results, so outputs
 from an earlier `--overwrite` run cannot be silently mixed with a new cache.
+
+### Notebook-free short-100 Jacobian runner
+
+For observable production analysis, prefer the command-line runner over
+Papermill. It validates each selected checkpoint when consumed, logs every
+checkpoint and Jacobian method with elapsed time, estimates the remaining time,
+and atomically saves CSV tables, status JSON, spectrum plots, and alpha-progress
+plots after every checkpoint:
+
+```bash
+export RG_MNIST_TANGENT_ROOT=/private/tmp/rg-mnist-mlp3-short100-runs
+export RG_MNIST_TANGENT_CHECKPOINT_CACHE_ROOT=/private/tmp/rg-mnist-mlp3-short100-checkpoints
+export RG_MNIST_JACOBIAN_CLI_OUTPUT_ROOT=/private/tmp/rg-mnist-mlp3-short100-jacobians
+
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_jacobians_cli.sh
+```
+
+The default run analyzes seed 101 for MuonClip-RMS and AdamW at epochs
+10,20,...,100. It computes all five universally defined analytic weight-only
+Jacobians and adds the exact ECS cover variants for `fc1.weight` whenever the
+same-checkpoint WeightWatcher/trace rank records certify them. The primary PL
+fit uses no post-hoc top-mode search (`--top-k 0`); explicit sensitivity values
+can be requested, for example, with `--top-k 0,1,2,3,4,5`.
