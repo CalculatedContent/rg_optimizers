@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
+from functools import lru_cache
 import json
 import logging
 from pathlib import Path
@@ -49,9 +50,12 @@ BASE_METHODS = (
 EXTENDED_DETX_METHODS = (
     "gap_aware_projector_detx_shell_pullback",
     "trace_free_log_gram_detx_shell_pullback",
-    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback",
+    "tikhonov_resolvent_detx_shell_grid_selected_pullback",
     "feshbach_trace_free_log_detx_shell_pullback",
+    "optimal_mp_projector_full_shell_pullback",
+    "optimal_mp_signal_log_gram_pullback",
 )
+TIKHONOV_Z_RATIOS = (0.03, 0.10, 0.30, 1.00, 3.00)
 
 
 class MaxInfoFilter(logging.Filter):
@@ -120,6 +124,97 @@ def parse_csv_values(text: str, cast=str) -> tuple[Any, ...]:
     if not values:
         raise argparse.ArgumentTypeError("comma-separated value list cannot be empty")
     return values
+
+
+def fit_ok(value: Any) -> bool:
+    """Normalize package/string booleans used by resumable CSV tables."""
+
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    return str(value).strip().lower() in {"1", "true", "yes"}
+
+
+@lru_cache(maxsize=16)
+def marchenko_pastur_median(aspect_ratio: float) -> float:
+    """Numerically return the median of the unit-scale MP law.
+
+    ``aspect_ratio`` is min(m,n)/max(m,n), so it lies in (0,1].  A sine-square
+    coordinate removes the square-root endpoint behavior, including the hard
+    edge at zero for a square matrix.  This is a deterministic calibration
+    constant, not a fit to WeightWatcher alpha.
+    """
+
+    beta = float(aspect_ratio)
+    if not np.isfinite(beta) or not 0.0 < beta <= 1.0:
+        raise ValueError("MP aspect ratio must lie in (0, 1]")
+    lower = (1.0 - np.sqrt(beta)) ** 2
+    upper = (1.0 + np.sqrt(beta)) ** 2
+    theta = np.linspace(1.0e-8, np.pi / 2.0 - 1.0e-8, 40001)
+    sine = np.sin(theta)
+    cosine = np.cos(theta)
+    values = lower + (upper - lower) * sine**2
+    density = np.sqrt(
+        np.maximum((upper - values) * (values - lower), 0.0)
+    ) / (2.0 * np.pi * beta * values)
+    derivative = 2.0 * (upper - lower) * sine * cosine
+    integrand = density * derivative
+    increments = 0.5 * (integrand[1:] + integrand[:-1]) * np.diff(theta)
+    cdf = np.concatenate(([0.0], np.cumsum(increments)))
+    cdf /= cdf[-1]
+    return float(np.interp(0.5, cdf, values))
+
+
+def optimal_mp_signal_rank(
+    singular_values: np.ndarray,
+    matrix_shape: tuple[int, int],
+    *,
+    numerical_rank: int,
+) -> tuple[int, dict[str, Any]]:
+    """Select the Gavish--Donoho optimal MP hard-threshold signal space.
+
+    The empirical median Gram eigenvalue estimates the white-noise scale using
+    the MP median.  The asymptotically optimal Frobenius hard threshold then
+    selects the signal rank.  The returned usable rank is clipped only when the
+    raw decision is 0, 1, or the entire numerical space, because the two exact
+    Jacobians below require ``2 <= k < rank``.  The raw and clipped decisions
+    are both recorded, so a boundary result is never hidden.
+    """
+
+    singular = np.asarray(singular_values, dtype=np.float64)
+    rank = int(numerical_rank)
+    if not 3 <= rank <= singular.size:
+        raise ValueError("MP Jacobian selection requires numerical rank >= 3")
+    beta = min(matrix_shape) / max(matrix_shape)
+    mp_median = marchenko_pastur_median(beta)
+    empirical_median = float(np.median(singular[:rank] ** 2))
+    noise_unit = float(np.sqrt(empirical_median / mp_median))
+    optimal_known_noise = float(
+        np.sqrt(
+            2.0 * (beta + 1.0)
+            + 8.0 * beta
+            / ((beta + 1.0) + np.sqrt(beta**2 + 14.0 * beta + 1.0))
+        )
+    )
+    threshold = optimal_known_noise * noise_unit
+    raw_rank = int(np.count_nonzero(singular[:rank] > threshold))
+    usable_rank = int(np.clip(raw_rank, 2, rank - 1))
+    return usable_rank, {
+        "mp_selection_rule": (
+            "Gavish-Donoho asymptotically optimal Frobenius hard threshold; "
+            "noise scale from empirical median Gram eigenvalue divided by the "
+            "unit-scale Marchenko-Pastur median"
+        ),
+        "mp_aspect_ratio": float(beta),
+        "mp_unit_scale_median": mp_median,
+        "mp_empirical_gram_median": empirical_median,
+        "mp_estimated_noise_singular_unit": noise_unit,
+        "mp_optimal_known_noise_threshold_multiplier": optimal_known_noise,
+        "mp_singular_threshold": threshold,
+        "mp_raw_signal_rank": raw_rank,
+        "mp_selected_signal_rank": usable_rank,
+        "mp_rank_clipped_for_jacobian_domain": bool(usable_rank != raw_rank),
+        "mp_selection_is_frozen_during_differentiation": True,
+    }
 
 
 def load_json(path: Path, description: str) -> dict[str, Any]:
@@ -456,19 +551,26 @@ def extended_detx_jacobian_spectra(
 ) -> dict[str, tuple[np.ndarray, Any, dict[str, Any]]]:
     """Exact additional Jacobians on the independently audited detX shell.
 
-    The resolvent is the differentiable ridge/noise-control analogue.  The
-    Feshbach derivative is retained even though its shell term must collapse
+    The Tikhonov family is handled separately by ``tikhonov_grid_spectra`` so
+    that all candidates can be fit, audited, and reduced to one selected curve.
+    The Feshbach derivative is retained even though its shell term must collapse
     at first order in the checkpoint SVD gauge; that collapse is a scientific
-    control, not silently interpreted as nontrivial downfolding.
+    control, not silently interpreted as nontrivial downfolding.  Two MP methods
+    freeze the data-selected optimal hard-threshold rank before differentiating:
+    the hard signal-space projector and trace-free log Gram inside that space.
     """
     from rg_baselines.tangent_rg import ecs_jacobians
 
     k = int(retained_rank)
     q = int(outer_rank)
-    boundary_scale = float(singular_values[k - 1] ** 2)
-    resolvent_z = 0.50 * boundary_scale
     shell_floor = float(singular_values[q - 1] ** 2)
     feshbach_z = 0.50 * shell_floor
+    numerical_rank = int(np.count_nonzero(singular_values > rcond * singular_values[0]))
+    mp_rank, mp_metadata = optimal_mp_signal_rank(
+        singular_values,
+        tuple(weight.shape),
+        numerical_rank=numerical_rank,
+    )
     records = {
         "gap_aware_projector_detx_shell_pullback": (
             ecs_jacobians.gap_aware_projector_spectrum(
@@ -484,18 +586,6 @@ def extended_detx_jacobian_spectra(
             ),
             {"jacobian_family": "trace_free_log_gram", "retained_rank": k, "outer_rank": q},
         ),
-        "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback": (
-            ecs_jacobians.outer_resolvent_spectrum(
-                weight, outer_rank=q, z=resolvent_z, trace_free=True,
-                rcond=rcond, precomputed_singular_values=singular_values,
-            ),
-            {
-                "jacobian_family": "trace_free_gram_ridge_resolvent",
-                "retained_rank": k, "outer_rank": q,
-                "resolvent_z": resolvent_z,
-                "resolvent_z_boundary_ratio": 0.50,
-            },
-        ),
         "feshbach_trace_free_log_detx_shell_pullback": (
             ecs_jacobians.feshbach_trace_free_log_spectrum(
                 weight, retained_rank=k, outer_rank=q, z=feshbach_z, rcond=rcond,
@@ -507,6 +597,35 @@ def extended_detx_jacobian_spectra(
                 "first_order_shell_downfolding_active": False,
             },
         ),
+        "optimal_mp_projector_full_shell_pullback": (
+            ecs_jacobians.gap_aware_projector_spectrum(
+                weight,
+                retained_rank=mp_rank,
+                outer_rank=numerical_rank,
+                rcond=rcond,
+                precomputed_singular_values=singular_values,
+            ),
+            {
+                "jacobian_family": "optimal_mp_hard_signal_space_projector",
+                "retained_rank": mp_rank,
+                "outer_rank": numerical_rank,
+                **mp_metadata,
+            },
+        ),
+        "optimal_mp_signal_log_gram_pullback": (
+            ecs_jacobians.outer_trace_free_log_gram_spectrum(
+                weight,
+                outer_rank=mp_rank,
+                rcond=rcond,
+                precomputed_singular_values=singular_values,
+            ),
+            {
+                "jacobian_family": "optimal_mp_signal_space_trace_free_log_gram",
+                "retained_rank": mp_rank,
+                "outer_rank": mp_rank,
+                **mp_metadata,
+            },
+        ),
     }
     return {
         method: (
@@ -516,6 +635,128 @@ def extended_detx_jacobian_spectra(
         )
         for method, (record, metadata) in records.items()
     }
+
+
+def tikhonov_grid_spectra(
+    weight: np.ndarray,
+    singular_values: np.ndarray,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float,
+    z_ratios: tuple[float, ...] = TIKHONOV_Z_RATIOS,
+) -> dict[str, tuple[np.ndarray, Any, dict[str, Any]]]:
+    """Evaluate an explicit Tikhonov grid on one frozen detX ECS space."""
+
+    from rg_baselines.tangent_rg import ecs_jacobians
+
+    k = int(retained_rank)
+    q = int(outer_rank)
+    boundary_scale = float(singular_values[k - 1] ** 2)
+    candidates: dict[str, tuple[np.ndarray, Any, dict[str, Any]]] = {}
+    for index, raw_ratio in enumerate(z_ratios):
+        ratio = float(raw_ratio)
+        if not np.isfinite(ratio) or ratio <= 0.0:
+            raise ValueError("Tikhonov z ratios must be finite and positive")
+        z = ratio * boundary_scale
+        record = ecs_jacobians.outer_resolvent_spectrum(
+            weight,
+            outer_rank=q,
+            z=z,
+            trace_free=True,
+            rcond=rcond,
+            precomputed_singular_values=singular_values,
+        )
+        candidate_id = f"tikhonov_zratio_{ratio:.2g}".replace(".", "p")
+        candidates[candidate_id] = (
+            np.asarray(record.singular_amplitudes, dtype=float),
+            record,
+            {
+                "jacobian_family": "trace_free_tikhonov_gram_resolvent",
+                "retained_rank": k,
+                "outer_rank": q,
+                "tikhonov_candidate_index": index,
+                "tikhonov_z": z,
+                "tikhonov_z_boundary_ratio": ratio,
+                "tikhonov_grid_ratios": json.dumps(tuple(map(float, z_ratios))),
+                "tikhonov_z_is_frozen_during_differentiation": True,
+            },
+        )
+    return candidates
+
+
+def select_tikhonov_candidate(
+    candidates: dict[str, tuple[np.ndarray, Any, dict[str, Any]]],
+    *,
+    base_metadata: dict[str, Any],
+    minimum_tail: int,
+) -> tuple[str, tuple[np.ndarray, Any, dict[str, Any]], list[dict[str, Any]]]:
+    """Select the best PL fit without using distance of alpha from two.
+
+    Ranking is lexicographic: valid fit first, then minimum KS distance, then
+    maximum fitted tail span, then maximum tail count, and finally the original
+    grid order.  All candidates are returned as audit rows.
+    """
+
+    if not candidates:
+        raise ValueError("Tikhonov search requires at least one candidate")
+    evaluated: list[tuple[tuple[Any, ...], str, dict[str, Any]]] = []
+    for candidate_id, (amplitudes, record, metadata) in candidates.items():
+        candidate_fits = fit_spectrum(
+            amplitudes,
+            record,
+            {**base_metadata, **metadata, "candidate_id": candidate_id},
+            (0,),
+            minimum_tail,
+        )
+        primary = next(
+            row for row in candidate_fits
+            if str(row["spectrum_kind"]) == "energy_derived_from_amplitude"
+            and int(row["clip_top_k"]) == 0
+        )
+        valid = fit_ok(primary.get("fit_ok"))
+        ks = float(primary["ks_D"]) if pd.notna(primary.get("ks_D")) else np.inf
+        decades = (
+            float(primary["tail_decades"])
+            if pd.notna(primary.get("tail_decades")) else -np.inf
+        )
+        n_tail = int(primary["n_tail"]) if pd.notna(primary.get("n_tail")) else 0
+        order = int(metadata["tikhonov_candidate_index"])
+        score = (not valid, ks, -decades, -n_tail, order)
+        evaluated.append((score, candidate_id, {
+            **base_metadata,
+            **metadata,
+            "candidate_id": candidate_id,
+            "alpha": primary.get("alpha"),
+            "ks_D": primary.get("ks_D"),
+            "xmin": primary.get("xmin"),
+            "n_tail": primary.get("n_tail"),
+            "tail_decades": primary.get("tail_decades"),
+            "fit_ok": primary.get("fit_ok"),
+            "selection_rule": (
+                "fit_ok first; minimum KS D; maximum tail_decades; maximum "
+                "n_tail; original grid order; alpha proximity to 2 is never used"
+            ),
+        }))
+    evaluated.sort(key=lambda item: item[0])
+    selected_id = evaluated[0][1]
+    rows = []
+    for rank, (_, candidate_id, row) in enumerate(evaluated, start=1):
+        rows.append({
+            **row,
+            "selection_rank": rank,
+            "selected": candidate_id == selected_id,
+        })
+    selected_amplitudes, selected_record, selected_metadata = candidates[selected_id]
+    return selected_id, (
+        selected_amplitudes,
+        selected_record,
+        {
+            **selected_metadata,
+            "tikhonov_selected_candidate_id": selected_id,
+            "tikhonov_selection_rule": rows[0]["selection_rule"],
+        },
+    ), rows
 
 
 def safe_slug(text: str) -> str:
@@ -615,8 +856,9 @@ def build_parser() -> argparse.ArgumentParser:
         action=argparse.BooleanOptionalAction,
         default=False,
         help=(
-            "add gap-aware, trace-free log-Gram, ridge-resolvent, and "
-            "Feshbach exact Jacobians on each requested layer's detX shell"
+            "add gap-aware, trace-free log-Gram, selected Tikhonov-resolvent, "
+            "Feshbach, and MP-selected exact Jacobians on each requested "
+            "layer's detX shell"
         ),
     )
     parser.add_argument(
@@ -640,6 +882,7 @@ def run(args: argparse.Namespace) -> int:
     spectrum_data_path = output_root / "jacobian_spectra.csv"
     error_path = output_root / "errors.csv"
     completion_path = output_root / "completed_checkpoints.csv"
+    hyperparameter_path = output_root / "jacobian_hyperparameter_search.csv"
     optimizers = parse_csv_values(args.optimizers)
     seeds = parse_csv_values(args.seeds, int)
     layers = parse_csv_values(args.layers)
@@ -665,6 +908,7 @@ def run(args: argparse.Namespace) -> int:
     spectrum_rows: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
     completion_rows: list[dict[str, Any]] = []
+    hyperparameter_rows: list[dict[str, Any]] = []
     if args.resume and fit_path.is_file():
         fit_rows = pd.read_csv(fit_path).to_dict(orient="records")
     if args.resume and operator_path.is_file():
@@ -675,6 +919,8 @@ def run(args: argparse.Namespace) -> int:
         errors = pd.read_csv(error_path).to_dict(orient="records")
     if args.resume and completion_path.is_file():
         completion_rows = pd.read_csv(completion_path).to_dict(orient="records")
+    if args.resume and hyperparameter_path.is_file():
+        hyperparameter_rows = pd.read_csv(hyperparameter_path).to_dict(orient="records")
 
     identities: dict[tuple[str, int], dict[str, Any]] = {}
     work: list[tuple[str, int, str, Any]] = []
@@ -724,7 +970,7 @@ def run(args: argparse.Namespace) -> int:
         )
         observed_methods = {
             str(row.get("method"))
-            for row in spectrum_rows
+            for row in operator_rows
             if (
                 str(row.get("optimizer")), int(row.get("seed", -1)),
                 str(row.get("layer")), int(row.get("epoch", -1)),
@@ -739,8 +985,8 @@ def run(args: argparse.Namespace) -> int:
             })
             if args.extended_ecs_jacobians:
                 expected_methods.update(EXTENDED_DETX_METHODS)
-        spectrum_data_available = expected_methods.issubset(observed_methods)
-        if args.resume and completed_before and spectrum_data_available:
+        method_data_available = expected_methods.issubset(observed_methods)
+        if args.resume and completed_before and method_data_available:
             completed += 1
             logger.info("SKIP completed %d/%d %s", completed, total, unit_key)
             continue
@@ -762,6 +1008,9 @@ def run(args: argparse.Namespace) -> int:
         spectrum_rows = [row for row in spectrum_rows if not same_unit(row)]
         errors = [row for row in errors if not same_unit(row)]
         completion_rows = [row for row in completion_rows if not same_unit(row)]
+        hyperparameter_rows = [
+            row for row in hyperparameter_rows if not same_unit(row)
+        ]
 
         unit_started = time.perf_counter()
         logger.info(
@@ -778,6 +1027,15 @@ def run(args: argparse.Namespace) -> int:
                 tuple(weight.shape), time.perf_counter() - load_started, ref.path,
             )
             singular = np.linalg.svd(weight, compute_uv=False)
+            base = {
+                "optimizer": optimizer,
+                "seed": int(seed),
+                "layer": layer,
+                "epoch": int(ref.epoch),
+                "global_step": int(ref.global_step),
+                "protocol_fingerprint": identity["fingerprint"],
+                "checkpoint_path": str(ref.path),
+            }
             method_factories: dict[str, tuple[np.ndarray, Any]] = {}
             method_metadata: dict[str, dict[str, Any]] = {}
             for method in methods:
@@ -863,16 +1121,62 @@ def run(args: argparse.Namespace) -> int:
                                 "EXTENDED JACOBIAN method=%s k=%d q=%d n_amplitudes=%d",
                                 extended_method, k, q, len(extended_amplitudes),
                             )
-
-            base = {
-                "optimizer": optimizer,
-                "seed": int(seed),
-                "layer": layer,
-                "epoch": int(ref.epoch),
-                "global_step": int(ref.global_step),
-                "protocol_fingerprint": identity["fingerprint"],
-                "checkpoint_path": str(ref.path),
-            }
+                        grid = tikhonov_grid_spectra(
+                            weight,
+                            singular,
+                            retained_rank=k,
+                            outer_rank=q,
+                            rcond=args.ecs_rcond,
+                        )
+                        selected_id, selected, search_rows = select_tikhonov_candidate(
+                            grid,
+                            base_metadata={
+                                **base,
+                                **rank_metadata,
+                                "method": "tikhonov_resolvent_detx_shell_grid_search",
+                                "ecs_shell_variant": "detx_shell",
+                            },
+                            minimum_tail=args.minimum_tail,
+                        )
+                        selected_amplitudes, selected_record, selected_metadata = selected
+                        selected_method = (
+                            "tikhonov_resolvent_detx_shell_grid_selected_pullback"
+                        )
+                        method_factories[selected_method] = (
+                            selected_amplitudes,
+                            selected_record,
+                        )
+                        method_metadata[selected_method] = {
+                            **rank_metadata,
+                            **selected_metadata,
+                            "ecs_shell_variant": "detx_shell",
+                        }
+                        hyperparameter_rows.extend(search_rows)
+                        for candidate in sorted(
+                            search_rows,
+                            key=lambda row: int(row["tikhonov_candidate_index"]),
+                        ):
+                            logger.info(
+                                "TIKHONOV GRID candidate=%s z_ratio=%.3g "
+                                "alpha=%s D=%s fit_ok=%s selected=%s",
+                                candidate["candidate_id"],
+                                float(candidate["tikhonov_z_boundary_ratio"]),
+                                (
+                                    f"{float(candidate['alpha']):.4f}"
+                                    if pd.notna(candidate["alpha"]) else "nan"
+                                ),
+                                (
+                                    f"{float(candidate['ks_D']):.4f}"
+                                    if pd.notna(candidate["ks_D"]) else "nan"
+                                ),
+                                candidate["fit_ok"],
+                                candidate["selected"],
+                            )
+                        logger.info(
+                            "TIKHONOV SELECTED candidate=%s rule=min_valid_KS "
+                            "(alpha target not used)",
+                            selected_id,
+                        )
             for method, (amplitudes, record) in method_factories.items():
                 method_started = time.perf_counter()
                 logger.info("METHOD START method=%s n_amplitudes=%d", method, len(amplitudes))
@@ -936,6 +1240,7 @@ def run(args: argparse.Namespace) -> int:
             atomic_csv(fit_path, fit_rows)
             atomic_csv(operator_path, operator_rows)
             atomic_csv(spectrum_data_path, spectrum_rows)
+            atomic_csv(hyperparameter_path, hyperparameter_rows)
             spectrum_path = (
                 output_root / "plots" / "spectra" / optimizer / safe_slug(layer)
                 / f"epoch_{int(ref.epoch):05d}.png"
@@ -999,6 +1304,8 @@ def run(args: argparse.Namespace) -> int:
                 atomic_csv(operator_path, operator_rows)
             if spectrum_rows:
                 atomic_csv(spectrum_data_path, spectrum_rows)
+            if hyperparameter_rows:
+                atomic_csv(hyperparameter_path, hyperparameter_rows)
             atomic_json(status_path, {
                 "state": "error", **error_row,
                 "completed_checkpoint_count": completed,
