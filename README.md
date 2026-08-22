@@ -248,3 +248,20 @@ correspondence without overloading the Marchenko–Pastur aspect-ratio symbol
 `baseline/` contains no RG intervention. Each optimizer package remains an
 independent experiment that must be evaluated against the same frozen reference
 suite and its own README.
+
+## Portfolio projected-gradient experiment
+
+The independent portfolio-construction experiment is in
+[`baseline/experiments/portfolio_pgd`](baseline/experiments/portfolio_pgd). It validates projected
+gradient descent against exact KKT and SciPy reference solutions, then exercises nonlinear impact,
+factor and sector exposure controls, box constraints, turnover, and gross exposure.
+
+Mac setup and the complete foreground campaign use literal `/tmp`:
+
+```bash
+bash baseline/experiments/portfolio_pgd/scripts/setup_mac.sh
+bash baseline/experiments/portfolio_pgd/scripts/run_portfolio_pgd_experiment.sh
+```
+
+The campaign streams timestamped optimization progress to the terminal and saves the same log plus
+CSV/JSON metrics under `/tmp/portfolio-pgd-runs`.

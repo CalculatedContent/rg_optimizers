@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "portfolio-pgd"
+version = "1.0.0"
+description = "Projected-gradient solvers for constrained portfolio construction"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Calculation Consulting"}]
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+notebook = [
+  "jupyterlab>=4.0",
+  "notebook>=7.0",
+  "matplotlib>=3.7",
+  "pandas>=2.0",
+]
+dev = [
+  "pytest>=7.4",
+  "ruff>=0.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
