@@ -4,6 +4,7 @@ import importlib.util
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 
 SCRIPT = (
@@ -37,3 +38,22 @@ def test_report_defaults_to_reduced_tmp_output():
         "/private/tmp/rg-mnist-mlp3-short100-jacobians-reduced"
     )
     assert args.seed == 101
+
+
+def test_method_coverage_requires_ecs_on_fc1_and_fc2_but_not_fc3():
+    module = load_report_module()
+    rows = []
+    for optimizer in module.OPTIMIZERS:
+        for layer, methods in module.EXPECTED_METHODS_BY_LAYER.items():
+            for method in methods:
+                for epoch in range(10, 101, 10):
+                    rows.append({
+                        "optimizer": optimizer, "layer": layer,
+                        "method": method, "epoch": epoch,
+                    })
+    coverage = module.build_method_coverage(pd.DataFrame(rows))
+    assert coverage["coverage_status"].eq("complete").all()
+    fc2 = coverage[coverage["layer"].eq("fc2.weight")]
+    fc3 = coverage[coverage["layer"].eq("fc3.weight")]
+    assert set(fc2["method"]) == set(module.EXPECTED_METHODS_BY_LAYER["fc2.weight"])
+    assert set(fc3["method"]) == {"centered_log_singular_radial_pullback"}

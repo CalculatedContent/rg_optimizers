@@ -849,8 +849,9 @@ bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_jacobians_c
 
 The default run analyzes seed 101 for MuonClip-RMS and AdamW at epochs
 10,20,...,100. It computes all five universally defined analytic weight-only
-Jacobians and adds the exact ECS cover variants for `fc1.weight` whenever the
-same-checkpoint WeightWatcher/trace rank records certify them. The primary PL
+Jacobians and adds the exact ECS cover variants for `fc1.weight` and
+`fc2.weight` whenever the same-checkpoint WeightWatcher/trace rank records
+certify them. The primary PL
 fit uses no post-hoc top-mode search (`--top-k 0`); explicit sensitivity values
 can be requested, for example, with `--top-k 0,1,2,3,4,5`.
 
@@ -861,7 +862,9 @@ bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_jacobians_r
 ```
 
 This separate preset retains the centered log-singular radial Jacobian for all
-three layers and both ECS/Grassmann covers for `fc1.weight`. It omits the large
+three layers and both ECS/Grassmann covers for `fc1.weight` and `fc2.weight`.
+`fc3.weight` remains radial-only because its 10-row output geometry is treated
+as a small-rank diagnostic. The preset omits the large
 ambient polar, Gram, log-Gram, and finite-NS5 spectra. For ECS, the uniform
 `q-k` copies of each `2/sigma_i` core amplitude are represented once. This
 preserves the empirical distribution, fitted alpha, selected xmin, and KS
@@ -883,4 +886,7 @@ The report combines MuonClip-RMS and AdamW Jacobian alpha trajectories, KS and
 tail-support diagnostics, raw and `fix_fingers=clip_xmax` WeightWatcher
 controls, train/test accuracy and loss, alpha-versus-test-accuracy plots,
 selected spectral CCDF galleries, analysis-ready CSVs, and a browsable HTML
-index. Report generation does not recompute any Jacobian.
+index. It includes an expected-versus-observed method coverage audit and a
+dedicated FC1/FC2 ECS plot whose marker positions are slightly offset for
+visibility when full-row and detX fits coincide; the underlying epoch values
+are never changed. Report generation does not recompute any Jacobian.
