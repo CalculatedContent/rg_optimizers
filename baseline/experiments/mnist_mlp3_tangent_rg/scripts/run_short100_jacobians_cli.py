@@ -38,6 +38,7 @@ DEFAULT_CACHE_ROOT = Path("/private/tmp/rg-mnist-mlp3-short100-checkpoints")
 DEFAULT_OUTPUT_ROOT = Path("/private/tmp/rg-mnist-mlp3-short100-jacobians")
 DEFAULT_OPTIMIZERS = ("muonclip_rms", "adamw")
 DEFAULT_LAYERS = ("fc1.weight", "fc2.weight", "fc3.weight")
+DEFAULT_ECS_LAYERS = ("fc1.weight", "fc2.weight")
 BASE_METHODS = (
     "polar_pullback",
     "normalized_gram_pullback",
@@ -508,6 +509,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seeds", default="101")
     parser.add_argument("--layers", default=",".join(DEFAULT_LAYERS))
     parser.add_argument(
+        "--ecs-layers",
+        default=",".join(DEFAULT_ECS_LAYERS),
+        help=(
+            "comma-separated layers receiving the two exact ECS/Grassmann "
+            "cover analyses; defaults to fc1.weight,fc2.weight"
+        ),
+    )
+    parser.add_argument(
         "--methods",
         default=",".join(BASE_METHODS),
         help="comma-separated base Jacobians; ECS covers are controlled separately",
@@ -543,6 +552,7 @@ def run(args: argparse.Namespace) -> int:
     optimizers = parse_csv_values(args.optimizers)
     seeds = parse_csv_values(args.seeds, int)
     layers = parse_csv_values(args.layers)
+    ecs_layers = parse_csv_values(args.ecs_layers)
     methods = parse_csv_values(args.methods)
     unknown_methods = set(methods) - set(BASE_METHODS)
     if unknown_methods:
@@ -552,6 +562,12 @@ def run(args: argparse.Namespace) -> int:
         raise ValueError("--top-k must begin with 0 and contain nonnegative integers")
     if args.epoch_stride < 1:
         raise ValueError("--epoch-stride must be positive")
+    unknown_ecs_layers = set(ecs_layers) - set(layers)
+    if unknown_ecs_layers:
+        raise ValueError(
+            "--ecs-layers must be a subset of --layers; unknown values: "
+            f"{sorted(unknown_ecs_layers)}"
+        )
 
     fit_rows: list[dict[str, Any]] = []
     operator_rows: list[dict[str, Any]] = []
@@ -575,6 +591,11 @@ def run(args: argparse.Namespace) -> int:
     logger.info("run_root=%s", args.run_root.resolve())
     logger.info("cache_root=%s", args.cache_root.resolve())
     logger.info("output_root=%s", output_root)
+    logger.info("base_methods=%s", methods)
+    logger.info(
+        "ECS coverage=%s (full-row and detX covers); other layers are radial-only",
+        ecs_layers if not args.skip_ecs else "disabled",
+    )
     logger.info("Preflight is lightweight: selected checkpoints are validated when loaded")
     for optimizer in optimizers:
         for seed in seeds:
@@ -610,14 +631,22 @@ def run(args: argparse.Namespace) -> int:
             == str(bool(args.skip_ecs)).lower()
             for row in completion_rows
         )
-        spectrum_data_available = any(
-            (
+        observed_methods = {
+            str(row.get("method"))
+            for row in spectrum_rows
+            if (
                 str(row.get("optimizer")), int(row.get("seed", -1)),
                 str(row.get("layer")), int(row.get("epoch", -1)),
                 int(row.get("global_step", -1)),
             ) == unit_key
-            for row in spectrum_rows
-        )
+        }
+        expected_methods = set(methods)
+        if not args.skip_ecs and layer in ecs_layers:
+            expected_methods.update({
+                "ecs_grassmann_cartan_cover_full_row_shell_pullback",
+                "ecs_grassmann_cartan_cover_detx_shell_pullback",
+            })
+        spectrum_data_available = expected_methods.issubset(observed_methods)
         if args.resume and completed_before and spectrum_data_available:
             completed += 1
             logger.info("SKIP completed %d/%d %s", completed, total, unit_key)
@@ -670,14 +699,28 @@ def run(args: argparse.Namespace) -> int:
                     method, time.perf_counter() - build_started,
                     len(method_factories[method][0]),
                 )
-            if not args.skip_ecs and layer == "fc1.weight":
+            if not args.skip_ecs and layer in ecs_layers:
                 from rg_baselines.tangent_rg import single_checkpoint
 
                 numerical_rank = int(np.count_nonzero(singular > args.ns_eps * singular[0]))
-                for method, k, q, rank_metadata in exact_ecs_ranks(
+                ecs_rank_records = exact_ecs_ranks(
                     identity["seed_dir"], optimizer, seed, int(ref.epoch),
                     int(ref.global_step), layer, numerical_rank,
-                ):
+                )
+                observed_ecs_methods = {record[0] for record in ecs_rank_records}
+                missing_ecs_methods = set({
+                    "ecs_grassmann_cartan_cover_full_row_shell_pullback",
+                    "ecs_grassmann_cartan_cover_detx_shell_pullback",
+                }) - observed_ecs_methods
+                if missing_ecs_methods:
+                    raise RuntimeError(
+                        f"requested ECS analysis is unavailable for {layer} at "
+                        f"epoch {int(ref.epoch)}; missing {sorted(missing_ecs_methods)}. "
+                        "The exact same-checkpoint clip_xmax WeightWatcher fit and "
+                        "certified trace-log rank audit must both exist and define "
+                        "nonempty full-row and detX quotient shells."
+                    )
+                for method, k, q, rank_metadata in ecs_rank_records:
                     cover = single_checkpoint.ecs_grassmann_cover_analytic_spectrum(
                         weight, retained_rank=k, outer_rank=q, rcond=args.ns_eps,
                         precomputed_singular_values=singular,
@@ -791,6 +834,10 @@ def run(args: argparse.Namespace) -> int:
                 "base_methods_requested": ",".join(methods),
                 "ecs_groups_compressed": bool(args.compress_ecs_groups),
                 "ecs_skipped": bool(args.skip_ecs),
+                "ecs_requested_for_layer": bool(
+                    not args.skip_ecs and layer in ecs_layers
+                ),
+                "ecs_layers_requested": ",".join(ecs_layers),
                 "completed_at_utc": utc_now(),
             })
             atomic_csv(completion_path, completion_rows)

@@ -39,6 +39,15 @@ METHOD_STYLES = {
     "ecs_grassmann_cartan_cover_full_row_shell_pullback": ("--", "s"),
     "ecs_grassmann_cartan_cover_detx_shell_pullback": (":", "^")
 }
+ECS_METHODS = (
+    "ecs_grassmann_cartan_cover_full_row_shell_pullback",
+    "ecs_grassmann_cartan_cover_detx_shell_pullback",
+)
+EXPECTED_METHODS_BY_LAYER = {
+    "fc1.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS),
+    "fc2.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS),
+    "fc3.weight": ("centered_log_singular_radial_pullback",),
+}
 
 
 def configure_logging(report_root: Path) -> logging.Logger:
@@ -129,10 +138,93 @@ def plot_jacobian_metric(
         if reference is not None:
             axis.axhline(reference, color="black", linestyle=(0, (1, 2)), linewidth=1.2)
         axis.set(title=layer.replace(".weight", ""), xlabel="epoch", ylabel=ylabel)
+        available = [
+            METHOD_LABELS.get(method, method)
+            for method in EXPECTED_METHODS_BY_LAYER[layer]
+            if subset["method"].astype(str).eq(method).any()
+        ]
+        axis.text(
+            0.01, 0.02, "present: " + ", ".join(available),
+            transform=axis.transAxes, fontsize=6.5, color="#555555",
+            ha="left", va="bottom",
+        )
         axis.grid(True, alpha=0.25)
     shared_legend(fig, axes, columns=3)
     fig.suptitle(title)
     return save_figure(fig, path, bottom=0.16, top=0.94)
+
+
+def plot_ecs_quotient_comparison(fits: pd.DataFrame, path: Path) -> Path:
+    """Plot ECS-only alpha for FC1/FC2 while exposing coincident fits.
+
+    Lines remain at the exact analysis epochs. Marker locations receive a tiny
+    horizontal display-only offset, so equal full-row and detX values remain
+    visible instead of one marker painting over the other.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(13.2, 4.9), sharex=True)
+    marker_offsets = {ECS_METHODS[0]: -0.45, ECS_METHODS[1]: 0.45}
+    for axis, layer in zip(axes, ("fc1.weight", "fc2.weight")):
+        subset = fits[
+            fits["layer"].astype(str).eq(layer)
+            & fits["method"].astype(str).isin(ECS_METHODS)
+        ]
+        for (optimizer, method), curve in subset.groupby(["optimizer", "method"]):
+            curve = curve.sort_values("epoch")
+            linestyle, marker = METHOD_STYLES[str(method)]
+            label = (
+                f"{OPTIMIZER_LABELS.get(str(optimizer), str(optimizer))} — "
+                f"{METHOD_LABELS[str(method)]}"
+            )
+            x = pd.to_numeric(curve["epoch"], errors="coerce").to_numpy(float)
+            y = pd.to_numeric(curve["alpha"], errors="coerce").to_numpy(float)
+            axis.plot(
+                x, y, color=COLORS[str(optimizer)], linestyle=linestyle,
+                linewidth=1.8, label=label,
+            )
+            axis.scatter(
+                x + marker_offsets[str(method)], y, color=COLORS[str(optimizer)],
+                marker=marker, s=28, zorder=4,
+            )
+        axis.axhline(2.0, color="black", linestyle=(0, (1, 2)), linewidth=1.2)
+        axis.set(
+            title=layer.replace(".weight", ""), xlabel="epoch",
+            ylabel="ECS Jacobian energy alpha",
+        )
+        axis.grid(True, alpha=0.25)
+    shared_legend(fig, axes, columns=2)
+    fig.suptitle(
+        "ECS quotient comparison — lines use exact epochs; markers offset ±0.45 for visibility"
+    )
+    return save_figure(fig, path, bottom=0.18, top=0.92)
+
+
+def build_method_coverage(primary: pd.DataFrame) -> pd.DataFrame:
+    """Return an explicit expected-versus-observed method inventory."""
+    rows = []
+    for optimizer in OPTIMIZERS:
+        for layer in LAYERS:
+            layer_rows = primary[
+                primary["optimizer"].astype(str).eq(optimizer)
+                & primary["layer"].astype(str).eq(layer)
+            ]
+            expected = EXPECTED_METHODS_BY_LAYER[layer]
+            for method in expected:
+                observed = layer_rows[layer_rows["method"].astype(str).eq(method)]
+                epochs = sorted(
+                    pd.to_numeric(observed["epoch"], errors="coerce")
+                    .dropna().astype(int).unique()
+                )
+                rows.append({
+                    "optimizer": optimizer,
+                    "layer": layer,
+                    "method": method,
+                    "method_label": METHOD_LABELS.get(method, method),
+                    "expected_epoch_count": 10,
+                    "observed_epoch_count": len(epochs),
+                    "observed_epochs": ",".join(map(str, epochs)),
+                    "coverage_status": "complete" if len(epochs) == 10 else "INCOMPLETE",
+                })
+    return pd.DataFrame(rows)
 
 
 def plot_fit_quality(fits: pd.DataFrame, path: Path) -> Path:
@@ -289,6 +381,7 @@ def build_html(
     figures: list[Path],
     tables: list[Path],
     primary: pd.DataFrame,
+    coverage: pd.DataFrame,
     inventory: dict[str, int],
 ) -> Path:
     final = primary.sort_values("epoch").groupby(
@@ -297,6 +390,7 @@ def build_html(
     final_table = final[
         ["optimizer", "epoch", "layer", "method", "alpha", "ks_D", "n_tail", "tail_decades", "fit_ok"]
     ].to_html(index=False, float_format=lambda value: f"{value:.5g}")
+    coverage_table = coverage.to_html(index=False)
     figure_html = "\n".join(
         f'<section><h2>{escape(path.stem.replace("_", " ").title())}</h2>'
         f'<a href="{escape(relative(path, report_root))}">'
@@ -320,7 +414,34 @@ table{{border-collapse:collapse;font-size:13px}} th,td{{border:1px solid #ddd;pa
 code{{background:#f3f3f3;padding:2px 4px}} .note{{background:#eef6ff;padding:14px;border-left:4px solid #0072B2}}
 </style></head><body>
 <h1>Short100 reduced Jacobian analysis</h1>
-<p class="note">MuonClip-RMS versus AdamW, seed 101, epochs 10–100. ECS curves use one physical retained-core amplitude per uniformly repeated shell group. The complete mode-level data, fit tables, WeightWatcher controls, and performance data are linked below.</p>
+<p class="note"><strong>Scope.</strong> MuonClip-RMS versus AdamW, seed 101,
+epochs 10,20,…,100. The centered log-singular radial Jacobian is evaluated on
+FC1, FC2, and FC3. Both exact ECS quotient covers are evaluated on FC1 and FC2.
+FC3 is intentionally radial-only because its 10-row output geometry is a
+small-rank diagnostic rather than the large-layer ECS comparison.</p>
+<h2>What each curve means</h2>
+<ul>
+<li><strong>Centered log-singular radial:</strong> the scale-quotiented radial
+response in centered log singular-value coordinates. Its plotted spectrum is
+the squared Jacobian singular-amplitude spectrum, and α is the power-law fit to
+that energy spectrum.</li>
+<li><strong>ECS full-row shell:</strong> the Grassmann/Cartan quotient cover whose
+outer rank uses the full numerical row shell.</li>
+<li><strong>ECS detX shell:</strong> the same quotient construction with the outer
+rank restricted by the checkpoint's audited detX/ECS boundary.</li>
+</ul>
+<p>ECS fits use one physical retained-core amplitude for each uniformly repeated
+shell group. The omitted coordinate copies have identical values: compressing
+them leaves the empirical spectral shape, α, xmin, and KS distance unchanged,
+while avoiding a fictitiously large independent sample size.</p>
+<p><strong>How to read coincident curves.</strong> Full-row and detX ECS fits can be
+exactly equal. In the all-method figure one line may cover another. The dedicated
+ECS figure keeps lines at the true epochs but offsets full-row and detX markers by
+−0.45 and +0.45 epoch solely for visibility. The CSV retains the exact epochs.</p>
+<h2>Coverage audit</h2>
+<p>Every expected method should have ten observations. Any row marked
+<code>INCOMPLETE</code> means computation is genuinely missing; visual overlap is
+not classified as missing.</p>{coverage_table}
 <h2>Data inventory</h2><ul>{inventory_html}</ul>
 <h2>Analysis-ready tables</h2><ul>{table_html}</ul>
 <h2>Final checkpoint primary fits</h2>{final_table}
@@ -365,6 +486,7 @@ def main() -> int:
             fits["spectrum_kind"].astype(str).eq("energy_derived_from_amplitude")
             & pd.to_numeric(fits["clip_top_k"], errors="coerce").eq(0)
         ].copy()
+        primary = primary[pd.to_numeric(primary["epoch"], errors="coerce").gt(0)]
         performance_frames = []
         weightwatcher_frames = []
         for optimizer in OPTIMIZERS:
@@ -380,6 +502,7 @@ def main() -> int:
         performance = performance.sort_values(["optimizer", "epoch"])
 
         table_root.mkdir(parents=True, exist_ok=True)
+        coverage = build_method_coverage(primary)
         tables = [
             table_root / "jacobian_primary_energy_fits.csv",
             table_root / "jacobian_all_fits.csv",
@@ -387,6 +510,7 @@ def main() -> int:
             table_root / "jacobian_operator_metadata.csv",
             table_root / "weightwatcher_raw_and_clip_xmax.csv",
             table_root / "performance_train_test.csv",
+            table_root / "jacobian_method_coverage.csv",
         ]
         primary.to_csv(tables[0], index=False)
         fits.to_csv(tables[1], index=False)
@@ -394,12 +518,16 @@ def main() -> int:
         operators.to_csv(tables[3], index=False)
         weightwatcher.to_csv(tables[4], index=False)
         performance.to_csv(tables[5], index=False)
+        coverage.to_csv(tables[6], index=False)
 
         figures = [
             plot_jacobian_metric(
                 primary, "alpha", "Jacobian energy alpha",
                 "MuonClip-RMS versus AdamW Jacobian alpha",
                 figure_root / "01_jacobian_alpha_comparison.png", reference=2.0,
+            ),
+            plot_ecs_quotient_comparison(
+                primary, figure_root / "01b_ecs_fc1_fc2_alpha_comparison.png"
             ),
             plot_fit_quality(primary, figure_root / "02_jacobian_fit_quality.png"),
             plot_jacobian_metric(
@@ -425,7 +553,7 @@ def main() -> int:
             "performance rows": len(performance),
             "figures": len(figures),
         }
-        index = build_html(report_root, figures, tables, primary, inventory)
+        index = build_html(report_root, figures, tables, primary, coverage, inventory)
         (report_root / "report_manifest.json").write_text(
             json.dumps({
                 "analysis_root": str(analysis_root),

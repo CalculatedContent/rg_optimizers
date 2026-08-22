@@ -45,6 +45,7 @@ def test_cli_duration_and_argument_defaults_are_observable_tmp_paths():
     assert str(args.output_root).startswith("/private/tmp/")
     assert args.epoch_stride == 10
     assert args.top_k == "0"
+    assert args.ecs_layers == "fc1.weight,fc2.weight"
 
 
 def test_ecs_group_compression_removes_only_uniform_coordinate_copies():
