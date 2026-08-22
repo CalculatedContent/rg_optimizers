@@ -868,3 +868,19 @@ preserves the empirical distribution, fitted alpha, selected xmin, and KS
 distance while preventing deterministic coordinate copies from inflating the
 effective sample size. Outputs default to
 `/private/tmp/rg-mnist-mlp3-short100-jacobians-reduced`.
+
+The reduced runner also persists every fitted spectral observation to
+`jacobian_spectra.csv`; one row contains the amplitude, squared Gram
+eigenvalue, physical observation unit, and represented uniform multiplicity.
+After the reduced run completes, build the complete static comparison report:
+
+```bash
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/build_short100_jacobian_report.sh
+open /private/tmp/rg-mnist-mlp3-short100-jacobians-reduced/report/index.html
+```
+
+The report combines MuonClip-RMS and AdamW Jacobian alpha trajectories, KS and
+tail-support diagnostics, raw and `fix_fingers=clip_xmax` WeightWatcher
+controls, train/test accuracy and loss, alpha-versus-test-accuracy plots,
+selected spectral CCDF galleries, analysis-ready CSVs, and a browsable HTML
+index. Report generation does not recompute any Jacobian.
