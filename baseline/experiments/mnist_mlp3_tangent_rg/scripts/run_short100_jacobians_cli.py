@@ -407,6 +407,38 @@ def fit_spectrum(
     return rows
 
 
+def ecs_fit_amplitudes(record: Any, *, compress_groups: bool) -> tuple[np.ndarray, dict[str, Any]]:
+    """Optionally replace uniform ECS coordinate copies by physical groups.
+
+    Each retained-core amplitude ``2/sigma_i`` is repeated ``q-k`` times in
+    the ambient Jacobian. Uniform repetition leaves the empirical CDF, MLE
+    alpha, package-selected xmin, and KS distance unchanged. Compression avoids
+    treating deterministic copies as independent observations, so the reported
+    uncertainty is based on physical core groups.
+    """
+
+    multiplicity = int(record.deterministic_shell_multiplicity)
+    expanded = np.asarray(record.singular_amplitudes, dtype=float)
+    if not compress_groups:
+        return expanded, {
+            "ecs_fit_observation_unit": "expanded_jacobian_mode",
+            "ecs_uniform_group_multiplicity": multiplicity,
+            "ecs_groups_compressed": False,
+        }
+    core = 2.0 / np.asarray(record.retained_singular_values, dtype=float)
+    return core, {
+        "ecs_fit_observation_unit": "physical_retained_core_amplitude_group",
+        "ecs_uniform_group_multiplicity": multiplicity,
+        "ecs_groups_compressed": True,
+        "ecs_expanded_mode_count": int(expanded.size),
+        "ecs_physical_group_count": int(core.size),
+        "ecs_compression_invariance": (
+            "uniform replication removed; empirical CDF, alpha, xmin, and KS D "
+            "are invariant; sigma reflects physical groups"
+        ),
+    }
+
+
 def safe_slug(text: str) -> str:
     return "".join(char if char.isalnum() or char in "-_" else "_" for char in text)
 
@@ -475,6 +507,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--optimizers", default=",".join(DEFAULT_OPTIMIZERS))
     parser.add_argument("--seeds", default="101")
     parser.add_argument("--layers", default=",".join(DEFAULT_LAYERS))
+    parser.add_argument(
+        "--methods",
+        default=",".join(BASE_METHODS),
+        help="comma-separated base Jacobians; ECS covers are controlled separately",
+    )
     parser.add_argument("--epoch-stride", type=int, default=10)
     parser.add_argument("--maximum-checkpoints", type=int)
     parser.add_argument("--top-k", default="0", help="PL clipping sensitivities; default 0 only")
@@ -482,6 +519,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ns-steps", type=int, default=5)
     parser.add_argument("--ns-eps", type=float, default=1e-7)
     parser.add_argument("--skip-ecs", action="store_true")
+    parser.add_argument(
+        "--compress-ecs-groups",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="fit one physical ECS amplitude per uniformly repeated shell group",
+    )
     parser.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--fail-fast", action="store_true")
     parser.add_argument("--verbose", action="store_true")
@@ -495,9 +538,14 @@ def run(args: argparse.Namespace) -> int:
     fit_path = output_root / "jacobian_powerlaw_fits.csv"
     operator_path = output_root / "jacobian_operators.csv"
     error_path = output_root / "errors.csv"
+    completion_path = output_root / "completed_checkpoints.csv"
     optimizers = parse_csv_values(args.optimizers)
     seeds = parse_csv_values(args.seeds, int)
     layers = parse_csv_values(args.layers)
+    methods = parse_csv_values(args.methods)
+    unknown_methods = set(methods) - set(BASE_METHODS)
+    if unknown_methods:
+        raise ValueError(f"unknown --methods values: {sorted(unknown_methods)}")
     top_k_values = parse_csv_values(args.top_k, int)
     if top_k_values[0] != 0 or any(value < 0 for value in top_k_values):
         raise ValueError("--top-k must begin with 0 and contain nonnegative integers")
@@ -507,12 +555,15 @@ def run(args: argparse.Namespace) -> int:
     fit_rows: list[dict[str, Any]] = []
     operator_rows: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
+    completion_rows: list[dict[str, Any]] = []
     if args.resume and fit_path.is_file():
         fit_rows = pd.read_csv(fit_path).to_dict(orient="records")
     if args.resume and operator_path.is_file():
         operator_rows = pd.read_csv(operator_path).to_dict(orient="records")
     if args.resume and error_path.is_file():
         errors = pd.read_csv(error_path).to_dict(orient="records")
+    if args.resume and completion_path.is_file():
+        completion_rows = pd.read_csv(completion_path).to_dict(orient="records")
 
     identities: dict[tuple[str, int], dict[str, Any]] = {}
     work: list[tuple[str, int, str, Any]] = []
@@ -542,18 +593,20 @@ def run(args: argparse.Namespace) -> int:
 
     for optimizer, seed, layer, ref in work:
         unit_key = (optimizer, int(seed), layer, int(ref.epoch), int(ref.global_step))
-        already = {
-            str(row.get("method"))
-            for row in fit_rows
-            if (
+        completed_before = any(
+            (
                 str(row.get("optimizer")), int(row.get("seed", -1)),
                 str(row.get("layer")), int(row.get("epoch", -1)),
                 int(row.get("global_step", -1)),
             ) == unit_key
-            and str(row.get("spectrum_kind")) == "amplitude"
-            and int(row.get("clip_top_k", -1)) == 0
-        }
-        if args.resume and set(BASE_METHODS).issubset(already):
+            and str(row.get("base_methods_requested", "")) == ",".join(methods)
+            and str(row.get("ecs_groups_compressed", "")).strip().lower()
+            == str(bool(args.compress_ecs_groups)).lower()
+            and str(row.get("ecs_skipped", "")).strip().lower()
+            == str(bool(args.skip_ecs)).lower()
+            for row in completion_rows
+        )
+        if args.resume and completed_before:
             completed += 1
             logger.info("SKIP completed %d/%d %s", completed, total, unit_key)
             continue
@@ -573,6 +626,7 @@ def run(args: argparse.Namespace) -> int:
         fit_rows = [row for row in fit_rows if not same_unit(row)]
         operator_rows = [row for row in operator_rows if not same_unit(row)]
         errors = [row for row in errors if not same_unit(row)]
+        completion_rows = [row for row in completion_rows if not same_unit(row)]
 
         unit_started = time.perf_counter()
         logger.info(
@@ -590,7 +644,8 @@ def run(args: argparse.Namespace) -> int:
             )
             singular = np.linalg.svd(weight, compute_uv=False)
             method_factories: dict[str, tuple[np.ndarray, Any]] = {}
-            for method in BASE_METHODS:
+            method_metadata: dict[str, dict[str, Any]] = {}
+            for method in methods:
                 build_started = time.perf_counter()
                 logger.info("JACOBIAN START method=%s", method)
                 method_factories[method] = compute_one_spectrum(
@@ -614,8 +669,20 @@ def run(args: argparse.Namespace) -> int:
                         weight, retained_rank=k, outer_rank=q, rcond=args.ns_eps,
                         precomputed_singular_values=singular,
                     )
-                    method_factories[method] = (cover.singular_amplitudes, cover)
-                    logger.info("ECS ranks method=%s k=%d q=%d", method, k, q)
+                    amplitudes, compression_metadata = ecs_fit_amplitudes(
+                        cover, compress_groups=args.compress_ecs_groups
+                    )
+                    method_factories[method] = (amplitudes, cover)
+                    method_metadata[method] = {
+                        **rank_metadata,
+                        **compression_metadata,
+                    }
+                    logger.info(
+                        "ECS ranks method=%s k=%d q=%d fit_amplitudes=%d "
+                        "expanded_modes=%d compressed=%s",
+                        method, k, q, len(amplitudes), int(cover.derivative_rank),
+                        args.compress_ecs_groups,
+                    )
 
             base = {
                 "optimizer": optimizer,
@@ -629,13 +696,18 @@ def run(args: argparse.Namespace) -> int:
             for method, (amplitudes, record) in method_factories.items():
                 method_started = time.perf_counter()
                 logger.info("METHOD START method=%s n_amplitudes=%d", method, len(amplitudes))
-                metadata = {**base, "method": method}
+                metadata = {**base, **method_metadata.get(method, {}), "method": method}
                 rows = fit_spectrum(
                     np.asarray(amplitudes, dtype=float), record, metadata,
                     top_k_values, args.minimum_tail,
                 )
                 fit_rows.extend(rows)
-                operator_rows.append({**base, "method": method, **record_row(record)})
+                operator_rows.append({
+                    **base,
+                    **method_metadata.get(method, {}),
+                    "method": method,
+                    **record_row(record),
+                })
                 spectra[method] = np.asarray(amplitudes, dtype=float)
                 elapsed_method = time.perf_counter() - method_started
                 primary = next(
@@ -678,6 +750,15 @@ def run(args: argparse.Namespace) -> int:
             ]
             alpha_path = output_root / "plots" / "alpha_progress" / f"{optimizer}_{safe_slug(layer)}.png"
             save_alpha_progress(block_rows, alpha_path, f"{optimizer} seed {seed} {layer}")
+            completion_rows.append({
+                **base,
+                "methods": ",".join(method_factories),
+                "base_methods_requested": ",".join(methods),
+                "ecs_groups_compressed": bool(args.compress_ecs_groups),
+                "ecs_skipped": bool(args.skip_ecs),
+                "completed_at_utc": utc_now(),
+            })
+            atomic_csv(completion_path, completion_rows)
             completed += 1
             elapsed = time.perf_counter() - started
             eta = elapsed / completed * (total - completed) if completed else None

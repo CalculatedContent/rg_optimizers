@@ -853,3 +853,18 @@ Jacobians and adds the exact ECS cover variants for `fc1.weight` whenever the
 same-checkpoint WeightWatcher/trace rank records certify them. The primary PL
 fit uses no post-hoc top-mode search (`--top-k 0`); explicit sensitivity values
 can be requested, for example, with `--top-k 0,1,2,3,4,5`.
+
+For the reduced experiment, use:
+
+```bash
+bash baseline/experiments/mnist_mlp3_tangent_rg/scripts/run_short100_jacobians_reduced.sh
+```
+
+This separate preset retains the centered log-singular radial Jacobian for all
+three layers and both ECS/Grassmann covers for `fc1.weight`. It omits the large
+ambient polar, Gram, log-Gram, and finite-NS5 spectra. For ECS, the uniform
+`q-k` copies of each `2/sigma_i` core amplitude are represented once. This
+preserves the empirical distribution, fitted alpha, selected xmin, and KS
+distance while preventing deterministic coordinate copies from inflating the
+effective sample size. Outputs default to
+`/private/tmp/rg-mnist-mlp3-short100-jacobians-reduced`.
