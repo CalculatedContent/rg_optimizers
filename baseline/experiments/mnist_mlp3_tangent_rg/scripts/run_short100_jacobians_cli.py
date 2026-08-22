@@ -537,6 +537,7 @@ def run(args: argparse.Namespace) -> int:
     status_path = output_root / "status.json"
     fit_path = output_root / "jacobian_powerlaw_fits.csv"
     operator_path = output_root / "jacobian_operators.csv"
+    spectrum_data_path = output_root / "jacobian_spectra.csv"
     error_path = output_root / "errors.csv"
     completion_path = output_root / "completed_checkpoints.csv"
     optimizers = parse_csv_values(args.optimizers)
@@ -554,12 +555,15 @@ def run(args: argparse.Namespace) -> int:
 
     fit_rows: list[dict[str, Any]] = []
     operator_rows: list[dict[str, Any]] = []
+    spectrum_rows: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
     completion_rows: list[dict[str, Any]] = []
     if args.resume and fit_path.is_file():
         fit_rows = pd.read_csv(fit_path).to_dict(orient="records")
     if args.resume and operator_path.is_file():
         operator_rows = pd.read_csv(operator_path).to_dict(orient="records")
+    if args.resume and spectrum_data_path.is_file():
+        spectrum_rows = pd.read_csv(spectrum_data_path).to_dict(orient="records")
     if args.resume and error_path.is_file():
         errors = pd.read_csv(error_path).to_dict(orient="records")
     if args.resume and completion_path.is_file():
@@ -606,7 +610,15 @@ def run(args: argparse.Namespace) -> int:
             == str(bool(args.skip_ecs)).lower()
             for row in completion_rows
         )
-        if args.resume and completed_before:
+        spectrum_data_available = any(
+            (
+                str(row.get("optimizer")), int(row.get("seed", -1)),
+                str(row.get("layer")), int(row.get("epoch", -1)),
+                int(row.get("global_step", -1)),
+            ) == unit_key
+            for row in spectrum_rows
+        )
+        if args.resume and completed_before and spectrum_data_available:
             completed += 1
             logger.info("SKIP completed %d/%d %s", completed, total, unit_key)
             continue
@@ -625,6 +637,7 @@ def run(args: argparse.Namespace) -> int:
 
         fit_rows = [row for row in fit_rows if not same_unit(row)]
         operator_rows = [row for row in operator_rows if not same_unit(row)]
+        spectrum_rows = [row for row in spectrum_rows if not same_unit(row)]
         errors = [row for row in errors if not same_unit(row)]
         completion_rows = [row for row in completion_rows if not same_unit(row)]
 
@@ -708,7 +721,28 @@ def run(args: argparse.Namespace) -> int:
                     "method": method,
                     **record_row(record),
                 })
-                spectra[method] = np.asarray(amplitudes, dtype=float)
+                stored_amplitudes = np.sort(np.asarray(amplitudes, dtype=float))[::-1]
+                spectra[method] = stored_amplitudes
+                observation_unit = method_metadata.get(method, {}).get(
+                    "ecs_fit_observation_unit", "jacobian_singular_mode"
+                )
+                uniform_multiplicity = int(
+                    method_metadata.get(method, {}).get(
+                        "ecs_uniform_group_multiplicity", 1
+                    )
+                )
+                spectrum_rows.extend(
+                    {
+                        **base,
+                        "method": method,
+                        "mode_index_descending": int(index),
+                        "singular_amplitude": float(amplitude),
+                        "gram_eigenvalue": float(amplitude * amplitude),
+                        "observation_unit": observation_unit,
+                        "represented_uniform_multiplicity": uniform_multiplicity,
+                    }
+                    for index, amplitude in enumerate(stored_amplitudes)
+                )
                 elapsed_method = time.perf_counter() - method_started
                 primary = next(
                     row for row in rows
@@ -734,6 +768,7 @@ def run(args: argparse.Namespace) -> int:
 
             atomic_csv(fit_path, fit_rows)
             atomic_csv(operator_path, operator_rows)
+            atomic_csv(spectrum_data_path, spectrum_rows)
             spectrum_path = (
                 output_root / "plots" / "spectra" / optimizer / safe_slug(layer)
                 / f"epoch_{int(ref.epoch):05d}.png"
@@ -790,6 +825,8 @@ def run(args: argparse.Namespace) -> int:
                 atomic_csv(fit_path, fit_rows)
             if operator_rows:
                 atomic_csv(operator_path, operator_rows)
+            if spectrum_rows:
+                atomic_csv(spectrum_data_path, spectrum_rows)
             atomic_json(status_path, {
                 "state": "error", **error_row,
                 "completed_checkpoint_count": completed,
