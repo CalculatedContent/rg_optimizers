@@ -1,0 +1,30 @@
+name: Portfolio PGD experiment
+
+on:
+  pull_request:
+    paths:
+      - "baseline/experiments/portfolio_pgd/**"
+      - ".github/workflows/portfolio-pgd.yml"
+  push:
+    branches: [main]
+    paths:
+      - "baseline/experiments/portfolio_pgd/**"
+      - ".github/workflows/portfolio-pgd.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: baseline/experiments/portfolio_pgd/pyproject.toml
+      - name: Install experiment
+        run: python -m pip install -e './baseline/experiments/portfolio_pgd[notebook]'
+      - name: Run tests
+        run: python baseline/experiments/portfolio_pgd/tests/run_tests.py
+      - name: Execute notebook cells
+        run: python baseline/experiments/portfolio_pgd/scripts/execute_notebooks.py
