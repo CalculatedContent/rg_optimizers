@@ -46,6 +46,12 @@ BASE_METHODS = (
     "centered_log_singular_radial_pullback",
     "finite_muon_ns5_pullback",
 )
+EXTENDED_DETX_METHODS = (
+    "gap_aware_projector_detx_shell_pullback",
+    "trace_free_log_gram_detx_shell_pullback",
+    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback",
+    "feshbach_trace_free_log_detx_shell_pullback",
+)
 
 
 class MaxInfoFilter(logging.Filter):
@@ -440,6 +446,78 @@ def ecs_fit_amplitudes(record: Any, *, compress_groups: bool) -> tuple[np.ndarra
     }
 
 
+def extended_detx_jacobian_spectra(
+    weight: np.ndarray,
+    singular_values: np.ndarray,
+    *,
+    retained_rank: int,
+    outer_rank: int,
+    rcond: float,
+) -> dict[str, tuple[np.ndarray, Any, dict[str, Any]]]:
+    """Exact additional Jacobians on the independently audited detX shell.
+
+    The resolvent is the differentiable ridge/noise-control analogue.  The
+    Feshbach derivative is retained even though its shell term must collapse
+    at first order in the checkpoint SVD gauge; that collapse is a scientific
+    control, not silently interpreted as nontrivial downfolding.
+    """
+    from rg_baselines.tangent_rg import ecs_jacobians
+
+    k = int(retained_rank)
+    q = int(outer_rank)
+    boundary_scale = float(singular_values[k - 1] ** 2)
+    resolvent_z = 0.50 * boundary_scale
+    shell_floor = float(singular_values[q - 1] ** 2)
+    feshbach_z = 0.50 * shell_floor
+    records = {
+        "gap_aware_projector_detx_shell_pullback": (
+            ecs_jacobians.gap_aware_projector_spectrum(
+                weight, retained_rank=k, outer_rank=q, rcond=rcond,
+                precomputed_singular_values=singular_values,
+            ),
+            {"jacobian_family": "gap_aware_projector", "retained_rank": k, "outer_rank": q},
+        ),
+        "trace_free_log_gram_detx_shell_pullback": (
+            ecs_jacobians.outer_trace_free_log_gram_spectrum(
+                weight, outer_rank=q, rcond=rcond,
+                precomputed_singular_values=singular_values,
+            ),
+            {"jacobian_family": "trace_free_log_gram", "retained_rank": k, "outer_rank": q},
+        ),
+        "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback": (
+            ecs_jacobians.outer_resolvent_spectrum(
+                weight, outer_rank=q, z=resolvent_z, trace_free=True,
+                rcond=rcond, precomputed_singular_values=singular_values,
+            ),
+            {
+                "jacobian_family": "trace_free_gram_ridge_resolvent",
+                "retained_rank": k, "outer_rank": q,
+                "resolvent_z": resolvent_z,
+                "resolvent_z_boundary_ratio": 0.50,
+            },
+        ),
+        "feshbach_trace_free_log_detx_shell_pullback": (
+            ecs_jacobians.feshbach_trace_free_log_spectrum(
+                weight, retained_rank=k, outer_rank=q, z=feshbach_z, rcond=rcond,
+            ),
+            {
+                "jacobian_family": "feshbach_trace_free_log_effective_core",
+                "retained_rank": k, "outer_rank": q,
+                "feshbach_z": feshbach_z,
+                "first_order_shell_downfolding_active": False,
+            },
+        ),
+    }
+    return {
+        method: (
+            np.asarray(record.singular_amplitudes, dtype=float),
+            record,
+            metadata,
+        )
+        for method, (record, metadata) in records.items()
+    }
+
+
 def safe_slug(text: str) -> str:
     return "".join(char if char.isalnum() or char in "-_" else "_" for char in text)
 
@@ -527,7 +605,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--minimum-tail", type=int, default=8)
     parser.add_argument("--ns-steps", type=int, default=5)
     parser.add_argument("--ns-eps", type=float, default=1e-7)
+    parser.add_argument(
+        "--ecs-rcond", type=float, default=1e-9,
+        help="relative numerical-rank and differentiability tolerance for ECS maps",
+    )
     parser.add_argument("--skip-ecs", action="store_true")
+    parser.add_argument(
+        "--extended-ecs-jacobians",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "add gap-aware, trace-free log-Gram, ridge-resolvent, and "
+            "Feshbach exact Jacobians on each requested layer's detX shell"
+        ),
+    )
     parser.add_argument(
         "--compress-ecs-groups",
         action=argparse.BooleanOptionalAction,
@@ -646,6 +737,8 @@ def run(args: argparse.Namespace) -> int:
                 "ecs_grassmann_cartan_cover_full_row_shell_pullback",
                 "ecs_grassmann_cartan_cover_detx_shell_pullback",
             })
+            if args.extended_ecs_jacobians:
+                expected_methods.update(EXTENDED_DETX_METHODS)
         spectrum_data_available = expected_methods.issubset(observed_methods)
         if args.resume and completed_before and spectrum_data_available:
             completed += 1
@@ -702,7 +795,9 @@ def run(args: argparse.Namespace) -> int:
             if not args.skip_ecs and layer in ecs_layers:
                 from rg_baselines.tangent_rg import single_checkpoint
 
-                numerical_rank = int(np.count_nonzero(singular > args.ns_eps * singular[0]))
+                numerical_rank = int(
+                    np.count_nonzero(singular > args.ecs_rcond * singular[0])
+                )
                 ecs_rank_records = exact_ecs_ranks(
                     identity["seed_dir"], optimizer, seed, int(ref.epoch),
                     int(ref.global_step), layer, numerical_rank,
@@ -722,7 +817,7 @@ def run(args: argparse.Namespace) -> int:
                     )
                 for method, k, q, rank_metadata in ecs_rank_records:
                     cover = single_checkpoint.ecs_grassmann_cover_analytic_spectrum(
-                        weight, retained_rank=k, outer_rank=q, rcond=args.ns_eps,
+                        weight, retained_rank=k, outer_rank=q, rcond=args.ecs_rcond,
                         precomputed_singular_values=singular,
                     )
                     amplitudes, compression_metadata = ecs_fit_amplitudes(
@@ -739,6 +834,35 @@ def run(args: argparse.Namespace) -> int:
                         method, k, q, len(amplitudes), int(cover.derivative_rank),
                         args.compress_ecs_groups,
                     )
+                    if (
+                        args.extended_ecs_jacobians
+                        and method
+                        == "ecs_grassmann_cartan_cover_detx_shell_pullback"
+                    ):
+                        for extended_method, (
+                            extended_amplitudes,
+                            extended_record,
+                            extended_metadata,
+                        ) in extended_detx_jacobian_spectra(
+                            weight,
+                            singular,
+                            retained_rank=k,
+                            outer_rank=q,
+                            rcond=args.ecs_rcond,
+                        ).items():
+                            method_factories[extended_method] = (
+                                extended_amplitudes,
+                                extended_record,
+                            )
+                            method_metadata[extended_method] = {
+                                **rank_metadata,
+                                **extended_metadata,
+                                "ecs_shell_variant": "detx_shell",
+                            }
+                            logger.info(
+                                "EXTENDED JACOBIAN method=%s k=%d q=%d n_amplitudes=%d",
+                                extended_method, k, q, len(extended_amplitudes),
+                            )
 
             base = {
                 "optimizer": optimizer,
@@ -838,6 +962,7 @@ def run(args: argparse.Namespace) -> int:
                     not args.skip_ecs and layer in ecs_layers
                 ),
                 "ecs_layers_requested": ",".join(ecs_layers),
+                "extended_ecs_jacobians": bool(args.extended_ecs_jacobians),
                 "completed_at_utc": utc_now(),
             })
             atomic_csv(completion_path, completion_rows)

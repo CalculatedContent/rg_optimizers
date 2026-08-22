@@ -21,6 +21,9 @@ from rg_baselines.tangent_rg.ecs_jacobians import (
     soft_ecs_projector_map,
     soft_ecs_projector_spectrum,
 )
+from rg_baselines.tangent_rg.single_checkpoint import (
+    ecs_grassmann_cover_analytic_spectrum,
+)
 
 
 def _explicit_jacobian(function, base, *, epsilon=1.0e-6):
@@ -101,6 +104,21 @@ class ECSWeightOnlyJacobianTests(unittest.TestCase):
             rcond=1.0e-12,
         )
         np.testing.assert_allclose(radial.jvp, 0.0, atol=1.0e-12)
+
+    def test_square_fc2_geometry_supports_right_singular_ecs_maps(self):
+        square = np.diag([5.0, 3.0, 2.0, 1.0])
+        cover = ecs_grassmann_cover_analytic_spectrum(
+            square, retained_rank=2, outer_rank=4, rcond=1.0e-12
+        )
+        gap = gap_aware_projector_spectrum(
+            square, retained_rank=2, outer_rank=4, rcond=1.0e-12
+        )
+        feshbach = feshbach_trace_free_log_spectrum(
+            square, retained_rank=2, outer_rank=4, z=0.5, rcond=1.0e-12
+        )
+        self.assertEqual(cover.derivative_rank, 4)
+        self.assertEqual(gap.derivative_rank, 4)
+        self.assertEqual(feshbach.derivative_rank, 2)
 
     def test_soft_ecs_projector_jvp_and_exact_spectrum(self):
         center, temperature = 6.5, 10.0

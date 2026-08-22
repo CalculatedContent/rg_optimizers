@@ -439,16 +439,16 @@ def _ecs_cover_frames(
     rcond: float | None,
 ) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, float]:
     rows, columns = matrix.shape
-    if rows >= columns:
+    if rows > columns:
         raise ValueError(
-            "the row-space ECS Grassmann cover is defined for a wide matrix"
+            "the right-singular ECS Grassmann cover requires a wide or square matrix"
         )
     k = _integer_rank(retained_rank, name="retained_rank")
     q = _integer_rank(outer_rank, name="outer_rank")
     if not (1 <= k < q <= rows):
         raise ValueError(
             "ECS cover ranks must satisfy 1 <= retained_rank < outer_rank "
-            "<= the wide matrix row rank"
+            "<= the matrix row rank"
         )
     left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=True)
     largest = float(singular_values[0])
@@ -670,16 +670,16 @@ def ecs_grassmann_cover_analytic_spectrum(
 
     matrix = _matrix(weight)
     rows, columns = matrix.shape
-    if rows >= columns:
+    if rows > columns:
         raise ValueError(
-            "the row-space ECS Grassmann cover is defined for a wide matrix"
+            "the right-singular ECS Grassmann cover requires a wide or square matrix"
         )
     k = _integer_rank(retained_rank, name="retained_rank")
     q = _integer_rank(outer_rank, name="outer_rank")
     if not (1 <= k < q <= rows):
         raise ValueError(
             "ECS cover ranks must satisfy 1 <= retained_rank < outer_rank "
-            "<= the wide matrix row rank"
+            "<= the matrix row rank"
         )
     if precomputed_singular_values is None:
         singular_values = np.linalg.svd(matrix, compute_uv=False)

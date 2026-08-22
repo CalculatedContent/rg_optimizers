@@ -12,6 +12,7 @@ export RG_MNIST_JACOBIAN_CLI_OUTPUT_ROOT="${RG_MNIST_REDUCED_JACOBIAN_OUTPUT_ROO
 exec bash "${SCRIPT_DIR}/run_short100_jacobians_cli.sh" \
   --methods centered_log_singular_radial_pullback \
   --ecs-layers fc1.weight,fc2.weight \
+  --extended-ecs-jacobians \
   --compress-ecs-groups \
   --top-k 0 \
   "$@"

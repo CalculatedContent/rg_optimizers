@@ -33,20 +33,56 @@ METHOD_LABELS = {
     "centered_log_singular_radial_pullback": "Centered log-singular radial",
     "ecs_grassmann_cartan_cover_full_row_shell_pullback": "ECS full-row shell",
     "ecs_grassmann_cartan_cover_detx_shell_pullback": "ECS detX shell",
+    "gap_aware_projector_detx_shell_pullback": "Gap-aware projector (detX)",
+    "trace_free_log_gram_detx_shell_pullback": "Trace-free log Gram (detX)",
+    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback": "Gram ridge resolvent (detX, z=0.5 boundary)",
+    "feshbach_trace_free_log_detx_shell_pullback": "Feshbach trace-free log (detX)",
 }
 METHOD_STYLES = {
     "centered_log_singular_radial_pullback": ("-", "o"),
     "ecs_grassmann_cartan_cover_full_row_shell_pullback": ("--", "s"),
-    "ecs_grassmann_cartan_cover_detx_shell_pullback": (":", "^")
+    "ecs_grassmann_cartan_cover_detx_shell_pullback": (":", "^"),
+    "gap_aware_projector_detx_shell_pullback": ("-.", "D"),
+    "trace_free_log_gram_detx_shell_pullback": ((0, (5, 1)), "P"),
+    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback": (
+        (0, (3, 1, 1, 1)), "X"
+    ),
+    "feshbach_trace_free_log_detx_shell_pullback": ((0, (1, 1)), "v"),
 }
 ECS_METHODS = (
     "ecs_grassmann_cartan_cover_full_row_shell_pullback",
     "ecs_grassmann_cartan_cover_detx_shell_pullback",
 )
+EXTENDED_ECS_METHODS = (
+    "gap_aware_projector_detx_shell_pullback",
+    "trace_free_log_gram_detx_shell_pullback",
+    "gram_ridge_resolvent_detx_shell_zratio_0p50_pullback",
+    "feshbach_trace_free_log_detx_shell_pullback",
+)
 EXPECTED_METHODS_BY_LAYER = {
-    "fc1.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS),
-    "fc2.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS),
+    "fc1.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS, *EXTENDED_ECS_METHODS),
+    "fc2.weight": ("centered_log_singular_radial_pullback", *ECS_METHODS, *EXTENDED_ECS_METHODS),
     "fc3.weight": ("centered_log_singular_radial_pullback",),
+}
+QUOTIENT_LABELS = {
+    "midpoint_ecs_control": "Midpoint ECS control",
+    "gram_ridge": "Gram diagonal subtraction",
+    "feshbach_downfolding": "Anchor-frozen Feshbach",
+}
+QUOTIENT_PROFILE_LABELS = {
+    "midpoint": "no counterterm",
+    "tau_fraction_0p25": "τ=0.25 λboundary",
+    "tau_fraction_0p50": "τ=0.50 λboundary",
+    "tau_fraction_0p75": "τ=0.75 λboundary",
+    "ridge_ratio_1em2": "ρ=0.01 anchor scale",
+}
+FLOW_LABELS = {
+    "two_checkpoint_generalized_gram_radial": "Generalized-Gram radial rate",
+    "two_checkpoint_aligned_transfer_core": "Aligned transfer-core rate",
+    "two_checkpoint_ecs_topk_grassmann": "ECS top-k Grassmann rate",
+    "two_checkpoint_relative_polar_tilt": "Relative-polar tilt rate",
+    "two_checkpoint_radial_quotient_observed_secant": "Observed radial quotient secant",
+    "two_checkpoint_radial_jacobian_prediction": "Local radial Jacobian prediction",
 }
 
 
@@ -196,6 +232,141 @@ def plot_ecs_quotient_comparison(fits: pd.DataFrame, path: Path) -> Path:
         "ECS quotient comparison — lines use exact epochs; markers offset ±0.45 for visibility"
     )
     return save_figure(fig, path, bottom=0.18, top=0.92)
+
+
+def plot_single_optimizer_jacobians(
+    fits: pd.DataFrame, optimizer: str, path: Path
+) -> Path:
+    """Make a readable optimizer-specific view of every local map Jacobian."""
+    palette = plt.get_cmap("tab10")
+    fig, axes = plt.subplots(1, 3, figsize=(17.0, 5.0), sharex=True)
+    subset_optimizer = fits[fits["optimizer"].astype(str).eq(optimizer)]
+    method_order = [
+        method for method in METHOD_LABELS
+        if subset_optimizer["method"].astype(str).eq(method).any()
+    ]
+    for axis, layer in zip(axes, LAYERS):
+        subset = subset_optimizer[subset_optimizer["layer"].astype(str).eq(layer)]
+        for index, method in enumerate(method_order):
+            curve = subset[subset["method"].astype(str).eq(method)].sort_values("epoch")
+            if curve.empty:
+                continue
+            linestyle, marker = METHOD_STYLES.get(method, ("-", "o"))
+            axis.plot(
+                curve["epoch"], curve["alpha"], color=palette(index % 10),
+                linestyle=linestyle, marker=marker, markersize=3.5,
+                linewidth=1.6, label=METHOD_LABELS.get(method, method),
+            )
+        axis.axhline(2.0, color="black", linestyle=(0, (1, 2)), linewidth=1.1)
+        axis.set(title=layer.replace(".weight", ""), xlabel="epoch", ylabel="Jacobian energy alpha")
+        axis.grid(True, alpha=0.25)
+    shared_legend(fig, axes, columns=4)
+    fig.suptitle(f"{OPTIMIZER_LABELS[optimizer]} — single-checkpoint quotient-map Jacobians")
+    return save_figure(fig, path, bottom=0.18, top=0.93)
+
+
+def plot_weight_quotients_by_optimizer(
+    quotient_fits: pd.DataFrame, optimizer: str, path: Path
+) -> Path:
+    frame = quotient_fits[
+        quotient_fits["optimizer"].astype(str).eq(optimizer)
+        & quotient_fits["layer"].astype(str).isin(("fc1.weight", "fc2.weight"))
+    ].copy()
+    frame = frame[bool_series(frame["fit_ok"])]
+    profile_colors = {
+        "midpoint": "#4C78A8",
+        "tau_fraction_0p25": "#F2CF5B",
+        "tau_fraction_0p50": "#F58518",
+        "tau_fraction_0p75": "#B279A2",
+        "ridge_ratio_1em2": "#54A24B",
+    }
+    fig, axes = plt.subplots(2, 2, figsize=(13.5, 8.4), sharex=True)
+    variants = ("raw", "clip_xmax")
+    for row, variant in enumerate(variants):
+        for column, layer in enumerate(("fc1.weight", "fc2.weight")):
+            axis = axes[row, column]
+            subset = frame[
+                frame["layer"].astype(str).eq(layer)
+                & frame["fit_variant"].astype(str).eq(variant)
+            ]
+            for (method, profile), curve in subset.groupby(["method", "profile_id"]):
+                curve = curve.sort_values("epoch")
+                axis.plot(
+                    curve["epoch"], curve["alpha"],
+                    color=profile_colors.get(str(profile), "#777777"),
+                    marker="s" if variant == "clip_xmax" else "o",
+                    markersize=3.5, linewidth=1.7,
+                    label=(
+                        f"{QUOTIENT_LABELS.get(str(method), str(method))}, "
+                        f"{QUOTIENT_PROFILE_LABELS.get(str(profile), str(profile))}"
+                    ),
+                )
+            axis.axhline(2.0, color="black", linestyle=(0, (1, 2)), linewidth=1.1)
+            axis.set(
+                title=f"{layer.replace('.weight', '')} — {variant}",
+                xlabel="epoch", ylabel="WeightWatcher alpha of W′",
+            )
+            axis.grid(True, alpha=0.25)
+    shared_legend(fig, axes.ravel(), columns=3)
+    fig.suptitle(f"{OPTIMIZER_LABELS[optimizer]} — transformed weight quotient representatives")
+    return save_figure(fig, path, bottom=0.14, top=0.94)
+
+
+def plot_checkpoint_flows_by_optimizer(
+    flow_fits: pd.DataFrame, optimizer: str, path: Path
+) -> Path:
+    primary = flow_fits[
+        flow_fits["optimizer"].astype(str).eq(optimizer)
+        & flow_fits["spectrum_kind"].astype(str).eq("energy_derived_from_amplitude")
+        & pd.to_numeric(flow_fits["clip_top_k"], errors="coerce").eq(0)
+    ]
+    palette = plt.get_cmap("Dark2")
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 4.9), sharex=True)
+    for axis, layer in zip(axes, ("fc1.weight", "fc2.weight")):
+        subset = primary[primary["layer"].astype(str).eq(layer)]
+        for index, (method, curve) in enumerate(subset.groupby("method")):
+            curve = curve.sort_values("epoch_end")
+            axis.plot(
+                curve["epoch_end"], curve["alpha"], color=palette(index),
+                marker="o", markersize=3.5, linewidth=1.7,
+                label=FLOW_LABELS.get(str(method), str(method)),
+            )
+        axis.axhline(2.0, color="black", linestyle=(0, (1, 2)), linewidth=1.1)
+        axis.set(title=layer.replace(".weight", ""), xlabel="ending epoch", ylabel="finite-flow energy alpha")
+        axis.grid(True, alpha=0.25)
+    shared_legend(fig, axes, columns=2)
+    fig.suptitle(f"{OPTIMIZER_LABELS[optimizer]} — between-checkpoint RG-flow observables (not Jacobians)")
+    return save_figure(fig, path, bottom=0.18, top=0.92)
+
+
+def plot_jacobian_transport_by_optimizer(
+    transport: pd.DataFrame, optimizer: str, path: Path
+) -> Path:
+    """Compare finite quotient flow to the local map-Jacobian prediction."""
+    frame = transport[transport["optimizer"].astype(str).eq(optimizer)]
+    fig, axes = plt.subplots(2, 2, figsize=(13.5, 8.0), sharex=True)
+    for column, layer in enumerate(("fc1.weight", "fc2.weight")):
+        curve = frame[frame["layer"].astype(str).eq(layer)].sort_values("epoch_end")
+        axes[0, column].plot(
+            curve["epoch_end"], curve["relative_linearization_error"],
+            color=COLORS[optimizer], marker="o", linewidth=1.8,
+        )
+        axes[1, column].plot(
+            curve["epoch_end"], curve["cosine_observed_vs_jacobian"],
+            color=COLORS[optimizer], marker="s", linewidth=1.8,
+        )
+        axes[0, column].set(
+            title=layer.replace(".weight", ""),
+            ylabel="relative linearization error",
+        )
+        axes[1, column].set(xlabel="ending epoch", ylabel="observed/JVP cosine")
+        axes[1, column].axhline(1.0, color="black", linestyle=(0, (1, 2)), linewidth=1.0)
+        for axis in axes[:, column]:
+            axis.grid(True, alpha=0.25)
+    fig.suptitle(
+        f"{OPTIMIZER_LABELS[optimizer]} — observed radial quotient flow versus local Jacobian"
+    )
+    return save_figure(fig, path, top=0.94)
 
 
 def build_method_coverage(primary: pd.DataFrame) -> pd.DataFrame:
@@ -406,14 +577,14 @@ def build_html(
         for name, count in inventory.items()
     )
     html = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Short100 Jacobian report</title>
+<html><head><meta charset="utf-8"><title>Short100 quotient and RG-flow report</title>
 <style>
 body{{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;margin:32px;max-width:1500px;color:#202124}}
 img{{max-width:100%;height:auto;border:1px solid #ddd}} section{{margin:34px 0}}
 table{{border-collapse:collapse;font-size:13px}} th,td{{border:1px solid #ddd;padding:5px 8px}} th{{background:#f2f4f7}}
 code{{background:#f3f3f3;padding:2px 4px}} .note{{background:#eef6ff;padding:14px;border-left:4px solid #0072B2}}
 </style></head><body>
-<h1>Short100 reduced Jacobian analysis</h1>
+<h1>Short100 weight quotient, RG-flow, and Jacobian analysis</h1>
 <p class="note"><strong>Scope.</strong> MuonClip-RMS versus AdamW, seed 101,
 epochs 10,20,…,100. The centered log-singular radial Jacobian is evaluated on
 FC1, FC2, and FC3. Both exact ECS quotient covers are evaluated on FC1 and FC2.
@@ -442,6 +613,59 @@ ECS figure keeps lines at the true epochs but offsets full-row and detX markers 
 <p>Every expected method should have ten observations. Any row marked
 <code>INCOMPLETE</code> means computation is genuinely missing; visual overlap is
 not classified as missing.</p>{coverage_table}
+<h2>Scientific questions and what is actually identified</h2>
+<h3>Case 1 — heavy tails on a weight quotient representative</h3>
+<p>For the state-level experiment, the strictly identifiable quotient is the
+two-sided orthogonal orbit
+<code>[W] = {{U W Vᵀ : U∈O(m), V∈O(n)}}</code>. Its invariants are the singular
+values. We choose the rectangular-diagonal canonical section and then apply a
+declared nuisance-removal hypothesis before running WeightWatcher on the
+materialized matrix <code>W′</code>, both raw and with
+<code>fix_fingers=clip_xmax</code>. A heavy tail found here is therefore a heavy
+tail of that declared quotient representative—not proof that it is the unique
+unknown Muon time-orbit quotient.</p>
+<ul>
+<li><strong>Midpoint ECS control:</strong> retain the midpoint-selected singular
+sector without a counterterm.</li>
+<li><strong>Gram diagonal subtraction:</strong>
+<code>X=W Wᵀ</code> (or <code>WᵀW</code> on the smaller side) is transformed by
+<code>λᵢ↦max(λᵢ−τ,0)</code>, scanned at τ/λboundary = 0.25, 0.50, and
+0.75. This is nonlinear because of the positive-part threshold; it is not
+a global rescaling and can change the fitted spectral shape.</li>
+<li><strong>Feshbach downfolding:</strong> an independent epoch-10 singular frame
+freezes P and Q, then
+<code>X_eff=A−B(C+ρI)⁻¹Bᵀ</code> with ρ=0.01 times the anchor boundary scale.
+Freezing the anchor is essential: choosing P from the same X diagonalizes the
+Gram matrix and makes B=0, reducing the construction to truncation.</li>
+</ul>
+<h3>Case 2a — flow between checkpoints</h3>
+<p>Two checkpoints identify finite flow/secant observables: generalized-Gram
+radial log rates, a Procrustes-aligned rectangular transfer core, top-k ECS
+Grassmann principal-angle rates, and relative-polar tilt rates. Their squared
+rate amplitudes are fitted for heavy tails. These show how the saved trajectory
+moves in quotient coordinates. They are <strong>not</strong>
+<code>Dβ(W)</code>, the Jacobian of the optimizer/RG vector field; identifying
+that object requires perturbation trajectories or a fully specified training
+map with batch and optimizer state.</p>
+<p>The centered log-singular coordinate additionally supplies a direct local
+transport test. For each pair the report compares the observed secant
+<code>[R(W₁)−R(W₀)]/Δt</code> with the actual map-Jacobian prediction
+<code>D R_W₀[W₁−W₀]/Δt</code>, reporting both spectra, relative error, and cosine.
+This tests whether the saved step follows the local quotient-map linearization;
+it still does not turn that map derivative into <code>Dβ(W)</code>.</p>
+<h3>Case 2b — a Jacobian at one checkpoint</h3>
+<p>The single-checkpoint tables contain exact analytic derivatives of explicitly
+declared weight-only maps: centered log-singular radial, ECS Grassmann/Cartan,
+gap-aware projector, trace-free log Gram, ridge-resolvent, and Feshbach
+trace-free log. These are genuine Jacobians of those maps at W, but not the
+training-dynamics Jacobian unless the declared map is separately calibrated to
+the optimizer step.</p>
+<p>The single-checkpoint Feshbach result has a mandatory caveat: in the
+checkpoint's own SVD frame B=0, so shell-downfolding terms vanish at first
+order. The report keeps this curve as an explicit collapse/control. Nontrivial
+state-level Feshbach behavior comes from the independently frozen epoch-10
+anchor, while nontrivial first-order Feshbach dynamics would require a frozen
+frame not diagonalizing the evaluation checkpoint.</p>
 <h2>Data inventory</h2><ul>{inventory_html}</ul>
 <h2>Analysis-ready tables</h2><ul>{table_html}</ul>
 <h2>Final checkpoint primary fits</h2>{final_table}
@@ -482,6 +706,17 @@ def main() -> int:
         fits = require_csv(analysis_root / "jacobian_powerlaw_fits.csv")
         spectra = require_csv(analysis_root / "jacobian_spectra.csv")
         operators = require_csv(analysis_root / "jacobian_operators.csv")
+        quotient_fits = require_csv(
+            analysis_root / "weight_quotient_weightwatcher_fits.csv"
+        )
+        quotient_spectra = require_csv(analysis_root / "weight_quotient_spectra.csv")
+        quotient_operators = require_csv(analysis_root / "weight_quotient_operators.csv")
+        flow_fits = require_csv(analysis_root / "two_checkpoint_flow_fits.csv")
+        flow_spectra = require_csv(analysis_root / "two_checkpoint_flow_spectra.csv")
+        flow_operators = require_csv(analysis_root / "two_checkpoint_flow_operators.csv")
+        flow_transport = require_csv(
+            analysis_root / "two_checkpoint_jacobian_transport.csv"
+        )
         primary = fits[
             fits["spectrum_kind"].astype(str).eq("energy_derived_from_amplitude")
             & pd.to_numeric(fits["clip_top_k"], errors="coerce").eq(0)
@@ -511,6 +746,13 @@ def main() -> int:
             table_root / "weightwatcher_raw_and_clip_xmax.csv",
             table_root / "performance_train_test.csv",
             table_root / "jacobian_method_coverage.csv",
+            table_root / "weight_quotient_weightwatcher_fits.csv",
+            table_root / "weight_quotient_spectra.csv",
+            table_root / "weight_quotient_operators.csv",
+            table_root / "two_checkpoint_flow_fits.csv",
+            table_root / "two_checkpoint_flow_spectra.csv",
+            table_root / "two_checkpoint_flow_operators.csv",
+            table_root / "two_checkpoint_jacobian_transport.csv",
         ]
         primary.to_csv(tables[0], index=False)
         fits.to_csv(tables[1], index=False)
@@ -519,6 +761,13 @@ def main() -> int:
         weightwatcher.to_csv(tables[4], index=False)
         performance.to_csv(tables[5], index=False)
         coverage.to_csv(tables[6], index=False)
+        quotient_fits.to_csv(tables[7], index=False)
+        quotient_spectra.to_csv(tables[8], index=False)
+        quotient_operators.to_csv(tables[9], index=False)
+        flow_fits.to_csv(tables[10], index=False)
+        flow_spectra.to_csv(tables[11], index=False)
+        flow_operators.to_csv(tables[12], index=False)
+        flow_transport.to_csv(tables[13], index=False)
 
         figures = [
             plot_jacobian_metric(
@@ -543,6 +792,25 @@ def main() -> int:
                 primary, performance, figure_root / "06_alpha_vs_test_accuracy.png"
             ),
         ]
+        for optimizer in OPTIMIZERS:
+            figures.extend([
+                plot_single_optimizer_jacobians(
+                    primary, optimizer,
+                    figure_root / f"optimizer_views/{optimizer}_single_checkpoint_jacobians.png",
+                ),
+                plot_weight_quotients_by_optimizer(
+                    quotient_fits, optimizer,
+                    figure_root / f"optimizer_views/{optimizer}_weight_quotients.png",
+                ),
+                plot_checkpoint_flows_by_optimizer(
+                    flow_fits, optimizer,
+                    figure_root / f"optimizer_views/{optimizer}_checkpoint_flows.png",
+                ),
+                plot_jacobian_transport_by_optimizer(
+                    flow_transport, optimizer,
+                    figure_root / f"optimizer_views/{optimizer}_jacobian_transport.png",
+                ),
+            ])
         figures.extend(plot_spectral_galleries(spectra, figure_root))
         inventory = {
             "primary Jacobian fit rows": len(primary),
@@ -551,6 +819,11 @@ def main() -> int:
             "operator metadata rows": len(operators),
             "WeightWatcher control rows": len(weightwatcher),
             "performance rows": len(performance),
+            "weight-quotient WeightWatcher rows": len(quotient_fits),
+            "weight-quotient spectral modes": len(quotient_spectra),
+            "two-checkpoint flow fit rows": len(flow_fits),
+            "two-checkpoint flow spectral modes": len(flow_spectra),
+            "Jacobian transport comparison rows": len(flow_transport),
             "figures": len(figures),
         }
         index = build_html(report_root, figures, tables, primary, coverage, inventory)

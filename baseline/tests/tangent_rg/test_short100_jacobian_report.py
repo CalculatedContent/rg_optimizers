@@ -53,6 +53,7 @@ def test_method_coverage_requires_ecs_on_fc1_and_fc2_but_not_fc3():
                     })
     coverage = module.build_method_coverage(pd.DataFrame(rows))
     assert coverage["coverage_status"].eq("complete").all()
+    assert len(coverage) == 30
     fc2 = coverage[coverage["layer"].eq("fc2.weight")]
     fc3 = coverage[coverage["layer"].eq("fc3.weight")]
     assert set(fc2["method"]) == set(module.EXPECTED_METHODS_BY_LAYER["fc2.weight"])

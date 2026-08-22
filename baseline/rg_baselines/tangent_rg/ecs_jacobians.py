@@ -3,7 +3,8 @@
 Every spectrum in this module is the nonzero singular spectrum of the
 derivative of a declared map.  Squaring those amplitudes gives the nonzero
 eigenvalues of ``J* J`` in the same energy convention as a WeightWatcher ESD.
-The checkpoint-dependent maps freeze their SVD frame at the named checkpoint;
+The right-singular maps support wide and square matrices. The checkpoint-
+dependent maps freeze their SVD frame at the named checkpoint;
 that anchoring is part of the map definition and is never hidden.
 """
 
@@ -62,8 +63,10 @@ def _matrix(value: ArrayLike, *, name: str = "weight") -> FloatArray:
 
 def _wide_matrix(value: ArrayLike, *, name: str = "weight") -> FloatArray:
     result = _matrix(value, name=name)
-    if result.shape[0] >= result.shape[1]:
-        raise ValueError("the ECS row-space Jacobians require a wide matrix")
+    if result.shape[0] > result.shape[1]:
+        raise ValueError(
+            "the right-singular ECS Jacobians require a wide or square matrix"
+        )
     return result
 
 
