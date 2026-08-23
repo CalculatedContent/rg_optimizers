@@ -49,11 +49,14 @@ python -m pip install -e './baseline[experiment]'
 jupyter lab baseline/notebooks
 ```
 
-Long-running outputs should live under `$HOME`, not `/tmp`:
+Put generated data and runs beneath an explicit experiment root. The dated
+one-head nanoGPT campaign enforces a `/tmp` root and redirects third-party
+caches there as well:
 
 ```bash
-export RG_BASELINE_DATA_DIR="$HOME/rg-optimizer-data"
-export RG_BASELINE_RUN_ROOT="$HOME/rg-optimizer-runs"
+export RG_BASELINE_EXPERIMENT_ROOT="/tmp/rg-optimizer-baselines"
+export RG_BASELINE_DATA_DIR="$RG_BASELINE_EXPERIMENT_ROOT/data"
+export RG_BASELINE_RUN_ROOT="$RG_BASELINE_EXPERIMENT_ROOT/runs"
 ```
 
 ### Recommended notebook order
@@ -76,15 +79,25 @@ baseline/notebooks/CIFAR10_ViT_Optimizer_Baselines.ipynb
 One-head nanoGPT:
 
 ```bash
-cd baseline/nanogpt_one_head
-bash scripts/setup_mac.sh
-bash scripts/prepare_data.sh
-bash scripts/smoke_test.sh
-
-export RG_NANOGPT_ONE_HEAD_ROOT="$HOME/rg-nanogpt-one-head"
-caffeinate -dimsu bash scripts/run_all_baselines.sh \
-  2>&1 | tee "$RG_NANOGPT_ONE_HEAD_ROOT/run_all.log"
+cd baseline/experiments/nanogpt_one_head_2026_08_21_baseline
+export RG_NANOGPT_EXPERIMENT_ROOT="/tmp/rg-nanogpt-one-head-20260821"
+mkdir -p "$RG_NANOGPT_EXPERIMENT_ROOT"/{cache/{home,pip,xdg/{cache,config,data,state},matplotlib},tmp}
+export HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/home"
+export PIP_CACHE_DIR="$RG_NANOGPT_EXPERIMENT_ROOT/cache/pip"
+export XDG_CACHE_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/cache"
+export XDG_CONFIG_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/config"
+export XDG_DATA_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/data"
+export XDG_STATE_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/state"
+export MPLCONFIGDIR="$RG_NANOGPT_EXPERIMENT_ROOT/cache/matplotlib"
+export TMPDIR="$RG_NANOGPT_EXPERIMENT_ROOT/tmp"
+python -m pip install -e ../../nanogpt_one_head
+python scripts/run_experiment.py doctor --device mps
+python scripts/run_experiment.py prepare
+caffeinate -dimsu python scripts/run_experiment.py run --device mps
 ```
+
+The full protocol, exact commands, reporting contract, and honest results ledger
+are in the [dated experiment folder](baseline/experiments/nanogpt_one_head_2026_08_21_baseline/README.md).
 
 nanochat:
 
@@ -200,7 +213,7 @@ The committed values above are strong source-backed centers. They become frozen
 best baselines only after the bounded qualification protocol:
 
 1. screen the preregistered neighborhood using validation data only;
-2. run the finalists with the complete three-seed protocol;
+2. run the finalists with the complete five-seed protocol;
 3. select the lowest mean best-validation loss;
 4. write the full winning configuration and evidence to a lock file;
 5. inspect protected-test comparisons only after the lock exists.

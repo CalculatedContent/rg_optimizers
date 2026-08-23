@@ -14,6 +14,7 @@ from .training import run_directory, run_is_complete
 
 OPTIMIZER_LABELS = {
     "sgd_momentum": "SGD + Nesterov",
+    "adam": "Adam",
     "adamw": "AdamW",
     "muon": "Muon + auxiliary AdamW",
 }
@@ -21,6 +22,7 @@ OPTIMIZER_LABELS = {
 # Okabe-Ito color-blind-safe optimizer palette.
 OPTIMIZER_COLORS = {
     "sgd_momentum": "#0072B2",
+    "adam": "#E69F00",
     "adamw": "#D55E00",
     "muon": "#009E73",
 }
@@ -93,7 +95,7 @@ def run_status_table(
     results_root: str | Path,
     *,
     optimizers: Sequence[str] = SUPPORTED_OPTIMIZERS,
-    seeds: Sequence[int] = (1337, 2027, 4099),
+    seeds: Sequence[int] = (1337, 2027, 4099, 31415, 271828),
 ) -> pd.DataFrame:
     rows = []
     for optimizer in optimizers:
@@ -160,7 +162,7 @@ def load_metrics(
     results_root: str | Path,
     *,
     optimizers: Sequence[str] = SUPPORTED_OPTIMIZERS,
-    seeds: Sequence[int] = (1337, 2027, 4099),
+    seeds: Sequence[int] = (1337, 2027, 4099, 31415, 271828),
     require_complete: bool = True,
 ) -> pd.DataFrame:
     frame = _load_csvs(
@@ -181,7 +183,7 @@ def load_epoch_metrics(
     results_root: str | Path,
     *,
     optimizers: Sequence[str] = SUPPORTED_OPTIMIZERS,
-    seeds: Sequence[int] = (1337, 2027, 4099),
+    seeds: Sequence[int] = (1337, 2027, 4099, 31415, 271828),
     require_complete: bool = True,
 ) -> pd.DataFrame:
     frame = _load_csvs(
@@ -202,7 +204,7 @@ def load_layer_metrics(
     results_root: str | Path,
     *,
     optimizers: Sequence[str] = SUPPORTED_OPTIMIZERS,
-    seeds: Sequence[int] = (1337, 2027, 4099),
+    seeds: Sequence[int] = (1337, 2027, 4099, 31415, 271828),
     require_complete: bool = True,
 ) -> pd.DataFrame:
     frame = _load_csvs(
@@ -223,7 +225,7 @@ def load_spectral_summary(
     results_root: str | Path,
     *,
     optimizers: Sequence[str] = SUPPORTED_OPTIMIZERS,
-    seeds: Sequence[int] = (1337, 2027, 4099),
+    seeds: Sequence[int] = (1337, 2027, 4099, 31415, 271828),
     require_complete: bool = True,
 ) -> pd.DataFrame:
     frame = _load_csvs(
@@ -244,7 +246,7 @@ def load_test_results(
     results_root: str | Path,
     *,
     optimizers: Sequence[str] = SUPPORTED_OPTIMIZERS,
-    seeds: Sequence[int] = (1337, 2027, 4099),
+    seeds: Sequence[int] = (1337, 2027, 4099, 31415, 271828),
 ) -> pd.DataFrame:
     rows = []
     for optimizer in optimizers:
@@ -263,8 +265,22 @@ def load_test_results(
                         "step": int(values["step"]),
                         "test_loss": float(values["loss"]),
                         "test_perplexity": float(values["perplexity"]),
+                        "test_bits_per_token": float(
+                            values.get("bits_per_token", np.nan)
+                        ),
                         "test_accuracy": float(values["accuracy"]),
+                        "test_top5_accuracy": float(
+                            values.get("top5_accuracy", np.nan)
+                        ),
                         "test_bleu": float(values["bleu"]),
+                        "test_continuation_token_accuracy": float(
+                            values.get(
+                                "continuation_token_accuracy", np.nan
+                            )
+                        ),
+                        "test_continuation_exact_match": float(
+                            values.get("continuation_exact_match", np.nan)
+                        ),
                     }
                 )
     return pd.DataFrame(rows)
@@ -414,7 +430,16 @@ def plot_spectral_optimizer_summary(
 def final_test_summary(test_results: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for (optimizer, checkpoint), group in test_results.groupby(["optimizer", "checkpoint"]):
-        for metric in ("test_loss", "test_perplexity", "test_accuracy", "test_bleu"):
+        for metric in (
+            "test_loss",
+            "test_perplexity",
+            "test_bits_per_token",
+            "test_accuracy",
+            "test_top5_accuracy",
+            "test_bleu",
+            "test_continuation_token_accuracy",
+            "test_continuation_exact_match",
+        ):
             rows.append(
                 {
                     "optimizer": optimizer,

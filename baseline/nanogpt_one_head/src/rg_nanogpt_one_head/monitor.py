@@ -21,6 +21,8 @@ _NUMERIC_COLUMNS = (
     "step",
     "epoch",
     "alpha",
+    "alpha_raw",
+    "alpha_clip_xmax",
     "D",
     "rand_distance",
     "ERG_gap",
@@ -168,7 +170,11 @@ def format_monitor_snapshot(
     latest_step = int(layers["step"].max())
     latest = layers[layers["step"] == latest_step].copy()
     latest_epoch = float(latest["epoch"].iloc[0])
-    table = latest[list(_LAYER_COLUMNS)].sort_values("matrix_name")
+    table_columns = list(_LAYER_COLUMNS)
+    for column in ("alpha_raw", "alpha_clip_xmax", "num_fingers"):
+        if column in latest.columns:
+            table_columns.append(column)
+    table = latest[table_columns].sort_values("matrix_name")
 
     lines.extend(
         [
@@ -180,21 +186,39 @@ def format_monitor_snapshot(
             "",
             _format_table(table),
             "",
-            "ALPHA:         " + _finite_summary(latest["alpha"]),
+            "ALPHA PRIMARY: " + _finite_summary(latest["alpha"]),
             "RAND_DISTANCE: "
             + _finite_summary(latest["rand_distance"]),
         ]
     )
 
+    if "alpha_raw" in latest.columns:
+        lines.append(
+            "ALPHA RAW:     " + _finite_summary(latest["alpha_raw"])
+        )
+    if "alpha_clip_xmax" in latest.columns:
+        lines.append(
+            "ALPHA CLIPPED: "
+            + _finite_summary(latest["alpha_clip_xmax"])
+        )
+
+    aggregations = {
+        "alpha_median": ("alpha", "median"),
+        "rand_distance_median": ("rand_distance", "median"),
+        "D_median": ("D", "median"),
+        "ERG_gap_median": ("ERG_gap", "median"),
+        "num_traps_mean": ("num_traps", "mean"),
+    }
+    if "alpha_raw" in layers.columns:
+        aggregations["alpha_raw_median"] = ("alpha_raw", "median")
+    if "alpha_clip_xmax" in layers.columns:
+        aggregations["alpha_clip_xmax_median"] = (
+            "alpha_clip_xmax",
+            "median",
+        )
     recent_frame = (
         layers.groupby(["step", "epoch"], as_index=False)
-        .agg(
-            alpha_median=("alpha", "median"),
-            rand_distance_median=("rand_distance", "median"),
-            D_median=("D", "median"),
-            ERG_gap_median=("ERG_gap", "median"),
-            num_traps_mean=("num_traps", "mean"),
-        )
+        .agg(**aggregations)
         .sort_values("step")
         .tail(max(1, int(recent)))
     )

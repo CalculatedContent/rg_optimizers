@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import math
@@ -8,6 +9,9 @@ import os
 import platform
 import random
 import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -201,6 +205,13 @@ def configure_runtime(device: torch.device, cfg: dict) -> None:
     torch.set_float32_matmul_precision(
         str(cfg["runtime"].get("matmul_precision", "high"))
     )
+    if device.type == "cuda":
+        allow_tf32 = bool(cfg["runtime"].get("allow_tf32", False))
+        torch.backends.cuda.matmul.allow_tf32 = allow_tf32
+        torch.backends.cudnn.allow_tf32 = allow_tf32
+        torch.backends.cudnn.benchmark = bool(
+            cfg["runtime"].get("cudnn_benchmark", False)
+        )
     if device.type == "mps" and bool(cfg["runtime"].get("mps_fallback", True)):
         os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
     if device.type == "xla":
@@ -242,8 +253,17 @@ def configure_runtime(device: torch.device, cfg: dict) -> None:
                 f"Detected process_count={count}. Run the ordinary single-process "
                 "launcher or implement an explicitly distributed protocol."
             )
-    if bool(cfg["runtime"].get("deterministic_algorithms", False)):
-        torch.use_deterministic_algorithms(True, warn_only=True)
+    deterministic = bool(
+        cfg["runtime"].get("deterministic_algorithms", False)
+    )
+    torch.use_deterministic_algorithms(
+        deterministic,
+        warn_only=bool(
+            cfg["runtime"].get("deterministic_warn_only", True)
+        ),
+    )
+    if device.type == "cuda":
+        torch.backends.cudnn.deterministic = deterministic
 
 
 def mark_step(device: torch.device) -> None:
@@ -361,14 +381,158 @@ def restore_accelerator_rng_state(
         xm.set_rng_state(int(payload["xla_random_state"]), device=device)
 
 
+def _command_output(arguments: list[str]) -> str:
+    try:
+        return subprocess.run(
+            arguments,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def _hardware_block_identity(metadata: dict[str, Any]) -> tuple[str, str]:
+    override = str(os.environ.get("RG_NANOGPT_HARDWARE_BLOCK_ID", "")).strip()
+    if override:
+        if len(override) > 200 or "\n" in override:
+            raise RuntimeError("RG_NANOGPT_HARDWARE_BLOCK_ID is malformed")
+        return override, "user"
+
+    accelerator = str(metadata["accelerator"])
+    if accelerator == "cuda":
+        required = (
+            "cuda_device_name",
+            "cuda_device_capability",
+            "cuda_device_uuid",
+            "cuda_device_total_memory_bytes",
+            "cuda_driver_version",
+        )
+    elif accelerator == "mps":
+        required = ("mac_hardware_model", "mac_cpu_brand", "mac_memory_bytes")
+    elif accelerator == "tpu":
+        required = ("tpu_accelerator_type",)
+    else:
+        required = ("platform", "machine", "processor")
+    missing = [
+        key
+        for key in required
+        if metadata.get(key) in (None, "", "unknown", 0)
+    ]
+    if missing and accelerator != "cpu":
+        raise RuntimeError(
+            "could not determine a complete hardware block identity (missing "
+            + ", ".join(missing)
+            + "); set RG_NANOGPT_HARDWARE_BLOCK_ID to a stable collaborator-"
+            "chosen identifier for this homogeneous device block"
+        )
+    payload = {key: metadata.get(key, "unknown") for key in required}
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
+    ).hexdigest()[:20]
+    return f"auto-{accelerator}-{digest}", "auto"
+
+
 def runtime_metadata(device: torch.device) -> dict[str, Any]:
     metadata: dict[str, Any] = {
         "platform": platform.platform(),
+        "machine": platform.machine(),
+        "processor": platform.processor(),
+        "python_version": sys.version,
+        "python_executable": sys.executable,
         "accelerator": accelerator_name(device),
         "device": str(device),
         "torch_version": torch.__version__,
+        "float32_matmul_precision": torch.get_float32_matmul_precision(),
+        "deterministic_algorithms": bool(
+            torch.are_deterministic_algorithms_enabled()
+        ),
+        "deterministic_warn_only": bool(
+            getattr(
+                torch,
+                "is_deterministic_algorithms_warn_only_enabled",
+                lambda: False,
+            )()
+        ),
     }
-    if device.type == "xla":
+    if device.type == "cuda":
+        index = device.index if device.index is not None else 0
+        properties = torch.cuda.get_device_properties(index)
+        smi_values: list[str] = []
+        nvidia_smi = shutil.which("nvidia-smi")
+        if nvidia_smi is not None:
+            output = _command_output(
+                [
+                    nvidia_smi,
+                    f"--id={index}",
+                    "--query-gpu=uuid,driver_version,memory.total",
+                    "--format=csv,noheader,nounits",
+                ]
+            )
+            if output:
+                smi_values = [
+                    value.strip()
+                    for value in output.splitlines()[0].split(",")
+                ]
+        property_uuid = str(getattr(properties, "uuid", "")).strip()
+        metadata.update(
+            {
+                "cuda_version": torch.version.cuda,
+                "cudnn_version": torch.backends.cudnn.version(),
+                "cuda_device_name": torch.cuda.get_device_name(index),
+                "cuda_device_capability": list(
+                    torch.cuda.get_device_capability(index)
+                ),
+                "cuda_device_count": torch.cuda.device_count(),
+                "cuda_device_uuid": (
+                    smi_values[0]
+                    if len(smi_values) >= 1 and smi_values[0]
+                    else property_uuid or "unknown"
+                ),
+                "cuda_driver_version": (
+                    smi_values[1]
+                    if len(smi_values) >= 2 and smi_values[1]
+                    else "unknown"
+                ),
+                "cuda_device_total_memory_bytes": int(
+                    properties.total_memory
+                ),
+                "cuda_multi_processor_count": int(
+                    properties.multi_processor_count
+                ),
+                "cuda_nvidia_smi_memory_mib": (
+                    float(smi_values[2])
+                    if len(smi_values) >= 3 and smi_values[2]
+                    else None
+                ),
+                "cuda_matmul_allow_tf32": bool(
+                    torch.backends.cuda.matmul.allow_tf32
+                ),
+                "cudnn_allow_tf32": bool(torch.backends.cudnn.allow_tf32),
+            }
+        )
+    elif device.type == "mps":
+        mac_model = _command_output(["sysctl", "-n", "hw.model"])
+        mac_brand = _command_output(
+            ["sysctl", "-n", "machdep.cpu.brand_string"]
+        )
+        mac_memory = _command_output(["sysctl", "-n", "hw.memsize"])
+        metadata.update(
+            {
+                "mps_built": bool(torch.backends.mps.is_built()),
+                "mps_available": bool(torch.backends.mps.is_available()),
+                "mac_hardware_model": mac_model or "unknown",
+                "mac_cpu_brand": mac_brand or "unknown",
+                "mac_memory_bytes": (
+                    int(mac_memory) if mac_memory.isdigit() else 0
+                ),
+            }
+        )
+    elif device.type == "xla":
         modules = _load_xla(required=True)
         assert modules is not None
         torch_xla, xr, _ = modules
@@ -378,6 +542,9 @@ def runtime_metadata(device: torch.device) -> dict[str, Any]:
                     torch_xla, "__version__", "unknown"
                 ),
                 "pjrt_device": _xla_device_type(xr),
+                "tpu_accelerator_type": str(
+                    os.environ.get("TPU_ACCELERATOR_TYPE", "unknown")
+                ),
                 "xla_process_count": _xla_process_count(xr),
                 "xla_process_index": _xla_process_index(xr),
                 "xla_addressable_device_count": int(
@@ -385,6 +552,9 @@ def runtime_metadata(device: torch.device) -> dict[str, Any]:
                 ),
             }
         )
+    block_id, block_source = _hardware_block_identity(metadata)
+    metadata["hardware_block_id"] = block_id
+    metadata["hardware_block_id_source"] = block_source
     return metadata
 
 

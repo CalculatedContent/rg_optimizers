@@ -18,6 +18,7 @@ sys.path.insert(0, str(EXPERIMENT_ROOT / "src"))
 from rg_nanogpt_one_head.analysis import mean_ci95
 from rg_nanogpt_one_head.checkpoints import (
     load_training_checkpoint,
+    load_training_checkpoint_for_resume,
     save_training_checkpoint,
 )
 from rg_nanogpt_one_head.config import (
@@ -34,6 +35,7 @@ from rg_nanogpt_one_head.data import (
 from rg_nanogpt_one_head.evaluation import fixed_probe
 from rg_nanogpt_one_head.model import GPT, GPTConfig, transformer_matrix_items
 from rg_nanogpt_one_head.optimizers import make_optimizer_handles, optimizer_step
+from rg_nanogpt_one_head.run_utils import truncate_muonclip_qk_after
 from rg_nanogpt_one_head.spectral import summarize_spectral_frame
 from rg_nanogpt_one_head.training import run_one
 
@@ -52,6 +54,16 @@ def reference_config() -> dict:
 
 def tiny_config(optimizer: str) -> dict:
     cfg = deepcopy(reference_config())
+    if optimizer == "adam":
+        adam = deepcopy(cfg["optimizer_profiles"]["adamw"])
+        adam.update(
+            {
+                "display_name": "Adam",
+                "family": "adam",
+                "weight_decay": 0.0,
+            }
+        )
+        cfg["optimizer_profiles"]["adam"] = adam
     cfg["dataset"].update(
         {
             "name": "unit/fineweb",
@@ -134,7 +146,9 @@ def write_tiny_data(path: Path, cfg: dict) -> None:
                 "document_disjoint_splits": True,
                 "dataset_name": cfg["dataset"]["name"],
                 "dataset_config": cfg["dataset"]["config"],
+                "dataset_split": cfg["dataset"].get("split", "train"),
                 "dataset_revision": cfg["dataset"]["revision"],
+                "eot_token": 0,
                 "files": files,
             }
         ),
@@ -220,7 +234,7 @@ def test_model_inventory_and_all_optimizer_updates_are_finite():
         "W_MLP_IN",
         "W_MLP_OUT",
     }
-    for optimizer_name in ("sgd_momentum", "adamw", "muon"):
+    for optimizer_name in ("sgd_momentum", "adam", "adamw", "muon"):
         candidate = GPT(
             GPTConfig(
                 vocab_size=64,
@@ -231,7 +245,11 @@ def test_model_inventory_and_all_optimizer_updates_are_finite():
             )
         )
         handles = make_optimizer_handles(
-            candidate, optimizer_profile(cfg, optimizer_name)
+            candidate,
+            optimizer_profile(
+                tiny_config("adam") if optimizer_name == "adam" else cfg,
+                optimizer_name,
+            ),
         )
         x = torch.randint(0, 64, (2, 8))
         _, loss = candidate(x, x)
@@ -256,6 +274,7 @@ def test_document_disjoint_writer_produces_exact_verified_splits(tmp_path):
         dataset_metadata={
             "dataset_name": "unit/fineweb",
             "dataset_config": "unit",
+            "dataset_split": "train",
             "dataset_revision": "unit",
         },
         progress_every_documents=0,
@@ -307,6 +326,10 @@ def test_checkpoint_roundtrip_restores_optimizer_and_generator(tmp_path):
         name: tensor.detach().clone()
         for name, tensor in model.state_dict().items()
     }
+    previous_eval_snapshot = [
+        parameter.detach().float().cpu().clone()
+        for parameter in model.parameters()
+    ]
     path = save_training_checkpoint(
         tmp_path / "checkpoint.pt",
         model=model,
@@ -320,6 +343,12 @@ def test_checkpoint_roundtrip_restores_optimizer_and_generator(tmp_path):
         optimizer_name="adamw",
         seed=13,
         train_generator=generator,
+        resume_diagnostics={
+            "previous_eval_snapshot": previous_eval_snapshot,
+            "last_grad_pre": 1.25,
+            "last_grad_post": 0.75,
+            "last_clipped": True,
+        },
     )
     for parameter in model.parameters():
         parameter.data.zero_()
@@ -333,6 +362,42 @@ def test_checkpoint_roundtrip_restores_optimizer_and_generator(tmp_path):
     assert restored == (7, 2.5, 6, 12.0)
     for name, tensor in model.state_dict().items():
         assert torch.equal(tensor, before[name])
+    restored_with_diagnostics = load_training_checkpoint_for_resume(
+        path,
+        model=model,
+        handles=handles,
+        expected_fingerprint="abc",
+        train_generator=generator,
+    )
+    assert restored_with_diagnostics[:4] == (7, 2.5, 6, 12.0)
+    diagnostics = restored_with_diagnostics[4]
+    assert diagnostics is not None
+    assert diagnostics["last_grad_pre"] == pytest.approx(1.25)
+    assert diagnostics["last_grad_post"] == pytest.approx(0.75)
+    assert diagnostics["last_clipped"] is True
+    for restored_snapshot, expected_snapshot in zip(
+        diagnostics["previous_eval_snapshot"],
+        previous_eval_snapshot,
+        strict=True,
+    ):
+        assert torch.equal(restored_snapshot, expected_snapshot)
+
+
+def test_muonclip_qk_resume_truncates_only_uncheckpointed_rows(tmp_path):
+    run_dir = tmp_path / "muon_clip" / "seed_13"
+    run_dir.mkdir(parents=True)
+    path = run_dir / "muonclip_qk.csv"
+    pd.DataFrame(
+        {
+            "step": [500.0, 1_000.0, 1_500.0],
+            "threshold": [100.0, 100.0, 100.0],
+        }
+    ).to_csv(path, index=False)
+
+    truncate_muonclip_qk_after(run_dir, 1_000)
+
+    retained = pd.read_csv(path)
+    assert retained["step"].tolist() == [500.0, 1_000.0]
 
 
 def test_spectral_summary_keeps_direct_trap_and_erg_fields():
@@ -363,7 +428,10 @@ def test_student_t_interval_is_run_level():
     )
 
 
-@pytest.mark.parametrize("optimizer_name", ["sgd_momentum", "adamw", "muon"])
+@pytest.mark.parametrize(
+    "optimizer_name",
+    ["sgd_momentum", "adam", "adamw", "muon"],
+)
 def test_tiny_cpu_training_writes_restart_and_epoch_artifacts(
     tmp_path,
     monkeypatch,
@@ -375,12 +443,12 @@ def test_tiny_cpu_training_writes_restart_and_epoch_artifacts(
     write_tiny_data(data_root, cfg)
 
     monkeypatch.setattr(
-        "rg_nanogpt_one_head.train_loop.evaluate_bleu",
-        lambda *args, **kwargs: {"bleu": 0.0},
-    )
-    monkeypatch.setattr(
         "rg_nanogpt_one_head.run_utils.evaluate_bleu",
-        lambda *args, **kwargs: {"bleu": 0.0},
+        lambda *args, **kwargs: {
+            "bleu": 0.0,
+            "continuation_token_accuracy": 0.0,
+            "continuation_exact_match": 0.0,
+        },
     )
     monkeypatch.setattr(
         "rg_nanogpt_one_head.train_loop.run_weightwatcher",
@@ -408,6 +476,7 @@ def test_tiny_cpu_training_writes_restart_and_epoch_artifacts(
     epoch_metrics = pd.read_csv(run_dir / "epoch_metrics.csv")
     assert len(epoch_metrics) >= 1
     assert epoch_metrics["test_monitoring_only"].eq(1).all()
+    assert epoch_metrics["test_held_out"].eq(1).all()
     assert float(epoch_metrics.iloc[0]["primary_lr"]) == 0.0
     assert all(
         Path(path).is_file() for path in epoch_metrics["checkpoint_path"]
@@ -480,10 +549,12 @@ def test_notebooks_are_valid_and_expose_requested_metrics():
         ),
         "05_muonclip_esd_clip_xmax.ipynb": (
             "WeightMatrixHolder",
-            "watcher_standard.analyze",
+            "watcher.analyze",
             "fix_fingers='clip_xmax'",
             "max_fingers=MAX_FINGERS",
-            "watcher_standard.get_ESD",
+            "watcher.get_ESD",
+            "raw_alpha",
+            "weightwatcher_analysis_calls",
             "alpha_reduction",
         ),
         "06_first_layer_esd_binning_powerlaw.ipynb": (

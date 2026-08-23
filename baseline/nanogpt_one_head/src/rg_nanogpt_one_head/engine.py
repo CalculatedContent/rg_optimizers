@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import shutil
@@ -9,7 +10,7 @@ import torch
 
 from .completion import validate_completed_run
 from .checkpoints import (
-    load_training_checkpoint,
+    load_training_checkpoint_for_resume,
     save_training_checkpoint,
 )
 from .config import (
@@ -32,7 +33,9 @@ from .run_utils import (
     checkpoint_eval,
     prepare_csv,
     run_directory,
+    truncate_muonclip_qk_after,
     truncate_spectral_after,
+    validate_existing_manifest_runtime,
     write_manifest,
 )
 from .runtime import (
@@ -76,6 +79,13 @@ def run_one(
         )
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    # Runtime identity is part of the run identity. Resolve and validate it
+    # before a completed run is reused or a partial run is loaded/truncated.
+    resolved_device = choose_device(device)
+    configure_runtime(resolved_device, cfg)
+    current_runtime = runtime_metadata(resolved_device)
+    validate_existing_manifest_runtime(run_dir, current_runtime)
+
     data_metadata, arrays = load_memmaps(data_root, cfg)
     train_tokens = int(data_metadata["splits"]["train"])
     total_steps = max_steps(cfg, train_tokens)
@@ -104,11 +114,8 @@ def run_one(
             )
         return run_dir
 
-    resolved_device = choose_device(device)
-    configure_runtime(resolved_device, cfg)
     seed_everything(int(seed), resolved_device)
     if progress:
-        metadata = runtime_metadata(resolved_device)
         print(
             "[one-head-env] "
             f"requested={device} "
@@ -116,7 +123,7 @@ def run_one(
             f"device={resolved_device} "
             f"data_root={data_root} "
             f"results_root={results_root} "
-            f"runtime={json.dumps(metadata, sort_keys=True)}",
+            f"runtime={json.dumps(current_runtime, sort_keys=True)}",
             flush=True,
         )
 
@@ -168,30 +175,47 @@ def run_one(
     best_validation_loss = float("inf")
     best_validation_step = 0
     elapsed_offset = 0.0
+    resume_diagnostics = None
+    resumed_from_checkpoint = False
     initial_checkpoint = run_dir / "checkpoint_initial.pt"
     latest_checkpoint = run_dir / "checkpoint_latest.pt"
     best_checkpoint = run_dir / "checkpoint_best.pt"
     final_checkpoint = run_dir / "checkpoint_final.pt"
-    if resume and latest_checkpoint.is_file():
+    resume_checkpoint = (
+        latest_checkpoint
+        if latest_checkpoint.is_file()
+        else initial_checkpoint
+        if initial_checkpoint.is_file()
+        else None
+    )
+    if resume and resume_checkpoint is not None:
         (
             start_step,
             best_validation_loss,
             best_validation_step,
             elapsed_offset,
-        ) = load_training_checkpoint(
-            latest_checkpoint,
+            resume_diagnostics,
+        ) = load_training_checkpoint_for_resume(
+            resume_checkpoint,
             model=model,
             handles=handles,
             expected_fingerprint=fingerprint,
             train_generator=train_generator,
         )
+        if resume_diagnostics is None and start_step > 0:
+            raise RuntimeError(
+                "checkpoint predates deterministic resume diagnostics; use a "
+                "new results directory or rerun with explicit overwrite"
+            )
+        resumed_from_checkpoint = True
         model.to(resolved_device)
         synchronize(resolved_device)
         truncate_spectral_after(run_dir, start_step)
+        truncate_muonclip_qk_after(run_dir, start_step)
         if progress:
             print(
                 f"[one-head-train] resume {optimizer_name} "
-                f"seed={seed} step={start_step}"
+                f"seed={seed} step={start_step} checkpoint={resume_checkpoint.name}"
             )
     elif run_dir.exists() and any(run_dir.iterdir()) and resume:
         # Opt-in diagnostics may register an external append-only artifact
@@ -267,12 +291,12 @@ def run_one(
     prepare_csv(
         metrics_path,
         METRIC_FIELDS,
-        start_step if start_step else None,
+        start_step if resumed_from_checkpoint else None,
     )
     prepare_csv(
         epoch_metrics_path,
         EPOCH_FIELDS,
-        start_step if start_step else None,
+        start_step if resumed_from_checkpoint else None,
     )
     with (
         metrics_path.open(
@@ -286,7 +310,12 @@ def run_one(
             encoding="utf-8",
         ) as epoch_handle,
     ):
-        best_validation_loss, best_validation_step, elapsed_total = (
+        (
+            best_validation_loss,
+            best_validation_step,
+            elapsed_total,
+            final_resume_diagnostics,
+        ) = (
             execute_training_loop(
                 cfg=cfg,
                 model=model,
@@ -294,8 +323,6 @@ def run_one(
                 arrays=arrays,
                 train_probe=train_probe,
                 val_probe=val_probe,
-                test_probe=test_probe,
-                bleu_probe=bleu_probe,
                 device=resolved_device,
                 optimizer_name=optimizer_name,
                 seed=int(seed),
@@ -307,6 +334,7 @@ def run_one(
                 best_validation_loss=best_validation_loss,
                 best_validation_step=best_validation_step,
                 elapsed_offset=elapsed_offset,
+                resume_diagnostics=resume_diagnostics,
                 fingerprint=fingerprint,
                 train_generator=train_generator,
                 epoch_steps=epoch_steps,
@@ -327,6 +355,15 @@ def run_one(
             )
         )
 
+    for handle in handles:
+        flush = getattr(
+            handle.optimizer,
+            "flush_pending_diagnostics",
+            None,
+        )
+        if callable(flush):
+            flush()
+
     for checkpoint in (final_checkpoint, latest_checkpoint):
         save_training_checkpoint(
             checkpoint,
@@ -341,6 +378,7 @@ def run_one(
             optimizer_name=optimizer_name,
             seed=int(seed),
             train_generator=train_generator,
+            resume_diagnostics=final_resume_diagnostics,
         )
 
     final_state = torch.load(
@@ -370,8 +408,8 @@ def run_one(
 
     test_results = {
         "policy": (
-            "test is monitoring-only; validation loss selects "
-            "checkpoint_best.pt"
+            "test is held out until post-training audit; validation loss "
+            "selects checkpoint_best.pt and test never tunes the protocol"
         ),
         "final": final_test,
         "validation_selected": best_test,
@@ -386,6 +424,7 @@ def run_one(
     )
     completion = {
         "completed": True,
+        "completed_at_utc": datetime.now(timezone.utc).isoformat(),
         "optimizer": optimizer_name,
         "seed": int(seed),
         "optimizer_steps": int(total_steps),
@@ -397,8 +436,16 @@ def run_one(
         "best_validation_loss": float(best_validation_loss),
         "final_test_loss": float(final_test["loss"]),
         "final_test_perplexity": float(final_test["perplexity"]),
+        "final_test_bits_per_token": float(final_test["bits_per_token"]),
         "final_test_accuracy": float(final_test["accuracy"]),
+        "final_test_top5_accuracy": float(final_test["top5_accuracy"]),
         "final_test_bleu": float(final_test["bleu"]),
+        "final_test_continuation_token_accuracy": float(
+            final_test["continuation_token_accuracy"]
+        ),
+        "final_test_continuation_exact_match": float(
+            final_test["continuation_exact_match"]
+        ),
         "fingerprint": fingerprint,
     }
     temporary = run_dir / "run_complete.json.tmp"

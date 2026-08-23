@@ -1,0 +1,13 @@
+campaign:
+  id: nanogpt_one_head_2026_08_21_baseline_v3
+  prepared_date: 2026-08-22
+  config: configs/baseline.yaml
+  optimizers: [adamw, muon_clip]
+  seeds: [1337, 2027, 4099, 31415, 271828]
+  require_clean_git: true
+  require_tmp_root: true
+  require_complete_replicates: 10
+  primary_checkpoint_policy: minimum_validation_probe_nll
+  protected_test_policy: held_out_posthoc_never_selects
+  primary_weightwatcher_alpha: alpha_clip_xmax
+  sensitivity_weightwatcher_alpha: alpha_raw

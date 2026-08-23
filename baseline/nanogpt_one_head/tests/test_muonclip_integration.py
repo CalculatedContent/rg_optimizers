@@ -90,7 +90,9 @@ for split, size in splits.items():
     'document_disjoint_splits': True,
     'dataset_name': cfg['dataset']['name'],
     'dataset_config': cfg['dataset']['config'],
+    'dataset_split': cfg['dataset'].get('split', 'train'),
     'dataset_revision': cfg['dataset']['revision'],
+    'eot_token': 0,
     'files': files,
 }), encoding='utf-8')
 

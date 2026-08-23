@@ -209,8 +209,11 @@ def make_optimizer_handles(
             )
         ]
 
-    if family == "adamw":
-        optimizer = torch.optim.AdamW(
+    if family in {"adam", "adamw"}:
+        optimizer_class = (
+            torch.optim.Adam if family == "adam" else torch.optim.AdamW
+        )
+        optimizer = optimizer_class(
             _decay_groups(named, float(profile["weight_decay"])),
             lr=float(profile["learning_rate"]),
             betas=(

@@ -11,6 +11,7 @@ import csv
 from copy import deepcopy
 import importlib
 import math
+import os
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -281,12 +282,42 @@ class MuonClip(torch.optim.Optimizer):
             "mean_gamma",
             "min_gamma",
         ]
-        write_header = not path.is_file() or path.stat().st_size == 0
-        with path.open("a", newline="", encoding="utf-8") as handle:
+        rows: list[dict[str, Any]] = []
+        if path.is_file() and path.stat().st_size:
+            with path.open("r", newline="", encoding="utf-8") as handle:
+                reader = csv.DictReader(handle)
+                if reader.fieldnames != fields:
+                    raise RuntimeError(
+                        "MuonClip QK diagnostic schema changed during a run"
+                    )
+                for row in reader:
+                    if None in row or any(value is None for value in row.values()):
+                        raise RuntimeError(
+                            "MuonClip QK diagnostic row is incomplete"
+                        )
+                    try:
+                        step = int(float(row["step"]))
+                    except (TypeError, ValueError) as exc:
+                        raise RuntimeError(
+                            "MuonClip QK diagnostic row has an invalid step"
+                        ) from exc
+                    if step != int(self.step_index):
+                        rows.append(dict(row))
+        rows.append({field: values[field] for field in fields})
+        rows.sort(key=lambda row: int(float(row["step"])))
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        with temporary.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields)
-            if write_header:
-                writer.writeheader()
-            writer.writerow(values)
+            writer.writeheader()
+            writer.writerows(rows)
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(path)
+
+    def flush_pending_diagnostics(self) -> None:
+        """Persist the final partial diagnostic interval, if one exists."""
+
+        self._flush_diagnostics()
 
     @torch.no_grad()
     def step(self, closure=None):

@@ -3,3 +3,17 @@ __pycache__/
 .ipynb_checkpoints/
 data/
 runs/
+
+# The dated nanoGPT campaign deliberately archives only small, reviewed run
+# records in the repository. Keep ordinary/raw run directories ignored while
+# allowing this one experiment's README and timestamped archive directories.
+!experiments/nanogpt_one_head_2026_08_21_baseline/runs/
+!experiments/nanogpt_one_head_2026_08_21_baseline/runs/README.md
+!experiments/nanogpt_one_head_2026_08_21_baseline/runs/*/
+!experiments/nanogpt_one_head_2026_08_21_baseline/runs/*/**
+experiments/nanogpt_one_head_2026_08_21_baseline/runs/**/*.pt
+experiments/nanogpt_one_head_2026_08_21_baseline/runs/**/*.bin
+experiments/nanogpt_one_head_2026_08_21_baseline/runs/**/*.partial*
+experiments/nanogpt_one_head_2026_08_21_baseline/runs/.*.partial-*/
+experiments/nanogpt_one_head_2026_08_21_baseline/runs/**/cache/
+experiments/nanogpt_one_head_2026_08_21_baseline/runs/**/logs/

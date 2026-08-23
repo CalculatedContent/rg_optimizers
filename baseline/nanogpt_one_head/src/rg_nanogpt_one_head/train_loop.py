@@ -11,7 +11,7 @@ from .checkpoints import (
     save_epoch_model_checkpoint,
     save_training_checkpoint,
 )
-from .evaluation import evaluate_bleu, evaluate_probe, random_batch
+from .evaluation import evaluate_probe, random_batch
 from .optimizers import optimizer_step, set_learning_rates, zero_grad
 from .runtime import (
     empty_mps_cache,
@@ -35,10 +35,14 @@ def _require_finite_metrics(
     values = {
         "train_loss": float(train_metrics["loss"]),
         "train_perplexity": float(train_metrics["perplexity"]),
+        "train_bits_per_token": float(train_metrics["bits_per_token"]),
         "train_accuracy": float(train_metrics["accuracy"]),
+        "train_top5_accuracy": float(train_metrics["top5_accuracy"]),
         "val_loss": float(val_metrics["loss"]),
         "val_perplexity": float(val_metrics["perplexity"]),
+        "val_bits_per_token": float(val_metrics["bits_per_token"]),
         "val_accuracy": float(val_metrics["accuracy"]),
+        "val_top5_accuracy": float(val_metrics["top5_accuracy"]),
     }
     bad = [
         name
@@ -93,6 +97,21 @@ def _evaluation_due(
     )
 
 
+def _resume_diagnostics(
+    previous_eval_snapshot: list[torch.Tensor],
+    *,
+    last_grad_pre: float,
+    last_grad_post: float,
+    last_clipped: bool,
+) -> dict:
+    return {
+        "previous_eval_snapshot": previous_eval_snapshot,
+        "last_grad_pre": float(last_grad_pre),
+        "last_grad_post": float(last_grad_post),
+        "last_clipped": bool(last_clipped),
+    }
+
+
 def execute_training_loop(
     *,
     cfg: dict,
@@ -101,8 +120,6 @@ def execute_training_loop(
     arrays: dict,
     train_probe,
     val_probe,
-    test_probe,
-    bleu_probe,
     device: torch.device,
     optimizer_name: str,
     seed: int,
@@ -114,6 +131,7 @@ def execute_training_loop(
     best_validation_loss: float,
     best_validation_step: int,
     elapsed_offset: float,
+    resume_diagnostics: dict | None,
     fingerprint: str,
     train_generator: torch.Generator,
     epoch_steps: dict[int, float],
@@ -125,12 +143,11 @@ def execute_training_loop(
     latest_checkpoint: Path,
     best_checkpoint: Path,
     progress: bool,
-) -> tuple[float, int, float]:
+) -> tuple[float, int, float, dict]:
     batch_size = int(cfg["training"]["batch_size"])
     grad_accum = int(cfg["training"]["grad_accum_steps"])
     block_size = int(cfg["model"]["block_size"])
     step_tokens = batch_size * grad_accum * block_size
-    eval_cfg = cfg["evaluation"]
 
     if not 1 <= schedule_steps <= total_steps:
         raise ValueError(
@@ -142,11 +159,23 @@ def execute_training_loop(
             f"schedule_steps={schedule_steps}"
         )
 
-    previous_snapshot = parameter_snapshot(model)
-    last_grad_pre = float("nan")
-    last_grad_post = float("nan")
-    last_clipped = False
+    if resume_diagnostics is None:
+        if start_step > 0:
+            raise RuntimeError(
+                "checkpoint has no deterministic resume diagnostics; refusing "
+                "to rewrite monitoring rows with reset gradient/update values"
+            )
+        previous_snapshot = parameter_snapshot(model)
+        last_grad_pre = float("nan")
+        last_grad_post = float("nan")
+        last_clipped = False
+    else:
+        previous_snapshot = resume_diagnostics["previous_eval_snapshot"]
+        last_grad_pre = float(resume_diagnostics["last_grad_pre"])
+        last_grad_post = float(resume_diagnostics["last_grad_post"])
+        last_clipped = bool(resume_diagnostics["last_clipped"])
     started = time.time()
+    final_resume_diagnostics: dict | None = None
 
     # CSV rows describe the model state at `completed_steps`, so the recorded
     # LR must be the LR used by the update that produced that state. At step
@@ -181,6 +210,16 @@ def execute_training_loop(
         )
 
         if evaluation_due:
+            # These are the diagnostics that an uninterrupted run uses for the
+            # row at this exact model state. Keep them even after advancing the
+            # in-memory evaluation snapshot so a crash after evaluation can
+            # reproduce the row byte-for-byte (apart from wall-clock fields).
+            current_state_resume_diagnostics = _resume_diagnostics(
+                previous_snapshot,
+                last_grad_pre=last_grad_pre,
+                last_grad_post=last_grad_post,
+                last_clipped=last_clipped,
+            )
             synchronize(device)
             train_metrics = evaluate_probe(model, train_probe, device)
             val_metrics = evaluate_probe(model, val_probe, device)
@@ -215,21 +254,18 @@ def execute_training_loop(
             test_metrics = {
                 "loss": float("nan"),
                 "perplexity": float("nan"),
+                "bits_per_token": float("nan"),
                 "accuracy": float("nan"),
+                "top5_accuracy": float("nan"),
             }
-            bleu_metrics = {"bleu": float("nan")}
-            if epoch_due or completed_steps == total_steps:
-                test_metrics = evaluate_probe(
-                    model,
-                    test_probe,
-                    device,
-                )
-                bleu_metrics = evaluate_bleu(
-                    model,
-                    bleu_probe,
-                    device=device,
-                    batch_size=int(eval_cfg["bleu_batch_size"]),
-                )
+            bleu_metrics = {
+                "bleu": float("nan"),
+                "continuation_token_accuracy": float("nan"),
+                "continuation_exact_match": float("nan"),
+            }
+            # Keep the test split genuinely held out during optimization.
+            # Final and validation-selected checkpoints are evaluated once,
+            # after training, by engine.checkpoint_eval.
 
             tokens_seen = int(completed_steps * step_tokens)
             actual_epoch = tokens_seen / max(1, train_tokens)
@@ -263,24 +299,52 @@ def execute_training_loop(
                 "train_perplexity": float(
                     train_metrics["perplexity"]
                 ),
+                "train_bits_per_token": float(
+                    train_metrics["bits_per_token"]
+                ),
                 "train_accuracy": float(
                     train_metrics["accuracy"]
+                ),
+                "train_top5_accuracy": float(
+                    train_metrics["top5_accuracy"]
                 ),
                 "val_loss": float(val_metrics["loss"]),
                 "val_perplexity": float(
                     val_metrics["perplexity"]
                 ),
+                "val_bits_per_token": float(
+                    val_metrics["bits_per_token"]
+                ),
                 "val_accuracy": float(
                     val_metrics["accuracy"]
+                ),
+                "val_top5_accuracy": float(
+                    val_metrics["top5_accuracy"]
                 ),
                 "test_loss": float(test_metrics["loss"]),
                 "test_perplexity": float(
                     test_metrics["perplexity"]
                 ),
+                "test_bits_per_token": float(
+                    test_metrics["bits_per_token"]
+                ),
                 "test_accuracy": float(
                     test_metrics["accuracy"]
                 ),
+                "test_top5_accuracy": float(
+                    test_metrics["top5_accuracy"]
+                ),
                 "test_bleu": float(bleu_metrics["bleu"]),
+                "test_continuation_token_accuracy": float(
+                    bleu_metrics.get(
+                        "continuation_token_accuracy", float("nan")
+                    )
+                ),
+                "test_continuation_exact_match": float(
+                    bleu_metrics.get(
+                        "continuation_exact_match", float("nan")
+                    )
+                ),
                 "val_generalization_gap": float(
                     val_metrics["loss"] - train_metrics["loss"]
                 ),
@@ -323,6 +387,7 @@ def execute_training_loop(
                         "nominal_epoch": nominal_epoch,
                         "checkpoint_path": str(checkpoint_path),
                         "test_monitoring_only": 1,
+                        "test_held_out": 1,
                     }
                 )
                 epoch_handle.flush()
@@ -335,13 +400,15 @@ def execute_training_loop(
                     train_tokens=train_tokens,
                     config=cfg["weightwatcher"],
                     seed=int(seed),
+                    fingerprint=fingerprint,
                 )
                 if progress:
                     print(
                         "[one-head-ww] "
                         f"optimizer={optimizer_name} seed={seed} "
                         f"epoch={nominal_epoch:.2f} "
-                        f"alpha={ww_summary.get('alpha_median', float('nan')):.3f} "
+                        f"alpha_clip={ww_summary.get('alpha_clip_xmax_median', ww_summary.get('alpha_median', float('nan'))):.3f} "
+                        f"alpha_raw={ww_summary.get('alpha_raw_median', float('nan')):.3f} "
                         f"ERG_gap={ww_summary.get('ERG_gap_median', float('nan')):.3f} "
                         f"num_traps={ww_summary.get('num_traps_mean', float('nan')):.2f}",
                         flush=True,
@@ -381,6 +448,9 @@ def execute_training_loop(
                     f"eta={eta_text}",
                     flush=True,
                 )
+
+            if completed_steps == total_steps:
+                final_resume_diagnostics = current_state_resume_diagnostics
 
         if completed_steps == total_steps:
             break
@@ -465,11 +535,23 @@ def execute_training_loop(
                 optimizer_name=optimizer_name,
                 seed=int(seed),
                 train_generator=train_generator,
+                resume_diagnostics=_resume_diagnostics(
+                    previous_snapshot,
+                    last_grad_pre=last_grad_pre,
+                    last_grad_post=last_grad_post,
+                    last_clipped=last_clipped,
+                ),
             )
 
     synchronize(device)
+    if final_resume_diagnostics is None:
+        raise RuntimeError(
+            "final model state was not evaluated; deterministic resume "
+            "diagnostics are unavailable"
+        )
     return (
         float(best_validation_loss),
         int(best_validation_step),
         float(elapsed_offset + time.time() - started),
+        final_resume_diagnostics,
     )
