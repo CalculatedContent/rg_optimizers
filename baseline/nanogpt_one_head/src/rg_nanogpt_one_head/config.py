@@ -10,10 +10,18 @@ from typing import Any, Iterable
 
 import yaml
 
+from .provenance import (
+    scientific_dependency_versions,
+    source_fingerprint_payload,
+)
 from .runtime import is_tpu_environment
 
 BASELINE_OPTIMIZERS = ("sgd_momentum", "adamw", "muon")
-SUPPORTED_OPTIMIZERS = BASELINE_OPTIMIZERS
+# ``adam`` is optional in the historical reference YAMLs, but is a first-class
+# arm in the dated long-horizon campaign. Keeping it out of
+# BASELINE_OPTIMIZERS preserves compatibility with old configs while exposing
+# it whenever a profile is declared.
+SUPPORTED_OPTIMIZERS = ("sgd_momentum", "adam", "adamw", "muon")
 DEFAULT_ROOT = Path("/tmp/rg-nanogpt-one-head")
 TPU_ROOT_ENV = "RG_NANOGPT_ONE_HEAD_TPU_ROOT"
 TPU_PERSISTENT_ENV = "RG_TPU_PERSISTENT_ROOT"
@@ -301,11 +309,42 @@ def validate_config(cfg: dict[str, Any]) -> None:
         raise ValueError("WeightWatcher randomize must be enabled")
     if int(ww["min_evals"]) < 5:
         raise ValueError("weightwatcher.min_evals must be at least 5")
+    finger_policy = ww.get("fix_fingers", False)
+    if finger_policy not in (False, "clip_xmax"):
+        raise ValueError(
+            "weightwatcher.fix_fingers must be false or 'clip_xmax'"
+        )
+    if finger_policy == "clip_xmax":
+        if int(ww.get("max_fingers", 0)) < 1:
+            raise ValueError(
+                "weightwatcher.max_fingers must be positive when "
+                "fix_fingers='clip_xmax'"
+            )
+        if not bool(ww.get("require_raw_alpha", True)):
+            raise ValueError(
+                "clip_xmax monitoring must retain WeightWatcher's raw_alpha"
+            )
+
+    runtime = cfg["runtime"]
+    if str(runtime.get("matmul_precision", "high")) not in {
+        "highest",
+        "high",
+        "medium",
+    }:
+        raise ValueError(
+            "runtime.matmul_precision must be highest, high, or medium"
+        )
+    if bool(runtime.get("allow_tf32", False)) and str(
+        runtime.get("matmul_precision", "high")
+    ) == "highest":
+        raise ValueError(
+            "runtime.allow_tf32 cannot be true when matmul_precision=highest"
+        )
 
 
 def validate_optimizer_profile(profile: dict[str, Any]) -> None:
     family = str(profile.get("family", ""))
-    if family not in {"sgd", "adamw", "muon"}:
+    if family not in {"sgd", "adam", "adamw", "muon"}:
         raise ValueError(f"unsupported optimizer family: {family}")
     warmup_fraction = float(profile.get("warmup_fraction", -1.0))
     if not 0.0 <= warmup_fraction < 1.0:
@@ -315,7 +354,7 @@ def validate_optimizer_profile(profile: dict[str, Any]) -> None:
     if "lr_schedule_epochs" in profile and float(profile["lr_schedule_epochs"]) <= 0:
         raise ValueError("lr_schedule_epochs must be positive")
 
-    if family in {"sgd", "adamw"}:
+    if family in {"sgd", "adam", "adamw"}:
         peak = float(profile["learning_rate"])
         floor = float(profile["min_learning_rate"])
         if peak <= 0 or floor < 0 or floor > peak:
@@ -441,6 +480,9 @@ def protocol_fingerprint(
         "optimizer_profile": optimizer_profile(cfg, optimizer),
         "evaluation": cfg["evaluation"],
         "weightwatcher": cfg["weightwatcher"],
+        "runtime": cfg["runtime"],
+        "source": source_fingerprint_payload(),
+        "scientific_dependencies": scientific_dependency_versions(),
         "optimizer": str(optimizer),
         "seed": int(seed),
         "data_metadata": data_metadata,

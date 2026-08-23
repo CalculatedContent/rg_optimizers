@@ -71,20 +71,19 @@ When installing from the repository root, use:
 python -m pip install -e './baseline[experiment]'
 ```
 
-Set persistent locations before running long jobs:
+Set one explicit experiment location before running long jobs:
 
 ```bash
-export RG_BASELINE_DATA_DIR="$HOME/rg-optimizer-data"
-export RG_BASELINE_RUN_ROOT="$HOME/rg-optimizer-runs"
+export RG_BASELINE_EXPERIMENT_ROOT="/tmp/rg-optimizer-baselines"
+export RG_BASELINE_DATA_DIR="$RG_BASELINE_EXPERIMENT_ROOT/data"
+export RG_BASELINE_RUN_ROOT="$RG_BASELINE_EXPERIMENT_ROOT/runs"
 ```
 
-The isolated one-head nanoGPT suite uses:
+The dated one-head nanoGPT campaign uses and validates:
 
 ```bash
-export RG_NANOGPT_ONE_HEAD_ROOT="$HOME/rg-nanogpt-one-head"
+export RG_NANOGPT_EXPERIMENT_ROOT="/tmp/rg-nanogpt-one-head-20260821"
 ```
-
-Do not put long-running results in `/tmp`.
 
 ## 1. MNIST / MLP3
 
@@ -243,14 +242,25 @@ that produced that checkpoint.
 Mac workflow:
 
 ```bash
-cd nanogpt_one_head
-bash scripts/setup_mac.sh
-bash scripts/prepare_data.sh
-bash scripts/smoke_test.sh
-
-caffeinate -dimsu bash scripts/run_all_baselines.sh \
-  2>&1 | tee "$RG_NANOGPT_ONE_HEAD_ROOT/run_all.log"
+cd experiments/nanogpt_one_head_2026_08_21_baseline
+export RG_NANOGPT_EXPERIMENT_ROOT="/tmp/rg-nanogpt-one-head-20260821"
+mkdir -p "$RG_NANOGPT_EXPERIMENT_ROOT"/{cache/{home,pip,xdg/{cache,config,data,state},matplotlib},tmp}
+export HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/home"
+export PIP_CACHE_DIR="$RG_NANOGPT_EXPERIMENT_ROOT/cache/pip"
+export XDG_CACHE_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/cache"
+export XDG_CONFIG_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/config"
+export XDG_DATA_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/data"
+export XDG_STATE_HOME="$RG_NANOGPT_EXPERIMENT_ROOT/cache/xdg/state"
+export MPLCONFIGDIR="$RG_NANOGPT_EXPERIMENT_ROOT/cache/matplotlib"
+export TMPDIR="$RG_NANOGPT_EXPERIMENT_ROOT/tmp"
+python -m pip install -e ../../nanogpt_one_head
+python scripts/run_experiment.py doctor --device mps
+python scripts/run_experiment.py prepare
+caffeinate -dimsu python scripts/run_experiment.py run --device mps
 ```
+
+See the [dated experiment README](experiments/nanogpt_one_head_2026_08_21_baseline/README.md)
+for the AdamW/MuonClip five-seed protocol, reporting, and archive steps.
 
 ## 4. nanochat
 

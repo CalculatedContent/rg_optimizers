@@ -209,6 +209,8 @@ def validate_prepared_data(
         )
 
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if int(metadata.get("schema_version", -1)) != 2:
+        raise RuntimeError("prepared corpus metadata schema must be version 2")
     expected_splits = {
         "train": int(cfg["dataset"]["train_tokens"]),
         "val": int(cfg["dataset"]["val_tokens"]),
@@ -225,8 +227,21 @@ def validate_prepared_data(
         raise RuntimeError("prepared dataset configuration does not match config")
     if metadata.get("dataset_revision") != cfg["dataset"]["revision"]:
         raise RuntimeError("prepared dataset revision does not match config")
-    if metadata.get("tokenizer") != "gpt2":
-        raise RuntimeError("prepared tokenizer must be GPT-2 BPE")
+    if metadata.get("dataset_split") != cfg["dataset"].get("split", "train"):
+        raise RuntimeError("prepared dataset split does not match config")
+    expected_tokenizer = str(cfg["dataset"].get("tokenizer", "gpt2"))
+    if metadata.get("tokenizer") != expected_tokenizer:
+        raise RuntimeError("prepared tokenizer does not match config")
+    if expected_tokenizer != "gpt2":
+        raise RuntimeError("this baseline requires the GPT-2 BPE tokenizer")
+    if int(metadata.get("vocab_size", -1)) != int(cfg["model"]["vocab_size"]):
+        raise RuntimeError("prepared tokenizer vocabulary does not match model")
+    eot_token = int(metadata.get("eot_token", -1))
+    if int(cfg["model"]["vocab_size"]) == 50_257:
+        if eot_token != 50_256:
+            raise RuntimeError("prepared GPT-2 end-of-text token must be 50256")
+    elif not 0 <= eot_token < int(cfg["model"]["vocab_size"]):
+        raise RuntimeError("prepared end-of-text token is outside the vocabulary")
     if metadata.get("dtype") != TOKEN_DTYPE.name:
         raise RuntimeError("prepared token dtype must be uint16")
     if metadata.get("document_disjoint_splits") is not True:

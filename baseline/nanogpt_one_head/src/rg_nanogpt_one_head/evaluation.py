@@ -142,6 +142,7 @@ def evaluate_probe(
         # validation-checkpoint selection comparable to existing runs.
         losses: list[float] = []
         correct = 0
+        top5_correct = 0
         total = 0
         for x_cpu, y_cpu in probe:
             x = x_cpu.to(device)
@@ -155,17 +156,31 @@ def evaluate_probe(
             correct += int(
                 (logits.argmax(dim=-1) == y).sum().detach().cpu()
             )
+            top_k = min(5, int(logits.shape[-1]))
+            top5_correct += int(
+                (
+                    logits.topk(top_k, dim=-1).indices
+                    == y.unsqueeze(-1)
+                )
+                .any(dim=-1)
+                .sum()
+                .detach()
+                .cpu()
+            )
             total += int(y.numel())
         model.train(was_training)
         mean_loss = float(np.mean(losses))
         return {
             "loss": mean_loss,
-            "perplexity": float(math.exp(min(20.0, mean_loss))),
+            "perplexity": float(math.exp(mean_loss)),
+            "bits_per_token": float(mean_loss / math.log(2.0)),
             "accuracy": correct / max(1, total),
+            "top5_accuracy": top5_correct / max(1, total),
         }
 
     loss_sum = torch.zeros((), dtype=torch.float32, device=device)
     correct = torch.zeros((), dtype=torch.int64, device=device)
+    top5_correct = torch.zeros((), dtype=torch.int64, device=device)
     total = 0
     batches = 0
     for x_cpu, y_cpu in probe:
@@ -176,6 +191,10 @@ def evaluate_probe(
             raise RuntimeError("evaluation forward pass did not return loss")
         loss_sum = loss_sum + loss.detach().float()
         correct = correct + (logits.argmax(dim=-1) == y).sum()
+        top_k = min(5, int(logits.shape[-1]))
+        top5_correct = top5_correct + (
+            logits.topk(top_k, dim=-1).indices == y.unsqueeze(-1)
+        ).any(dim=-1).sum()
         total += int(y.numel())
         batches += 1
         # XLA is lazy. Execute each fixed-shape batch without transferring
@@ -186,11 +205,14 @@ def evaluate_probe(
     synchronize(device)
     mean_loss = float((loss_sum / batches).detach().cpu())
     correct_value = int(correct.detach().cpu())
+    top5_correct_value = int(top5_correct.detach().cpu())
     model.train(was_training)
     return {
         "loss": mean_loss,
-        "perplexity": float(math.exp(min(20.0, mean_loss))),
+        "perplexity": float(math.exp(mean_loss)),
+        "bits_per_token": float(mean_loss / math.log(2.0)),
         "accuracy": correct_value / max(1, total),
+        "top5_accuracy": top5_correct_value / max(1, total),
     }
 
 
@@ -198,9 +220,10 @@ def _cpu_bleu_model(model) -> nn.Module:
     """Build a CPU copy for BLEU when the live model is on TPU/XLA.
 
     Greedy decoding changes sequence length at every token and would otherwise
-    trigger a series of XLA compilations. BLEU is monitoring-only, so the small
-    CPU copy avoids that accelerator-specific overhead without affecting
-    training, checkpoint selection, or WeightWatcher measurements.
+    trigger a series of XLA compilations. BLEU is a post-training secondary
+    audit, so the small CPU copy avoids that accelerator-specific overhead
+    without affecting training, checkpoint selection, or WeightWatcher
+    measurements.
     """
 
     synchronize(model.lm_head.weight.device)
@@ -221,9 +244,10 @@ def evaluate_bleu(
 
     This is not a translation benchmark. It measures exact lexical overlap
     between deterministic model continuations and the held-out continuation.
-    On TPU/XLA, decoding is intentionally performed on a CPU snapshot because
-    it is monitoring-only and its changing sequence lengths are a poor fit for
-    repeated XLA compilation.
+    It is evaluated only after training for the final and validation-selected
+    checkpoints. On TPU/XLA, decoding is intentionally performed on a CPU
+    snapshot because changing sequence lengths are a poor fit for repeated XLA
+    compilation.
     """
 
     try:
@@ -246,6 +270,9 @@ def evaluate_bleu(
     encoder = tiktoken.get_encoding("gpt2")
     hypotheses: list[str] = []
     references: list[str] = []
+    continuation_correct = 0
+    continuation_total = 0
+    continuation_exact = 0
     for start in range(0, len(probe.prompts), int(batch_size)):
         prompts = probe.prompts[
             start : start + int(batch_size)
@@ -261,6 +288,13 @@ def evaluate_bleu(
         reference_batch = probe.references[
             start : start + int(batch_size)
         ]
+        continuation_correct += int(
+            (continuation == reference_batch).sum().item()
+        )
+        continuation_total += int(reference_batch.numel())
+        continuation_exact += int(
+            (continuation == reference_batch).all(dim=-1).sum().item()
+        )
         for predicted_tokens, reference_tokens in zip(
             continuation,
             reference_batch,
@@ -277,4 +311,10 @@ def evaluate_bleu(
         "bleu_examples": float(len(hypotheses)),
         "bleu_sys_len": float(score.sys_len),
         "bleu_ref_len": float(score.ref_len),
+        "continuation_token_accuracy": (
+            continuation_correct / max(1, continuation_total)
+        ),
+        "continuation_exact_match": (
+            continuation_exact / max(1, len(hypotheses))
+        ),
     }

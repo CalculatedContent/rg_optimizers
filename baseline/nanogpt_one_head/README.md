@@ -6,6 +6,13 @@ measurement, and multi-seed conventions in
 `CalculatedContent/nanogpt-experiments`, but is isolated here so RG optimizer
 variants can use it as a clean control.
 
+The current AdamW/MuonClip, five-seed, clip-Xmax/raw-alpha campaign is
+defined in the
+[2026-08-21 dated experiment](../experiments/nanogpt_one_head_2026_08_21_baseline/README.md).
+Use that folder's checked runner for new overnight Mac, H100, or single-device
+TPU executions. The protocol below remains the historical one-epoch
+SGD/AdamW/Muon reference.
+
 It trains the same **one-block, one-attention-head nanoGPT** with:
 
 1. **SGD + Nesterov momentum**;
@@ -166,8 +173,11 @@ Each nominal reporting checkpoint records:
 ```text
 train / validation / test cross-entropy
 train / validation / test perplexity
+train / validation / test bits per token
 train / validation / test next-token top-1 accuracy
+train / validation / test next-token top-5 accuracy
 fixed-continuation test BLEU
+fixed-continuation token accuracy and exact match
 validation and test generalization gaps
 primary and auxiliary learning rates
 gradient norms
@@ -194,6 +204,7 @@ results/<optimizer>/seed_<seed>/
   manifest.json
   metrics.csv
   epoch_metrics.csv
+  checkpoint_initial.pt
   checkpoint_latest.pt
   checkpoint_best.pt
   checkpoint_final.pt
@@ -211,11 +222,15 @@ generator, Python/NumPy/Torch RNG state, CUDA RNG state where applicable, MPS
 RNG state where the installed PyTorch exposes it, elapsed time, validation-best
 state, and a protocol fingerprint. A mismatched config, verified data identity,
 optimizer, or seed is rejected rather than silently resumed. Completed runs are
-skipped.
+skipped. Full-state checkpoints carry exact model and optimizer-state SHA-256
+digests; permanent model-only checkpoints carry model-state digests. Completion
+validation recomputes them before reuse or analysis.
 
-Test measurements are monitoring-only. Validation loss selects
-`checkpoint_best.pt`; test loss, test accuracy, test perplexity, and BLEU never
-change optimizer updates, schedules, stopping, or checkpoint selection.
+The test split stays held out throughout training. Validation loss selects
+`checkpoint_best.pt`; only after optimization ends are the final and
+validation-selected checkpoints evaluated for test loss, accuracy, perplexity,
+and BLEU. Test outcomes never change updates, schedules, stopping, or
+checkpoint selection.
 
 ## Conda / local workflow
 

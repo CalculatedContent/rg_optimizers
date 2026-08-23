@@ -162,7 +162,8 @@ checkpoint selection policy, or WeightWatcher definition.
   on a different accelerator.
 - WeightWatcher always receives CPU copies of only the six hidden transformer
   matrices.
-- Greedy BLEU is monitoring-only. On TPU it runs on a CPU snapshot to avoid
-  compiling a different XLA graph for every generated sequence length.
+- Greedy BLEU is a post-training secondary audit. On TPU it runs on a CPU
+  snapshot to avoid compiling a different XLA graph for every generated
+  sequence length.
 - Randomized WeightWatcher measurements restore Python, NumPy, CPU Torch, and
   accelerator RNG state before training resumes.

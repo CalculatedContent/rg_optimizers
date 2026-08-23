@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pandas as pd
 import pytest
 import torch
 import yaml
@@ -43,11 +44,13 @@ def hidden_matrices(model: GPT) -> list[torch.nn.Parameter]:
     ]
 
 
-def test_historical_launcher_remains_three_optimizer_reference() -> None:
-    # Importing the class does not mutate the historical launcher. The extension
-    # is installed only by rg-onehead-muonclip.
+def test_launcher_exposes_optional_adam_without_installing_muonclip() -> None:
+    # Importing the class does not install MuonClip. Adam is now a first-class
+    # optional profile while the historical YAML still requires only its
+    # original SGD/AdamW/Muon profiles.
     assert SUPPORTED_OPTIMIZERS == (
         "sgd_momentum",
+        "adam",
         "adamw",
         "muon",
     )
@@ -175,6 +178,48 @@ def test_qk_clip_is_noop_below_threshold() -> None:
     assert torch.equal(model.blocks[0].attn.k_proj.weight, k_before)
     assert optimizer.last_diagnostics["active_fraction"] == pytest.approx(0.0)
     assert optimizer.last_diagnostics["min_gamma"] == pytest.approx(1.0)
+
+
+def test_qk_diagnostic_rows_are_atomic_and_idempotent(tmp_path) -> None:
+    parameter = torch.nn.Parameter(torch.zeros(2, 2))
+
+    class DummyModel:
+        blocks = []
+
+    path = tmp_path / "muonclip_qk.csv"
+    optimizer = MuonClip(
+        [parameter],
+        model=DummyModel(),
+        lr=0.0,
+        momentum=0.0,
+        nesterov=False,
+        weight_decay=0.0,
+        update_rms_scale=0.2,
+        qk_clip_threshold=100.0,
+        diagnostics_path=path,
+    )
+    values = {
+        "step": 500.0,
+        "threshold": 100.0,
+        "steps_in_interval": 500.0,
+        "head_observations": 500.0,
+        "active_heads": 1.0,
+        "active_fraction": 0.002,
+        "mean_max_logit": 10.0,
+        "max_logit": 20.0,
+        "mean_gamma": 0.99,
+        "min_gamma": 0.5,
+    }
+    optimizer.step_index = 500
+    optimizer._write_diagnostics(values)
+    optimizer._write_diagnostics({**values, "max_logit": 25.0})
+    optimizer.step_index = 1_000
+    optimizer._write_diagnostics({**values, "step": 1_000.0})
+
+    frame = pd.read_csv(path)
+    assert frame["step"].tolist() == [500.0, 1_000.0]
+    assert frame.loc[frame["step"].eq(500.0), "max_logit"].item() == 25.0
+    assert not path.with_suffix(".csv.tmp").exists()
 
 
 def test_attention_observation_matches_native_sdpa_output() -> None:
