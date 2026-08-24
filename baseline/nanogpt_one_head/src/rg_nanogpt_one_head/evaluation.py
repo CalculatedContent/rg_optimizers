@@ -128,7 +128,7 @@ def fixed_bleu_probe(
     )
 
 
-@torch.inference_mode()
+@torch.no_grad()
 def evaluate_probe(
     model: nn.Module,
     probe: Iterable[tuple[torch.Tensor, torch.Tensor]],
@@ -232,7 +232,7 @@ def _cpu_bleu_model(model) -> nn.Module:
     return cpu_model
 
 
-@torch.inference_mode()
+@torch.no_grad()
 def evaluate_bleu(
     model,
     probe: BleuProbe,
