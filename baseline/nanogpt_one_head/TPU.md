@@ -16,20 +16,146 @@ size, data sampling, checkpoint ownership, and WeightWatcher ownership; the
 current runner refuses a multi-process XLA launch rather than silently changing
 the experiment.
 
-## Install on a TPU VM
+## TPU Builders v5e Flex-Start quick path
 
-Use a Python/PyTorch combination supported by the installed PyTorch/XLA release,
-then install the TPU extra from this directory:
+The following is a known-good path for a one-hour disposable v5e session. Run
+the provisioning commands from Google Cloud Shell, not from inside a TPU VM.
+
+### 1. Request the TPU
+
+```bash
+gcloud alpha compute tpus queued-resources create tpu-v5e-request \
+  --zone=us-west4-a \
+  --accelerator-type=v5litepod-4 \
+  --runtime-version=v2-alpha-tpuv5-lite \
+  --node-id=tpu-v5e-node \
+  --provisioning-model=flex-start \
+  --max-run-duration=1h \
+  --valid-until-duration=30m \
+  --labels=purpose=flex-start
+```
+
+Check the request until its state is `ACTIVE`:
+
+```bash
+gcloud alpha compute tpus queued-resources describe tpu-v5e-request \
+  --zone=us-west4-a \
+  --format='value(state.state)'
+```
+
+`--valid-until-duration=30m` is the capacity-acquisition window.
+`--max-run-duration=1h` starts after provisioning and automatically terminates
+the TPU after at most one hour.
+
+SSH into the active TPU VM:
+
+```bash
+gcloud compute tpus tpu-vm ssh tpu-v5e-node \
+  --project=YOUR_PROJECT_ID \
+  --zone=us-west4-a
+```
+
+To clean up early from Cloud Shell:
+
+```bash
+gcloud alpha compute tpus queued-resources delete tpu-v5e-request \
+  --zone=us-west4-a \
+  --force \
+  --quiet
+```
+
+### 2. Clone and bootstrap the TPU VM
+
+Inside the TPU VM:
+
+```bash
+cd /tmp
+git clone https://github.com/CalculatedContent/rg_optimizers.git
+cd rg_optimizers/baseline/nanogpt_one_head
+bash scripts/setup_tpu_v5e.sh --ephemeral
+```
+
+The script records the required environment in:
+
+```text
+~/.config/rg_optimizers/tpu_env.sh
+```
+
+It also adds an idempotent source line to `~/.bashrc`, so future SSH shells load
+the TPU environment automatically. For the shell that launched the setup
+script, load it explicitly after the script returns:
+
+```bash
+source ~/.config/rg_optimizers/tpu_env.sh
+```
+
+For a disposable setup plus a small, non-scientific AdamW throughput test:
+
+```bash
+bash scripts/setup_tpu_v5e.sh --ephemeral --run-quick-smoke
+```
+
+That optional quick smoke creates a reduced 4M/100k/100k-token corpus, disables
+WeightWatcher, and runs approximately 49 optimizer steps. It is only a TPU/XLA
+compatibility and throughput check; it must not appear in scientific result
+tables.
+
+For a real run, mount durable storage and use:
+
+```bash
+bash scripts/setup_tpu_v5e.sh \
+  --persistent-root /mnt/disks/rg-data
+```
+
+### What the setup script fixes and verifies
+
+The stock TPU VM may contain an old packaging toolchain and an incompatible
+PyTorch/PyTorch-XLA pair. The reusable script therefore:
+
+1. upgrades user-level `pip`, `setuptools`, and `wheel` before installing this
+   package, preventing the erroneous `UNKNOWN-0.0.0` build observed with the
+   stock toolchain;
+2. removes a stale `UNKNOWN` package if one exists;
+3. installs matching `torch==2.6.0` and `torch_xla[tpu]==2.6.0` binaries from
+   the TPU wheel indexes when the installed major/minor versions do not match;
+4. installs this package without editable mode;
+5. exports `PJRT_DEVICE=TPU` and the TPU provenance label
+   `TPU_ACCELERATOR_TYPE=v5litepod-4`;
+6. unsets `XLA_USE_BF16` and `XLA_DOWNCAST_BF16`, preserving the float32
+   reference protocol;
+7. configures either persistent or explicitly ephemeral storage; and
+8. verifies both the raw XLA devices and `rg-onehead-env --device auto`.
+
+The expected direct XLA check on a `v5litepod-4` is:
+
+```text
+torch: 2.6.0+cu124
+torch_xla: 2.6.0
+TPU devices: ['xla:0', 'xla:1', 'xla:2', 'xla:3']
+```
+
+The baseline still uses only `xla:0` in its current single-process protocol.
+
+## Manual installation fallback
+
+The setup script is preferred. The equivalent core installation sequence is:
 
 ```bash
 cd baseline/nanogpt_one_head
-python -m pip install -e '.[tpu]'
+
+python3 -m pip install --user --upgrade pip setuptools wheel
+python3 -m pip uninstall -y torch torch_xla torchvision
+python3 -m pip install --user \
+  'torch==2.6.0' \
+  'torch_xla[tpu]==2.6.0' \
+  -f https://storage.googleapis.com/libtpu-releases/index.html \
+  -f https://storage.googleapis.com/libtpu-wheels/index.html
+python3 -m pip install --user .
 ```
 
-PyTorch and PyTorch/XLA must have matching major/minor versions. The runner
-checks this before training and reports a direct error if they do not match.
-The reference protocol is float32; `XLA_USE_BF16` and `XLA_DOWNCAST_BF16` must
-not be enabled.
+PyTorch and PyTorch/XLA must have matching major/minor versions. A mismatch can
+surface as an `_XLAC` import failure with an undefined PyTorch symbol. The
+runner also checks the versions before training and reports a direct error.
 
 ## Persistent TPU storage
 
@@ -99,20 +225,23 @@ rg-onehead-env --device auto
 ```
 
 It prints JSON containing the selected accelerator, XLA runtime information,
-and resolved data/results/plot roots. On a TPU VM, the output must show:
+and resolved data/results/plot roots. On a v5e TPU VM, the output should include:
 
 ```text
 accelerator: tpu
+device: xla:0
 pjrt_device: TPU
+tpu_accelerator_type: v5litepod-4
+xla_addressable_device_count: 4
 xla_process_count: 1
 ```
 
-and the roots must point to the attached durable volume.
+For a scientific run, the roots must point to the attached durable volume.
 
-## Smoke test
+## Full integration smoke test
 
-After the pinned corpus is available on the persistent volume, run the short
-non-scientific integration test:
+After the pinned corpus is available on the persistent volume, run the committed
+integration test:
 
 ```bash
 rg-onehead-train \
@@ -122,7 +251,7 @@ rg-onehead-train \
   --no-resume
 ```
 
-The smoke test exercises model transfer, Muon, auxiliary AdamW, XLA step
+This smoke test exercises model transfer, Muon, auxiliary AdamW, XLA step
 boundaries, evaluation, CPU BLEU, CPU WeightWatcher, portable checkpoints, and
 persistent path resolution. It is not an optimizer result and should never be
 included in the scientific tables.
