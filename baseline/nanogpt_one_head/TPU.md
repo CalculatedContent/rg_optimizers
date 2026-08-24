@@ -72,27 +72,31 @@ Inside the TPU VM:
 cd /tmp
 git clone https://github.com/CalculatedContent/rg_optimizers.git
 cd rg_optimizers/baseline/nanogpt_one_head
-bash scripts/setup_tpu_v5e.sh --ephemeral
+bash setup_tpu_v5e.sh --ephemeral
 ```
 
-The script records the required environment in:
-
-```text
-~/.config/rg_optimizers/tpu_env.sh
-```
-
-It also adds an idempotent source line to `~/.bashrc`, so future SSH shells load
-the TPU environment automatically. For the shell that launched the setup
-script, load it explicitly after the script returns:
+The script resolves the current user's login directory dynamically and records
+the required environment below that directory. To inspect the exact path:
 
 ```bash
-source ~/.config/rg_optimizers/tpu_env.sh
+USER_ROOT="$(getent passwd "$(id -u)" | cut -d: -f6)"
+ENV_FILE="${USER_ROOT}/.config/rg_optimizers/tpu_env.sh"
+printf '%s\n' "$ENV_FILE"
+```
+
+It also adds an idempotent source line to the current user's `.bashrc`, so
+future SSH shells load the TPU environment automatically. For the shell that
+launched the setup script, load it explicitly after the script returns:
+
+```bash
+USER_ROOT="$(getent passwd "$(id -u)" | cut -d: -f6)"
+source "${USER_ROOT}/.config/rg_optimizers/tpu_env.sh"
 ```
 
 For a disposable setup plus a small, non-scientific AdamW throughput test:
 
 ```bash
-bash scripts/setup_tpu_v5e.sh --ephemeral --run-quick-smoke
+bash setup_tpu_v5e.sh --ephemeral --run-quick-smoke
 ```
 
 That optional quick smoke creates a reduced 4M/100k/100k-token corpus, disables
@@ -103,7 +107,7 @@ tables.
 For a real run, mount durable storage and use:
 
 ```bash
-bash scripts/setup_tpu_v5e.sh \
+bash setup_tpu_v5e.sh \
   --persistent-root /mnt/disks/rg-data
 ```
 
