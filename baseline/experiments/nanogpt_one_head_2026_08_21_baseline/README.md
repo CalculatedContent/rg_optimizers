@@ -68,7 +68,8 @@ six-matrix alpha summary.
 
 The raw per-matrix tables also retain WeightWatcher's `ERG_gap`, `num_traps`,
 `detX_num`, `detX_val`, and `rand_distance` fields. The report produces a
-separate ERG-gap/correlation-trap trajectory plot for every optimizer and
+full-range and robust per-matrix zoomed alpha plots, plus a separate
+ERG-gap/correlation-trap trajectory plot for every optimizer and
 matrix; these values are never reconstructed from a proxy statistic.
 
 ## Metrics and their exact meaning
