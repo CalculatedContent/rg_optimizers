@@ -2412,11 +2412,26 @@ def _alpha_variant_summary(
     return _curve_summary(frame, metric)
 
 
+def _alpha_zoom_limits(frame: pd.DataFrame) -> tuple[float, float]:
+    """Return robust, tight alpha limits while retaining the alpha=2 guide."""
+    values = frame[["alpha_raw", "alpha_clip_xmax"]].to_numpy(dtype=float).ravel()
+    values = values[np.isfinite(values)]
+    if values.size == 0:
+        return (1.5, 2.5)
+    low, high = np.quantile(values, (0.02, 0.98))
+    low = min(float(low), 2.0)
+    high = max(float(high), 2.0)
+    span = max(high - low, 0.1)
+    padding = max(0.05 * span, 0.025)
+    return (low - padding, high + padding)
+
+
 def _optimizer_alpha_plot(
     layers: pd.DataFrame,
     *,
     optimizer: str,
     path: Path,
+    zoomed: bool = False,
 ) -> None:
     selected = layers[layers["optimizer"].eq(optimizer)].copy()
     if selected.empty:
@@ -2460,6 +2475,8 @@ def _optimizer_alpha_plot(
                     x[valid], low[valid], high[valid], color=color, alpha=0.12
                 )
         axis.axhline(2.0, color="black", linestyle=":", linewidth=1.0)
+        if zoomed:
+            axis.set_ylim(*_alpha_zoom_limits(matrix_frame))
         axis.set_title(matrix)
         axis.set_ylabel("WeightWatcher alpha")
         axis.grid(alpha=0.25)
@@ -2467,7 +2484,8 @@ def _optimizer_alpha_plot(
     for axis in axes[-1, :]:
         axis.set_xlabel("corpus-equivalent epoch")
     figure.suptitle(
-        f"{OPTIMIZER_LABELS[optimizer]}: raw versus clip_xmax alpha by matrix",
+        f"{OPTIMIZER_LABELS[optimizer]}: raw versus clip_xmax alpha by matrix"
+        + (" (zoomed y-axis)" if zoomed else ""),
         fontsize=15,
     )
     figure.tight_layout(rect=(0, 0, 1, 0.96))
@@ -2760,11 +2778,13 @@ def _write_html_report(
         label = html.escape(OPTIMIZER_LABELS[optimizer])
         performance_path = f"plots/{optimizer}_performance.png"
         alpha_path = f"plots/{optimizer}_alpha_raw_vs_clip_xmax.png"
+        alpha_zoom_path = f"plots/{optimizer}_alpha_raw_vs_clip_xmax_zoomed.png"
         erg_path = f"plots/{optimizer}_erg_gap_num_traps.png"
         image_sections.append(
             f"<h3>{label}</h3>"
             f'<img src="{performance_path}" alt="{label} performance trajectories">'
             f'<img src="{alpha_path}" alt="{label} raw versus clipped alpha">'
+            f'<img src="{alpha_zoom_path}" alt="{label} zoomed raw versus clipped alpha">'
             f'<img src="{erg_path}" alt="{label} ERG gap and correlation traps">'
         )
     warning_html = (
@@ -3035,6 +3055,16 @@ def build_report(args: argparse.Namespace) -> Path:
                 / "plots"
                 / f"{optimizer}_alpha_raw_vs_clip_xmax.png"
             ),
+        )
+        _optimizer_alpha_plot(
+            layers,
+            optimizer=optimizer,
+            path=(
+                output_root
+                / "plots"
+                / f"{optimizer}_alpha_raw_vs_clip_xmax_zoomed.png"
+            ),
+            zoomed=True,
         )
         _optimizer_erg_plot(
             layers,
