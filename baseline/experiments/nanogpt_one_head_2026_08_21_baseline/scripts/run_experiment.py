@@ -100,9 +100,11 @@ REQUIRED_ANALYSIS_FILES = (
     "checkpoint_sha256.csv",
     "plots/adamw_performance.png",
     "plots/adamw_alpha_raw_vs_clip_xmax.png",
+    "plots/adamw_alpha_raw_vs_clip_xmax_zoomed.png",
     "plots/adamw_erg_gap_num_traps.png",
     "plots/muon_clip_performance.png",
     "plots/muon_clip_alpha_raw_vs_clip_xmax.png",
+    "plots/muon_clip_alpha_raw_vs_clip_xmax_zoomed.png",
     "plots/muon_clip_erg_gap_num_traps.png",
     "notebooks/01_Performance_and_Spectra.executed.ipynb",
 )
@@ -2548,6 +2550,7 @@ def _command_analyze(
         for suffix in (
             "performance",
             "alpha_raw_vs_clip_xmax",
+            "alpha_raw_vs_clip_xmax_zoomed",
             "erg_gap_num_traps",
         ):
             figure = paths["plots"] / f"{optimizer}_{suffix}.png"
