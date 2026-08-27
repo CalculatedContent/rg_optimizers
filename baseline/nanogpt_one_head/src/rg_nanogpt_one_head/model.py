@@ -20,11 +20,10 @@ class GPTConfig:
     tie_weights: bool = True
 
     def __post_init__(self) -> None:
-        if self.n_layer != 1 or self.n_head != 1:
-            raise ValueError(
-                "the reference architecture is fixed to one block and one "
-                "attention head"
-            )
+        if self.n_layer != 1:
+            raise ValueError("the reference architecture is fixed to one block")
+        if self.n_head < 1:
+            raise ValueError("n_head must be positive")
         if self.n_embd % self.n_head != 0:
             raise ValueError("n_embd must be divisible by n_head")
         if self.block_size < 2 or self.vocab_size < 2 or self.n_embd < 1:

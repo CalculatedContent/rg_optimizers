@@ -183,6 +183,54 @@ def test_reference_protocol_is_one_block_one_head_and_has_required_ww_flags():
     ]
 
 
+def test_four_head_configuration_preserves_width_and_parameter_count():
+    one_head = GPT(
+        GPTConfig(
+            vocab_size=64,
+            block_size=8,
+            n_layer=1,
+            n_head=1,
+            n_embd=16,
+        )
+    )
+    four_head = GPT(
+        GPTConfig(
+            vocab_size=64,
+            block_size=8,
+            n_layer=1,
+            n_head=4,
+            n_embd=16,
+        )
+    )
+    tokens = torch.randint(0, 64, (2, 8))
+    logits, loss = four_head(tokens, tokens)
+
+    assert four_head.blocks[0].attn.n_head == 4
+    assert four_head.blocks[0].attn.n_embd // four_head.blocks[0].attn.n_head == 4
+    assert four_head.parameter_count() == one_head.parameter_count()
+    assert logits.shape == (2, 8, 64)
+    assert loss is not None and torch.isfinite(loss)
+
+
+def test_four_head_baseline_matches_one_head_campaign_except_head_count():
+    four_head = load_config(
+        EXPERIMENT_ROOT / "configs" / "four_head_4epoch_baseline.yaml"
+    )
+
+    assert four_head["model"]["n_layer"] == 1
+    assert four_head["model"]["n_head"] == 4
+    assert four_head["model"]["n_embd"] == 128
+    assert four_head["training"]["target_epochs"] == 4.0
+    assert four_head["training"]["seeds"] == [
+        1337,
+        2027,
+        4099,
+        31415,
+        271828,
+    ]
+    assert max_steps(four_head) == 39_063
+
+
 def test_probe_identity_is_fixed_across_training_seeds(tmp_path):
     data = np.memmap(
         tmp_path / "probe.bin",
