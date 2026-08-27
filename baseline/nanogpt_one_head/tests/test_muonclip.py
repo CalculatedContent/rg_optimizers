@@ -152,6 +152,49 @@ def test_qk_clip_balances_query_and_key_scaling() -> None:
     assert optimizer.last_diagnostics["min_gamma"] == pytest.approx(0.25)
 
 
+def test_qk_clip_scales_four_heads_independently() -> None:
+    model = GPT(
+        GPTConfig(
+            vocab_size=64,
+            block_size=8,
+            n_layer=1,
+            n_head=4,
+            n_embd=16,
+            dropout=0.0,
+            bias=False,
+        )
+    )
+    optimizer = MuonClip(
+        hidden_matrices(model),
+        model=model,
+        lr=0.0,
+        momentum=0.0,
+        nesterov=False,
+        weight_decay=0.0,
+        update_rms_scale=0.2,
+        qk_clip_threshold=100.0,
+        qk_clip_balance=0.5,
+        diagnostics_interval=1,
+    )
+    q_before = model.blocks[0].attn.q_proj.weight.detach().clone().view(4, 4, 16)
+    k_before = model.blocks[0].attn.k_proj.weight.detach().clone().view(4, 4, 16)
+    model.blocks[0].attn._muonclip_max_logits = torch.tensor(
+        [25.0, 100.0, 400.0, 1_600.0]
+    )
+    for parameter in hidden_matrices(model):
+        parameter.grad = torch.zeros_like(parameter)
+
+    optimizer.step()
+
+    expected_scales = torch.tensor([1.0, 1.0, 0.5, 0.25])[:, None, None]
+    q_after = model.blocks[0].attn.q_proj.weight.view(4, 4, 16)
+    k_after = model.blocks[0].attn.k_proj.weight.view(4, 4, 16)
+    assert torch.allclose(q_after, q_before * expected_scales)
+    assert torch.allclose(k_after, k_before * expected_scales)
+    assert optimizer.last_diagnostics["active_fraction"] == pytest.approx(0.5)
+    assert optimizer.last_diagnostics["min_gamma"] == pytest.approx(0.0625)
+
+
 def test_qk_clip_is_noop_below_threshold() -> None:
     model = small_model()
     optimizer = MuonClip(
