@@ -225,8 +225,6 @@ def validate_config(cfg: dict[str, Any]) -> None:
     for key in ("vocab_size", "block_size", "n_layer", "n_head", "n_embd"):
         if int(model[key]) < 1:
             raise ValueError(f"model.{key} must be positive")
-    if int(model["n_head"]) != 1:
-        raise ValueError("this experiment is fixed to exactly one attention head")
     if int(model["n_layer"]) != 1:
         raise ValueError("this experiment is fixed to one transformer block")
     if int(model["n_embd"]) % int(model["n_head"]) != 0:
