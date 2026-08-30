@@ -1,0 +1,68 @@
+qualification:
+  objective: mean_best_validation_loss
+  protected_metrics: [test_loss, test_perplexity, test_accuracy, test_bleu]
+  stage_1:
+    description: Reject unstable candidates before full-horizon qualification.
+    seeds: [1337, 2027]
+    target_epochs: 0.5
+    reject_if:
+      final_minus_best_validation_loss_gt: 0.25
+      nonfinite_metric: true
+  stage_2:
+    description: Qualify surviving centers over the complete two-epoch protocol.
+    seeds: [1337, 2027, 4099]
+    target_epochs: 2.0
+    ranking:
+      - mean_best_validation_loss
+      - worst_seed_best_validation_loss
+      - validation_loss_standard_deviation
+      - final_minus_best_validation_loss
+  stage_3:
+    description: Freeze one recipe per optimizer, then expand the matched seed set.
+    seeds: [1337, 2027, 4099, 5003, 6007, 7013, 8017, 9011]
+
+one_head_candidates:
+  sgd_momentum:
+    learning_rate: [0.03, 0.05]
+    min_learning_rate_ratio: [0.01]
+    warmup_fraction: [0.05]
+    weight_decay: [0.01]
+  adamw:
+    learning_rate: [0.0002, 0.0003]
+    min_learning_rate: [0.00001]
+    warmup_fraction: [0.025]
+    beta1: [0.90]
+    beta2: [0.95]
+    weight_decay: [0.05, 0.10]
+  muon:
+    matrix_learning_rate: [0.005, 0.01]
+    matrix_min_learning_rate: [0.0001, 0.0002]
+    matrix_weight_decay: [0.01, 0.02]
+    aux_learning_rate: [0.0002, 0.0003]
+    aux_min_learning_rate: [0.00001]
+    aux_weight_decay: [0.01, 0.10]
+    momentum: [0.95]
+    newton_schulz_steps: [5]
+
+small_4x4_candidates:
+  sgd_momentum:
+    learning_rate: [0.02, 0.03]
+    min_learning_rate_ratio: [0.01]
+    warmup_fraction: [0.05]
+    weight_decay: [0.01]
+  adamw:
+    learning_rate: [0.0002, 0.0003]
+    min_learning_rate: [0.00001]
+    warmup_fraction: [0.025]
+    beta1: [0.90]
+    beta2: [0.95]
+    weight_decay: [0.05, 0.10]
+  muon:
+    matrix_learning_rate: [0.005, 0.01]
+    matrix_min_learning_rate: [0.0001, 0.0002]
+    matrix_weight_decay: [0.01, 0.02]
+    aux_learning_rate: [0.0002, 0.0003]
+    aux_min_learning_rate: [0.00001]
+    aux_weight_decay: [0.01, 0.10]
+    momentum: [0.95]
+    newton_schulz_steps: [5]
