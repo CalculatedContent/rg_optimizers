@@ -97,6 +97,43 @@ def _evaluation_due(
     )
 
 
+def _checkpoint_due(
+    step: int,
+    *,
+    cfg: dict,
+    epoch_steps: dict[int, float],
+    total_steps: int,
+) -> bool:
+    return (
+        step % int(cfg["training"]["checkpoint_interval_steps"]) == 0
+        or step in epoch_steps
+        or step == total_steps
+    )
+
+
+def _resume_diagnostics_due(
+    step: int,
+    *,
+    cfg: dict,
+    epoch_steps: dict[int, float],
+    total_steps: int,
+) -> bool:
+    # A rolling checkpoint must carry finite gradient diagnostics even when it
+    # falls between evaluation rows. Otherwise a checkpoint interval shorter
+    # than the evaluation interval persists the initialization NaN sentinels.
+    return _evaluation_due(
+        step,
+        cfg=cfg,
+        epoch_steps=epoch_steps,
+        total_steps=total_steps,
+    ) or _checkpoint_due(
+        step,
+        cfg=cfg,
+        epoch_steps=epoch_steps,
+        total_steps=total_steps,
+    )
+
+
 def _resume_diagnostics(
     previous_eval_snapshot: list[torch.Tensor],
     *,
@@ -486,7 +523,7 @@ def execute_training_loop(
         last_update_lrs = dict(next_update_lrs)
 
         new_step = completed_steps + 1
-        if _evaluation_due(
+        if _resume_diagnostics_due(
             new_step,
             cfg=cfg,
             epoch_steps=epoch_steps,
@@ -506,14 +543,11 @@ def execute_training_loop(
                 else False
             )
 
-        checkpoint_due = (
-            new_step
-            % int(
-                cfg["training"]["checkpoint_interval_steps"]
-            )
-            == 0
-            or new_step in epoch_steps
-            or new_step == total_steps
+        checkpoint_due = _checkpoint_due(
+            new_step,
+            cfg=cfg,
+            epoch_steps=epoch_steps,
+            total_steps=total_steps,
         )
         if checkpoint_due:
             _require_finite_model(
