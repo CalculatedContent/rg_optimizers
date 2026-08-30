@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 import pandas as pd
@@ -44,7 +44,7 @@ SPECTRAL_METRICS = (
 
 
 class WeightMatrixHolder(nn.Module):
-    """CPU-only Linear view of the six one-block transformer matrices."""
+    """CPU-only Linear views of every declared transformer matrix."""
 
     def __init__(self, model: GPT) -> None:
         super().__init__()
@@ -173,6 +173,7 @@ def _validate_weightwatcher_frame(
     frame: pd.DataFrame,
     *,
     finger_policy: str | bool,
+    expected_matrix_names: Sequence[str] | None = None,
 ) -> None:
     """Reject incomplete results and stale pre-finger-policy caches."""
 
@@ -207,10 +208,26 @@ def _validate_weightwatcher_frame(
             + ", ".join(missing)
             + ". Remove the stale run directory before restarting."
         )
-    if len(frame) != 6 or frame["matrix_name"].nunique() != 6:
+    expected_names = (
+        tuple(str(value) for value in expected_matrix_names)
+        if expected_matrix_names is not None
+        else ()
+    )
+    expected_count = len(expected_names) if expected_names else 6
+    observed_names = tuple(frame["matrix_name"].astype(str))
+    inventory_matches = (
+        set(observed_names) == set(expected_names)
+        if expected_names
+        else len(set(observed_names)) == expected_count
+    )
+    if (
+        len(frame) != expected_count
+        or frame["matrix_name"].nunique() != expected_count
+        or not inventory_matches
+    ):
         raise RuntimeError(
-            "WeightWatcher must return exactly the six declared transformer "
-            "matrices"
+            "WeightWatcher must return exactly the declared transformer "
+            f"matrix inventory ({expected_count} matrices)"
         )
 
     numeric = [
@@ -455,6 +472,9 @@ def run_weightwatcher(
     device = model_device(model)
     synchronize(device)
     current_model_hash = model_state_sha256(model.state_dict())
+    expected_matrix_names = tuple(
+        name for name, _, _, _ in transformer_matrix_items(model)
+    )
     diagnostic_seed = int(seed) + 1_000_003 + int(step)
     if raw_path.is_file():
         frame = pd.read_csv(raw_path)
@@ -462,6 +482,7 @@ def run_weightwatcher(
         _validate_weightwatcher_frame(
             frame,
             finger_policy=finger_policy,
+            expected_matrix_names=expected_matrix_names,
         )
         expected_identities = {
             "run_seed": int(seed),
@@ -519,8 +540,8 @@ def run_weightwatcher(
 
     try:
         # WeightWatcher remains deliberately CPU/NumPy based. For TPU/XLA,
-        # WeightMatrixHolder materializes only the six hidden matrices on the
-        # host and never exposes the live accelerator model to NumPy.
+        # WeightMatrixHolder materializes only the declared hidden matrices on
+        # the host and never exposes the live accelerator model to NumPy.
         holder = WeightMatrixHolder(model)
         watcher = ww.WeightWatcher(model=holder)
         analysis_kwargs: dict[str, Any] = {
@@ -592,6 +613,7 @@ def run_weightwatcher(
         _validate_weightwatcher_frame(
             frame,
             finger_policy=finger_policy,
+            expected_matrix_names=expected_matrix_names,
         )
         _atomic_csv(raw_path, frame)
         return _record_successful_frame(
