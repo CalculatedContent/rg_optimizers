@@ -26,6 +26,10 @@ from rg_nanogpt_one_head.config import epoch_step_map, max_steps, tokens_per_ste
 from rg_nanogpt_one_head.model import GPT, GPTConfig, transformer_matrix_items
 from rg_nanogpt_one_head.muonclip import install_muonclip_extension
 from rg_nanogpt_one_head.spectral import _validate_weightwatcher_frame
+from rg_nanogpt_one_head.train_loop import (
+    _evaluation_due,
+    _resume_diagnostics_due,
+)
 
 
 def _load_config() -> dict:
@@ -56,6 +60,27 @@ def test_large_muonclip_protocol_has_the_declared_scale_and_schedule() -> None:
     assert profile["learning_rate"] == pytest.approx(2e-4)
     assert profile["min_learning_rate"] == pytest.approx(1e-5)
     assert profile["warmup_fraction"] == pytest.approx(0.016)
+
+
+def test_checkpoint_before_first_evaluation_materializes_gradients() -> None:
+    cfg = _load_config()
+    epoch_steps = epoch_step_map(cfg)
+    total_steps = max_steps(cfg)
+
+    assert cfg["training"]["checkpoint_interval_steps"] == 250
+    assert cfg["training"]["eval_interval_steps"] == 500
+    assert not _evaluation_due(
+        250,
+        cfg=cfg,
+        epoch_steps=epoch_steps,
+        total_steps=total_steps,
+    )
+    assert _resume_diagnostics_due(
+        250,
+        cfg=cfg,
+        epoch_steps=epoch_steps,
+        total_steps=total_steps,
+    )
 
 
 def test_gpt_and_matrix_inventory_support_multiple_blocks() -> None:
