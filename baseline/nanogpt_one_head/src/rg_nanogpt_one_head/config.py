@@ -225,8 +225,6 @@ def validate_config(cfg: dict[str, Any]) -> None:
     for key in ("vocab_size", "block_size", "n_layer", "n_head", "n_embd"):
         if int(model[key]) < 1:
             raise ValueError(f"model.{key} must be positive")
-    if int(model["n_layer"]) != 1:
-        raise ValueError("this experiment is fixed to one transformer block")
     if int(model["n_embd"]) % int(model["n_head"]) != 0:
         raise ValueError("model.n_embd must be divisible by model.n_head")
     if not 0.0 <= float(model.get("dropout", 0.0)) < 1.0:
