@@ -5,6 +5,8 @@ spectral renormalization-group program. The repository keeps the unmodified
 reference baselines separate from every RG intervention so optimizer claims can
 be tested against strong, restartable, statistically controlled experiments.
 
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for fork/PR workflow, baseline vs optimizer separation, and PR hygiene.
 ## Baseline status
 
 The baseline suite has completed a recipe audit, an executable audit, and a
