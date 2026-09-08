@@ -244,6 +244,10 @@ long-horizon target-hardware campaigns.
 
 ## Optimizer variants
 
+Spectral **ECS vocabulary** (midpoint vs self-consistent vs boundary language):
+[`docs/ECS_GLOSSARY.md`](docs/ECS_GLOSSARY.md).
+
+
 The authoritative cross-package catalog is
 [`OPTIMIZER_VARIANTS.md`](OPTIMIZER_VARIANTS.md). It covers all seven
 independent optimizer experiment folders and keeps the following concepts
