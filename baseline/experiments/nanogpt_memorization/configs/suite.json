@@ -1,0 +1,30 @@
+{
+  "name": "nanogpt_memorization_20260914",
+  "version": 1,
+  "upstream_commit": "3749c36334382a20e48bfe2473c1dc4a1470a830",
+  "source_config": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+  "source_blobs": {
+    "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/optimizers.py": "b1a97ad684afd882ffcff4ae0fe5d70140e7d22c"
+  },
+  "optimizers": ["adamw", "muon"],
+  "seeds": [1337, 2027, 4099, 31415, 271828],
+  "data_seed": 20260914,
+  "conditions": ["verbatim", "verbatim_absent", "associations", "rule_clean", "rule_half_noise", "rule_random", "forgetting_disjoint", "forgetting_conflict"],
+  "stages": {
+    "smoke": {"steps": 2, "eval_every": 1, "canaries_per_dose": 1, "doses": [0, 1, 2], "probe_limit": 1},
+    "pilot": {"steps": 2000, "eval_every": 250, "canaries_per_dose": 16, "doses": [0, 1, 4, 16, 64], "probe_limit": 16},
+    "full": {"steps": 39063, "eval_every": 500, "canaries_per_dose": 16, "doses": [0, 1, 4, 16, 64], "probe_limit": 64}
+  },
+  "associations": 128,
+  "value_tokens": 8,
+  "canary_prefix_tokens": 64,
+  "canary_suffix_tokens": 32,
+  "prefix_lengths_final": [8, 16, 32, 64],
+  "modulus": 31,
+  "early_eval_steps": [0, 1, 2, 4, 8, 16, 32, 64, 128],
+  "weightwatcher": {"version": "0.7.7", "ERG": true, "randomize": true, "plot": false, "min_evals": 20, "fix_fingers": "clip_xmax", "max_fingers": 10},
+  "output_root": "/tmp/rg-nanogpt-memorization-20260914",
+  "notes": "Repository-backed starting settings, not a qualified optimum on these NEW synthetic suffix-prediction tasks. No training results are included."
+}
