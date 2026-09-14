@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "name": "nanogpt_memorization_2026_09_14",
+  "status": "designed_not_trained",
+  "source": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "commit": "3749c36334382a20e48bfe2473c1dc4a1470a830",
+    "recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+    "recipe_git_blob_sha": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "qualification_status": "source_backed_center_not_frozen_optimum",
+    "modules": {
+      "model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+      "optimizers.py": "b1a97ad684afd882ffcff4ae0fe5d70140e7d22c",
+      "spectral.py": "856a12ecad29bc85582a10601e5708b29e2cbb8a"
+    }
+  },
+  "optimizers": ["adamw", "muon"],
+  "historical_comparator_not_active": "muon_clip",
+  "seeds": [1337, 2027, 4099, 31415, 271828],
+  "data_seed": 20260914,
+  "conditions": ["clean", "sequence", "association"],
+  "training": {
+    "reference_tokens": 80000000,
+    "target_reference_epochs": 4,
+    "schedule_reference_epochs": 1,
+    "early_stopping": false,
+    "protected_test_used_for_selection": false,
+    "checkpoint_policy": "atomic_latest_plus_permanent_diagnostics",
+    "preserve_baseline_model_optimizer_precision_and_batch": true
+  },
+  "probes": {
+    "doses_per_reference_epoch": [0, 1, 4, 16, 64],
+    "sequence_targets_per_dose_and_family": 32,
+    "sequence_families": ["natural_reserved", "random_tokens"],
+    "prefix_tokens": [8, 16, 32, 64, 128],
+    "continuation_tokens": [16, 32, 64],
+    "primary_prefix_tokens": 64,
+    "primary_continuation_tokens": 32,
+    "canaries_per_dose": 8,
+    "canary_alphabet_size": 16,
+    "canary_suffix_tokens": 3,
+    "canary_universe_size": 4096,
+    "canary_exposure_bits_max": 12,
+    "association_entities_per_dose": 32,
+    "association_training_templates_per_entity": 2,
+    "association_heldout_templates_per_entity": 1,
+    "association_controls": ["unseen_keys", "permuted_values", "heldout_rule_combinations"],
+    "membership_controls": "same_target_in_paired_clean_run"
+  },
+  "monitoring": {
+    "behavior_every_steps": 500,
+    "spectral_early_steps": [0, 1, 10, 100, 500],
+    "spectral_every_reference_epochs": 0.25,
+    "include_warmup_end": true,
+    "full_exposure_reference_epochs": [0, 1, 2, 4],
+    "prefix_sweep_reference_epochs": [0, 0.25, 1, 2, 4],
+    "fix_fingers": "clip_xmax",
+    "ERG": true,
+    "randomize": true,
+    "min_evals": 20,
+    "max_fingers": 10,
+    "require_raw_alpha": true,
+    "missing_or_failed_fit": "record_failure_never_impute"
+  },
+  "retention": {
+    "enabled_in_initial_campaign": false,
+    "parent_condition": "sequence",
+    "fork_reference_epoch": 1,
+    "children": ["continued_exposure", "withdrawn_exposure"],
+    "restore_full_optimizer_and_rng_state": true,
+    "never_restart_schedule": true
+  },
+  "analysis": {
+    "replication_unit": "paired_complete_training_seed",
+    "primary_endpoint": "fixed_budget_EM32_P64_sequence_and_canary_exposure_and_association_recall",
+    "secondary_comparison": "common_validation_NLL_range_only",
+    "spectral_relation": "exploratory_not_a_causal_memorization_detector",
+    "alpha_interpretation": "requires_tail_fit_and_correlation_evidence_not_layer_average_alone"
+  }
+}
