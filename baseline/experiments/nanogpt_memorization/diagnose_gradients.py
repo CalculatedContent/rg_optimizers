@@ -41,6 +41,32 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def resolve_saved_optimizer(manifest: dict, source: dict, driver) -> str:
+    """Read the historical profile-based identity without changing its fingerprint.
+
+    The original run.py stores profile.family, not a top-level optimizer key.
+    CLI selection defaults and directory names are not checkpoint evidence.
+    An optional explicit identity must agree, and the ENTIRE profile is checked.
+    """
+    profile = manifest.get('profile')
+    if not isinstance(profile, dict) or not profile.get('family'):
+        raise ValueError('Saved manifest requires an optimizer profile with a family.')
+    family = profile['family']
+    optimizer = manifest.get('optimizer', family)
+    if optimizer not in ('adamw', 'muon'):
+        raise ValueError(f'Unsupported saved optimizer identity: {optimizer!r}. '
+                         'This diagnostic supports AdamW and plain Muon only.')
+    if optimizer != family:
+        raise ValueError('Saved optimizer identity conflicts with profile.family.')
+    try:
+        expected = driver.resolve_profile(source, optimizer, manifest['recipe'])
+    except KeyError as exc:
+        raise ValueError(f'Cannot resolve saved optimizer profile: missing {exc}.') from exc
+    if expected != profile:
+        raise ValueError('Source optimizer profile differs from the saved profile.')
+    return optimizer
+
+
 def select_run(args) -> Path:
     if args.run_dir:
         candidates = [Path(args.run_dir).expanduser().resolve()]
@@ -163,8 +189,7 @@ def replay_selected(args, run_dir: Path) -> Path:
     source = driver.load_source(cfg)
     if source['model'] != manifest['source_model']:
         raise ValueError('Source model differs from the saved model.')
-    if driver.resolve_profile(source, manifest['optimizer'], manifest['recipe']) != manifest['profile']:
-        raise ValueError('Source optimizer profile differs from the saved profile.')
+    optimizer = resolve_saved_optimizer(manifest, source, driver)
     if float(source['model'].get('dropout', 0.0)) != 0.0:
         raise ValueError('This replay supports only the original zero-dropout baseline.')
     device = args.device or manifest['device']['device']
@@ -221,6 +246,8 @@ def replay_selected(args, run_dir: Path) -> Path:
     evidence = {'diagnostic_only': True, 'original_run': str(run_dir), 'checkpoint_step': first,
                 'checkpoint_sha256': saved_hash, 'fingerprint': fingerprint,
                 'checkpoint_model_sha256': state_hash, 'device': device,
+                'optimizer': optimizer,
+                'optimizer_identity_source': 'optimizer' if 'optimizer' in manifest else 'profile.family',
                 'runtime_differences': differences, 'planned_stop_step': stop,
                 'current_packages': sorted((d.metadata.get('Name', 'unknown'), d.version)
                                            for d in importlib.metadata.distributions()),
