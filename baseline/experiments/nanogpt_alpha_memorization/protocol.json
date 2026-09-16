@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "name": "alpha_memorization_v1",
+  "parent_commit": "267c204bd2f4b1c89b18e7af35d0d2517b05de6e",
+  "seeds": [1337, 2027, 4099, 31415, 271828],
+  "arms": ["adamw", "muon_guarded"],
+  "source_recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+  "source_blobs": {
+    "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/optimizers.py": "b1a97ad684afd882ffcff4ae0fe5d70140e7d22c"
+  },
+  "model_overrides": {"vocab_size": 512},
+  "data_seed": 20260915,
+  "steps": 10000,
+  "spectral_every": 100,
+  "behavior_every": 500,
+  "expensive_every": 2500,
+  "doses": [0, 1, 4, 16, 64],
+  "long_per_dose": 16,
+  "short_per_dose": 4,
+  "prefix_tokens": 64,
+  "suffix_tokens": 32,
+  "exposure_alphabet": [272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287],
+  "exposure_length": 3,
+  "prefix_grid": [8,16,32,64],
+  "modulus": 31,
+  "noise_fraction": 0.25,
+  "rule_audit_limit": 128,
+  "guard": {"target": 2.05, "backoff": 0.5, "max_retries": 8},
+  "weightwatcher": {"version": "0.7.7", "ERG": true, "randomize": true, "plot": false, "min_evals": 20, "fix_fingers": "clip_xmax", "max_fingers": 10},
+  "notes": "New synthetic protocol: source-backed optimizer profiles, not a qualified optimum. Alpha below two in AdamW is an outcome, never forced. Muon guard applies to every trainable 2-D tensor, tied tensors counted once, at accepted measurement boundaries only."
+}

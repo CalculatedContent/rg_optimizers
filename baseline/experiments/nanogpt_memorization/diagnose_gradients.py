@@ -46,7 +46,7 @@ def select_run(args) -> Path:
         candidates = [Path(args.run_dir).expanduser().resolve()]
     else:
         roots = ([Path(args.root).expanduser().resolve()] if args.root else
-                 sorted(Path('/tmp').glob('nanogpt_memorization_*')))
+                 sorted(Path('/tmp').glob('nanogpt_*')))
         relative = Path('full') / 'repository' / args.condition / args.optimizer / f'seed_{args.seed}'
         candidates = [r / relative for r in roots if r.is_dir()]
         candidates = [r for r in candidates if not (r / 'complete.json').exists()]
@@ -55,6 +55,20 @@ def select_run(args) -> Path:
     if not candidates:
         raise ValueError('No saved incomplete run found. Supply --run-dir /tmp/.../seed_1337.')
     return max(candidates, key=lambda r: (r / 'checkpoint_latest.pt').stat().st_mtime).resolve()
+
+
+def manifest_optimizer(manifest: dict) -> str:
+    """Historical run.py stored profile.family but omitted top-level optimizer.
+
+    Never add a default to the fingerprinted manifest. The caller still compares
+    the entire recovered source profile with the saved profile before replay.
+    """
+    name = manifest.get('optimizer', manifest.get('profile', {}).get('family'))
+    if name not in ('adamw', 'muon'):
+        raise ValueError('Saved manifest has no supported AdamW/Muon optimizer identity.')
+    if name != manifest.get('profile', {}).get('family'):
+        raise ValueError('Saved optimizer name conflicts with profile.family.')
+    return name
 
 
 def tensor_statistics(tensor) -> dict:
@@ -86,8 +100,6 @@ def gradient_statistics(model) -> dict:
 
 def checked_clip(model, max_norm: float):
     import torch
-    # Crucial: PyTorch checks the norm BEFORE its in-place gradient scaling.
-    # Do not use nan_to_num, drop a batch, or continue with a different LR.
     return torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm, error_if_nonfinite=True)
 
 
@@ -134,13 +146,10 @@ def runtime_differences(saved: dict, device: str) -> list[str]:
 
 
 def diagnose(args) -> Path:
-    # Set these before importing torch, as in the original single-device runner.
     os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK', '1')
     os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
     import fcntl
     run_dir = select_run(args)
-    # The original trainer already creates this lock file. Open read-only and
-    # refuse a concurrently active run rather than racing checkpoint writes.
     with (run_dir / '.lock').open('rb') as handle:
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -163,7 +172,8 @@ def replay_selected(args, run_dir: Path) -> Path:
     source = driver.load_source(cfg)
     if source['model'] != manifest['source_model']:
         raise ValueError('Source model differs from the saved model.')
-    if driver.resolve_profile(source, manifest['optimizer'], manifest['recipe']) != manifest['profile']:
+    optimizer_name = manifest_optimizer(manifest)
+    if driver.resolve_profile(source, optimizer_name, manifest['recipe']) != manifest['profile']:
         raise ValueError('Source optimizer profile differs from the saved profile.')
     if float(source['model'].get('dropout', 0.0)) != 0.0:
         raise ValueError('This replay supports only the original zero-dropout baseline.')
@@ -220,6 +230,8 @@ def replay_selected(args, run_dir: Path) -> Path:
     import importlib.metadata
     evidence = {'diagnostic_only': True, 'original_run': str(run_dir), 'checkpoint_step': first,
                 'checkpoint_sha256': saved_hash, 'fingerprint': fingerprint,
+                'optimizer': optimizer_name,
+                'optimizer_identity_source': 'manifest.optimizer' if 'optimizer' in manifest else 'validated profile.family',
                 'checkpoint_model_sha256': state_hash, 'device': device,
                 'runtime_differences': differences, 'planned_stop_step': stop,
                 'current_packages': sorted((d.metadata.get('Name', 'unknown'), d.version)
@@ -243,8 +255,6 @@ def replay_selected(args, run_dir: Path) -> Path:
             phase = 'native_gradient_norm'
             norm = checked_clip(model, float(source['training']['grad_clip']))
         except (FloatingPointError, RuntimeError) as exc:
-            # Unexpected backend errors also preserve evidence; never relabel them
-            # as optimizer divergence or recover silently.
             gradients = gradient_statistics(model)
             all_finite = gradients['all_gradients_finite']
             cause = ('native_norm_nonfinite_with_finite_gradients'

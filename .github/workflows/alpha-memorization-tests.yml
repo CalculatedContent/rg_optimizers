@@ -1,0 +1,56 @@
+name: Alpha memorization study
+on:
+  pull_request:
+    paths:
+      - 'baseline/experiments/nanogpt_alpha_memorization/**'
+      - 'baseline/experiments/nanogpt_memorization/diagnose_gradients.py'
+      - 'baseline/experiments/nanogpt_memorization/tests/test_manifest_compatibility.py'
+      - '.github/workflows/alpha-memorization-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'baseline/experiments/nanogpt_alpha_memorization/**'
+      - '.github/workflows/alpha-memorization-tests.yml'
+permissions:
+  contents: read
+jobs:
+  cpu-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install CPU runtime and analysis dependencies
+        run: |
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install 'weightwatcher==0.7.7' 'powerlaw>=2,<3' pytest pyyaml scipy pandas matplotlib nbformat nbclient ipykernel
+      - name: Test actual nanoGPT updates, guard rollback, checkpoint resume and analysis
+        run: python -m pytest -q baseline/experiments/nanogpt_alpha_memorization/tests baseline/experiments/nanogpt_memorization/tests/test_manifest_compatibility.py
+      - name: Real WeightWatcher and complete two-arm CPU preflight
+        working-directory: baseline/experiments/nanogpt_alpha_memorization
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import torch
+          from run_study import preflight
+          torch.set_num_threads(1)
+          cfg=json.loads(Path('protocol.json').read_text())
+          preflight(cfg,Path('/tmp/alpha_memorization_cpu_preflight'),'cpu')
+          PY
+      - name: Validate notebook templates and ten-run plan
+        working-directory: baseline/experiments/nanogpt_alpha_memorization
+        run: |
+          python run_study.py plan
+          python - <<'PY'
+          from pathlib import Path
+          import nbformat
+          for path in Path('notebooks').glob('*.ipynb'):
+              nbformat.validate(nbformat.read(path,as_version=4))
+          PY
