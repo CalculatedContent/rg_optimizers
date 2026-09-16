@@ -25,7 +25,10 @@ def jobs(cfg): return [(arm,seed) for seed in cfg['seeds'] for arm in cfg['arms'
 def resolve_root(value=None,create=False):
     if value: root=Path(value).expanduser().resolve()
     elif create:
-        root=Path('/tmp')/f'nanogpt_alpha_memorization_{timestamp()}'
+        # Resolve immediately because macOS maps /tmp -> /private/tmp.  The
+        # safety check below compares canonical paths, so the generated path
+        # must be canonical too.
+        root=(Path('/tmp')/f'nanogpt_alpha_memorization_{timestamp()}').resolve()
         if root.exists(): raise ValueError('Timestamp collision; rerun in one second.')
     else:
         if not LATEST.exists(): raise ValueError('No latest study. Supply --root with its printed path.')
