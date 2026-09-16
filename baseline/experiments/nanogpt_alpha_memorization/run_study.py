@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One command: five AdamW and five ordinary Muon memorization runs on MPS, no online WW."""
+"""One command: five AdamW then five ordinary Muon memorization runs on MPS, no online WW."""
 from __future__ import annotations
 import argparse
 from datetime import datetime
@@ -16,7 +16,7 @@ os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK','1')
 os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG',':4096:8')
 
 def timestamp(): return datetime.now().strftime('%Y%m%d_%H%M%S')
-def jobs(cfg): return [(arm,seed) for seed in cfg['seeds'] for arm in cfg['arms']]
+def jobs(cfg): return [(arm,seed) for arm in cfg['arms'] for seed in cfg['seeds']]
 
 def resolve_root(value=None,create=False):
     if value: root=Path(value).expanduser().resolve()
@@ -96,7 +96,7 @@ def main(argv=None):
         with (root/'.queue.lock').open('a') as lock:
             fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB); LATEST.write_text(str(root)+'\n'); (root/'logs').mkdir(exist_ok=True)
             os.environ.setdefault('MPLCONFIGDIR',str(root/'cache'/'matplotlib'))
-            print(f'Results: {root}\n10 planned runs: AdamW x5, Muon x5. Online WeightWatcher OFF.',flush=True)
+            print(f'Results: {root}\n10 planned runs: AdamW x5 first, then Muon x5. Online WeightWatcher OFF.',flush=True)
             if not args.resume: preflight(cfg,root,args.device)
             statuses=[]
             for arm,seed in jobs(cfg):

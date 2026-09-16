@@ -1,6 +1,6 @@
 # nanoGPT memorization study: AdamW vs Muon
 
-This folder runs **10 paired nanoGPT experiments on Apple MPS**: five ordinary AdamW seeds and five ordinary Muon seeds. Online WeightWatcher is deliberately **disabled** so spectral analysis does not dominate training time. The same five seeds are used for both optimizers: `1337, 2027, 4099, 31415, 271828`.
+This folder runs **10 paired nanoGPT experiments on Apple MPS**: all five ordinary AdamW seeds first, followed by all five ordinary Muon seeds. Online WeightWatcher is deliberately **disabled** so spectral analysis does not dominate training time. The same five seeds are used for both optimizers: `1337, 2027, 4099, 31415, 271828`.
 
 The optimizer hyperparameters come directly from the pinned repository baseline recipe. AdamW uses the existing AdamW profile; Muon uses the existing ordinary Muon profile. There is **no spectral guard, rollback, alpha objective, or outcome-based seed selection** in this version.
 
@@ -17,13 +17,15 @@ cd baseline/experiments/nanogpt_alpha_memorization
 caffeinate -dimsu python run_study.py run
 ```
 
-The launcher creates a timestamped results directory under `/tmp` (canonicalized to `/private/tmp` on macOS), performs a two-update MPS preflight for AdamW and Muon, then runs all ten experiments sequentially. A failed scientific seed is preserved and the queue continues to the remaining independent seeds.
+The launcher creates a timestamped results directory under `/tmp` (canonicalized to `/private/tmp` on macOS), performs a two-update MPS preflight for AdamW and Muon, then runs all five AdamW seeds followed by all five Muon seeds. A failed scientific seed is preserved and the queue continues to the remaining independent seeds.
 
 Preview the exact queue with:
 
 ```bash
 python run_study.py plan
 ```
+
+The planned order is AdamW seeds `1337, 2027, 4099, 31415, 271828`, then Muon seeds `1337, 2027, 4099, 31415, 271828`.
 
 ## What is measured during training
 
