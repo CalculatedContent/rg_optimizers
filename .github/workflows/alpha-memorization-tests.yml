@@ -3,8 +3,6 @@ on:
   pull_request:
     paths:
       - 'baseline/experiments/nanogpt_alpha_memorization/**'
-      - 'baseline/experiments/nanogpt_memorization/diagnose_gradients.py'
-      - 'baseline/experiments/nanogpt_memorization/tests/test_manifest_compatibility.py'
       - '.github/workflows/alpha-memorization-tests.yml'
   push:
     branches: [main]
@@ -30,9 +28,9 @@ jobs:
         run: |
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           python -m pip install 'weightwatcher==0.7.7' 'powerlaw>=2,<3' pytest pyyaml scipy pandas matplotlib nbformat nbclient ipykernel
-      - name: Test actual nanoGPT updates, guard rollback, checkpoint resume and analysis
-        run: python -m pytest -q baseline/experiments/nanogpt_alpha_memorization/tests baseline/experiments/nanogpt_memorization/tests/test_manifest_compatibility.py
-      - name: Real WeightWatcher and complete two-arm CPU preflight
+      - name: Test actual AdamW and Muon updates, checkpoint resume and behavioral analysis
+        run: python -m pytest -q baseline/experiments/nanogpt_alpha_memorization/tests
+      - name: Complete both ordinary optimizer CPU preflights with online WW disabled
         working-directory: baseline/experiments/nanogpt_alpha_memorization
         run: |
           python - <<'PY'
@@ -42,7 +40,10 @@ jobs:
           from run_study import preflight
           torch.set_num_threads(1)
           cfg=json.loads(Path('protocol.json').read_text())
+          assert cfg['arms']==['adamw','muon']
+          assert cfg['online_weightwatcher'] is False
           preflight(cfg,Path('/tmp/alpha_memorization_cpu_preflight'),'cpu')
+          assert not list(Path('/tmp/alpha_memorization_cpu_preflight').glob('**/spectral/*.csv'))
           PY
       - name: Validate notebook templates and ten-run plan
         working-directory: baseline/experiments/nanogpt_alpha_memorization

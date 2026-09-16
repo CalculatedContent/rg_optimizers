@@ -1,9 +1,9 @@
 {
-  "version": 1,
-  "name": "alpha_memorization_v1",
-  "parent_commit": "267c204bd2f4b1c89b18e7af35d0d2517b05de6e",
+  "version": 2,
+  "name": "memorization_adamw_muon_no_ww_v2",
+  "parent_commit": "86b309fed3662f786e5207583a6740883f69439a",
   "seeds": [1337, 2027, 4099, 31415, 271828],
-  "arms": ["adamw", "muon_guarded"],
+  "arms": ["adamw", "muon"],
   "source_recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
   "source_blobs": {
     "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
@@ -13,9 +13,9 @@
   "model_overrides": {"vocab_size": 512},
   "data_seed": 20260915,
   "steps": 10000,
-  "spectral_every": 100,
   "behavior_every": 500,
   "expensive_every": 2500,
+  "checkpoint_every": 500,
   "doses": [0, 1, 4, 16, 64],
   "long_per_dose": 16,
   "short_per_dose": 4,
@@ -27,7 +27,6 @@
   "modulus": 31,
   "noise_fraction": 0.25,
   "rule_audit_limit": 128,
-  "guard": {"target": 2.05, "backoff": 0.5, "max_retries": 8},
-  "weightwatcher": {"version": "0.7.7", "ERG": true, "randomize": true, "plot": false, "min_evals": 20, "fix_fingers": "clip_xmax", "max_fingers": 10},
-  "notes": "New synthetic protocol: source-backed optimizer profiles, not a qualified optimum. Alpha below two in AdamW is an outcome, never forced. Muon guard applies to every trainable 2-D tensor, tied tensors counted once, at accepted measurement boundaries only."
+  "online_weightwatcher": false,
+  "notes": "Fast memorization protocol: five ordinary AdamW and five ordinary Muon runs using the source-backed optimizer profiles. No WeightWatcher or spectral guard executes during training. Behavioral memorization/generalization metrics remain enabled. Checkpoints are retained every 500 updates so WeightWatcher can be applied post hoc without slowing training."
 }
