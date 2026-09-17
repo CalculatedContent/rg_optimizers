@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One command: five AdamW then five ordinary Muon memorization runs on MPS, no online WW."""
+"""Five AdamW then five Muon memorization runs; WeightWatcher is post-hoc only."""
 from __future__ import annotations
 import argparse
 from datetime import datetime
@@ -14,7 +14,6 @@ HERE=Path(__file__).resolve().parent
 LATEST=Path('/tmp/nanogpt_alpha_memorization_latest.txt')
 os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK','1')
 os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG',':4096:8')
-
 def timestamp(): return datetime.now().strftime('%Y%m%d_%H%M%S')
 def jobs(cfg): return [(arm,seed) for arm in cfg['arms'] for seed in cfg['seeds']]
 
@@ -44,9 +43,13 @@ def export_review(root):
     from am_report_fast import generate
     report=generate(root); out=HERE/'review'/f'{root.name}_{timestamp()}'; out.mkdir(parents=True,exist_ok=False)
     shutil.copytree(report,out/'report'); shutil.copy2(root/'protocol.json',out/'protocol.json')
-    template=HERE/'notebooks'/'01_Memorization_Results.ipynb'
-    notebook=nbformat.read(template,as_version=4); notebook.cells.insert(0,nbformat.v4.new_code_cell(f'STUDY_ROOT = {str(root)!r}'))
-    NotebookClient(notebook,timeout=600,kernel_name='python3',resources={'metadata':{'path':str(HERE)}}).execute(); nbformat.write(notebook,out/template.name)
+    spectral=root/'posthoc_weightwatcher'
+    if spectral.exists(): shutil.copytree(spectral,out/'posthoc_weightwatcher')
+    templates=[HERE/'notebooks'/'01_Memorization_Results.ipynb']
+    if spectral.exists(): templates.append(HERE/'notebooks'/'02_Spectral_Boundary.ipynb')
+    for template in templates:
+        notebook=nbformat.read(template,as_version=4); notebook.cells.insert(0,nbformat.v4.new_code_cell(f'STUDY_ROOT = {str(root)!r}'))
+        NotebookClient(notebook,timeout=600,kernel_name='python3',resources={'metadata':{'path':str(HERE)}}).execute(); nbformat.write(notebook,out/template.name)
     for path in root.glob('*/seed_*/manifest.json'):
         target=out/'manifests'/path.relative_to(root); target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(path,target)
     print(f'Review bundle ready to git add (no weights, no credentials): {out}',flush=True); return out
@@ -65,9 +68,9 @@ def stream(command,log):
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=['run','plan','report','export','worker'],nargs='?',default='run')
+    parser.add_argument('command',choices=['run','plan','report','spectra','export','worker'],nargs='?',default='run')
     parser.add_argument('--root'); parser.add_argument('--device',choices=['mps','cpu','cuda'],default='mps'); parser.add_argument('--resume',action='store_true')
-    parser.add_argument('--arm',choices=['adamw','muon']); parser.add_argument('--seed',type=int); parser.add_argument('--steps',type=int); parser.add_argument('--no-plots',action='store_true')
+    parser.add_argument('--arm',choices=['adamw','muon']); parser.add_argument('--seed',type=int); parser.add_argument('--steps',type=int); parser.add_argument('--no-plots',action='store_true'); parser.add_argument('--force',action='store_true')
     args=parser.parse_args(argv); cfg=json.loads((HERE/'protocol.json').read_text())
     if args.steps is not None: cfg['steps']=args.steps
     if cfg['steps']<2: parser.error('At least two updates required.')
@@ -76,6 +79,9 @@ def main(argv=None):
             for arm,seed in jobs(cfg): print(f'{arm:8s} seed={seed} updates={cfg["steps"]}')
             return 0
         root=resolve_root(args.root,create=args.command=='run' and not args.resume)
+        if args.command=='spectra':
+            from am_posthoc_ww import run
+            print(run(root,force=args.force)); return 0
         if args.command in ('report','export'):
             if args.command=='export': export_review(root)
             else:
