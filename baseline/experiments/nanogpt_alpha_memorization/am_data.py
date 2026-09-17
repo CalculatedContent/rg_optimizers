@@ -24,9 +24,10 @@ class Record:
 class Dataset:
     def __init__(self, cfg, seed, batch_size):
         self.cfg, self.seed, self.batch_size = cfg, seed, batch_size
-        self.steps, self.withdrawal = int(cfg['steps']), int(cfg['steps']) // 2
-        if self.withdrawal < 1:
-            raise ValueError('At least two updates are needed.')
+        self.steps = int(cfg['steps'])
+        self.withdrawal = int(cfg.get('withdrawal_step', self.steps // 2))
+        if self.withdrawal < 1 or self.withdrawal > self.steps:
+            raise ValueError('withdrawal_step must be within the training horizon.')
         rng = np.random.default_rng(cfg['data_seed'])
         self.train, self.audit, self.canaries = [], [], []
         p = cfg['modulus']
