@@ -87,7 +87,9 @@ def main():
         counts.update(r.id for r in records); completed=step+1
         if completed%100==0: print(f'muon seed={a.seed} step={completed}/{a.target_step} loss={last_loss:.6f} grad_norm={norm:.3g} norm_fallback={overflow}',flush=True)
         if completed%a.checkpoint_every==0 or completed==a.target_step:
-            if counts!=data.planned_counts(completed): raise RuntimeError('Presentation counts changed during continuation.')
+            planned=data.planned_counts(completed)
+            for r in data.canaries:
+                if counts[r.id]!=planned[r.id]: raise RuntimeError(f'Canary presentation count changed for {r.id}.')
             state=snapshot(model,handles,counts,completed,attempted); state.update(model_sha256=model_hash(model),source_step=start_step)
             atomic_save(latest,state); atomic_save(out/f'model_{completed:08d}.pt',{'model':state['model'],'step':completed,'source_step':start_step})
         if completed%a.behavior_every==0 or completed==a.target_step:
