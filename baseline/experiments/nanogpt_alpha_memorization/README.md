@@ -71,3 +71,24 @@ The protocol fingerprint must match. Completed seeds are not retrained.
 ## Scientific interpretation
 
 The study does **not** assume AdamW will produce alpha below 2 or that Muon will remain above 2. The behavioral study establishes what each optimizer memorizes and how generalization changes. The post-hoc WeightWatcher pass then tests whether those transitions coincide with a valid alpha-below-two regime.
+
+
+## Four-head large-data pilot
+
+The original synthetic rule study has only 480 training combinations. For a more meaningful generalization test, `protocol_four_head_large.json` changes the model to four attention heads and expands the modular rule universe to modulus 251: 31,500 training combinations, 15,750 validation combinations, and 15,751 test combinations. The effective batch remains 32, so 30,000 updates are about 30.5 passes over the training set.
+
+The pilot runs one matched seed with ordinary AdamW followed by ordinary Muon. It keeps the same pinned optimizer profiles, 25% fixed random-label corruption, and canary memorization probes. Canary counts are increased to 32 long and 8 short examples per dose. Behavioral audits run every 1,000 updates; checkpoints are saved every 1,000; expensive exposure/compression audits run every 5,000. Online WeightWatcher remains disabled.
+
+Run the pilot with:
+
+```bash
+caffeinate -dimsu python run_study.py run --protocol protocol_four_head_large.json
+```
+
+Preview it with:
+
+```bash
+python run_study.py plan --protocol protocol_four_head_large.json
+```
+
+This is a pilot, not a five-seed statistical comparison. If both arms train sensibly and held-out accuracy improves, replicate the frozen protocol across the remaining seeds rather than changing hyperparameters after seeing the result.
