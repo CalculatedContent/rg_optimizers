@@ -1,0 +1,35 @@
+{
+  "version": 3,
+  "name": "memorization_four_head_large_data_pilot_v3",
+  "parent_commit": "63adbf337427966dd11fcccd4b705a7953928522",
+  "seeds": [1337],
+  "arms": ["adamw", "muon"],
+  "source_recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+  "source_blobs": {
+    "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/optimizers.py": "b1a97ad684afd882ffcff4ae0fe5d70140e7d22c"
+  },
+  "model_overrides": {
+    "vocab_size": 512,
+    "n_head": 4
+  },
+  "data_seed": 20260918,
+  "steps": 30000,
+  "behavior_every": 1000,
+  "expensive_every": 5000,
+  "checkpoint_every": 1000,
+  "doses": [0, 1, 4, 16, 64],
+  "long_per_dose": 32,
+  "short_per_dose": 8,
+  "prefix_tokens": 64,
+  "suffix_tokens": 32,
+  "exposure_alphabet": [272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287],
+  "exposure_length": 3,
+  "prefix_grid": [8,16,32,64],
+  "modulus": 251,
+  "noise_fraction": 0.25,
+  "rule_audit_limit": 2048,
+  "online_weightwatcher": false,
+  "notes": "Four-head large-data pilot. One matched AdamW/Muon seed, 31,500 training rule examples from modulus 251, 15,750 validation and 15,751 test combinations, 30,000 updates (~30.5 effective epochs at batch 32). Same pinned optimizer profiles as the original study. Online WeightWatcher remains off; checkpoints are retained every 1,000 updates for post-hoc spectral analysis."
+}
