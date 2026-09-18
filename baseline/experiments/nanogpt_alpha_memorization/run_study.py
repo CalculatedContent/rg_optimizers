@@ -71,7 +71,11 @@ def main(argv=None):
     parser.add_argument('command',choices=['run','plan','report','spectra','export','worker'],nargs='?',default='run')
     parser.add_argument('--root'); parser.add_argument('--device',choices=['mps','cpu','cuda'],default='mps'); parser.add_argument('--resume',action='store_true')
     parser.add_argument('--arm',choices=['adamw','muon']); parser.add_argument('--seed',type=int); parser.add_argument('--steps',type=int); parser.add_argument('--no-plots',action='store_true'); parser.add_argument('--force',action='store_true')
-    args=parser.parse_args(argv); cfg=json.loads((HERE/'protocol.json').read_text())
+    parser.add_argument('--protocol',default='protocol.json',help='Protocol JSON in this experiment directory.')
+    args=parser.parse_args(argv)
+    protocol_path=(HERE/args.protocol).resolve()
+    if protocol_path.parent!=HERE or not protocol_path.is_file(): parser.error('Protocol must name a JSON file in this experiment directory.')
+    cfg=json.loads(protocol_path.read_text())
     if args.steps is not None: cfg['steps']=args.steps
     if cfg['steps']<2: parser.error('At least two updates required.')
     try:
@@ -102,7 +106,10 @@ def main(argv=None):
         with (root/'.queue.lock').open('a') as lock:
             fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB); LATEST.write_text(str(root)+'\n'); (root/'logs').mkdir(exist_ok=True)
             os.environ.setdefault('MPLCONFIGDIR',str(root/'cache'/'matplotlib'))
-            print(f'Results: {root}\n10 planned runs: AdamW x5 first, then Muon x5. Online WeightWatcher OFF.',flush=True)
+            plan=jobs(cfg)
+            counts={arm:sum(1 for a,_ in plan if a==arm) for arm in cfg['arms']}
+            description=', '.join(f'{arm} x{counts[arm]}' for arm in cfg['arms'])
+            print(f'Results: {root}\n{len(plan)} planned runs: {description}. Online WeightWatcher OFF.',flush=True)
             if not args.resume: preflight(cfg,root,args.device)
             statuses=[]
             for arm,seed in jobs(cfg):
