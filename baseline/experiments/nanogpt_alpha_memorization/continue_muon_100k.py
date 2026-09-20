@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Continue one completed Muon run from step 10k to 100k without replaying canaries."""
+"""Continue one completed Muon trajectory to any longer horizon without replaying canaries."""
 from __future__ import annotations
 import argparse, copy, json, math, time
 from collections import Counter
@@ -24,14 +24,29 @@ def main():
     a=p.parse_args()
 
     root=Path(a.root).resolve(); original_cfg=json.loads((root/'protocol.json').read_text())
-    start_run=root/'muon'/f'seed_{a.seed}'; source_checkpoint=start_run/'checkpoint_latest.pt'
-    if not source_checkpoint.exists(): raise FileNotFoundError(source_checkpoint)
-    source_saved=torch.load(source_checkpoint,map_location='cpu',weights_only=True)
-    start_step=int(source_saved['step'])
-    if start_step!=int(original_cfg['steps']): raise ValueError(f'Expected completed checkpoint at {original_cfg["steps"]}, found {start_step}')
-    if a.target_step<=start_step: raise ValueError('target-step must exceed the source checkpoint step')
+    start_run=root/'muon'/f'seed_{a.seed}'
+    if not start_run.exists(): raise FileNotFoundError(start_run)
 
-    # Freeze the original 0..5000 canary acquisition schedule while extending only ordinary training.
+    # Resume the longest completed Muon trajectory below the requested horizon.
+    # This preserves optimizer state: for example a 1M run starts from the completed
+    # 100k extension rather than replaying from the original 30k checkpoint.
+    candidates=[start_run/'checkpoint_latest.pt']
+    extensions=root/'extensions'
+    if extensions.exists():
+        for folder in extensions.glob(f'muon_seed_{a.seed}_to_*'):
+            try: horizon=int(folder.name.rsplit('_to_',1)[1])
+            except (IndexError,ValueError): continue
+            if horizon<a.target_step and (folder/'checkpoint_latest.pt').exists():
+                candidates.append(folder/'checkpoint_latest.pt')
+    available=[]
+    for checkpoint in candidates:
+        saved=torch.load(checkpoint,map_location='cpu',weights_only=True)
+        step=int(saved['step'])
+        if step<a.target_step: available.append((step,checkpoint,saved))
+    if not available: raise ValueError('No completed Muon checkpoint exists below target-step.')
+    start_step,source_checkpoint,source_saved=max(available,key=lambda item:item[0])
+
+    # Freeze the original canary acquisition schedule while extending only ordinary training.
     cfg=copy.deepcopy(original_cfg)
     cfg['steps']=a.target_step
     cfg['withdrawal_step']=int(original_cfg['steps'])//2
@@ -70,6 +85,7 @@ def main():
     schedule_steps=math.ceil(source['dataset']['train_tokens']*profile['lr_schedule_epochs']/(data.batch_size*source['model']['block_size']))
     warmup=math.ceil(schedule_steps*profile['warmup_fraction'])
     print(f'Continuing Muon seed={a.seed}: {completed} -> {a.target_step} on {a.device}',flush=True)
+    print(f'Source checkpoint: {source_checkpoint}',flush=True)
     print(f'Canary withdrawal remains frozen at step {data.withdrawal}; no new canary presentations occur.',flush=True)
     print(f'Original LR schedule length={schedule_steps}; continuation uses the configured minimum LR after schedule end.',flush=True)
     print(f'Output: {out}',flush=True)
