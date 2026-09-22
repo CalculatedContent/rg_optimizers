@@ -43,6 +43,12 @@ def math_attention(self,x):
     # NEW protocol. This is not proof of the cause of the old MPS crash.
     scores=(q/math.sqrt(d))@k.transpose(-2,-1)
     scores=scores.masked_fill(~self.causal_mask[:,:,:t,:t],float('-inf'))
+    # Retain detached per-head maxima from the current training batch so
+    # the trainer can apply MHA QK-Clip after the optimizer update.
+    if self.training:
+        maxima=scores.detach().amax(dim=(-2,-1)).amax(dim=0)
+        previous=getattr(self,'_qk_clip_max_logits',None)
+        self._qk_clip_max_logits=maxima if previous is None else torch.maximum(previous,maxima)
     probabilities=scores.softmax(-1)
     if self.training and self.dropout:
         probabilities=torch.nn.functional.dropout(probabilities,p=self.dropout)
@@ -135,3 +141,33 @@ def safe_clip(model,maximum):
 def matrices(model):
     # named_parameters removes aliases, so tied embedding/output is counted once.
     return [(n,p) for n,p in model.named_parameters() if p.requires_grad and p.ndim==2]
+
+
+@torch.no_grad()
+def reset_qk_clip_stats(model):
+    for block in model.blocks:
+        block.attn._qk_clip_max_logits=None
+
+
+@torch.no_grad()
+def apply_qk_clip(model,threshold=100.0,balance=0.5):
+    """Per-head MHA QK-Clip using maxima observed during the just-finished update."""
+    if threshold<=0 or not 0<=balance<=1:
+        raise ValueError('Invalid QK-Clip threshold/balance.')
+    events=[]
+    for layer,block in enumerate(model.blocks):
+        maxima=getattr(block.attn,'_qk_clip_max_logits',None)
+        if maxima is None: continue
+        q=block.attn.q_proj.weight; k=block.attn.k_proj.weight
+        head_width=q.shape[0]//block.attn.n_head
+        for head,value in enumerate(maxima.detach().cpu().tolist()):
+            if not math.isfinite(value) or value<=threshold: continue
+            gamma=threshold/value
+            qscale=gamma**balance
+            kscale=gamma**(1.0-balance)
+            sl=slice(head*head_width,(head+1)*head_width)
+            q[sl].mul_(qscale); k[sl].mul_(kscale)
+            events.append({'layer':layer,'head':head,'max_logit':float(value),
+                           'gamma':float(gamma),'q_scale':float(qscale),'k_scale':float(kscale)})
+        block.attn._qk_clip_max_logits=None
+    return events
