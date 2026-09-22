@@ -16,7 +16,7 @@ class OptimizerHandle:
 
     def set_lr(self, value: float) -> None:
         for group in self.optimizer.param_groups:
-            group["lr"] = float(value)
+            group["lr"] = float(value) * float(group.get("lr_scale", 1.0))
 
     @property
     def lr(self) -> float:
@@ -234,11 +234,12 @@ def make_optimizer_handles(
     if family != "muon":
         raise ValueError(f"unsupported optimizer family: {family}")
 
-    hidden = [
-        parameter
+    hidden_named = [
+        (name, parameter)
         for name, parameter in named
         if name.startswith("blocks.") and parameter.ndim == 2
     ]
+    hidden = [parameter for _, parameter in hidden_named]
     hidden_ids = {id(parameter) for parameter in hidden}
     auxiliary_named = [
         (name, parameter)
@@ -251,6 +252,21 @@ def make_optimizer_handles(
             "auxiliary parameters"
         )
 
+    lr_multipliers = profile.get("matrix_lr_multipliers", {})
+    wd_multipliers = profile.get("matrix_weight_decay_multipliers", {})
+    muon_groups = []
+    for name, parameter in hidden_named:
+        lr_scale = float(lr_multipliers.get(name, 1.0))
+        wd_scale = float(wd_multipliers.get(name, 1.0))
+        if lr_scale <= 0 or wd_scale < 0:
+            raise ValueError("Muon matrix LR multipliers must be positive and weight-decay multipliers nonnegative")
+        muon_groups.append({
+            "params": [parameter],
+            "lr": float(profile["matrix_learning_rate"]) * lr_scale,
+            "weight_decay": float(profile["matrix_weight_decay"]) * wd_scale,
+            "lr_scale": lr_scale,
+            "matrix_name": name,
+        })
     muon = Muon(
         hidden,
         lr=float(profile["matrix_learning_rate"]),
@@ -260,6 +276,14 @@ def make_optimizer_handles(
         newton_schulz_steps=int(profile["newton_schulz_steps"]),
         eps=float(profile.get("muon_epsilon", 1e-7)),
     )
+    # Preserve Muon's optimizer state semantics while splitting hidden matrices
+    # into named parameter groups with independent LR/decay scales.
+    defaults = muon.defaults
+    muon.param_groups.clear()
+    for group in muon_groups:
+        full = dict(defaults)
+        full.update(group)
+        muon.add_param_group(full)
     auxiliary = torch.optim.AdamW(
         _decay_groups(
             auxiliary_named,
