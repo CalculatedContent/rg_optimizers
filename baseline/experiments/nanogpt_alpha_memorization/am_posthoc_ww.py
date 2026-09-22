@@ -115,7 +115,12 @@ def plots(out,summary,matrix,seed):
 
 def run(root,force=False):
     root=Path(root).resolve(); frames=[]; expected=0
-    for arm in ('adamw','muon'):
+    protocol_file=root/'protocol.json'
+    if not protocol_file.exists(): raise ValueError('Study protocol.json not found.')
+    protocol=json.loads(protocol_file.read_text())
+    arms=tuple(protocol.get('arms',()))
+    if not arms: raise ValueError('Study protocol declares no arms.')
+    for arm in arms:
         for run_dir in sorted((root/arm).glob('seed_*')):
             manifest_file=run_dir/'manifest.json'
             if not manifest_file.exists(): continue
