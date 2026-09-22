@@ -69,6 +69,8 @@ def _train(cfg,run_dir,arm,seed,device,resume):
     model=make_model(source,cfg,seed,device)
     data=Dataset(cfg,seed,source['training']['batch_size']*source['training']['grad_accum_steps'])
     profile=copy.deepcopy(source['optimizer_profiles'][arm])
+    overrides=cfg.get('optimizer_overrides',{}).get(arm,{})
+    profile.update(copy.deepcopy(overrides))
     handles=make_handles(model,profile)
     manifest={'protocol':cfg,'source_model':asdict(model.cfg),'profile':profile,'arm':arm,'optimizer':arm,
               'seed':seed,'runtime':runtime,'initial_sha256':model_hash(model),
@@ -139,6 +141,42 @@ def _train(cfg,run_dir,arm,seed,device,resume):
                 atomic_save(run_dir/f'model_{completed:08d}.pt',{'model':state['model'],'manifest':manifest,'step':completed})
             if completed%cfg['behavior_every']==0 or completed in (data.withdrawal,cfg['steps']):
                 audit(model,data,cfg,source,run_dir,completed,counts)
+
+            # Optional low-frequency spectral feedback for experimental Muon runs.
+            # This does not edit weights or alpha values. When a hidden matrix
+            # approaches the configured alpha floor, subsequent Muon updates for
+            # that matrix become more conservative.
+            guard=cfg.get('spectral_guard')
+            if arm=='muon' and guard and completed>=int(guard.get('start_step',0)) and completed%int(guard['every'])==0:
+                from am_spectral import measure,save_rows
+                ww_cfg={'version':'0.7.7','ERG':True,'randomize':True,'plot':False,'min_evals':20,
+                        'fix_fingers':'clip_xmax','max_fingers':10}
+                rows=measure(model,ww_cfg,seed,completed)
+                save_rows(run_dir/'spectral_guard'/f'step_{completed:08d}.csv',rows)
+                target=float(guard.get('target_alpha',2.2))
+                factor=float(guard.get('lr_factor',0.5))
+                decay_factor=float(guard.get('decay_factor',2.0))
+                floor=float(guard.get('min_lr_scale',0.125))
+                muon_handle=next(h for h in handles if h.role=='primary')
+                by_name={g.get('matrix_name'):g for g in muon_handle.optimizer.param_groups}
+                events=[]
+                for row in rows:
+                    name=row['matrix']; group=by_name.get(name)
+                    if group is None: continue
+                    raw=float(row['alpha_raw']); clipped=float(row['alpha_clip_xmax'])
+                    bad=(not math.isfinite(raw) or raw<target or not math.isfinite(clipped) or clipped<target)
+                    if bad:
+                        old=float(group.get('lr_scale',1.0))
+                        new=max(floor,old*factor)
+                        if new<old:
+                            group['lr_scale']=new
+                            group['weight_decay']=float(group['weight_decay'])*decay_factor
+                            events.append({'step':completed,'matrix':name,'alpha_raw':raw,'alpha_clip_xmax':clipped,
+                                           'old_lr_scale':old,'new_lr_scale':new,'weight_decay':float(group['weight_decay'])})
+                if events:
+                    with (run_dir/'spectral_guard_events.jsonl').open('a') as f:
+                        for event in events: f.write(json.dumps(event)+'\n')
+                    print('spectral guard: '+json.dumps(events),flush=True)
         result={'state':'complete','step':completed,'attempted_updates':attempted,
                 'elapsed_seconds':time.monotonic()-started,'fingerprint':manifest['fingerprint'],
                 'online_weightwatcher':False}
