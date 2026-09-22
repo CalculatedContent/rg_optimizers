@@ -69,6 +69,8 @@ def _train(cfg,run_dir,arm,seed,device,resume):
     model=make_model(source,cfg,seed,device)
     data=Dataset(cfg,seed,source['training']['batch_size']*source['training']['grad_accum_steps'])
     profile=copy.deepcopy(source['optimizer_profiles'][arm])
+    overrides=cfg.get('optimizer_overrides',{}).get(arm,{})
+    profile.update(copy.deepcopy(overrides))
     handles=make_handles(model,profile)
     manifest={'protocol':cfg,'source_model':asdict(model.cfg),'profile':profile,'arm':arm,'optimizer':arm,
               'seed':seed,'runtime':runtime,'initial_sha256':model_hash(model),
