@@ -70,7 +70,7 @@ def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command',choices=['run','plan','report','spectra','export','worker'],nargs='?',default='run')
     parser.add_argument('--root'); parser.add_argument('--device',choices=['mps','cpu','cuda'],default='mps'); parser.add_argument('--resume',action='store_true')
-    parser.add_argument('--arm',choices=['adamw','muon']); parser.add_argument('--seed',type=int); parser.add_argument('--steps',type=int); parser.add_argument('--no-plots',action='store_true'); parser.add_argument('--force',action='store_true')
+    parser.add_argument('--arm',choices=['adamw','muon','muon_qkclip']); parser.add_argument('--seed',type=int); parser.add_argument('--steps',type=int); parser.add_argument('--no-plots',action='store_true'); parser.add_argument('--force',action='store_true')
     parser.add_argument('--protocol',default='protocol.json',help='Protocol JSON in this experiment directory.')
     args=parser.parse_args(argv)
     protocol_path=(HERE/args.protocol).resolve()
