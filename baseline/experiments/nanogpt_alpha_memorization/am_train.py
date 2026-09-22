@@ -62,13 +62,14 @@ def train(cfg,root,arm,seed,device,resume=False):
 
 
 def _train(cfg,run_dir,arm,seed,device,resume):
-    if arm not in ('adamw','muon'): raise ValueError(f'Unsupported arm: {arm}')
+    if arm not in ('adamw','muon','muon_qkclip'): raise ValueError(f'Unsupported arm: {arm}')
     if cfg.get('online_weightwatcher',True): raise ValueError('This trainer requires online_weightwatcher=false.')
     runtime=environment(device); source=baseline(cfg)
     _,_,make_handles,set_lrs,zero_grad,optimizer_step=imports()
     model=make_model(source,cfg,seed,device)
     data=Dataset(cfg,seed,source['training']['batch_size']*source['training']['grad_accum_steps'])
-    profile=copy.deepcopy(source['optimizer_profiles'][arm])
+    profile_key='muon' if arm=='muon_qkclip' else arm
+    profile=copy.deepcopy(source['optimizer_profiles'][profile_key])
     overrides=cfg.get('optimizer_overrides',{}).get(arm,{})
     profile.update(copy.deepcopy(overrides))
     handles=make_handles(model,profile)
@@ -108,6 +109,9 @@ def _train(cfg,run_dir,arm,seed,device,resume):
         if completed%cfg['behavior_every']==0: audit(model,data,cfg,source,run_dir,completed,counts)
         while completed<cfg['steps']:
             step=completed; attempted+=1; zero_grad(handles); model.train()
+            if arm=='muon_qkclip':
+                from am_runtime import reset_qk_clip_stats
+                reset_qk_clip_stats(model)
             set_lrs(handles,update_index=step,total_steps=schedule_steps,warmup_steps=warmup)
             records=data.batch(step); last_loss=0.
             try:
@@ -120,6 +124,13 @@ def _train(cfg,run_dir,arm,seed,device,resume):
                     with (run_dir/'numeric_events.jsonl').open('a') as f:
                         f.write(json.dumps({'step_index':step,'attempted_update':attempted,'kind':'finite_norm_overflow','cpu_float64_norm':norm})+'\n')
                 optimizer_step(handles)
+                if arm=='muon_qkclip':
+                    from am_runtime import apply_qk_clip
+                    qk=cfg.get('qk_clip',{})
+                    events=apply_qk_clip(model,float(qk.get('threshold',100.0)),float(qk.get('balance',0.5)))
+                    if events:
+                        with (run_dir/'qk_clip_events.jsonl').open('a') as f:
+                            f.write(json.dumps({'step':step+1,'events':events})+'\n')
                 if not all(bool(torch.isfinite(p).all()) for p in model.parameters()):
                     raise FloatingPointError('Nonfinite parameter after optimizer update.')
             except (FloatingPointError,RuntimeError) as exc:
@@ -147,7 +158,7 @@ def _train(cfg,run_dir,arm,seed,device,resume):
             # approaches the configured alpha floor, subsequent Muon updates for
             # that matrix become more conservative.
             guard=cfg.get('spectral_guard')
-            if arm=='muon' and guard and completed>=int(guard.get('start_step',0)) and completed%int(guard['every'])==0:
+            if arm in ('muon','muon_qkclip') and guard and completed>=int(guard.get('start_step',0)) and completed%int(guard['every'])==0:
                 from am_spectral import measure,save_rows
                 ww_cfg={'version':'0.7.7','ERG':True,'randomize':True,'plot':False,'min_evals':20,
                         'fix_fingers':'clip_xmax','max_fingers':10}
