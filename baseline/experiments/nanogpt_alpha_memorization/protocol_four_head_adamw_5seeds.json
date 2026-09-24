@@ -1,0 +1,31 @@
+{
+  "version": 7,
+  "name": "memorization_four_head_adamw_five_seeds",
+  "parent_commit": "a1f95390c26126b3a3d21a6b84e96e61cd314368",
+  "seeds": [1337, 2027, 4099, 7919, 104729],
+  "arms": ["adamw"],
+  "source_recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+  "source_blobs": {
+    "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/optimizers.py": "a6ac7efebce6c6ebfd8e830f16da660249601e33"
+  },
+  "model_overrides": {"vocab_size": 512, "n_head": 4},
+  "data_seed": 20260918,
+  "steps": 30000,
+  "behavior_every": 500,
+  "expensive_every": 5000,
+  "checkpoint_every": 500,
+  "doses": [0,1,4,16,64],
+  "long_per_dose": 32,
+  "short_per_dose": 8,
+  "prefix_tokens": 64,
+  "suffix_tokens": 32,
+  "exposure_alphabet": [272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287],
+  "exposure_length": 3,
+  "prefix_grid": [8,16,32,64],
+  "modulus": 251,
+  "noise_fraction": 0.25,
+  "rule_audit_limit": 2048,
+  "online_weightwatcher": false
+}
