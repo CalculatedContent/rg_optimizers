@@ -1,0 +1,43 @@
+{
+  "version": 9,
+  "name": "memorization_four_head_adamw_fast_pilot_v9",
+  "seeds": [1337],
+  "arms": ["adamw"],
+  "source_recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+  "source_blobs": {
+    "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/optimizers.py": "a6ac7efebce6c6ebfd8e830f16da660249601e33"
+  },
+  "model_overrides": {"vocab_size": 512, "n_head": 4},
+  "optimizer_overrides": {
+    "adamw": {
+      "learning_rate": 0.01,
+      "min_learning_rate": 0.001,
+      "weight_decay": 0.0,
+      "warmup_fraction": 0.02,
+      "lr_schedule_epochs": 3.0,
+      "beta1": 0.9,
+      "beta2": 0.95,
+      "epsilon": 1e-8
+    }
+  },
+  "data_seed": 20260918,
+  "steps": 15000,
+  "behavior_every": 500,
+  "expensive_every": 5000,
+  "checkpoint_every": 500,
+  "doses": [0,1,4,16,64],
+  "long_per_dose": 32,
+  "short_per_dose": 8,
+  "prefix_tokens": 64,
+  "suffix_tokens": 32,
+  "exposure_alphabet": [272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287],
+  "exposure_length": 3,
+  "prefix_grid": [8,16,32,64],
+  "modulus": 251,
+  "noise_fraction": 0.25,
+  "rule_audit_limit": 2048,
+  "online_weightwatcher": false,
+  "notes": "AdamW fast pilot v2. Same 4-head model/data/corruption. Corrects the underpowered v1 recipe: max lr 1e-2, min lr 1e-3, no weight decay during learning-rate qualification, 2% warmup on a 3-equivalent-epoch cosine schedule. Seed 1337 only, 15k updates. Hyperparameters selected solely for clean-task learning speed."
+}
