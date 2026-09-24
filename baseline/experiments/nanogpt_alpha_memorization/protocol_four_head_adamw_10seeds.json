@@ -1,0 +1,32 @@
+{
+  "version": 7,
+  "name": "memorization_four_head_adamw_ten_seeds_v7",
+  "parent_commit": "a1f95390c26126b3a3d21a6b84e96e61cd314368",
+  "seeds": [1337, 2027, 4099, 7919, 104729, 271828, 314159, 424243, 524287, 999983],
+  "arms": ["adamw"],
+  "source_recipe": "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml",
+  "source_blobs": {
+    "baseline/experiments/nanogpt_one_head_2026_08_21_baseline/configs/baseline.yaml": "7fd3c592afc7fdfea952b1f1aa0f9b44cdc53a2b",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/model.py": "029b42675ce230c6f1a142afaa8730b9f4d4ced3",
+    "baseline/nanogpt_one_head/src/rg_nanogpt_one_head/optimizers.py": "a6ac7efebce6c6ebfd8e830f16da660249601e33"
+  },
+  "model_overrides": {"vocab_size": 512, "n_head": 4},
+  "data_seed": 20260918,
+  "steps": 30000,
+  "behavior_every": 500,
+  "expensive_every": 5000,
+  "checkpoint_every": 500,
+  "doses": [0,1,4,16,64],
+  "long_per_dose": 32,
+  "short_per_dose": 8,
+  "prefix_tokens": 64,
+  "suffix_tokens": 32,
+  "exposure_alphabet": [272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287],
+  "exposure_length": 3,
+  "prefix_grid": [8,16,32,64],
+  "modulus": 251,
+  "noise_fraction": 0.25,
+  "rule_audit_limit": 2048,
+  "online_weightwatcher": false,
+  "notes": "Ten-seed AdamW replication of the four-head memorization experiment. Same architecture, fixed data split, 25% random-label corruption, canaries, and seed list as the Muon+QK-Clip replication. AdamW uses the pinned source profile without tuning: lr 6e-4, min lr 6e-5, betas 0.9/0.95, weight decay 0.10, one-equivalent-epoch warmup-cosine schedule. 30k updates with behavior and checkpoints every 500 updates. WeightWatcher is post-hoc so spectral measurement cannot perturb training."
+}
