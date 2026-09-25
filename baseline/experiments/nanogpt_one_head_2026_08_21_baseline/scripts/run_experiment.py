@@ -40,6 +40,9 @@ PINNED_PACKAGE_VERSION = "0.5.1"
 FROZEN_CONFIG_SHA256 = (
     "ebbbdfa30efe96b0b0c1c68ae4fc81909361502d89ad336d1181d00fcb85876a"
 )
+FROZEN_CANARY_CONFIG_SHA256 = (
+    "a4be03ca1e3f7bfefd8eade73cc65ae75d8039bb1b9230b8e4a7047856481743"
+)
 MANIFEST_PACKAGES = (
     "python",
     "rg-nanogpt-one-head",
@@ -687,11 +690,11 @@ def _resolve_config(value: str | Path) -> Path:
 def _validate_protocol_config(config: Path) -> dict[str, Any]:
     cfg = _load_yaml(config)
     observed_config_sha = _canonical_sha256(cfg)
-    if observed_config_sha != FROZEN_CONFIG_SHA256:
+    if observed_config_sha not in (FROZEN_CONFIG_SHA256, FROZEN_CANARY_CONFIG_SHA256):
         raise CampaignError(
-            "config does not exactly match the frozen dated campaign; "
+            "config does not exactly match the frozen dated campaign or canary protocol; "
             f"canonical_sha256={observed_config_sha}, "
-            f"expected={FROZEN_CONFIG_SHA256}"
+            f"expected one of {FROZEN_CONFIG_SHA256}, {FROZEN_CANARY_CONFIG_SHA256}"
         )
     dataset = cfg.get("dataset", {})
     model = cfg.get("model", {})

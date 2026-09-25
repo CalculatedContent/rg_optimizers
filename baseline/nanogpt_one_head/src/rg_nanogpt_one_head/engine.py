@@ -381,6 +381,12 @@ def run_one(
             resume_diagnostics=final_resume_diagnostics,
         )
 
+    if progress:
+        print(
+            f"[one-head-stage] optimizer={optimizer_name} seed={seed} "
+            "training updates complete; auditing final/best checkpoints on held-out test data",
+            flush=True,
+        )
     final_state = torch.load(
         final_checkpoint,
         map_location="cpu",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import math
+import os
 from pathlib import Path
 import time
 
@@ -186,6 +187,9 @@ def execute_training_loop(
     grad_accum = int(cfg["training"]["grad_accum_steps"])
     block_size = int(cfg["model"]["block_size"])
     step_tokens = batch_size * grad_accum * block_size
+    # Opt-in logging keeps the baseline's throughput measurement unchanged.
+    # The visible canary launcher enables this in every training child.
+    every_step = progress and os.environ.get("RG_NANOGPT_LOG_EVERY_STEP") == "1"
 
     if not 1 <= schedule_steps <= total_steps:
         raise ValueError(
@@ -249,6 +253,12 @@ def execute_training_loop(
         )
 
         if evaluation_due:
+            if progress:
+                print(
+                    f"[one-head-stage] optimizer={optimizer_name} seed={seed} "
+                    f"step={completed_steps}/{total_steps} evaluating train/validation probes",
+                    flush=True,
+                )
             # These are the diagnostics that an uninterrupted run uses for the
             # row at this exact model state. Keep them even after advancing the
             # in-memory evaluation snapshot so a crash after evaluation can
@@ -405,6 +415,8 @@ def execute_training_loop(
             metrics_writer.writerow(row)
             metrics_handle.flush()
             if canaries is not None:
+                if progress:
+                    print(f"[one-head-stage] step={completed_steps} evaluating canaries", flush=True)
                 canary_summary = canaries.evaluate(model, device=device, step=completed_steps, epoch=actual_epoch)
                 if progress:
                     print(
@@ -442,6 +454,8 @@ def execute_training_loop(
                 )
                 epoch_handle.flush()
 
+                if progress:
+                    print(f"[one-head-stage] step={completed_steps} running WeightWatcher", flush=True)
                 ww_summary = run_weightwatcher(
                     model,
                     run_dir,
@@ -505,6 +519,14 @@ def execute_training_loop(
         if completed_steps == total_steps:
             break
 
+        step_started = time.monotonic()
+        if every_step and completed_steps == start_step:
+            print(
+                f"[one-head-stage] optimizer={optimizer_name} seed={seed} "
+                f"starting update {completed_steps + 1}/{total_steps}",
+                flush=True,
+            )
+        batch_loss = None
         zero_grad(handles)
         for micro_index in range(grad_accum):
             x_cpu, y_cpu = random_batch(
@@ -527,6 +549,9 @@ def execute_training_loop(
                     "training forward pass did not return loss"
                 )
             (loss / grad_accum).backward()
+            if every_step:
+                detached_loss = loss.detach() / grad_accum
+                batch_loss = detached_loss if batch_loss is None else batch_loss + detached_loss
 
         grad_pre_tensor = gradient_norm(model.parameters())
         clip = float(cfg["training"]["grad_clip"])
@@ -542,6 +567,24 @@ def execute_training_loop(
         last_update_lrs = dict(next_update_lrs)
 
         new_step = completed_steps + 1
+        if every_step:
+            # Confirm the accelerator update has finished before claiming a
+            # completed step. This intentionally adds one sync per update.
+            synchronize(device)
+            seconds = time.monotonic() - step_started
+            elapsed = elapsed_offset + time.time() - started
+            rate = (new_step - start_step) / max(time.time() - started, 1e-9)
+            eta = (total_steps - new_step) / max(rate, 1e-9)
+            print(
+                f"[one-head-step] optimizer={optimizer_name} seed={seed} "
+                f"step={new_step}/{total_steps} "
+                f"epoch={new_step * step_tokens / train_tokens:.4f} "
+                f"batch_loss={float(batch_loss.cpu()):.5f} "
+                f"lr={last_update_lrs['primary']:.3e} "
+                f"step_sec={seconds:.3f} tok_s={step_tokens / max(seconds, 1e-9):.0f} "
+                f"elapsed_min={elapsed / 60:.1f} eta_training_min={eta / 60:.1f}",
+                flush=True,
+            )
         if _resume_diagnostics_due(
             new_step,
             cfg=cfg,
@@ -569,6 +612,8 @@ def execute_training_loop(
             total_steps=total_steps,
         )
         if checkpoint_due:
+            if progress:
+                print(f"[one-head-stage] step={new_step} saving restart checkpoint", flush=True)
             _require_finite_model(
                 model,
                 completed_steps=new_step,
