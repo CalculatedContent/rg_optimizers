@@ -24,6 +24,7 @@ from .runtime import (
     update_norm,
 )
 from .spectral import run_weightwatcher
+from .random_canaries import RandomCanaryExperiment
 
 
 def _require_finite_metrics(
@@ -213,6 +214,7 @@ def execute_training_loop(
         last_clipped = bool(resume_diagnostics["last_clipped"])
     started = time.time()
     final_resume_diagnostics: dict | None = None
+    canaries = RandomCanaryExperiment.from_config(cfg, seed=seed, total_steps=total_steps, run_dir=run_dir)
 
     # CSV rows describe the model state at `completed_steps`, so the recorded
     # LR must be the LR used by the update that produced that state. At step
@@ -402,6 +404,17 @@ def execute_training_loop(
             }
             metrics_writer.writerow(row)
             metrics_handle.flush()
+            if canaries is not None:
+                canary_summary = canaries.evaluate(model, device=device, step=completed_steps, epoch=actual_epoch)
+                if progress:
+                    print(
+                        "[one-head-canary] "
+                        f"optimizer={optimizer_name} seed={seed} step={completed_steps} "
+                        f"exact={100*canary_summary['exact_match']:.2f}% "
+                        f"token={100*canary_summary['token_accuracy']:.2f}% "
+                        f"zero_exact={100*canary_summary['zero_exact_match']:.2f}%",
+                        flush=True,
+                    )
 
             if epoch_due:
                 nominal_epoch = float(
@@ -493,13 +506,19 @@ def execute_training_loop(
             break
 
         zero_grad(handles)
-        for _ in range(grad_accum):
+        for micro_index in range(grad_accum):
             x_cpu, y_cpu = random_batch(
                 arrays["train"],
                 batch_size=batch_size,
                 block_size=block_size,
                 generator=train_generator,
             )
+            if canaries is not None:
+                x_cpu, y_cpu = canaries.inject(
+                    x_cpu, y_cpu,
+                    completed_step=completed_steps,
+                    micro_index=micro_index,
+                )
             x = x_cpu.to(device)
             y = y_cpu.to(device)
             _, loss = model(x, y)
