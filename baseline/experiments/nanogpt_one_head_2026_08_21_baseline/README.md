@@ -158,6 +158,58 @@ existing nanoGPT corpus under `/tmp`, so no full training run was fabricated.
 
 ## Run commands
 
+### Visible random-canary restart on a Mac
+
+The random-canary protocol has its own exact config hash. The runner accepts
+both committed protocols, while rejecting edited hyperparameters. Earlier
+launchers only accepted the original baseline hash and rejected the canary
+config before starting training.
+
+From this experiment directory in the existing conda environment, use:
+
+```bash
+caffeinate -dimsu python -u scripts/start_canaries.py \
+  --reuse-root /tmp/rg-nanogpt-fineweb-random-canaries-20260924
+```
+
+If an earlier preparation command is still active, stop it with Ctrl-C in its
+own terminal first. The launcher refuses to copy a corpus whose preparation
+lock is held. It never kills an unrelated process, overwrites an old output
+root, deletes a checkpoint, or rebuilds old data in place.
+
+This command creates and prints a fresh `/tmp/rg-nanogpt-canaries-visible-*`
+root, explicitly selects `fineweb_random_canaries.yaml` for every command,
+runs the MPS doctor, verifies and copies the prior corpus when available,
+then runs AdamW and MuonClip for seed 1337. There are 39,063 optimizer updates
+per arm. Setup or training errors stop the sequence immediately. Success is
+announced only after both runs pass the existing artifact validation.
+
+The terminal and `<printed-root>/console.log` receive startup stages, errors,
+and a flushed `[one-head-step]` line after every completed optimizer update.
+Each line includes optimizer, seed, step/total, batch loss, learning rate,
+timing, throughput, and a rough training ETA. That ETA includes elapsed setup
+diagnostics in the training loop but does not predict final held-out audits or
+the next optimizer arm. Batch loss is distinct from fixed-probe evaluation
+loss. Canary evaluation and WeightWatcher stages are labelled separately.
+
+A heartbeat appears every 30 seconds during subprocess stages. It reports
+process liveness and seconds since output; it does **not** claim that training
+is advancing. Only increasing `[one-head-step]` counts show completed updates.
+
+Per-step logging is opt-in through `RG_NANOGPT_LOG_EVERY_STEP=1`, set by this
+launcher. It synchronizes the accelerator once per update to report completed
+work, which adds overhead. It does not change sampled batches, optimizer
+hyperparameters, evaluation intervals, or checkpoint intervals. Existing
+baseline launches retain their prior logging frequency.
+
+The original experiment root is preserved for inspection. To resume a partial
+**new** run, keep the same source commit and Python environment, set
+`RG_NANOGPT_EXPERIMENT_ROOT` to its printed root, set
+`RG_NANOGPT_LOG_EVERY_STEP=1`, and use the ordinary `run` command with explicit
+`--config configs/fineweb_random_canaries.yaml --optimizers adamw,muon_clip
+--seeds 1337 --device mps`. Do not use `start_canaries.py` to resume: it always
+creates a fresh run.
+
 Run one overnight replicate on the Mac:
 
 ```bash
