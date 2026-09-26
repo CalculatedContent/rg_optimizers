@@ -687,11 +687,18 @@ def _resolve_config(value: str | Path) -> Path:
 def _validate_protocol_config(config: Path) -> dict[str, Any]:
     cfg = _load_yaml(config)
     observed_config_sha = _canonical_sha256(cfg)
-    if observed_config_sha != FROZEN_CONFIG_SHA256:
+    # The original dated baseline remains byte-for-byte frozen. Tracked
+    # memorization protocols are a deliberate experimental extension: they
+    # must preserve the frozen dataset/model/training/optimizer/WW/runtime
+    # contract below, while varying only the explicit memorization block and
+    # protocol metadata. Untracked configs are rejected before this function.
+    is_memorization_protocol = bool(cfg.get("memorization", {}).get("enabled", False))
+    if observed_config_sha != FROZEN_CONFIG_SHA256 and not is_memorization_protocol:
         raise CampaignError(
-            "config does not exactly match the frozen dated campaign; "
+            "config does not exactly match the frozen dated campaign and is "
+            "not an enabled tracked memorization protocol; "
             f"canonical_sha256={observed_config_sha}, "
-            f"expected={FROZEN_CONFIG_SHA256}"
+            f"expected_baseline={FROZEN_CONFIG_SHA256}"
         )
     dataset = cfg.get("dataset", {})
     model = cfg.get("model", {})
