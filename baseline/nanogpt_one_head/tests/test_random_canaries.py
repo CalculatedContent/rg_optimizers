@@ -41,3 +41,17 @@ def test_injection_replaces_only_scheduled_row(tmp_path: Path):
     other = 1 - row
     assert torch.equal(xx[other], x[other])
     assert torch.equal(yy[other], y[other])
+
+
+def test_harmful_load_adds_repeated_unscored_random_windows(tmp_path: Path):
+    cfg = _cfg()
+    cfg["memorization"]["harmful_load_fraction"] = 0.25
+    cfg["memorization"]["harmful_load_dose"] = 4
+    exp = RandomCanaryExperiment(cfg, seed=1337, total_steps=20, run_dir=tmp_path)
+    harmful = [v for v in exp.schedule.values() if v["id"].startswith("harmful_canary")]
+    # acquisition slots = round(20*0.5) * 2 grad accum * 2 rows = 40
+    assert len(harmful) == 10
+    ids = [v["id"] for v in harmful]
+    assert len(set(ids)) == 3
+    # Tracked dose-0 controls remain absent from the injection schedule.
+    assert not any(v["id"].startswith("dose0_") for v in exp.schedule.values())
