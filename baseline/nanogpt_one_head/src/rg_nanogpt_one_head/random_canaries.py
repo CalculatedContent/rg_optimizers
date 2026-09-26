@@ -72,6 +72,55 @@ class RandomCanaryExperiment:
             row = rem % self.batch_size
             self.schedule[(int(step), int(micro), int(row))] = by_id[cid]
 
+        # Additional repeated random windows independently control the amount
+        # of arbitrary information competing with clean FineWeb. These are
+        # intentionally not part of the tracked probe set.
+        harmful_fraction = float(spec.get("harmful_load_fraction", 0.0))
+        harmful_dose = int(spec.get("harmful_load_dose", 64))
+        if not (0.0 <= harmful_fraction < 1.0):
+            raise ValueError("harmful_load_fraction must be in [0,1)")
+        if harmful_dose < 1:
+            raise ValueError("harmful_load_dose must be >= 1")
+        target_harmful_presentations = int(round(harmful_fraction * slots))
+        harmful_bank_size = (
+            int(np.ceil(target_harmful_presentations / harmful_dose))
+            if target_harmful_presentations else 0
+        )
+        harmful_bank = []
+        for index in range(harmful_bank_size):
+            seq = rng.choice(allowed, size=self.block_size + 1, replace=True)
+            harmful_bank.append({
+                "id": f"harmful_canary{index}",
+                "tokens": torch.tensor(seq, dtype=torch.long),
+            })
+
+        occupied_slots = {
+            step * self.grad_accum * self.batch_size
+            + micro * self.batch_size + row
+            for step, micro, row in self.schedule
+        }
+        available_slots = np.asarray(
+            [slot for slot in range(slots) if slot not in occupied_slots],
+            dtype=np.int64,
+        )
+        if target_harmful_presentations > len(available_slots):
+            raise ValueError("harmful random load exceeds free acquisition slots")
+        if target_harmful_presentations:
+            harmful_slots = srng.choice(
+                available_slots,
+                size=target_harmful_presentations,
+                replace=False,
+            )
+            for presentation_index, slot in enumerate(harmful_slots.tolist()):
+                item = harmful_bank[
+                    (presentation_index // harmful_dose) % harmful_bank_size
+                ]
+                step = slot // (self.grad_accum * self.batch_size)
+                rem = slot % (self.grad_accum * self.batch_size)
+                micro = rem // self.batch_size
+                row = rem % self.batch_size
+                self.schedule[(int(step), int(micro), int(row))] = item
+
         manifest = {
             "schema_version": 1,
             "background": "FineWeb-Edu next-token language modeling",
@@ -82,6 +131,10 @@ class RandomCanaryExperiment:
             "suffix_tokens": self.suffix,
             "acquisition_steps": acquisition_steps,
             "total_presentations": len(presentations),
+            "harmful_load_fraction": harmful_fraction,
+            "harmful_load_dose": harmful_dose,
+            "harmful_bank_size": harmful_bank_size,
+            "harmful_presentations": target_harmful_presentations,
             "canaries": [{"id": c["id"], "dose": c["dose"]} for c in self.canaries],
             "schedule": [
                 {"step": k[0], "micro": k[1], "row": k[2], "id": v["id"]}
