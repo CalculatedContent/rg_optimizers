@@ -55,13 +55,9 @@ def main():
         tag = ("%.3f" % pct).rstrip("0").rstrip(".").replace(".", "p")
         root = campaign / f"load_{tag}pct"
         root.mkdir()
-        cfg = yaml.safe_load(BASE_CONFIG.read_text())
-        cfg["protocol"]["name"] = f"fineweb_harmful_mem_load_{tag}pct"
-        cfg["protocol"]["description"] += f" Harmful random-window load={load:.6f}."
-        cfg["training"]["seeds"] = [args.seed]
-        cfg["memorization"]["harmful_load_fraction"] = load
-        config_path = root / "protocol.yaml"
-        config_path.write_text(yaml.safe_dump(cfg, sort_keys=False))
+        config_path = EXPERIMENT / "configs" / f"harmful_memorization_{tag}pct.yaml"
+        if not config_path.is_file():
+            raise SystemExit(f"tracked config missing for load {load}: {config_path}")
 
         # Copy only the already prepared corpus. Results always start empty.
         shutil.copytree(source_data, root / "data")
