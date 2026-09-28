@@ -14,8 +14,10 @@ command -v python3 >/dev/null 2>&1 || fail "python3 is not installed"
 if [[ -d "$REPO_DIR/.git" ]]; then
   log "Updating existing repository at $REPO_DIR"
   git -C "$REPO_DIR" fetch --prune origin
-  git -C "$REPO_DIR" checkout main
-  git -C "$REPO_DIR" pull --ff-only origin main
+  CURRENT_BRANCH="$(git -C "$REPO_DIR" symbolic-ref --quiet --short HEAD || true)"
+  if [[ -n "$CURRENT_BRANCH" ]]; then
+    git -C "$REPO_DIR" pull --ff-only origin "$CURRENT_BRANCH"
+  fi
 else
   log "Cloning $REPO_URL -> $REPO_DIR"
   rm -rf "$REPO_DIR"
@@ -51,3 +53,4 @@ PY
 
 log "Repository commit: $(git -C "$REPO_DIR" rev-parse HEAD)"
 log "INSTALL COMPLETE"
+log "Run the experiment with: ./tpu_quick_muon_ww.sh start"
