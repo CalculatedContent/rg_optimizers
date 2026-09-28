@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+BASE_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 STATE_FILE="/tmp/rg_nanogpt_fourway_last_run.env"
 DEFAULT_CONFIG="${BASE_DIR}/configs/tpu_fourway_quick.yaml"
 SHARED_DATA_ROOT="${RG_TPU_FOURWAY_DATA_ROOT:-/tmp/rg-nanogpt-fourway-data/4m}"
@@ -51,7 +52,7 @@ worker() {
 
   export PYTHONPATH="${BASE_DIR}/src${PYTHONPATH:+:${PYTHONPATH}}"
   export RG_NANOGPT_ALLOW_EPHEMERAL_TPU_STORAGE=1
-  export RG_NANOGPT_CAMPAIGN_COMMAND="$0 start $config"
+  export RG_NANOGPT_CAMPAIGN_COMMAND="$SCRIPT_PATH start $config"
 
   echo "============================================================"
   echo "FOUR-WAY TPU NANOGPT RUN"
@@ -119,13 +120,13 @@ CONFIG=$(printf '%q' "$config")
 EOF
 
   tmux new-session -d -s "$session" \
-    "bash '$0' _worker '$config' '$run_root' '$session'"
+    "bash '$SCRIPT_PATH' _worker '$config' '$run_root' '$session'"
 
   echo "Started detached four-way TPU run."
   echo "Session: $session"
   echo "Root:    $run_root"
-  echo "Status:  $0 status"
-  echo "Log:     $0 tail"
+  echo "Status:  $SCRIPT_PATH status"
+  echo "Log:     $SCRIPT_PATH tail"
 }
 
 status_run() {
