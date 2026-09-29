@@ -1,0 +1,26 @@
+name: TPU full memorization CPU tests
+on:
+  pull_request:
+    paths:
+      - 'baseline/nanogpt_one_head/**'
+      - '.github/workflows/tpu-memorization-sweep-tests.yml'
+  push:
+    paths:
+      - 'baseline/nanogpt_one_head/**'
+      - '.github/workflows/tpu-memorization-sweep-tests.yml'
+permissions:
+  contents: read
+jobs:
+  cpu-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install -e './baseline/nanogpt_one_head[dev]'
+      - run: python -m pytest -q baseline/nanogpt_one_head/tests/test_tpu_memorization_sweep.py
+      - run: bash -n baseline/nanogpt_one_head/tpu_full_memorization.sh
