@@ -22,5 +22,5 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: python -m pip install -e './baseline/nanogpt_one_head[dev]'
-      - run: python -m pytest -q baseline/nanogpt_one_head/tests/test_tpu_memorization_sweep.py
+      - run: python -m pytest -q baseline/nanogpt_one_head/tests/test_tpu_memorization_sweep.py baseline/nanogpt_one_head/tests/test_tpu_qualify_full.py
       - run: bash -n baseline/nanogpt_one_head/tpu_full_memorization.sh
