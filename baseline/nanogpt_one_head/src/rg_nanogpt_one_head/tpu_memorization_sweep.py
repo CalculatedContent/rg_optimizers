@@ -222,6 +222,40 @@ def check_root(root: Path, code: Path, allow_ephemeral: bool) -> None:
             raise ValueError("--root must be on a mounted durable volume; --allow-ephemeral is only for disposable validation")
 
 
+def with_canary_doses(configs: dict, doses: list[int] | None) -> dict:
+    """Register an explicit repetition experiment over validated baseline configs.
+
+    Only the tracked-canary doses and protocol identity change. Background-bank
+    fractions/repetition, training horizon, acquisition window and optimizers
+    remain those of the original study. Five groups retain the 40-probe layout.
+    """
+    if doses is None:
+        return configs
+    if (len(doses) != 5 or any(type(d) is not int or d < 0 for d in doses)
+            or doses[0] != 0 or doses != sorted(set(doses))):
+        raise ValueError("--canary-doses needs five increasing integer doses starting with 0")
+    changed = deepcopy(configs)
+    for load, cfg in changed.items():
+        validate_study_config(cfg, LOADS[load][1])
+        spec = cfg["memorization"]
+        acquisition_steps = max(1, min(EXPECTED_STEPS,
+            int(round(EXPECTED_STEPS * spec["acquisition_fraction"]))))
+        slots = acquisition_steps * cfg["training"]["batch_size"] * cfg["training"]["grad_accum_steps"]
+        tracked = spec["canaries_per_dose"] * sum(doses)
+        background = int(round(spec["harmful_load_fraction"] * slots))
+        if tracked + background > slots:
+            raise ValueError(f"tracked and background presentations exceed acquisition slots for {load}")
+        spec["doses"] = list(doses)
+        cfg["protocol"]["name"] += "_tracked_doses_" + "_".join(map(str, doses))
+        cfg["protocol"]["version"] += 1
+        # protocol participates in the reference engine's scientific fingerprint.
+        cfg["protocol"]["tracked_canary_doses"] = list(doses)
+        cfg["protocol"]["description"] += (
+            f" Explicit tracked-canary exposure counts: {doses}; all other study settings unchanged."
+        )
+    return changed
+
+
 def make_plan(args, configs: dict, source: dict, metadata: dict) -> dict:
     tasks = build_tasks(args.seeds, args.chips, args.loads, args.optimizers)
     return dict(schema_version=1, executor=VERSION, root=str(args.root),
@@ -409,6 +443,8 @@ def parser() -> argparse.ArgumentParser:
             q.add_argument("--loads", type=lambda v: v.split(","), default=list(LOADS))
             q.add_argument("--optimizers", type=lambda v: v.split(","), default=["muon_clip"])
             q.add_argument("--canary-batch-size", type=int, default=40)
+            q.add_argument("--canary-doses", type=lambda v: [int(x) for x in v.split(",")],
+                           help="five increasing tracked exposure counts starting with 0; requires a NEW root")
             q.add_argument("--allow-ephemeral", action="store_true")
             q.add_argument("--retries", type=int, default=2)
     q = sub.add_parser("status")
@@ -430,7 +466,7 @@ def main(argv=None) -> int:
         if args.data_root == args.code or args.code in args.data_root.parents:
             raise ValueError("data must be outside the source checkout")
         source = source_info(args.code)
-        configs = load_configs(args.code)
+        configs = with_canary_doses(load_configs(args.code), getattr(args, "canary_doses", None))
         from .data import prepare_fineweb_edu, validate_prepared_data
         if args.command == "prepare":
             if args.data_root.exists() and any(args.data_root.iterdir()):
