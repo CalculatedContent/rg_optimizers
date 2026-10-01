@@ -102,6 +102,17 @@ Its worker log is in `segments/segment_000001/launch.log` under the smoke root.
 If it fails, inspect that log before launching the long series. The original
 checkpoint is unchanged by the smoke test.
 
+Short continuation segments are audited against their exact configured snapshot
+grid (initial and final for this smoke), not the historical comparison campaign's
+ten-snapshot minimum. Missing scheduled snapshots still fail validation.
+
+If the first release rejected this smoke with `fewer than ten permanent states`,
+update the continuation checkout after the worker exits, then rerun the smoke
+using a **new** root such as `/mnt/disks/rg-data/muonclip-continuation-smoke-v2`.
+Keep the old smoke as evidence. Its source identity is pinned, so do not edit
+its manifest or use `resume` to bypass the source check. Both smokes start from
+the original `muonclip-spmd-long` final checkpoint; those weights are unchanged.
+
 ## Start, monitor, pause, and resume
 
 Start the extended series from the original final checkpoint:

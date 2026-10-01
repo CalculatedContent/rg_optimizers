@@ -25,10 +25,10 @@ cfg["dataset"].update(name="unit/fineweb", config="unit", revision="unit-revisio
 cfg["model"].update(vocab_size=64, block_size=8, n_layer=1, n_head=1, n_embd=32, dropout=0.0)
 cfg["training"].update(seeds=[13], batch_size=2, grad_accum_steps=2, target_epochs=0.125, max_steps=8, epoch_interval=1.0, eval_interval_steps=2, eval_batches=1, checkpoint_interval_steps=2)
 cfg["evaluation"].update(bleu_examples=2, bleu_prompt_tokens=3, bleu_continuation_tokens=2, bleu_batch_size=2, test_interval_steps=2)
-cfg["weightwatcher"].update(min_evals=5, fix_fingers=False)
+cfg["weightwatcher"].update(min_evals=5, fix_fingers="clip_xmax", max_fingers=10, require_raw_alpha=True)
 for p in cfg["optimizer_profiles"].values():
     p.pop("lr_schedule_epochs", None)
-cfg["optimizer_profiles"]["muon_clip"].update(learning_rate=2e-5, min_learning_rate=2e-5, warmup_fraction=0.0, qk_diagnostics_interval=2)
+cfg["optimizer_profiles"]["muon_clip"].update(learning_rate=2e-5, min_learning_rate=2e-5, warmup_fraction=0.0, qk_diagnostics_interval=1000)
 data = root / "data"
 data.mkdir(parents=True)
 rng = np.random.default_rng(7)
@@ -69,6 +69,10 @@ parent_hash = file_sha256(parent_path)
 extension = make_continuation_config(parent_path, steps=4, learning_rate=None, test_interval=2, stop_file=root / "STOP", min_free_disk_gb=0)
 child = run(extension, "child")
 validate_completed_run(child)
+assert len(pd.read_csv(child / "epoch_metrics.csv")) == 2
+spectra = pd.read_csv(child / "spectral/layers.csv")
+assert spectra["finger_policy"].eq("fix_fingers=clip_xmax").all()
+assert np.isfinite(spectra[["alpha_raw", "alpha_clip_xmax"]].to_numpy()).all()
 same_training_state(load(whole / "checkpoint_final.pt"), load(child / "checkpoint_final.pt"))
 same_training_state(load(parent_path), load(child / "checkpoint_initial.pt"))
 assert load(child / "checkpoint_final.pt")["global_step"] == 8

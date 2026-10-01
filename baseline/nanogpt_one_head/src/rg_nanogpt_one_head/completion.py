@@ -17,6 +17,7 @@ from .checkpoints import (
     optimizer_state_sha256,
     require_finite_checkpoint_state,
 )
+from .config import epoch_step_map
 
 _REQUIRED_FILES = (
     "run_complete.json",
@@ -58,6 +59,27 @@ _HELD_OUT_CURVE_COLUMNS = (
 
 class CompletedRunValidationError(RuntimeError):
     """A nominally completed run is missing, stale, or inconsistent."""
+
+
+def _validate_clip_snapshot_schedule(manifest: dict, observed_steps: tuple[int, ...]) -> None:
+    if not manifest.get("continuation"):
+        # Historical comparison campaigns require this minimum sampling density.
+        if len(observed_steps) < 10:
+            _fail("clip-Xmax campaign has fewer than ten permanent states")
+        return
+    # A continuation may be a short acceptance run or a final partial segment.
+    # Require its entire configured grid instead of a campaign-wide minimum.
+    try:
+        train_tokens = int(manifest["data_metadata"]["splits"]["train"])
+        cfg = {
+            "training": manifest["training"], "model": manifest["model"],
+            "dataset": {"train_tokens": train_tokens},
+        }
+        expected_steps = tuple(epoch_step_map(cfg, train_tokens))
+    except (KeyError, TypeError, ValueError, OverflowError) as exc:
+        _fail(f"continuation snapshot schedule cannot be reconstructed: {exc}")
+    if observed_steps != expected_steps:
+        _fail("continuation permanent states do not cover the exact configured snapshot grid")
 
 
 def _validate_test_monitoring(frame, label, interval, total_steps):
@@ -777,8 +799,7 @@ def validate_completed_run(
             "clip_xmax"
         ).all():
             _fail("spectral rows do not declare clipped alpha as primary")
-        if len(epoch_steps) < 10:
-            _fail("clip-Xmax campaign has fewer than ten permanent states")
+        _validate_clip_snapshot_schedule(manifest, epoch_steps)
         for column in (
             "alpha_raw_n",
             "alpha_raw_median",

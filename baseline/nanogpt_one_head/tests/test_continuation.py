@@ -7,7 +7,9 @@ import pandas as pd
 import pytest
 
 from rg_nanogpt_one_head.continuation import pause_reason
-from rg_nanogpt_one_head.completion import _validate_test_monitoring, CompletedRunValidationError
+from rg_nanogpt_one_head.completion import (
+    _validate_test_monitoring, _validate_clip_snapshot_schedule, CompletedRunValidationError,
+)
 from rg_nanogpt_one_head.muonclip_continue import series_lock, prune_completed_segments
 import rg_nanogpt_one_head.muonclip_continue as series
 import rg_nanogpt_one_head.muonclip_resilient as resilient
@@ -90,3 +92,35 @@ def test_series_environment_change_is_rejected(tmp_path, monkeypatch):
     monkeypatch.setattr(series, "series_environment", lambda: {"source": "changed"})
     with pytest.raises(RuntimeError, match="source/dependencies changed"):
         series.drive_series(tmp_path, {"environment": {"source": "original"}}, 1)
+
+
+def _snapshot_manifest(steps):
+    # The production TPU shape and cadence, including a short final segment.
+    return {
+        "continuation": {"global_step_offset": 2150000},
+        "data_metadata": {"splits": {"train": 80000000}},
+        "model": {"block_size": 256},
+        "training": {"batch_size": 32, "grad_accum_steps": 1, "max_steps": steps,
+                     "target_epochs": steps * 8192 / 80000000, "epoch_interval": 1.024},
+    }
+
+
+@pytest.mark.parametrize("steps,expected", [
+    (20, (0, 20)),
+    (25000, (0, 10000, 20000, 25000)),
+    (1000000, tuple(range(0, 1000001, 10000))),
+])
+def test_clip_continuation_requires_its_planned_grid(steps, expected):
+    _validate_clip_snapshot_schedule(_snapshot_manifest(steps), expected)
+
+
+@pytest.mark.parametrize("observed", [(0, 25000), (0, 10000, 25000), (0, 10000, 20000)])
+def test_clip_continuation_missing_snapshots_are_rejected(observed):
+    with pytest.raises(CompletedRunValidationError, match="exact configured snapshot grid"):
+        _validate_clip_snapshot_schedule(_snapshot_manifest(25000), observed)
+
+
+def test_historical_clip_campaign_still_requires_ten_snapshots():
+    with pytest.raises(CompletedRunValidationError, match="fewer than ten"):
+        _validate_clip_snapshot_schedule({}, (0, 20))
+    _validate_clip_snapshot_schedule({}, tuple(range(10)))
