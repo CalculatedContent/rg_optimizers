@@ -73,6 +73,7 @@ def test_longrun_global_batch_and_schedule():
     from rg_nanogpt_one_head.config import load_config, tokens_per_step, max_steps, lr_schedule_steps, warmup_steps
     root = Path(__file__).resolve().parents[1]
     cfg = load_config(root / "configs/muonclip_tpu_spmd_long.yaml")
+    assert cfg["runtime"]["matmul_precision"] == "highest"
     assert cfg["weightwatcher"]["fix_fingers"] == "clip_xmax"
     assert cfg["weightwatcher"]["require_raw_alpha"] is True
     assert tokens_per_step(cfg) == 8192
@@ -82,6 +83,7 @@ def test_longrun_global_batch_and_schedule():
     assert lr_schedule_steps(cfg, profile) == 2150000
     assert warmup_steps(profile, 2150000) == 2000
     smoke = load_config(root / "configs/muonclip_tpu_spmd_smoke.yaml")
+    assert smoke["runtime"]["matmul_precision"] == "highest"
     assert max_steps(smoke) == 20
 
 

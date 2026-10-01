@@ -162,6 +162,11 @@ failures, not provisioning/replacing an expired VM.
 - QK maxima reduce over the global batch and every accumulation microbatch;
   replicated per-head maxima drive identical clipping.
 - Explicit FP32 baseline; BF16 is not enabled or claimed validated.
+- Both SPMD configs request `matmul_precision: highest`. The runtime sets XLA's
+  separate native precision control as well as PyTorch's setting. PyTorch/XLA
+  2.6 does not inherit this setting from `torch.set_float32_matmul_precision`.
+  The check verifies the emitted HLO precision and a precision-sensitive matrix
+  product before comparing gradients. Numerical tolerances are unchanged.
 - 2,150,000 updates, peak LR 2e-4, 2,000 warm-up updates, full-horizon cosine to
   2e-5. This is a starting protocol, not an assertion of optimality.
 - Full optimizer/model/RNG/sampler checkpoint every 500 updates; existing
@@ -190,5 +195,6 @@ gcloud alpha compute tpus queued-resources delete "$RG_REQUEST" \
 ## References
 
 - https://docs.pytorch.org/xla/release/r2.6/perf/spmd_basic.html
+- https://docs.pytorch.org/xla/master/tutorials/precision_tutorial.html
 - https://docs.cloud.google.com/tpu/docs/request-using-flex-start
 - https://docs.cloud.google.com/tpu/docs/attach-durable-block-storage

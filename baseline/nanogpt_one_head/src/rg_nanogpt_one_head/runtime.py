@@ -27,6 +27,7 @@ _TPU_ENV_HINTS = (
     "TPU_CHIPS_PER_HOST_BOUNDS",
     "TPU_HOST_BOUNDS",
 )
+_XLA_MATMUL_PRECISION: str | None = None
 
 
 def _major_minor(version: str) -> tuple[int, int] | None:
@@ -201,10 +202,29 @@ def _xla_process_index(xr: Any) -> int:
     return 0
 
 
+def configure_matmul_precision(device: torch.device, precision: str) -> None:
+    """Configure both ATen and XLA; XLA 2.6 has a separate precision control."""
+    global _XLA_MATMUL_PRECISION
+    mapping = {"highest": "HIGHEST", "high": "HIGH", "medium": "DEFAULT"}
+    if precision not in mapping:
+        raise ValueError(f"Unsupported matmul precision: {precision!r}")
+    torch.set_float32_matmul_precision(precision)
+    if device.type == "xla":
+        modules = _load_xla(required=True)
+        assert modules is not None
+        torch_xla, _, _ = modules
+        # The public torch_xla.backends wrapper is newer than our pinned 2.6
+        # stack. Its native binding is present in 2.6 and controls HLO dot ops.
+        setter = getattr(getattr(torch_xla, "_XLAC", None), "_xla_set_mat_mul_precision", None)
+        if not callable(setter):
+            raise RuntimeError("PyTorch/XLA cannot set explicit matrix multiplication precision")
+        setter(mapping[precision])
+        _XLA_MATMUL_PRECISION = mapping[precision].lower()
+
+
 def configure_runtime(device: torch.device, cfg: dict) -> None:
-    torch.set_float32_matmul_precision(
-        str(cfg["runtime"].get("matmul_precision", "high"))
-    )
+    precision = str(cfg["runtime"].get("matmul_precision", "high"))
+    configure_matmul_precision(torch.device("cpu"), precision)
     if device.type == "cuda":
         allow_tf32 = bool(cfg["runtime"].get("allow_tf32", False))
         torch.backends.cuda.matmul.allow_tf32 = allow_tf32
@@ -253,6 +273,7 @@ def configure_runtime(device: torch.device, cfg: dict) -> None:
                 f"Detected process_count={count}. Run the ordinary single-process "
                 "launcher or implement an explicitly distributed protocol."
             )
+        configure_matmul_precision(device, precision)
     deterministic = bool(
         cfg["runtime"].get("deterministic_algorithms", False)
     )
@@ -542,6 +563,7 @@ def runtime_metadata(device: torch.device) -> dict[str, Any]:
                     torch_xla, "__version__", "unknown"
                 ),
                 "pjrt_device": _xla_device_type(xr),
+                "xla_matmul_precision": _XLA_MATMUL_PRECISION or "unset",
                 "tpu_accelerator_type": str(
                     os.environ.get("TPU_ACCELERATOR_TYPE", "unknown")
                 ),

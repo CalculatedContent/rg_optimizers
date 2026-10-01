@@ -44,15 +44,31 @@ def main() -> None:
     from .evaluation import evaluate_probe
     from .model import GPT, GPTConfig
     from .optimizers import make_optimizer_handles, zero_grad, optimizer_step
-    from .runtime import mark_step, synchronize, tree_to_cpu, parameter_snapshot
+    from .runtime import configure_runtime, mark_step, synchronize, tree_to_cpu, parameter_snapshot
 
     spmd._initialize_mesh(xr, args.chips)
     device = xm.xla_device()
     cfg_path = Path.cwd() / "configs" / "muonclip_reference.yaml"
     cfg = load_config(cfg_path)
+    benchmark_cfg = load_config(args.benchmark_config) if args.benchmark_config else None
+    precision = str(benchmark_cfg["runtime"].get("matmul_precision", "highest")) if benchmark_cfg else "highest"
     cfg["model"].update(vocab_size=64, block_size=8, n_embd=16, n_head=2, n_layer=1)
     cfg["training"].update(batch_size=2 * args.chips, grad_accum_steps=2)
-    cfg["runtime"].update(tpu_spmd=True, tpu_expected_chips=args.chips)
+    cfg["runtime"].update(tpu_spmd=True, tpu_expected_chips=args.chips, matmul_precision=precision)
+    # torch.set_float32_matmul_precision alone does not configure XLA 2.6.
+    # Apply the same explicit runtime policy used by the actual trainer.
+    configure_runtime(device, cfg)
+    print(f"[spmd-check] backend={xr.device_type()} chips={args.chips} matmul_precision={precision}", flush=True)
+    # Inspect emitted HLO as well as metadata: CPU-XLA accepts reduced-precision
+    # HLO but can execute it with FP32, hiding a missing TPU precision setting.
+    probe_input = torch.full((128, 128), 1.0 + 2.0 ** -8).to(device)
+    probe_product = probe_input @ probe_input
+    probe_hlo = torch_xla._XLAC._get_xla_tensors_hlo([probe_product])
+    expected_precision = {"highest": "highest", "high": "high"}.get(precision)
+    if expected_precision:
+        assert f"operand_precision={{{expected_precision},{expected_precision}}}" in probe_hlo, "XLA HLO is missing requested matmul precision"
+    if precision == "highest":
+        torch.testing.assert_close(probe_product.cpu(), torch.full((128, 128), 128 * (1.0 + 2.0 ** -8) ** 2), atol=1e-6, rtol=1e-6)
     profile = optimizer_profile(cfg, "muon_clip")
     # Force clipping to activate so a wrong cross-chip max cannot pass quietly.
     profile.update(qk_clip_threshold=0.0001, qk_diagnostics_interval=100)
@@ -86,8 +102,10 @@ def main() -> None:
 
     cpu_grad, cpu_max = update(reference, cpu_handles, torch.device("cpu"))
     xla_grad, xla_max = update(model, handles, device)
+    print("[spmd-check] comparing global gradients, QK maxima and clipped update", flush=True)
     for name in cpu_grad:
-        torch.testing.assert_close(xla_grad[name], cpu_grad[name], atol=3e-5, rtol=3e-3)
+        torch.testing.assert_close(xla_grad[name], cpu_grad[name], atol=3e-5, rtol=3e-3,
+                                   msg=lambda message, name=name: f"Gradient {name}: {message}")
     for actual, expected in zip(xla_max, cpu_max):
         torch.testing.assert_close(actual, expected, atol=3e-5, rtol=3e-3)
     for name, expected in reference.state_dict().items():
@@ -100,6 +118,7 @@ def main() -> None:
     for metric in ("loss", "accuracy", "top5_accuracy"):
         torch.testing.assert_close(torch.tensor(probe_xla[metric]), torch.tensor(probe_cpu[metric]), atol=3e-5, rtol=3e-3)
 
+    print("[spmd-check] checking full-state checkpoint and two resumed updates", flush=True)
     with tempfile.TemporaryDirectory() as temporary:
         path = Path(temporary) / "checkpoint.pt"
         save_training_checkpoint(
@@ -136,12 +155,14 @@ def main() -> None:
 
     report = {"passed": True, "backend": xr.device_type(), **spmd.metadata(),
               "torch": torch.__version__, "torch_xla": torch_xla.__version__,
-              "checks": ["global gradients", "global per-head QK maxima", "clipped update",
+              "xla_matmul_precision": "default" if precision == "medium" else precision,
+              "checks": ["explicit HLO matmul precision", "global gradients", "global per-head QK maxima", "clipped update",
                          "train/eval metrics", "CPU checkpoint", "optimizer and sampler resume"],
               "max_gradient_error": max(float((cpu_grad[n] - xla_grad[n]).abs().max()) for n in cpu_grad)}
 
-    if args.benchmark_config:
-        benchmark_cfg = load_config(args.benchmark_config)
+    print("[spmd-check] numerical and resume checks passed", flush=True)
+    if benchmark_cfg is not None:
+        print("[spmd-check] benchmarking training shape (5 warm-up updates)", flush=True)
         batch = int(benchmark_cfg["training"]["batch_size"])
         accum = int(benchmark_cfg["training"]["grad_accum_steps"])
         context = int(benchmark_cfg["model"]["block_size"])

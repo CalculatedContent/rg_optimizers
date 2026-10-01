@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -141,6 +142,26 @@ def test_configure_runtime_rejects_unregistered_bf16(
 
     with pytest.raises(RuntimeError, match="reference protocol is float32"):
         runtime.configure_runtime(torch.device("xla"), cfg)
+
+
+@pytest.mark.parametrize("requested,expected", [("highest", "HIGHEST"), ("high", "HIGH"), ("medium", "DEFAULT")])
+def test_xla_runtime_sets_native_matmul_precision(fake_xla, monkeypatch, requested, expected):
+    calls = []
+    monkeypatch.setenv("TPU_ACCELERATOR_TYPE", "v5litepod-4")
+    monkeypatch.setattr(FakeTorchXLA, "_XLAC", SimpleNamespace(_xla_set_mat_mul_precision=calls.append), raising=False)
+    monkeypatch.setattr(runtime, "_XLA_MATMUL_PRECISION", None)
+    previous = torch.get_float32_matmul_precision()
+    try:
+        runtime.configure_runtime(torch.device("xla"), {"runtime": {"matmul_precision": requested}})
+        assert calls == [expected]
+        assert runtime.runtime_metadata(torch.device("xla"))["xla_matmul_precision"] == expected.lower()
+    finally:
+        torch.set_float32_matmul_precision(previous)
+
+
+def test_xla_precision_cannot_silently_fall_back(fake_xla):
+    with pytest.raises(RuntimeError, match="cannot set explicit"):
+        runtime.configure_matmul_precision(torch.device("xla"), "highest")
 
 
 def test_cpu_tree_conversion_detaches_nested_tensors():

@@ -115,7 +115,7 @@ weightwatcher:
   max_fingers: 10
   require_raw_alpha: true
 runtime:
-  matmul_precision: high
+  matmul_precision: highest
   mps_fallback: true
   deterministic_algorithms: false
   empty_mps_cache_after_weightwatcher: true
