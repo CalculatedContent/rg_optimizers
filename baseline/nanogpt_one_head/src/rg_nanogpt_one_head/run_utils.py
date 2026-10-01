@@ -27,6 +27,7 @@ from .provenance import (
 from .runtime import runtime_metadata
 
 METRIC_FIELDS = [
+    "global_step", "global_epoch",
     "step", "tokens_seen", "epoch", "elapsed_sec", "tokens_per_sec",
     "primary_lr", "auxiliary_lr", "train_loss", "train_perplexity",
     "train_bits_per_token", "train_accuracy", "train_top5_accuracy",
@@ -400,6 +401,7 @@ def write_manifest(
         "data_metadata": data_metadata,
         "training": cfg["training"],
         "evaluation": cfg["evaluation"],
+        "continuation": cfg.get("continuation"),
         "weightwatcher": cfg["weightwatcher"],
         "tokens_per_step": tokens_per_step(cfg),
         "max_steps": int(total_steps),
@@ -418,6 +420,12 @@ def write_manifest(
             "not translation BLEU"
         ),
     }
+    if int(cfg["evaluation"].get("test_interval_steps", 0)) > 0:
+        payload["test_policy"] = (
+            "fixed test probe used for monitoring; validation selects the best "
+            "checkpoint; test never selects checkpoints automatically; this is "
+            "not an untouched held-out evaluation after human monitoring"
+        )
     temporary = run_dir / "manifest.json.tmp"
     temporary.write_text(
         json.dumps(

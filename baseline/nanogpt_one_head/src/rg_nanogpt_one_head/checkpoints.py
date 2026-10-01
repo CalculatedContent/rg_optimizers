@@ -272,6 +272,7 @@ def save_training_checkpoint(
         "model_state_sha256": model_state_sha256(model_state),
         "optimizer_state_sha256": optimizer_state_sha256(optimizer_states),
         "step": int(step),
+        "global_step": int(cfg.get("continuation", {}).get("global_step_offset", 0)) + int(step),
         "best_validation_loss": float(best_validation_loss),
         "best_validation_step": int(best_validation_step),
         "elapsed_seconds": float(elapsed_seconds),

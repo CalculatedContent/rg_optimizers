@@ -1,5 +1,8 @@
 # One MuonClip run across four TPU chips
 
+For extending a trained checkpoint, periodic test accuracy, bounded checkpoint
+retention, and open-ended training, see [TPU_CONTINUATION.md](TPU_CONTINUATION.md).
+
 This is single-host XLA SPMD data parallelism for the v5e-4, with one Python
 process and one checkpoint/WeightWatcher owner. It is not a four-run sweep.
 Multi-host TPU slices are rejected. The old single-chip configs remain opt-out.

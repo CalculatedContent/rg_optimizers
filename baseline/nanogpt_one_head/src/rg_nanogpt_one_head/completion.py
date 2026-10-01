@@ -60,6 +60,33 @@ class CompletedRunValidationError(RuntimeError):
     """A nominally completed run is missing, stale, or inconsistent."""
 
 
+def _validate_test_monitoring(frame, label, interval, total_steps):
+    steps = pd.to_numeric(frame["step"], errors="raise")
+    due = steps.mod(interval).eq(0) | steps.eq(total_steps)
+    if label == "metrics.csv":
+        expected = {*range(0, total_steps + 1, interval), total_steps}
+        if not expected.issubset(set(steps)):
+            _fail("metrics.csv is missing periodic test measurements")
+    columns = (
+        "test_loss", "test_perplexity", "test_bits_per_token",
+        "test_accuracy", "test_top5_accuracy", "test_generalization_gap",
+    )
+    for column in columns:
+        values = pd.to_numeric(frame[column], errors="coerce")
+        if not values.loc[~due].isna().all() or not all(math.isfinite(v) for v in values.loc[due]):
+            _fail(f"{label} {column} violates periodic test measurement schedule")
+    observed = frame.loc[due]
+    for _, row in observed.iterrows():
+        if not 0 <= row["test_accuracy"] <= row["test_top5_accuracy"] <= 1:
+            _fail(f"{label} invalid test accuracy range")
+        if row["test_loss"] < 0 or not math.isclose(math.exp(row["test_loss"]), row["test_perplexity"], rel_tol=1e-9):
+            _fail(f"{label} inconsistent test loss/perplexity")
+        if not math.isclose(row["test_loss"] / math.log(2), row["test_bits_per_token"], rel_tol=1e-9):
+            _fail(f"{label} inconsistent test bits per token")
+        if not math.isclose(row["test_loss"] - row["train_loss"], row["test_generalization_gap"], abs_tol=1e-9):
+            _fail(f"{label} inconsistent test generalization gap")
+
+
 def _fail(message: str) -> NoReturn:
     raise CompletedRunValidationError(
         "completed one-head nanoGPT run is stale or inconsistent: "
@@ -399,10 +426,16 @@ def validate_completed_run(
     final_test = test_results.get("final")
     selected_test = test_results.get("validation_selected")
     test_policy = str(test_results.get("policy", "")).lower()
+    test_interval = int(manifest.get("evaluation", {}).get("test_interval_steps", 0))
+    if test_interval > 0:
+        if "monitoring" not in test_policy or "validation" not in test_policy:
+            _fail("test_results.json does not declare the monitoring test policy")
     if (
+        test_interval == 0 and (
         "held out" not in test_policy
         or "validation" not in test_policy
         or "never" not in test_policy
+        )
     ):
         _fail("test_results.json does not declare the held-out test policy")
     if not isinstance(final_test, dict) or not isinstance(selected_test, dict):
@@ -494,6 +527,13 @@ def validate_completed_run(
     metric_steps = _step_tuple(metrics, "metrics.csv")
     epoch_steps = _step_tuple(epoch_metrics, "epoch_metrics.csv")
     summary_steps = _step_tuple(summary, "spectral/summary.csv")
+    lineage = manifest.get("continuation")
+    if lineage:
+        offset = _as_int(lineage.get("global_step_offset"), "global step offset")
+        _expect(_as_int(completion.get("global_step"), "completion global step"), offset + total_steps, "completion global step")
+        for frame in (metrics, epoch_metrics):
+            if "global_step" not in frame or not pd.to_numeric(frame["global_step"], errors="coerce").eq(frame["step"] + offset).all():
+                _fail("continuation global steps do not match local steps plus parent offset")
     weightwatcher = manifest.get("weightwatcher", {})
     if not isinstance(weightwatcher, dict):
         _fail("manifest weightwatcher configuration is not a mapping")
@@ -518,9 +558,16 @@ def validate_completed_run(
                 f"{label} is missing held-out placeholder columns "
                 + ", ".join(sorted(missing_held_out))
             )
+        monitored_columns = {
+            "test_loss", "test_perplexity", "test_bits_per_token",
+            "test_accuracy", "test_top5_accuracy", "test_generalization_gap",
+        } if test_interval > 0 else set()
+        if monitored_columns:
+            _validate_test_monitoring(frame, label, test_interval, total_steps)
         leaked = [
             column
             for column in _HELD_OUT_CURVE_COLUMNS
+            if column not in monitored_columns
             if not frame[column].isna().all()
         ]
         if leaked:
@@ -537,7 +584,7 @@ def validate_completed_run(
     if "test_held_out" not in epoch_metrics.columns:
         _fail("epoch_metrics.csv has no test_held_out column")
     held_out = pd.to_numeric(epoch_metrics["test_held_out"], errors="coerce")
-    if held_out.isna().any() or not held_out.astype(int).eq(1).all():
+    if held_out.isna().any() or not held_out.eq(int(test_interval == 0)).all():
         _fail("epoch_metrics.csv does not mark every test curve as held out")
 
     required_layer_columns = {
@@ -836,6 +883,8 @@ def validate_completed_run(
                 schema_version=5,
             )
             computed_model_hash = model_state_sha256(payload["model"])
+            if lineage:
+                _expect(_as_int(payload.get("global_step"), f"{filename} global step"), offset + expected_step, f"{filename} global step")
             if str(payload.get("model_state_sha256", "")) != computed_model_hash:
                 _fail(f"{filename} model-state SHA-256 does not match")
             optimizer_states = payload.get("optimizers")

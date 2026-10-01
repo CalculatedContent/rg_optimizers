@@ -13,6 +13,7 @@ after a small bounded number of attempts.
 """
 
 import argparse
+from contextlib import nullcontext
 from datetime import datetime, timezone
 import json
 import os
@@ -159,12 +160,25 @@ def run_resilient(args: argparse.Namespace) -> int:
             },
         )
 
-        result = subprocess.run(
-            command,
-            env=environment,
-            check=False,
-        )
+        options = {}
+        if getattr(args, "lock_fd", None) is not None:
+            options.update(pass_fds=(args.lock_fd,), start_new_session=True)
+        log_path = getattr(args, "worker_log", None)
+        with (Path(log_path).open("a") if log_path else nullcontext()) as output:
+            if output is not None:
+                options.update(stdout=output, stderr=subprocess.STDOUT)
+            result = subprocess.run(command, env=environment, check=False, **options)
         return_code = int(result.returncode)
+
+        if return_code == 75:
+            _atomic_json(status_path, {
+                "completed": False, "running": False, "paused": True,
+                "last_exit_code": 75, "run_dir": str(run_dir),
+                "checkpoint_path": str(latest_checkpoint),
+                "last_verified_checkpoint_step": _checkpoint_step(latest_checkpoint),
+                "updated_at_utc": _utc_now(),
+            })
+            return 75
 
         if return_code == 0:
             final_step = _checkpoint_step(latest_checkpoint)

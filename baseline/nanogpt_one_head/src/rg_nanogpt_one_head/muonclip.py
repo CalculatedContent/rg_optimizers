@@ -372,6 +372,13 @@ class MuonClip(torch.optim.Optimizer):
             self._flush_diagnostics()
         return loss
 
+    def reset_phase_diagnostics(self) -> None:
+        """Start a new logging interval without resetting optimization history."""
+        self.step_index = 0
+        self.last_diagnostics = {}
+        self._diagnostic_interval_state = None
+        self.reset_qk_tracking()
+
     def state_dict(self) -> dict[str, Any]:
         payload = super().state_dict()
         payload["muonclip_global_state"] = {

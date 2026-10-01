@@ -48,6 +48,7 @@ from .runtime import (
 )
 from .train_loop import execute_training_loop
 from .tpu_spmd import initialize as initialize_spmd, replicate_model
+from .continuation import import_parent_state, pause_reason, TrainingPaused
 
 
 def run_one(
@@ -241,6 +242,15 @@ def run_one(
                 f"cannot resume {run_dir}: checkpoint_latest.pt is missing"
             )
 
+    if cfg.get("continuation") and resume_checkpoint is None:
+        resume_diagnostics = import_parent_state(
+            cfg, model=model, handles=handles, train_generator=train_generator,
+            data_metadata=data_metadata, seed=int(seed), current_runtime=current_runtime,
+        )
+        model.to(resolved_device)
+        replicate_model(model)
+        synchronize(resolved_device)
+
     write_manifest(
         run_dir,
         cfg=cfg,
@@ -275,6 +285,7 @@ def run_one(
             optimizer_name=optimizer_name,
             seed=int(seed),
             train_generator=train_generator,
+            resume_diagnostics=resume_diagnostics,
         )
         if progress:
             print(
@@ -289,6 +300,10 @@ def run_one(
             "unavailable for this run",
             flush=True,
         )
+
+    reason = pause_reason(cfg, run_dir)
+    if reason:
+        raise TrainingPaused(reason)
 
     metrics_path = run_dir / "metrics.csv"
     epoch_metrics_path = run_dir / "epoch_metrics.csv"
@@ -327,6 +342,7 @@ def run_one(
                 arrays=arrays,
                 train_probe=train_probe,
                 val_probe=val_probe,
+                test_probe=test_probe,
                 device=resolved_device,
                 optimizer_name=optimizer_name,
                 seed=int(seed),
@@ -418,6 +434,13 @@ def run_one(
         "final": final_test,
         "validation_selected": best_test,
     }
+    if int(eval_cfg.get("test_interval_steps", 0)) > 0:
+        test_results["policy"] = (
+            "fixed test probe used for monitoring; validation selects checkpoints; "
+            "test never selects checkpoints automatically; not an untouched held-out audit"
+        )
+        test_results["test_interval_steps"] = int(eval_cfg["test_interval_steps"])
+        test_results["probe_tokens"] = eval_batches * batch_size * block_size
     (run_dir / "test_results.json").write_text(
         json.dumps(
             test_results,
@@ -432,6 +455,7 @@ def run_one(
         "optimizer": optimizer_name,
         "seed": int(seed),
         "optimizer_steps": int(total_steps),
+        "global_step": int(cfg.get("continuation", {}).get("global_step_offset", 0)) + int(total_steps),
         "train_epochs": float(
             total_steps * tokens_per_step(cfg) / train_tokens
         ),

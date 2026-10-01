@@ -236,6 +236,10 @@ def validate_config(cfg: dict[str, Any]) -> None:
             raise ValueError(f"dataset.{key} is too small for the context length")
 
     training = cfg["training"]
+    if "max_steps" in training:
+        value = training["max_steps"]
+        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+            raise ValueError("training.max_steps must be a positive integer")
     for key in (
         "batch_size", "grad_accum_steps", "target_epochs",
         "eval_interval_steps", "eval_batches", "checkpoint_interval_steps",
@@ -270,6 +274,9 @@ def validate_config(cfg: dict[str, Any]) -> None:
             )
 
     evaluation = cfg["evaluation"]
+    interval = evaluation.get("test_interval_steps", 0)
+    if isinstance(interval, bool) or not isinstance(interval, int) or interval < 0:
+        raise ValueError("evaluation.test_interval_steps must be a nonnegative integer")
     for key in (
         "bleu_examples", "bleu_prompt_tokens", "bleu_continuation_tokens",
         "bleu_batch_size",
@@ -398,6 +405,8 @@ def _steps_for_epochs(cfg: dict[str, Any], epochs: float, train_tokens: int) -> 
 
 
 def max_steps(cfg: dict[str, Any], train_tokens: int | None = None) -> int:
+    if "max_steps" in cfg["training"]:
+        return int(cfg["training"]["max_steps"])
     train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
     return _steps_for_epochs(cfg, float(cfg["training"]["target_epochs"]), train_tokens)
 
@@ -483,5 +492,7 @@ def protocol_fingerprint(
         "seed": int(seed),
         "data_metadata": data_metadata,
     }
+    if "continuation" in cfg:
+        payload["continuation"] = cfg["continuation"]
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
