@@ -101,6 +101,7 @@ _ACCELERATOR_RUNTIME_IDENTITY_FIELDS = {
     "tpu": (
         "torch_xla_version",
         "pjrt_device",
+        "xla_matmul_precision",
         "tpu_accelerator_type",
         "xla_process_count",
         "xla_process_index",
@@ -129,6 +130,12 @@ def runtime_identity_payload(metadata: dict) -> dict:
         *_COMMON_RUNTIME_IDENTITY_FIELDS,
         *_ACCELERATOR_RUNTIME_IDENTITY_FIELDS.get(accelerator, ()),
     )
+    if accelerator == "tpu":
+        # Old single-chip manifests remain readable. New SPMD runs record
+        # topology so a masked device cannot silently change a resumed run.
+        metadata = {"xla_spmd": False, "xla_spmd_chips": 1,
+                    "xla_matmul_precision": "unset", **metadata}
+        fields = (*fields, "xla_spmd", "xla_spmd_chips")
     missing = [field for field in fields if field not in metadata]
     if missing:
         raise RuntimeError(

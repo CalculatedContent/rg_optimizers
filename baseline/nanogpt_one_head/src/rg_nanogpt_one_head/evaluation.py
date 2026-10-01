@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 
 from .runtime import is_xla_device, mark_step, synchronize, tree_to_cpu
+from .tpu_spmd import batch_to_device
 
 
 @dataclass(frozen=True)
@@ -145,8 +146,8 @@ def evaluate_probe(
         top5_correct = 0
         total = 0
         for x_cpu, y_cpu in probe:
-            x = x_cpu.to(device)
-            y = y_cpu.to(device)
+            x = batch_to_device(x_cpu, device)
+            y = batch_to_device(y_cpu, device)
             logits, loss = model(x, y)
             if loss is None:
                 raise RuntimeError(
@@ -184,8 +185,8 @@ def evaluate_probe(
     total = 0
     batches = 0
     for x_cpu, y_cpu in probe:
-        x = x_cpu.to(device)
-        y = y_cpu.to(device)
+        x = batch_to_device(x_cpu, device)
+        y = batch_to_device(y_cpu, device)
         logits, loss = model(x, y)
         if loss is None:
             raise RuntimeError("evaluation forward pass did not return loss")

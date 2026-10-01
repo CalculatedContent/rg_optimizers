@@ -47,6 +47,7 @@ from .runtime import (
     synchronize,
 )
 from .train_loop import execute_training_loop
+from .tpu_spmd import initialize as initialize_spmd, replicate_model
 
 
 def run_one(
@@ -67,6 +68,7 @@ def run_one(
     if resume and overwrite:
         raise ValueError("resume and overwrite are mutually exclusive")
 
+    initialize_spmd(cfg, device)
     data_root = Path(data_root)
     results_root = Path(results_root)
     run_dir = run_directory(results_root, optimizer_name, int(seed))
@@ -128,6 +130,7 @@ def run_one(
         )
 
     model = GPT(GPTConfig(**cfg["model"])).to(resolved_device)
+    replicate_model(model)
     handles = make_optimizer_handles(model, profile)
     train_generator = torch.Generator(device="cpu").manual_seed(
         int(seed) + 11
@@ -209,6 +212,7 @@ def run_one(
             )
         resumed_from_checkpoint = True
         model.to(resolved_device)
+        replicate_model(model)
         synchronize(resolved_device)
         truncate_spectral_after(run_dir, start_step)
         truncate_muonclip_qk_after(run_dir, start_step)

@@ -18,6 +18,8 @@ from typing import Any, Iterable
 import torch
 import torch.nn.functional as F
 
+from .tpu_spmd import replicate
+
 _INSTALLED = False
 _CURRENT_RUN_DIR: Path | None = None
 
@@ -409,6 +411,9 @@ def _record_qk_logits(attention, scores: torch.Tensor) -> None:
         .amax(dim=0)
         .float()
     )
+    # The amax includes the GLOBAL batch axis. Replication forces the
+    # compiler to complete the cross-chip max before per-head QK clipping.
+    replicate(value)
     previous = getattr(attention, "_muonclip_max_logits", None)
     setattr(
         attention,
