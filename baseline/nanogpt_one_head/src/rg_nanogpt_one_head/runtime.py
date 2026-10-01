@@ -552,6 +552,9 @@ def runtime_metadata(device: torch.device) -> dict[str, Any]:
                 ),
             }
         )
+    if device.type == "xla":
+        from .tpu_spmd import metadata as spmd_metadata
+        metadata.update(spmd_metadata())
     block_id, block_source = _hardware_block_identity(metadata)
     metadata["hardware_block_id"] = block_id
     metadata["hardware_block_id_source"] = block_source

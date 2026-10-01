@@ -25,6 +25,7 @@ from .runtime import (
 )
 from .spectral import run_weightwatcher
 from .random_canaries import RandomCanaryExperiment
+from .tpu_spmd import batch_to_device, replicate_gradients
 
 
 def _require_finite_metrics(
@@ -519,8 +520,8 @@ def execute_training_loop(
                     completed_step=completed_steps,
                     micro_index=micro_index,
                 )
-            x = x_cpu.to(device)
-            y = y_cpu.to(device)
+            x = batch_to_device(x_cpu, device)
+            y = batch_to_device(y_cpu, device)
             _, loss = model(x, y)
             if loss is None:
                 raise RuntimeError(
@@ -528,6 +529,7 @@ def execute_training_loop(
                 )
             (loss / grad_accum).backward()
 
+        replicate_gradients(model)
         grad_pre_tensor = gradient_norm(model.parameters())
         clip = float(cfg["training"]["grad_clip"])
         if clip > 0:

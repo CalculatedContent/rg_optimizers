@@ -129,6 +129,11 @@ def runtime_identity_payload(metadata: dict) -> dict:
         *_COMMON_RUNTIME_IDENTITY_FIELDS,
         *_ACCELERATOR_RUNTIME_IDENTITY_FIELDS.get(accelerator, ()),
     )
+    if accelerator == "tpu":
+        # Old single-chip manifests remain readable. New SPMD runs record
+        # topology so a masked device cannot silently change a resumed run.
+        metadata = {"xla_spmd": False, "xla_spmd_chips": 1, **metadata}
+        fields = (*fields, "xla_spmd", "xla_spmd_chips")
     missing = [field for field in fields if field not in metadata]
     if missing:
         raise RuntimeError(

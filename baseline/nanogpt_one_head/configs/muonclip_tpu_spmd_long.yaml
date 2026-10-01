@@ -1,0 +1,126 @@
+# batch_size is GLOBAL: 32 sequences / 4 chips = 8 sequences per chip.
+protocol:
+  name: rg_nanogpt_muonclip_tpu_spmd_long
+  version: 16
+  description: 'Single-host four-chip SPMD MuonClip run: 2,150,000 updates, 8,192
+    global tokens/update. Global batches are sharded, weights and optimizer updates
+    are replicated. Full-horizon cosine with 2,000-step warmup; periodic evaluation,
+    CPU WeightWatcher and resumable checkpoints. No adaptive alpha controller is enabled.'
+dataset:
+  name: HuggingFaceFW/fineweb-edu
+  config: sample-10BT
+  split: train
+  revision: 593b3a867298afb8ce42625a270ef20ddcad28f9
+  tokenizer: gpt2
+  train_tokens: 80000000
+  val_tokens: 1000000
+  test_tokens: 1000000
+model:
+  vocab_size: 50257
+  block_size: 256
+  n_layer: 1
+  n_head: 1
+  n_embd: 128
+  dropout: 0.0
+  bias: false
+  tie_weights: true
+training:
+  seeds:
+  - 1337
+  batch_size: 32
+  grad_accum_steps: 1
+  target_epochs: 220.16
+  epoch_interval: 1.024
+  eval_interval_steps: 1000
+  eval_batches: 8
+  checkpoint_interval_steps: 500
+  grad_clip: 1.0
+optimizer_profiles:
+  sgd_momentum:
+    display_name: SGD + Nesterov momentum
+    family: sgd
+    learning_rate: 0.05
+    min_learning_rate: 0.005
+    warmup_fraction: 0.1
+    lr_schedule_epochs: 1.0
+    schedule: warmup_cosine
+    momentum: 0.9
+    dampening: 0.0
+    nesterov: true
+    weight_decay: 0.01
+  adamw:
+    display_name: AdamW
+    family: adamw
+    learning_rate: 0.0006
+    min_learning_rate: 6.0e-05
+    warmup_fraction: 0.01
+    lr_schedule_epochs: 1.0
+    schedule: warmup_cosine
+    beta1: 0.9
+    beta2: 0.95
+    epsilon: 1.0e-08
+    weight_decay: 0.1
+  muon:
+    display_name: Muon + auxiliary AdamW
+    family: muon
+    matrix_learning_rate: 0.02
+    matrix_min_learning_rate: 0.002
+    aux_learning_rate: 0.0003
+    aux_min_learning_rate: 3.0e-05
+    warmup_fraction: 0.05
+    lr_schedule_epochs: 1.0
+    schedule: warmup_cosine
+    momentum: 0.95
+    nesterov: true
+    newton_schulz_steps: 5
+    muon_epsilon: 1.0e-07
+    matrix_weight_decay: 0.01
+    beta1: 0.9
+    beta2: 0.95
+    epsilon: 1.0e-08
+    aux_weight_decay: 0.01
+  muon_clip:
+    display_name: MuonClip + RMS-matched updates + auxiliary AdamW
+    family: muon_clip
+    learning_rate: 0.0002
+    min_learning_rate: 2.0e-05
+    warmup_fraction: 0.0009302325581395349
+    lr_schedule_epochs: 220.16
+    schedule: warmup_cosine
+    momentum: 0.95
+    nesterov: false
+    newton_schulz_steps: 5
+    muon_epsilon: 1.0e-07
+    weight_decay: 0.1
+    update_rms_scale: 0.2
+    qk_clip_threshold: 100.0
+    qk_clip_balance: 0.5
+    qk_diagnostics_interval: 1000
+    beta1: 0.9
+    beta2: 0.95
+    epsilon: 1.0e-08
+evaluation:
+  train_probe_seed: 21001
+  validation_probe_seed: 22001
+  test_probe_seed: 23001
+  bleu_probe_seed: 24001
+  bleu_examples: 64
+  bleu_prompt_tokens: 64
+  bleu_continuation_tokens: 32
+  bleu_batch_size: 4
+weightwatcher:
+  enabled: true
+  ERG: true
+  randomize: true
+  strict: true
+  min_evals: 20
+  fix_fingers: clip_xmax
+  max_fingers: 10
+  require_raw_alpha: true
+runtime:
+  matmul_precision: high
+  mps_fallback: true
+  deterministic_algorithms: false
+  empty_mps_cache_after_weightwatcher: true
+  tpu_spmd: true
+  tpu_expected_chips: 4

@@ -186,6 +186,15 @@ class GPT(nn.Module):
                 std=residual_std,
             )
 
+    def _apply(self, fn, recurse=True):
+        # CPU -> XLA may replace each Parameter object independently, breaking
+        # the embedding/head alias established in __init__. Retie BEFORE an
+        # optimizer is built, including for resumed models and CPU WW copies.
+        result = super()._apply(fn, recurse=recurse)
+        if self.cfg.tie_weights:
+            self.lm_head.weight = self.token_embedding.weight
+        return result
+
     @staticmethod
     def _init_module(module: nn.Module) -> None:
         if isinstance(module, (nn.Linear, nn.Embedding)):

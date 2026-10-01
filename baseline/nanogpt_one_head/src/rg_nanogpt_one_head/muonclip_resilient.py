@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-"""Progress-aware fresh-process recovery for long MuonClip MPS runs.
+"""Progress-aware fresh-process recovery for long MuonClip accelerator runs.
 
-This launcher runs exactly one MuonClip worker process at a time. If Metal/MPS
-terminates a worker, the next worker resumes from ``checkpoint_latest.pt``.
+This launcher runs exactly one MuonClip worker process at a time. If the
+accelerator runtime terminates a worker, the next worker resumes from
+``checkpoint_latest.pt``.
 
 The retry budget counts only consecutive failures that do not advance the
-verified checkpoint. Therefore intermittent Metal failures may be recovered
+verified checkpoint. Intermittent accelerator failures may be recovered
 throughout a long run, while deterministic failures at one checkpoint stop
 after a small bounded number of attempts.
 """
@@ -98,7 +99,7 @@ def _worker_command(args: argparse.Namespace) -> list[str]:
         "--results-root",
         str(Path(args.results_root).expanduser().resolve()),
         "--device",
-        "mps",
+        getattr(args, "device", "mps"),
         "--mps-worker",
         "--mps-retries",
         "0",
@@ -131,7 +132,7 @@ def run_resilient(args: argparse.Namespace) -> int:
         attempt += 1
         (run_dir / "run_failed.json").unlink(missing_ok=True)
         print(
-            "[one-head-resilient] starting fresh MPS worker "
+            "[one-head-resilient] starting fresh accelerator worker "
             f"attempt={attempt} checkpoint_step="
             f"{last_verified_step if last_verified_step is not None else 'none'} "
             f"no_progress_failures={no_progress_failures}/"
@@ -283,10 +284,11 @@ def run_resilient(args: argparse.Namespace) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Run a long MuonClip MPS experiment with progress-aware "
+            "Run a long MuonClip experiment with progress-aware "
             "fresh-process checkpoint recovery"
         )
     )
+    parser.add_argument("--device", choices=("auto", "tpu", "xla", "mps", "cuda", "cpu"), default="mps")
     parser.add_argument("--config", required=True)
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--data-root", required=True)
