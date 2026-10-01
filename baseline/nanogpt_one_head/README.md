@@ -367,3 +367,9 @@ update paths, common probe identity, exact split-writing and cache corruption
 detection, checkpoint round-tripping, LR logging semantics, Student-t
 intervals, direct `ERG_gap`/`num_traps` handling, tiny CPU training, and
 notebook structure. The same tests run in the repository's baseline CI.
+
+## Extended TPU training
+
+See [TPU_CONTINUATION.md](TPU_CONTINUATION.md) for full-state continuation beyond
+the original training horizon, periodic test accuracy, retained metric history,
+and safe pause/resume with bounded checkpoint storage.

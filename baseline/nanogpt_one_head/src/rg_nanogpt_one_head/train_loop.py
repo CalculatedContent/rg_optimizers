@@ -26,6 +26,12 @@ from .runtime import (
 from .spectral import run_weightwatcher
 from .random_canaries import RandomCanaryExperiment
 from .tpu_spmd import batch_to_device, replicate_gradients
+from .continuation import pause_reason, TrainingPaused
+
+
+def _test_due(step: int, cfg: dict, total_steps: int) -> bool:
+    interval = int(cfg["evaluation"].get("test_interval_steps", 0))
+    return interval > 0 and (step % interval == 0 or step == total_steps)
 
 
 def _require_finite_metrics(
@@ -96,6 +102,7 @@ def _evaluation_due(
         step % int(cfg["training"]["eval_interval_steps"]) == 0
         or step in epoch_steps
         or step == total_steps
+        or _test_due(step, cfg, total_steps)
     )
 
 
@@ -182,6 +189,7 @@ def execute_training_loop(
     latest_checkpoint: Path,
     best_checkpoint: Path,
     progress: bool,
+    test_probe=None,
 ) -> tuple[float, int, float, dict]:
     batch_size = int(cfg["training"]["batch_size"])
     grad_accum = int(cfg["training"]["grad_accum_steps"])
@@ -229,7 +237,7 @@ def execute_training_loop(
             else float("nan")
         ),
     }
-    if start_step > 0:
+    if start_step > 0 or cfg.get("continuation"):
         for handle in handles:
             last_update_lrs[handle.role] = float(handle.lr)
 
@@ -303,9 +311,14 @@ def execute_training_loop(
                 "continuation_token_accuracy": float("nan"),
                 "continuation_exact_match": float("nan"),
             }
-            # Keep the test split genuinely held out during optimization.
-            # Final and validation-selected checkpoints are evaluated once,
-            # after training, by engine.checkpoint_eval.
+            # Periodic test monitoring is opt-in. Historical baseline configs
+            # keep these placeholders empty until the post-training audit.
+            if _test_due(completed_steps, cfg, total_steps):
+                if test_probe is None:
+                    raise RuntimeError("periodic test monitoring requires a fixed test probe")
+                test_metrics = evaluate_probe(model, test_probe, device)
+                if not all(math.isfinite(float(value)) for value in test_metrics.values()):
+                    raise FloatingPointError("non-finite test probe metrics")
 
             tokens_seen = int(completed_steps * step_tokens)
             actual_epoch = tokens_seen / max(1, train_tokens)
@@ -318,6 +331,8 @@ def execute_training_loop(
             weight_norm = model_weight_norm(model)
             current_mps, driver_mps = mps_memory_megabytes(device)
             row = {
+                "global_step": int(cfg.get("continuation", {}).get("global_step_offset", 0)) + completed_steps,
+                "global_epoch": (int(cfg.get("continuation", {}).get("global_step_offset", 0)) + completed_steps) * step_tokens / train_tokens,
                 "step": int(completed_steps),
                 "tokens_seen": tokens_seen,
                 "epoch": float(actual_epoch),
@@ -438,7 +453,7 @@ def execute_training_loop(
                         "nominal_epoch": nominal_epoch,
                         "checkpoint_path": str(checkpoint_path),
                         "test_monitoring_only": 1,
-                        "test_held_out": 1,
+                        "test_held_out": int(not cfg["evaluation"].get("test_interval_steps", 0)),
                     }
                 )
                 epoch_handle.flush()
@@ -485,6 +500,10 @@ def execute_training_loop(
                     if not math.isfinite(eta)
                     else f"{eta / 60:.1f}m"
                 )
+                test_text = (
+                    f"test_acc={100 * test_metrics['accuracy']:.2f}% "
+                    if math.isfinite(test_metrics["accuracy"]) else ""
+                )
                 print(
                     "[one-head-train] "
                     f"optimizer={optimizer_name} seed={seed} "
@@ -496,6 +515,7 @@ def execute_training_loop(
                     f"val_loss={val_metrics['loss']:.4f} "
                     f"val_ppl={val_metrics['perplexity']:.2f} "
                     f"val_acc={100 * val_metrics['accuracy']:.2f}% "
+                    f"{test_text}"
                     f"eta={eta_text}",
                     flush=True,
                 )
@@ -597,6 +617,9 @@ def execute_training_loop(
                     last_clipped=last_clipped,
                 ),
             )
+            reason = pause_reason(cfg, run_dir)
+            if reason:
+                raise TrainingPaused(reason)
 
     synchronize(device)
     if final_resume_diagnostics is None:
