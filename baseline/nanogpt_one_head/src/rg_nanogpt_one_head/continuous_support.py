@@ -243,4 +243,15 @@ def record_token_errors(cfg, run_dir, row):
         w = csv.DictWriter(f, fieldnames=list(result))
         if not exists: w.writeheader()
         w.writerow(result)
+    if row['step'] > 0 and row['elapsed_sec'] > 0:
+        remaining = max(0, float(os.environ.get('RG_CONTINUOUS_DEADLINE_UNIX', time.time()))-time.time())
+        rate = row['tokens_seen']/row['elapsed_sec']
+        progress = dict(step=row['step'], tokens_seen=row['tokens_seen'],
+                        measured_tokens_per_second=rate,
+                        remaining_training_window_seconds=remaining,
+                        projected_total_token_presentations=int(row['tokens_seen']+remaining*rate),
+                        caveat='Projection assumes measured throughput including monitoring stays constant.')
+        atomic_json(Path(run_dir)/'progress.json', progress)
+        print(f"[continuous-progress] step={row['step']} measured={rate:,.0f} tokens/s; "
+              f"projected total={progress['projected_total_token_presentations']:,} token presentations", flush=True)
     publish_metadata(cfg, run_dir)

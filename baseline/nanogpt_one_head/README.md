@@ -379,4 +379,6 @@ and safe pause/resume with bounded checkpoint storage.
 For the fresh 124M-parameter MuonClip experiment with 5B training tokens, fixed
 document token-error probes, raw/clipped alpha and synchronous Cloud Storage
 checkpoints, see [continuous8/README.md](continuous8/README.md). This launcher
-disables automatic restarts and does not use the segmented continuation runner.
+defaults to one six-hour v5e-8 allocation, with a two-machine/four-hour option.
+Data preparation happens on Cloud Shell before TPU allocation; automatic
+restarts and the segmented continuation runner are disabled.

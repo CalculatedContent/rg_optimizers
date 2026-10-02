@@ -11,8 +11,6 @@ from typing import Iterable, Protocol
 
 import numpy as np
 
-from .config import load_config, roots
-
 TOKEN_DTYPE = np.dtype(np.uint16)
 SPLIT_NAMES = ("train", "val", "test")
 
@@ -327,6 +325,8 @@ def load_memmaps(
 
 
 def main() -> None:
+    from .config import load_config, roots
+
     parser = argparse.ArgumentParser(
         description="Prepare the pinned FineWeb-Edu one-head baseline corpus"
     )

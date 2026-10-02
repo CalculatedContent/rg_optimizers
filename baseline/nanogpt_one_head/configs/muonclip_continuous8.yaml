@@ -1,6 +1,6 @@
 protocol:
-  name: muonclip_continuous8_124m_5bt
-  version: 1
+  name: muonclip_continuous8_124m_5bt_pilot
+  version: 2
   description: Fresh continuous single-host eight-chip run; no segments, no automatic
     restart; fixed document probes; durable GCS checkpoints.
 dataset:
@@ -24,13 +24,14 @@ model:
 training:
   seeds:
   - 1337
+  - 2027
   batch_size: 32
   grad_accum_steps: 4
   target_epochs: 6.5536
-  epoch_interval: 0.0131072
+  epoch_interval: 0.0065536
   eval_interval_steps: 500
   eval_batches: 16
-  checkpoint_interval_steps: 2000
+  checkpoint_interval_steps: 500
   grad_clip: 1.0
   max_steps: 1000000
   min_free_disk_gb: 20
@@ -126,5 +127,5 @@ runtime:
 continuous:
   enabled: true
   cloud_required: true
-  max_wall_hours: 144
+  max_wall_hours: 5.5
   auto_resume: false

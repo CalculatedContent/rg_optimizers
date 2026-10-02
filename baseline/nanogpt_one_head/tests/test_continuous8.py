@@ -1,4 +1,5 @@
 import csv
+import math
 from pathlib import Path
 import numpy as np
 import pytest
@@ -84,7 +85,7 @@ def test_fixed_config_alignment_and_schedule():
     cfg=load_config(root/'configs/muonclip_continuous8.yaml')
     assert cfg['model']['n_layer']==12 and cfg['runtime']['tpu_expected_chips']==8
     assert cfg['dataset']['train_tokens']==5_000_000_000 and 'continuation' not in cfg
-    assert list(epoch_step_map(cfg))==list(range(0,1_000_001,2000))
+    assert list(epoch_step_map(cfg))==list(range(0,1_000_001,1000))
     p=optimizer_profile(cfg,'muon_clip')
     assert lr_schedule_steps(cfg,p)==100_000 and warmup_steps(p,100_000)==2000
 
@@ -138,7 +139,8 @@ def test_muonclip_checkpoint_preserves_next_updates_lr_optimizer_and_sampler(tmp
     assert evaluate_probe(net,probe,torch.device('cpu'))==evaluate_probe(resumed,probe,torch.device('cpu'))
 
 
-def test_fresh_continuous_engine_writes_fixed_probe_and_pairs(tmp_path,monkeypatch):
+@pytest.mark.parametrize('stop_early',[False,True])
+def test_fresh_continuous_engine_writes_fixed_probe_and_pairs(tmp_path,monkeypatch,stop_early):
     from copy import deepcopy
     from rg_nanogpt_one_head.muonclip import install_muonclip_extension
     install_muonclip_extension()
@@ -174,6 +176,26 @@ def test_fresh_continuous_engine_writes_fixed_probe_and_pairs(tmp_path,monkeypat
                 'alpha_clip_xmax_n':12,'alpha_clip_xmax_mean':2.9,'alpha_clip_xmax_min':2.4}
     monkeypatch.setattr(loop,'run_weightwatcher',spectrum)
     monkeypatch.setattr(utils,'evaluate_bleu',lambda *a,**kw:{'bleu':0.})
+    if stop_early:
+        # A deadline between regular checkpoints must save after the next update,
+        # with current finite diagnostics, rather than wait 500 more steps.
+        stop=tmp_path/'STOP'
+        cfg['training']['stop_file']=str(stop)
+        update=loop.optimizer_step
+        def request_after_update(*a,**kw):
+            result=update(*a,**kw)
+            stop.touch()
+            return result
+        monkeypatch.setattr(loop,'optimizer_step',request_after_update)
+        from rg_nanogpt_one_head.continuation import TrainingPaused
+        with pytest.raises(TrainingPaused):
+            run_one(cfg=cfg,data_root=data,results_root=tmp_path/'results',optimizer_name='muon_clip',
+                    seed=2027,device='cpu',resume=False,progress=False)
+        checkpoint=torch.load(tmp_path/'results/muon_clip/seed_2027/checkpoint_latest.pt',weights_only=False)
+        assert checkpoint['step']==1
+        assert checkpoint['seed']==2027
+        assert math.isfinite(checkpoint['resume_diagnostics']['last_grad_pre'])
+        return
     # Stop at the full step-4 checkpoint: this tests the actual monitoring loop
     # without post-run spectral completion checks against our synthetic spectrum.
     original=loop.save_training_checkpoint

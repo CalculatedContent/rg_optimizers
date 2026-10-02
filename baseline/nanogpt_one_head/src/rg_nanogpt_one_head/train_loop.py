@@ -568,7 +568,12 @@ def execute_training_loop(
         last_update_lrs = dict(next_update_lrs)
 
         new_step = completed_steps + 1
-        if _resume_diagnostics_due(
+        continuous_stop = bool(
+            cfg.get('continuous', {}).get('enabled')
+            and cfg['training'].get('stop_file')
+            and Path(cfg['training']['stop_file']).exists()
+        )
+        if continuous_stop or _resume_diagnostics_due(
             new_step,
             cfg=cfg,
             epoch_steps=epoch_steps,
@@ -588,7 +593,7 @@ def execute_training_loop(
                 else False
             )
 
-        checkpoint_due = _checkpoint_due(
+        checkpoint_due = continuous_stop or _checkpoint_due(
             new_step,
             cfg=cfg,
             epoch_steps=epoch_steps,
