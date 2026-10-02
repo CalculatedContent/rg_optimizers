@@ -373,3 +373,10 @@ notebook structure. The same tests run in the repository's baseline CI.
 See [TPU_CONTINUATION.md](TPU_CONTINUATION.md) for full-state continuation beyond
 the original training horizon, periodic test accuracy, retained metric history,
 and safe pause/resume with bounded checkpoint storage.
+
+## Continuous single-host eight-chip run
+
+For the fresh 124M-parameter MuonClip experiment with 5B training tokens, fixed
+document token-error probes, raw/clipped alpha and synchronous Cloud Storage
+checkpoints, see [continuous8/README.md](continuous8/README.md). This launcher
+disables automatic restarts and does not use the segmented continuation runner.

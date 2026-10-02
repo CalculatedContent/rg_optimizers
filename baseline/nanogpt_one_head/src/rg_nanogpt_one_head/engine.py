@@ -69,6 +69,8 @@ def run_one(
     if resume and overwrite:
         raise ValueError("resume and overwrite are mutually exclusive")
 
+    if cfg.get("continuous", {}).get("enabled") and (resume or overwrite or cfg.get("continuation")):
+        raise ValueError("Continuous experiment must start fresh: no resume, overwrite, or segments")
     initialize_spmd(cfg, device)
     data_root = Path(data_root)
     results_root = Path(results_root)
@@ -267,6 +269,10 @@ def run_one(
         fingerprint=fingerprint,
         model=model,
     )
+
+    if cfg["evaluation"].get("document_probe", False):
+        from .continuous_support import build_document_probes
+        train_probe, val_probe, test_probe = build_document_probes(cfg, arrays, run_dir, data_metadata)
 
     # Persist an immutable step-zero checkpoint before evaluation, WeightWatcher,
     # or the first optimizer update. This makes initial-versus-final angular

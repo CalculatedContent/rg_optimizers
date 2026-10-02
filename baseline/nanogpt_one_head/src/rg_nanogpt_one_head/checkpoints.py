@@ -177,6 +177,8 @@ def _atomic_torch_save(payload: dict[str, Any], path: Path) -> Path:
     temporary = path.with_suffix(path.suffix + ".tmp")
     torch.save(payload, temporary)
     temporary.replace(path)
+    from .continuous_support import publish_checkpoint
+    publish_checkpoint(path, payload)
     return path
 
 

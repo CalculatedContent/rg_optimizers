@@ -418,6 +418,11 @@ def lr_schedule_steps(
 ) -> int:
     """Return the LR horizon, which may be shorter than training."""
     train_tokens = int(train_tokens or cfg["dataset"]["train_tokens"])
+    if "lr_schedule_steps" in profile:
+        steps = profile["lr_schedule_steps"]
+        if isinstance(steps, bool) or not isinstance(steps, int) or not 1 <= steps <= max_steps(cfg, train_tokens):
+            raise ValueError("lr_schedule_steps must be an integer within the training horizon")
+        return steps
     training_epochs = float(cfg["training"]["target_epochs"])
     schedule_epochs = float(profile.get("lr_schedule_epochs", training_epochs))
     if not 0 < schedule_epochs <= training_epochs:

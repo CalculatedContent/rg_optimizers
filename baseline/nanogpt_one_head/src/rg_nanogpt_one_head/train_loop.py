@@ -420,6 +420,8 @@ def execute_training_loop(
             }
             metrics_writer.writerow(row)
             metrics_handle.flush()
+            from .continuous_support import record_token_errors
+            record_token_errors(cfg, run_dir, row)
             if canaries is not None:
                 canary_summary = canaries.evaluate(model, device=device, step=completed_steps, epoch=actual_epoch)
                 if progress:
@@ -468,6 +470,8 @@ def execute_training_loop(
                     seed=int(seed),
                     fingerprint=fingerprint,
                 )
+                from .continuous_support import record_pair
+                record_pair(cfg, run_dir, row, ww_summary)
                 if progress:
                     print(
                         "[one-head-ww] "
