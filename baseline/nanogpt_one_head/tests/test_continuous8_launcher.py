@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.mark.parametrize('machines,hours', [(1,6),(2,4)])
-def test_cloud_budget_and_data_before_allocation(tmp_path, monkeypatch, machines, hours):
+def test_cloud_budget_without_cloudshell_preparation(tmp_path, monkeypatch, machines, hours):
     file = Path(__file__).resolve().parents[1]/'continuous8/cloudshell.py'
     spec = importlib.util.spec_from_file_location('pilot_launcher', file)
     m = importlib.util.module_from_spec(spec)
@@ -21,17 +21,13 @@ def test_cloud_budget_and_data_before_allocation(tmp_path, monkeypatch, machines
         if args[:3] == ('iam','service-accounts','list'): return [{'email':m.SA}]
         return []
     monkeypatch.setattr(m,'inventory',inventory)
-    prepared = False
     calls = []
     def run(cmd,**kw):
-        nonlocal prepared
-        if any(str(x).endswith('prepare_cloud_data.py') for x in cmd): prepared = True
-        return subprocess.CompletedProcess(cmd,0)
+        raise AssertionError('Launcher must not install dependencies or prepare data in Cloud Shell: '+str(cmd))
     monkeypatch.setattr(m.subprocess,'run',run)
     def gc(*args,**kw):
         calls.append(args)
         if args[:5] == ('alpha','compute','tpus','queued-resources','create'):
-            assert prepared, 'No TPU allocation before CPU preparation succeeds'
             assert f'--max-run-duration={hours}h' in args
             source = next(x.split('=',2)[-1] for x in args if x.startswith('--metadata-from-file='))
             startup = Path(source).read_text()
@@ -45,6 +41,9 @@ def test_cloud_budget_and_data_before_allocation(tmp_path, monkeypatch, machines
     assert len(create) == machines
     assert len({c[5] for c in create}) == machines
     assert all('--accelerator-type=v5litepod-8' in c for c in create)
+    import json
+    record=json.loads((tmp_path/'continuous8-launch.json').read_text())
+    assert record['status']=='submitted'
 
 
 def test_dataset_writer_import_requires_no_torch():
@@ -57,3 +56,52 @@ def test_dataset_writer_import_requires_no_torch():
         'assert "torch" not in sys.modules'
     )
     subprocess.run([sys.executable,'-c',code],check=True)
+
+
+def test_empty_status_is_explicit(tmp_path,monkeypatch,capsys):
+    file=Path(__file__).resolve().parents[1]/'continuous8/cloudshell.py'
+    spec=importlib.util.spec_from_file_location('status_launcher',file)
+    m=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    monkeypatch.setattr(Path,'home',classmethod(lambda cls:tmp_path))
+    monkeypatch.setattr(m,'inventory',lambda *args:[])
+    m.status()
+    assert 'NO TPU REQUEST' in capsys.readouterr().out
+
+
+def test_launch_failure_persists_exact_phase(tmp_path,monkeypatch):
+    import json
+    import sys
+    file=Path(__file__).resolve().parents[1]/'continuous8/cloudshell.py'
+    spec=importlib.util.spec_from_file_location('failed_launcher',file)
+    m=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    monkeypatch.setattr(Path,'home',classmethod(lambda cls:tmp_path))
+    monkeypatch.setattr(sys,'argv',[str(file),'launch'])
+    def fail(*args):
+        m.launch_record(phase='granting experiment bucket access')
+        raise RuntimeError('permission denied in test')
+    monkeypatch.setattr(m,'provision',fail)
+    with pytest.raises(SystemExit) as caught:
+        m.main()
+    assert caught.value.code==1
+    record=json.loads((tmp_path/'continuous8-launch.json').read_text())
+    assert record['status']=='failed'
+    assert record['phase']=='granting experiment bucket access'
+    assert 'permission denied' in record['error']
+
+
+def test_parallel_data_matches_serial(tmp_path):
+    from rg_nanogpt_one_head.data import write_token_splits
+    class Encoder:
+        n_vocab=64
+        eot_token=63
+        def encode_ordinary(self,text):return [int(x) for x in text.split()]
+    texts=['1 2 3','4 5','6 7 8 9','10','11 12 13 14','15 16']*10
+    common=dict(train_tokens=25,val_tokens=13,test_tokens=19,progress_every_documents=0)
+    serial=write_token_splits(texts,Encoder(),tmp_path/'serial',**common)
+    parallel=write_token_splits(iter(texts),Encoder(),tmp_path/'parallel',encoding_workers=4,
+                                encoding_batch_size=3,**common)
+    assert serial==parallel
+    for name in ('train.bin','val.bin','test.bin','meta.json'):
+        assert (tmp_path/'serial'/name).read_bytes()==(tmp_path/'parallel'/name).read_bytes()

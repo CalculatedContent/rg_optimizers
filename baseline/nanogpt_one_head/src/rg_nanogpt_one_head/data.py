@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
+from itertools import islice
 import os
 from pathlib import Path
 import sys
@@ -38,6 +40,21 @@ def _encode_document(text: str, encoder: Encoder) -> np.ndarray:
     return np.asarray(tokens, dtype=TOKEN_DTYPE)
 
 
+def _encoded_documents(texts, encoder, workers=1, batch_size=256):
+    """Bounded parallel tokenization; preserve exactly the original document order."""
+    if workers < 1 or batch_size < 1:
+        raise ValueError('encoding workers and batch size must be positive')
+    if workers == 1:
+        for text in texts:
+            yield _encode_document(str(text), encoder)
+        return
+    iterator = iter(texts)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        while batch := list(islice(iterator, batch_size)):
+            # executor.map yields in input order, independent of worker timing.
+            yield from pool.map(lambda text: _encode_document(str(text), encoder), batch)
+
+
 def write_token_splits(
     texts: Iterable[str],
     encoder: Encoder,
@@ -48,6 +65,8 @@ def write_token_splits(
     test_tokens: int,
     dataset_metadata: dict[str, object] | None = None,
     progress_every_documents: int = 2_000,
+    encoding_workers: int = 1,
+    encoding_batch_size: int = 256,
 ) -> dict[str, object]:
     """Write exact, document-disjoint splits without loading the corpus in RAM."""
 
@@ -75,11 +94,10 @@ def write_token_splits(
     started = time.monotonic()
 
     try:
-        for text in texts:
+        for encoded in _encoded_documents(texts, encoder, encoding_workers, encoding_batch_size):
             if split_index >= len(split_names):
                 break
             documents += 1
-            encoded = _encode_document(str(text), encoder)
             split = split_names[split_index]
             remaining = targets[split] - written[split]
             take = min(remaining, len(encoded))
@@ -295,6 +313,8 @@ def prepare_fineweb_edu(
         train_tokens=int(dataset_cfg["train_tokens"]),
         val_tokens=int(dataset_cfg["val_tokens"]),
         test_tokens=int(dataset_cfg["test_tokens"]),
+        encoding_workers=int(dataset_cfg.get('encoding_workers',1)),
+        encoding_batch_size=int(dataset_cfg.get('encoding_batch_size',256)),
         dataset_metadata={
             "dataset_name": str(dataset_cfg["name"]),
             "dataset_config": str(dataset_cfg["config"]),

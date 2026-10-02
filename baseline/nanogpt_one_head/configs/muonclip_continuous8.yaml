@@ -9,6 +9,8 @@ dataset:
   split: train
   revision: 593b3a867298afb8ce42625a270ef20ddcad28f9
   tokenizer: gpt2
+  encoding_workers: 16
+  encoding_batch_size: 256
   train_tokens: 5000000000
   val_tokens: 10000000
   test_tokens: 10000000

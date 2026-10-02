@@ -380,5 +380,6 @@ For the fresh 124M-parameter MuonClip experiment with 5B training tokens, fixed
 document token-error probes, raw/clipped alpha and synchronous Cloud Storage
 checkpoints, see [continuous8/README.md](continuous8/README.md). This launcher
 defaults to one six-hour v5e-8 allocation, with a two-machine/four-hour option.
-Data preparation happens on Cloud Shell before TPU allocation; automatic
-restarts and the segmented continuation runner are disabled.
+Data preparation and training run on the TPU VM and its persistent disk,
+independently of Cloud Shell. Automatic restarts and the segmented continuation
+runner are disabled; the allocation cap includes setup and tokenization.

@@ -13,6 +13,26 @@ unset XLA_USE_BF16 XLA_DOWNCAST_BF16 TPU_VISIBLE_CHIPS
 cd "$EXP"
 python3 -m venv "$BASE/venv"
 PY="$BASE/venv/bin/python"
+finish_worker() {
+  local result=$?
+  trap - EXIT
+  set +e
+  echo "Worker exit code: $result"
+  "$PY" - "$result" <<'PYCODE'
+import json, os, sys, time
+from pathlib import Path
+code=int(sys.argv[1])
+status={'status':'finished' if code in (0,75) else 'failed','exit_code':code,'ended_unix':time.time()}
+base=Path('/mnt/disks/rg-data/continuous8')
+(base/'WORKER_STATUS.json').write_text(json.dumps(status)+'\n')
+from rg_nanogpt_one_head.continuous_support import CloudPublisher
+p=CloudPublisher(os.environ['RG_CONTINUOUS_GCS_URI'])
+p.json(status,'WORKER_STATUS.json')
+p.snapshot_text_file(base/'run.log','run.log')
+PYCODE
+  exit "$result"
+}
+trap finish_worker EXIT
 "$PY" -m pip install --upgrade 'pip==25.0.1' 'setuptools==75.8.2' 'wheel==0.45.1'
 "$PY" -m pip install 'torch==2.6.0' 'torch_xla[tpu]==2.6.0' \
   -f https://storage.googleapis.com/libtpu-releases/index.html \
@@ -34,36 +54,18 @@ for name in ('environment.lock.txt','source_commit.txt'):
     p.file(base/name, name)
 p.json({'status':'preflight'}, 'SETUP_STATUS.json')
 PY
-# Download the one shared CPU-prepared corpus and verify every file hash.
-"$PY" - <<'PY'
-import json, os
-from pathlib import Path
-import yaml
-from rg_nanogpt_one_head.continuous_support import CloudPublisher, sha_file
-from rg_nanogpt_one_head.data import validate_prepared_data
-source=CloudPublisher(os.environ['RG_CONTINUOUS_DATA_URI'])
-manifest=json.loads(source.bucket.blob(source.prefix+'/COMPLETE.json').download_as_text())
-cfg=yaml.safe_load(Path('configs/muonclip_continuous8.yaml').read_text())
-if manifest['dataset'] != cfg['dataset']:
-    raise RuntimeError('Shared cloud corpus does not match experiment configuration')
-base=Path('/mnt/disks/rg-data/continuous8/data')
-base.mkdir(exist_ok=True)
-for name in ('train.bin','val.bin','test.bin','meta.json'):
-    path=base/name
-    source.bucket.blob(source.prefix+'/'+name).download_to_filename(str(path), checksum='crc32c', timeout=600)
-    entry=manifest['files'][name]
-    if path.stat().st_size != entry['bytes'] or sha_file(path) != entry['sha256']:
-        raise RuntimeError('Shared data checksum failed: '+name)
-validate_prepared_data(base,cfg)
-p=CloudPublisher(os.environ['RG_CONTINUOUS_GCS_URI'])
-p.json({'uri':os.environ['RG_CONTINUOUS_DATA_URI'], 'manifest':manifest}, 'DATA_SOURCE.json')
-print('Shared data downloaded and SHA256 verified.', flush=True)
-PY
 # Tiny, independent test: global gradients, clipping, metrics, optimizer + RNG restore.
 # Also measures the full proposed model shape before the long run.
 "$PY" -m rg_nanogpt_one_head.tpu_spmd_check --backend tpu --chips 8 \
   --benchmark-config configs/muonclip_continuous8.yaml --benchmark-steps 10 \
   --output "$BASE/preflight.json"
+"$PY" - <<'PYCODE'
+import os
+from rg_nanogpt_one_head.continuous_support import CloudPublisher
+CloudPublisher(os.environ['RG_CONTINUOUS_GCS_URI']).file('/mnt/disks/rg-data/continuous8/preflight.json','preflight.json')
+PYCODE
+# Dataset preparation runs on the TPU VM CPU and durable disk, not Cloud Shell.
+"$PY" -u continuous8/prepare_tpu_data.py
 "$PY" - <<'PY'
 import json, os, time
 from pathlib import Path

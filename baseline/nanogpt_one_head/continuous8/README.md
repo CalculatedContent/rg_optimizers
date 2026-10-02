@@ -62,11 +62,14 @@ It is a monitored test set, not an untouched final confirmation set.
 A dedicated 200 GB persistent disk is attached to each host and mounted at
 `/mnt/disks/rg-data`. GCS is the durable experiment archive:
 `gs://tpu-builders-504820-ww-continuous8/runs/ww-continuous8-pilot-20261002-sSEED/`.
-The dataset is prepared once on Cloud Shell CPU and uploaded **before any TPU
-is requested**. This can take hours and needs about 13 GB free under `/tmp`;
-it is outside the TPU allocation budget. Both machines download the same
-SHA256-verified files. Keep Cloud Shell open during preparation. No additional
-CPU VM is provisioned by this launcher. Code commit,
+The launcher requests the TPU immediately after resource checks. Data preparation
+runs on the TPU VM CPU, using 16 encoding threads and the attached persistent
+disk; Cloud Shell is only the submission client. Ordered parallel encoding
+preserves the serial writer's token bytes and document-disjoint splits. The corpus
+is uploaded and SHA256-verified before scientific training starts. This work
+counts against the four/six-hour allocation. No additional CPU VM is created.
+Each seed archives its corpus under a separate prefix; corpus hashes must match
+before comparing independent seeds. Code commit,
 resolved dependency versions, preflight report, fixed probes, metrics, spectra,
 plots and logs are recorded. Full checkpoints include optimizer buffers/counters,
 RNG/sampler state, learning-rate/config identity and monitoring state.
@@ -98,7 +101,7 @@ allocated hardware before the launch script starts scientific training.
 From a clean checkout of `codex/continuous-muonclip-8`, on Cloud Shell:
 
 ```bash
-python3 baseline/nanogpt_one_head/continuous8/cloudshell.py launch --machines 1 --hours 6
+bash baseline/nanogpt_one_head/continuous8/run.sh launch --machines 1 --hours 6
 ```
 
 For two independent four-hour seeds, use `--machines 2 --hours 4`.
@@ -142,3 +145,24 @@ tokens by 32,768 for update count, or by 5B for corpus-equivalent passes. The
 sampler draws random windows; token presentations are not a count of unique
 tokens visited. A larger corpus reduces repeated sampling but does not guarantee
 better test accuracy or that alpha will fall below two within six hours.
+
+## Launch visibility and failure diagnosis
+
+The launcher records each phase and any exception in `~/continuous8-launch.json`.
+The `run.sh` wrapper also saves the terminal transcript in
+`~/continuous8-launch.log`. These small files live in Cloud Shell HOME; the large
+corpus and training job do not. After the queued request is successfully submitted,
+Cloud Shell may disconnect without stopping setup or training on the TPU VM.
+
+`cloudshell.py status` explicitly reports `NO TPU REQUEST` when none exists.
+`cloudshell.py check` performs only read-only local/cloud diagnostics. VM setup
+phase is recorded in `SETUP_STATUS.json`; `WORKER_STATUS.json` records worker
+exit, including failures before training; `CONTINUOUS_STATUS.json` records the
+scientific process outcome. If dependency installation fails before cloud upload
+libraries are available, inspect the persistent disk's startup/run log over SSH.
+
+The earlier launcher did long preparation in Cloud Shell `/tmp`. No request/data
+was found after one attempt; the initial error was not retained, so its exact
+cause is unknown. Cloud Shell VM disposal can lose `/tmp`, and the old empty
+status output did not distinguish preparation from failure. This version moves
+the long work off Cloud Shell and makes those states explicit.
