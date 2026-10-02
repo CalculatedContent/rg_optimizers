@@ -257,3 +257,45 @@ the original 16-checkpoint selection, and run_on_tpu.sh targets segment_000001.
 For a new audit, select the intended retained segment and a fresh output
 directory; keep document seeds and evaluation settings fixed for comparison.
 Do not update the live training checkout to install audit changes.
+
+
+EXACT-PROBE EXTENSION (2026-10-02)
+
+Use exact_cloudshell.sh start to evaluate 16 evenly spaced NEW retained
+checkpoints after the original audit endpoint through 5,100,000 global steps.
+Run from the updated separate Cloud Shell checkout:
+  bash baseline/nanogpt_one_head/generalization_audit/exact_cloudshell.sh start
+  bash baseline/nanogpt_one_head/generalization_audit/exact_cloudshell.sh status
+  bash baseline/nanogpt_one_head/generalization_audit/exact_cloudshell.sh fetch
+
+The evaluator audit.py and pinned_model.py remain byte-identical. extend_audit.py
+verifies source hashes, data hashes, torch/numpy/sacrebleu/tiktoken versions,
+document IDs and exact token offsets against the original results/protocol.json.
+All evaluation settings come from that original protocol. Only checkpoint
+selection changes. A mismatch fails visibly. It does not replace the probe with
+the training monitor, detrend alpha or errors, or overwrite the original audit.
+
+New output: /mnt/disks/rg-data/generalization_audit/exact_extension_20261002
+Log: /mnt/disks/rg-data/generalization_audit/exact_extension.log
+Download: /mnt/disks/rg-data/generalization_audit/exact_probe_results.tgz
+
+Selected model-only checkpoints are hard-linked into staged run directories on
+the same data disk, protecting them from pruning during CPU evaluation. Metadata
+is copied; live training code/configuration is not changed. These links retain
+the selected weights until the extension directory is explicitly cleaned up.
+The selection is frozen for restart. Interrupted runs resume completed results.
+If training has already pruned older candidates, selection uses the remaining
+available checkpoints and records that inventory and the selected steps.
+
+The archive contains original and new per-document scores, generation samples,
+checkpoint summaries, uncertainty, verified protocols, unadjusted correlations
+for previous/new/combined periods, and mean-raw-alpha regression figures. It
+does not contain checkpoint weights. Error bars remain document-bootstrap
+intervals, not seed variation. Temporal dependence and exploratory selection
+still limit inference; the requested primary comparison keeps the linear trend.
+
+Validation: syntax checks; original scorer hash checked against the completed
+audit; mismatched document/data/settings rejection; merge/deduplication and
+regression-plot smoke checks using actual old results reproduce r=0.70660064.
+Full new-checkpoint inference must run on the TPU host with its original Python
+environment; torch/pytest are unavailable in this editing workspace.
