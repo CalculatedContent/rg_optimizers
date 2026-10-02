@@ -278,3 +278,18 @@ bash baseline/experiments/portfolio_pgd/scripts/run_portfolio_pgd_experiment.sh
 
 The campaign streams timestamped optimization progress to the terminal and saves the same log plus
 CSV/JSON metrics under `/tmp/portfolio-pgd-runs`.
+
+## Extended nanoGPT generalization audit (2026-10-02)
+
+The [CPU audit guide](baseline/nanogpt_one_head/generalization_audit/README.txt)
+documents checkpoint-matched raw/clipped alpha comparisons for the extended
+MuonClip run. The first completed audit covers 16 checkpoints, 2.15–3.01 million
+steps, seed 1337. Mean raw alpha correlates with held-out token error
+(Pearson r = +0.707); mean clipped alpha does not show the same association
+(r = -0.165). These are exploratory repeated measurements from one training run,
+not independent replications or evidence of causality. Minimum raw alpha remains
+above 2 at the audited checkpoints.
+
+The guide records metric limitations, layer-level sensitivity, and how to
+export fresh overnight measurements without changing the training checkout.
+This long-run audit is separate from the reference qualification campaign.

@@ -145,3 +145,115 @@ Defaults evaluate 16 checkpoints to keep the first audit manageable. To evaluate
 every retained checkpoint, change --max-checkpoints to a sufficiently large
 number and choose a new AUDIT_OUT in run_on_tpu.sh. The protocol is frozen on
 first launch; changing the selection requires a fresh output directory.
+
+
+COMPLETED AUDIT RESULTS (2026-10-02 UTC)
+
+GENERALIZATION AUDIT: RAW VS CLIPPED ALPHA
+
+Data and scope
+16 verified checkpoint summaries, 2.15M–3.01M steps, one MuonClip seed (1337).
+128 fixed held-out documents for teacher metrics, 64 for 32-token greedy
+continuations. Original epoch 0 excluded; trained continuation step zero retained.
+31 test/gap metrics × 8 alpha summaries × 2 variants = 496 exploratory pairs;
+several metrics and alpha variants are duplicates or highly dependent.
+
+Main result
+The new audit shows descriptive associations that were absent or weaker in the
+previous 63-checkpoint monitoring view. Mean raw alpha versus token error has
+Pearson r=+0.707 and Spearman rho=+0.776. Mean clipped alpha has r=-0.165.
+Raw mean versus reciprocal rank has r=-0.702 (higher rank score is better).
+Raw mean versus NLL has r=+0.426; clipped mean r=-0.140.
+Raw mean versus reference-continuation NLL has r=+0.614; clipped mean r=-0.037.
+Therefore this dataset does not support the blanket claim that alpha relates to
+nothing. Larger RAW mean alpha accompanies worse prediction on these probes.
+It does not demonstrate a causal mechanism or predictive validity on new runs.
+
+Robustness
+Raw mean/token-error r after linear step adjustment: +0.660.
+First-difference r: +0.547 (unequal ~50–60k step spacing; differences, not rates).
+Leave-one-checkpoint-out range: +0.650 to +0.763.
+Joint resampling of the same documents across all checkpoints gives a conditional
+95% percentile interval of approximately [+0.177,+0.776] for that correlation.
+This conditions on this checkpoint trajectory: it is not a seed-level interval,
+does not correct metric selection, and is not a temporal-independence test.
+
+What clipping changes
+Raw and clipped Q, K and MLP-input alphas are identical here. Clipping changes O
+at 11/16 checkpoints, V at 1/16 and MLP output at 3/16. Minimum alpha changes at
+only 1/16. Thus raw-versus-clipped minimum results are almost identical.
+Raw O ranges 2.68–9.47. Its covariance contribution accounts for about 81% of the
+raw mean's variance. The raw mean with O excluded still correlates +0.518 with
+token error, so O explains much, but not all, of the association. The difference
+(raw mean minus clipped mean) correlates +0.710 with token error. The component
+removed by clipping carries information in this sample; whether it reflects
+fit instability or a meaningful spectral feature needs spectrum-level study.
+
+Layer-specific leads
+K: raw=clipped, r=+0.613 with top-5 error, -0.619 with reciprocal rank.
+V: clipped r=-0.646 with difficult-token NLL (mean per-document 95th percentile),
+raw r=+0.412 is unstable (leave-one-out changes sign). For clipped V,
+first-difference r=-0.826, leave-one-out -0.739 to -0.533.
+This is an exploratory lead, not a proven generalization predictor.
+MLP output: clipped r=-0.497 with NLL but first-difference r=-0.035, suggesting
+its level correlation does not track local changes reliably.
+Raw V versus calibration error r=-0.633 collapses to about -0.089 after removing
+one influential checkpoint. Do not interpret that as a robust calibration link.
+
+Generation metrics and measurement limitations
+Corpus BLEU 0.469–1.037: raw mean r=-0.020; clipped mean r=+0.066. No mean-alpha
+relationship. Minimum alpha/BLEU r about +0.33, weaker exploratory association.
+Corpus chrF 14.31–15.54: raw mean r=-0.509; clipped mean r=-0.003.
+Free token error 97.02–97.85%; raw mean r=-0.380 and clipped mean r=+0.266.
+All exact-continuation failures are 100%: zero exact matches for every checkpoint.
+This metric is saturated and cannot distinguish checkpoints.
+Generated repeated-trigram fraction is 32.7–42.9%, compared with 0.625% in the
+fixed references. Samples show repetitive loops such as repeated "be more likely
+to". This is a real generation pathology, but its mean-alpha correlations are
+weak (raw -0.117; clipped +0.108). It does not establish memorization or hallucination.
+Rare-token NLL uses only TWO test tokens in two documents (six train tokens).
+Discard it as a reliable generalization diagnostic for this probe size.
+Reference-overlap scores penalize legitimate alternative continuations, while
+entropy and shuffled-context sensitivity are diagnostics, not direct errors.
+
+Overfitting and changes over time
+Test NLL rises 5.22817 -> 5.24364 (+0.01547 nats/token); paired-document 95% CI
+[+0.00456,+0.02600]. Training NLL also rises +0.02019, CI [+0.00713,+0.03274].
+The test-minus-train NLL gap falls from 0.10831 to 0.10360. This is not the
+characteristic pattern of improving train fit and worsening test performance.
+Token-error change is only +0.10376 percentage points; paired CI [-0.17090,+0.37537].
+Minimum raw alpha stays above 2 (2.1425–2.5069); no below-2 transition is tested.
+
+Why this differs from the previous plots
+This audit spans 2.15–3.01M, rather than ending at 2.77M, samples 16 rather than
+63 checkpoints, and uses a new document-balanced fixed probe. Previous monitoring
+used a different token-window probe. Their absolute errors and correlations
+should not be treated as directly interchangeable estimates.
+
+Next discriminating check
+Keep all results exploratory. Retest the raw-mean/token-error and clipped-V/
+difficult-token-loss leads on new documents with the metrics fixed in advance,
+then an independent seed. Increase and redesign the generation probes for exact
+recall; arbitrary natural-text exact continuation is saturated here. Inspect
+O's raw/clipped fit changes at matched checkpoints before treating clipping as
+removing either noise or useful signal. Do not choose metrics by the largest r.
+
+
+Fresh overnight export (run in Cloud Shell)
+  git -C "$HOME/rg_optimizers_generalization" pull --ff-only origin codex/generalization-audit
+  bash "$HOME/rg_optimizers_generalization/baseline/nanogpt_one_head/generalization_audit/export_training.sh"
+
+The exporter snapshots CSV/YAML/JSON metadata across all continuation segments
+and the original long run. It includes checkpoint filenames/sizes/mtimes, not
+checkpoint tensors or corpus files. Live files are read separately, not as an
+atomic training snapshot; downstream analysis must use complete matched
+six-matrix measurements and config offsets. A trailing incomplete CSV line is
+removed in the exported copy. The export manifest records time and omissions.
+
+Upload the resulting muonclip_overnight_metrics.tgz for analysis. If the browser
+download fails, use Cloud Shell's Download menu with the printed local path.
+Do not rerun start expecting new checkpoints: its results/protocol.json freezes
+the original 16-checkpoint selection, and run_on_tpu.sh targets segment_000001.
+For a new audit, select the intended retained segment and a fresh output
+directory; keep document seeds and evaluation settings fixed for comparison.
+Do not update the live training checkout to install audit changes.

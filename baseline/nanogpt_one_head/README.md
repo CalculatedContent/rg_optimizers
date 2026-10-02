@@ -373,3 +373,45 @@ notebook structure. The same tests run in the repository's baseline CI.
 See [TPU_CONTINUATION.md](TPU_CONTINUATION.md) for full-state continuation beyond
 the original training horizon, periodic test accuracy, retained metric history,
 and safe pause/resume with bounded checkpoint storage.
+
+## Extended-run generalization results (2026-10-02)
+
+See [generalization_audit/README.txt](generalization_audit/README.txt) for the
+CPU evaluator, uncertainty definitions, and full interpretation. The completed
+MuonClip audit uses seed 1337, 16 checkpoints spanning 2.15–3.01M cumulative
+steps, 128 fixed documents per split, and 64 greedy continuations.
+
+| Held-out metric | Pearson r: mean raw alpha | Pearson r: mean clipped alpha |
+|---|---:|---:|
+| Token error | +0.707 | -0.165 |
+| NLL | +0.426 | -0.140 |
+| Reference-continuation NLL | +0.614 | -0.037 |
+| Corpus BLEU | -0.020 | +0.066 |
+| Corpus chrF | -0.509 | -0.003 |
+
+Mean alpha is the arithmetic mean over Q, K, V, O, MLP_IN, and MLP_OUT.
+Raw O accounts for about 81% of that raw mean's variance by covariance
+decomposition; excluding O reduces the token-error correlation to +0.518.
+Minimum raw alpha stays between 2.1425 and 2.5069, so this audit does not test a
+crossing below 2. Both training and test NLL rise over the interval while the
+NLL gap shrinks; this is not evidence of the usual widening-gap overfitting.
+
+These correlations are exploratory: temporal dependence, one seed, and 496
+tested metric/alpha pairs limit inference. Exact-continuation failure is
+saturated at 100%; rare-token NLL has only two test tokens. BLEU is a lexical
+overlap diagnostic, not a factuality or hallucination measurement.
+Exclude original initialization, but retain continuation local step zero after
+adding its global offset. Do not mix the audit's document-balanced probe with
+historical monitoring as though they were identical samples.
+
+For fresh overnight metrics, run from Cloud Shell:
+
+```bash
+git -C "$HOME/rg_optimizers_generalization" pull --ff-only origin codex/generalization-audit
+bash "$HOME/rg_optimizers_generalization/baseline/nanogpt_one_head/generalization_audit/export_training.sh"
+```
+
+This exports metrics, spectra, configs, and provenance across all continuation
+segments. It does not evaluate newer weights. The existing audit's `start`
+command resumes its frozen checkpoint selection; a new checkpoint audit
+requires a fresh output directory and the intended segment's run directory.
