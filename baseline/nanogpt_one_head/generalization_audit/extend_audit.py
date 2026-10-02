@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import torch, sacrebleu, tiktoken
 import audit
+from python_csv import install, snapshot_bytes
+install()
 
 SELECTION = {'min_step', 'max_step', 'max_checkpoints'}
 
@@ -39,6 +41,8 @@ def discover(root, cutoff, maximum):
     available={}
     for run in sorted(root.glob('segments/segment_*/muon_clip/seed_1337')):
         man=json.loads((run/'manifest.json').read_text()); offset=man['continuation']['global_step_offset']
+        if offset > maximum:continue
+        print(f'Reading spectra: {run}',flush=True)
         spectra=pd.read_csv(run/'spectral/layers.csv')
         for file in sorted((run/'epoch_checkpoints').glob('model_epoch_*_step_*.pt')):
             step=int(re.search(r'_step_(\d+)\.pt$',file.name).group(1)); glob=offset+step
@@ -101,6 +105,7 @@ def main():
     with (out/'extension.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         if not (args.reference/'DONE.json').exists():raise ValueError('Original audit must be complete')
+        print('Verifying original probe and scorer; CSV parser: Python, snapshot reads.',flush=True)
         original=verify_reference(args.reference,args.data)
         old=pd.read_csv(args.reference/'metrics.csv');cutoff=int(old.global_step.max())
         planfile=out/'selection.json'
@@ -120,7 +125,7 @@ def main():
                 run=Path(item['run']);stage=out/'staged'/run.parents[1].name
                 (stage/'epoch_checkpoints').mkdir(parents=True,exist_ok=True);(stage/'spectral').mkdir(exist_ok=True)
                 shutil.copy2(run/'manifest.json',stage/'manifest.json')
-                shutil.copy2(run/'spectral/layers.csv',stage/'spectral/layers.csv')
+                (stage/'spectral/layers.csv').write_bytes(snapshot_bytes(run/'spectral/layers.csv'))
                 target=stage/'epoch_checkpoints'/Path(item['path']).name
                 if not target.exists():os.link(item['path'],target)
                 item['staged_run']=str(stage)
@@ -130,7 +135,7 @@ def main():
         outputs=[]
         for stage in sorted({x['staged_run'] for x in plan['selected']}):
             run=Path(stage);dest=out/'segments'/run.name;dest.parent.mkdir(exist_ok=True)
-            cmd=[sys.executable,'-u',str(Path(audit.__file__).resolve()),'run','--run-dir',str(run),
+            cmd=[sys.executable,'-u',str(Path(__file__).with_name('python_csv.py').resolve()),'run','--run-dir',str(run),
                  '--data-root',str(args.data),'--output',str(dest)]
             settings=dict(original['settings']);settings.update(min_step=cutoff+1,max_step=args.max_step,max_checkpoints=args.count)
             for key,value in settings.items():cmd += ['--'+key.replace('_','-'),str(value)]
@@ -139,6 +144,7 @@ def main():
             outputs.append(dest)
         combined=out/'combined';merge(args.reference,outputs,combined,cutoff)
         # Include provenance plus per-document outputs, never checkpoint weights.
+        audit.atomic_json(combined/'csv_reader.json',dict(engine='python',snapshot_reads=True,scorer_source_unchanged=True))
         archive=out.parent/'exact_probe_results.tgz';temporary=archive.with_suffix('.partial')
         with tarfile.open(temporary,'w:gz') as tf:
             tf.add(combined,arcname='combined');tf.add(planfile,arcname='selection.json')
