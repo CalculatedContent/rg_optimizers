@@ -105,7 +105,7 @@ def main():
     with (out/'extension.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         if not (args.reference/'DONE.json').exists():raise ValueError('Original audit must be complete')
-        print('Verifying original probe and scorer; CSV parser: Python, snapshot reads.',flush=True)
+        print('Verifying original probe and scorer; CSV reader: stdlib with explicit types, snapshot reads.',flush=True)
         original=verify_reference(args.reference,args.data)
         old=pd.read_csv(args.reference/'metrics.csv');cutoff=int(old.global_step.max())
         planfile=out/'selection.json'
@@ -144,7 +144,7 @@ def main():
             outputs.append(dest)
         combined=out/'combined';merge(args.reference,outputs,combined,cutoff)
         # Include provenance plus per-document outputs, never checkpoint weights.
-        audit.atomic_json(combined/'csv_reader.json',dict(engine='python',snapshot_reads=True,scorer_source_unchanged=True))
+        audit.atomic_json(combined/'csv_reader.json',dict(engine='stdlib_csv_explicit_types',snapshot_reads=True,scorer_source_unchanged=True))
         archive=out.parent/'exact_probe_results.tgz';temporary=archive.with_suffix('.partial')
         with tarfile.open(temporary,'w:gz') as tf:
             tf.add(combined,arcname='combined');tf.add(planfile,arcname='selection.json')
