@@ -105,3 +105,42 @@ def test_parallel_data_matches_serial(tmp_path):
     assert serial==parallel
     for name in ('train.bin','val.bin','test.bin','meta.json'):
         assert (tmp_path/'serial'/name).read_bytes()==(tmp_path/'parallel'/name).read_bytes()
+
+
+@pytest.mark.parametrize('failures,deadline,expected_calls,success', [
+    (1, '4102444800.5', 6, True),  # Recover a interrupted wheel download.
+    (99, '4102444800.5', 3, False),  # Stop before later install stages.
+    (0, '1.5', 0, False),  # A retry cannot extend the original allocation.
+])
+def test_dependency_download_recovery(tmp_path, failures, deadline, expected_calls, success):
+    import json
+    import os
+    import shlex
+    import sys
+    installer = Path(__file__).resolve().parents[1]/'continuous8/install_dependencies.sh'
+    fake = tmp_path/'fake_python'
+    fake.write_text(f'#!{sys.executable}\n' + '''
+import json, os, pathlib, sys
+p = pathlib.Path(os.environ['BASE'])/'pip_calls.jsonl'
+count = len(p.read_text().splitlines()) if p.exists() else 0
+with p.open('a') as f:
+    f.write(json.dumps({'args':sys.argv[1:],
+                       'timeout':os.environ['PIP_DEFAULT_TIMEOUT'],
+                       'cache':os.environ['PIP_CACHE_DIR']})+'\\n')
+sys.exit(2 if count < int(os.environ['FAKE_FAILURES']) else 0)
+''')
+    fake.chmod(0o755)
+    env = dict(os.environ, BASE=str(tmp_path), PY=str(fake),
+               FAKE_FAILURES=str(failures), RG_CONTINUOUS_DEADLINE_UNIX=deadline)
+    result = subprocess.run(['bash','-ec',
+        'sleep() { :; }; source '+shlex.quote(str(installer))], env=env,
+        text=True, capture_output=True)
+    assert (result.returncode == 0) == success, result.stdout+result.stderr
+    log = tmp_path/'pip_calls.jsonl'
+    calls = [json.loads(x) for x in log.read_text().splitlines()] if log.exists() else []
+    assert len(calls) == expected_calls
+    assert all(x['timeout'] == '300' and x['cache'] == str(tmp_path/'pip-cache') for x in calls)
+    if success:
+        assert calls[0]['args'] == calls[1]['args']
+        assert any('torch==2.6.0+cpu' in x['args'] for x in calls)
+        assert calls[-1]['args'][-1] == '.'

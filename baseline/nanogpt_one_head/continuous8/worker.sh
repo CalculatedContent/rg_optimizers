@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
-# Invoked once by systemd, with Restart=no. Scientific process never resumes.
+# Invoked by systemd, with Restart=no. A failed dependency install may be retried
+# manually before training starts. The scientific process never resumes.
 set -Eeuo pipefail
 BASE=/mnt/disks/rg-data/continuous8
 REPO="$BASE/repo"
 EXP="$REPO/baseline/nanogpt_one_head"
+# Serialize manual setup retries and reject all scientific-run reuse before pip.
+exec 9>"$BASE/worker.lock"
+flock -n 9 || { echo 'Another worker is running; refusing duplicate setup.'; exit 1; }
+if [ -e "$BASE/results/CONTINUOUS_STARTED.json" ]; then
+  echo 'Scientific training already started; refusing setup or training restart.'
+  exit 1
+fi
 export OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4
 export PJRT_DEVICE=TPU TPU_ACCELERATOR_TYPE=v5litepod-8
 export RG_TPU_PERSISTENT_ROOT=/mnt/disks/rg-data
@@ -25,20 +33,21 @@ code=int(sys.argv[1])
 status={'status':'finished' if code in (0,75) else 'failed','exit_code':code,'ended_unix':time.time()}
 base=Path('/mnt/disks/rg-data/continuous8')
 (base/'WORKER_STATUS.json').write_text(json.dumps(status)+'\n')
-from rg_nanogpt_one_head.continuous_support import CloudPublisher
-p=CloudPublisher(os.environ['RG_CONTINUOUS_GCS_URI'])
-p.json(status,'WORKER_STATUS.json')
-p.snapshot_text_file(base/'run.log','run.log')
+try:
+    from rg_nanogpt_one_head.continuous_support import CloudPublisher
+    p=CloudPublisher(os.environ['RG_CONTINUOUS_GCS_URI'])
+    p.json(status,'WORKER_STATUS.json')
+    p.snapshot_text_file(base/'run.log','run.log')
+except Exception as exc:
+    print(f'Cloud exit report unavailable: {type(exc).__name__}: {exc}', flush=True)
+    print(f'Local status and log retained in {base}', flush=True)
 PYCODE
   exit "$result"
 }
 trap finish_worker EXIT
-"$PY" -m pip install --upgrade 'pip==25.0.1' 'setuptools==75.8.2' 'wheel==0.45.1'
-"$PY" -m pip install 'torch==2.6.0' 'torch_xla[tpu]==2.6.0' \
-  -f https://storage.googleapis.com/libtpu-releases/index.html \
-  -f https://storage.googleapis.com/libtpu-wheels/index.html
-"$PY" -m pip install -r continuous8/requirements.txt
-"$PY" -m pip install --no-deps -e .
+# Only package installation is retried. Preflight, data preparation and scientific
+# training remain single-attempt, with the original allocation deadline.
+source "$EXP/continuous8/install_dependencies.sh"
 "$PY" -m pip freeze > "$BASE/environment.lock.txt"
 git rev-parse HEAD > "$BASE/source_commit.txt"
 # Upload credentials test before data download or training.
@@ -85,7 +94,7 @@ p.json(projection, 'BENCHMARK_PROJECTION.json')
 print('BENCHMARK PROJECTION:', json.dumps(projection), flush=True)
 p.json({'status':'training'}, 'SETUP_STATUS.json')
 PY
-# No resilient supervisor, --resume, or automatic retry anywhere in this path.
+# No resilient supervisor, --resume, or automatic retry of scientific training.
 "$PY" -u -m rg_nanogpt_one_head.continuous_run \
   --config configs/muonclip_continuous8.yaml --data-root "$BASE/data" \
   --results-root "$BASE/results" --device tpu --seed "$RG_CONTINUOUS_SEED" \

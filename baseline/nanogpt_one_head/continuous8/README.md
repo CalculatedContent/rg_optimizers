@@ -161,6 +161,17 @@ exit, including failures before training; `CONTINUOUS_STATUS.json` records the
 scientific process outcome. If dependency installation fails before cloud upload
 libraries are available, inspect the persistent disk's startup/run log over SSH.
 
+Package downloads use a 300-second socket timeout, eight connection retries,
+and up to three attempts per install command, with a cache on the data disk.
+The pinned PyTorch 2.6 CPU wheel plus XLA 2.6 supplies TPU support without CUDA
+downloads. Installation retries retain the original allocation deadline.
+If installation exhausts its retries, a manual service start after updating the
+worker is allowed only before scientific training has started. The worker locks
+out concurrent setup and checks `results/CONTINUOUS_STARTED.json` before changing
+dependencies. Existing cloud run claims are never deleted or overwritten, so a
+failure after claiming the run still stops on a duplicate claim. Training itself
+has no retry or resume loop; no deadline or restart guard is reset for this repair.
+
 The earlier launcher did long preparation in Cloud Shell `/tmp`. No request/data
 was found after one attempt; the initial error was not retained, so its exact
 cause is unknown. Cloud Shell VM disposal can lose `/tmp`, and the old empty
