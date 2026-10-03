@@ -98,6 +98,48 @@ allocated hardware before the launch script starts scientific training.
 
 ## Launch and monitor
 
+### Replace the pilot with a 24-hour allocation
+
+For the explicitly authorized 24-hour experiment, run from a clean checkout:
+
+```bash
+python3 -u baseline/nanogpt_one_head/continuous8/reallocate24.py
+```
+
+This stops the pilot worker, deletes TPU queued requests and VMs in **us-west4-a
+and us-east5-a**, verifies that both zones are empty, then submits exactly one
+`v5litepod-8` Flex-start request with a 24-hour maximum. Other zones are not
+inventoried. All data disks and cloud buckets are retained. The existing 200 GB
+pilot disk must exist and is reused without formatting. Failed deletion prevents
+new allocation. Repeating the command while the new request exists does nothing
+destructive and creates no duplicate.
+
+The new request is `ww-continuous8-24h-20261003-s1337`; its fresh run directory is
+`/mnt/disks/rg-data/continuous8-24h-20261003-s1337`, with a separate GCS run prefix.
+It reuses the original `continuous8/venv`, `pip-cache`, `hf-cache` and `data` paths.
+Setup performs all TPU correctness/benchmark checks again on the replacement VM.
+Scientific training starts from step zero; no previous scientific checkpoint is
+loaded. Benchmark messages identify each warm-up/timed update and emit a waiting
+heartbeat every minute; a heartbeat is not evidence of completed device work.
+
+The 24-hour config keeps model, dataset, optimizer, learning-rate schedule and
+fixed probes identical to the six-hour pilot configuration, but pairs alpha and
+token error **every 500 updates** instead of every 1,000. Full checkpoints remain
+every 500 updates. All checkpoint uploads remain archived in GCS, while the last
+three uploaded epoch checkpoint files are retained locally alongside latest,
+best and initialization/final checkpoints. Local epoch files are pruned only
+after a completion receipt and a matching local SHA256; unverified files remain.
+
+Training is requested to stop at **23.5 hours from VM boot**, leaving 30 minutes
+before the 24-hour server expiry. Setup, data preparation, compilation, monitoring
+and upload all consume allocation time: this is not 24 guaranteed training hours.
+The new allocation can be deleted earlier after analysis. Compute cap at the
+published v5e Flex-start price is **$115.20**, plus storage/network charges and
+the already incurred cost of the old allocation. The Cloud Shell command records
+phases, errors and resource IDs in `~/continuous8-24h-resources.json`.
+
+### Original shorter pilot
+
 From a clean checkout of `codex/continuous-muonclip-8`, on Cloud Shell:
 
 ```bash

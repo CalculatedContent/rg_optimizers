@@ -169,6 +169,21 @@ def publish_checkpoint(path, payload):
     if receipt['resumable'] and path.name in {'checkpoint_latest.pt', 'checkpoint_final.pt', 'checkpoint_initial.pt'}:
         sink.json(receipt, 'LATEST_RESUMABLE.json')
     root = path.parent.parent if path.parent.name == 'epoch_checkpoints' else path.parent
+    if path.parent.name == 'epoch_checkpoints':
+        keep = int(cfg.get('continuous', {}).get('keep_local_epoch_checkpoints', 0))
+        if keep > 0:
+            receipts = root/'checkpoint_receipts'
+            atomic_json(receipts/(path.name+'.json'), receipt)
+            verified = []
+            for record in receipts.glob('*.pt.json'):
+                value = json.loads(record.read_text())
+                candidate = path.parent/record.name.removesuffix('.json')
+                if candidate.is_file():
+                    verified.append((int(value['step']), candidate, value))
+            for _, candidate, value in sorted(verified, reverse=True)[keep:]:
+                # Never prune an unverified or subsequently changed local file.
+                if candidate.stat().st_size == value['bytes'] and sha_file(candidate) == value['sha256']:
+                    candidate.unlink()
     publish_metadata(cfg, root)
     print(f'[continuous-backup] saved step={step} file={path.name}', flush=True)
 

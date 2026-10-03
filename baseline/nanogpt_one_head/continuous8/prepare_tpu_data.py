@@ -12,9 +12,9 @@ from rg_nanogpt_one_head.data import prepare_fineweb_edu, validate_prepared_data
 
 
 def main():
-    cfg = yaml.safe_load(Path('configs/muonclip_continuous8.yaml').read_text())
-    data = Path('/mnt/disks/rg-data/continuous8/data')
-    data.mkdir(exist_ok=True)
+    cfg = yaml.safe_load(Path(os.environ.get('RG_CONTINUOUS_CONFIG','configs/muonclip_continuous8.yaml')).read_text())
+    data = Path(os.environ.get('RG_CONTINUOUS_DATA_ROOT','/mnt/disks/rg-data/continuous8/data'))
+    data.mkdir(parents=True,exist_ok=True)
     archive = CloudPublisher(os.environ['RG_CONTINUOUS_DATA_URI'])
     run = CloudPublisher(os.environ['RG_CONTINUOUS_GCS_URI'])
     run.json({'status':'preparing_data','location':'TPU VM CPU and persistent disk'},'SETUP_STATUS.json')
@@ -43,7 +43,7 @@ def main():
         manifest = {'dataset':cfg['dataset'],'files':receipts}
         archive.json(manifest,'COMPLETE.json')
     run.json({'uri':os.environ['RG_CONTINUOUS_DATA_URI'],'manifest':manifest},'DATA_SOURCE.json')
-    run.snapshot_text_file('/mnt/disks/rg-data/continuous8/run.log','run.log')
+    run.snapshot_text_file(os.environ.get('RG_CONTINUOUS_RUN_LOG','/mnt/disks/rg-data/continuous8/run.log'),'run.log')
     print('Corpus complete: document-disjoint splits and SHA256 verified; cloud copy saved.',flush=True)
 
 

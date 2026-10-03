@@ -90,6 +90,56 @@ def test_fixed_config_alignment_and_schedule():
     assert lr_schedule_steps(cfg,p)==100_000 and warmup_steps(p,100_000)==2000
 
 
+def test_24h_config_has_aligned_pairs_without_changing_training_dynamics():
+    from rg_nanogpt_one_head.muonclip import install_muonclip_extension
+    install_muonclip_extension()
+    from rg_nanogpt_one_head.config import load_config, epoch_step_map
+    root = Path(__file__).resolve().parents[1]/'configs'
+    before = load_config(root/'muonclip_continuous8.yaml')
+    after = load_config(root/'muonclip_continuous8_24h.yaml')
+    for key in ('dataset','model','optimizer_profiles','evaluation','runtime'):
+        assert before[key] == after[key]
+    assert list(epoch_step_map(after)) == list(range(0,1_000_001,500))
+    assert after['training']['checkpoint_interval_steps'] == 500
+    assert after['training']['eval_interval_steps'] == 500
+    assert after['continuous']['max_wall_hours'] == 23.5
+    assert after['continuous']['keep_local_epoch_checkpoints'] == 3
+
+
+def test_only_uploaded_unchanged_epoch_checkpoints_are_pruned(tmp_path, monkeypatch):
+    class Sink:
+        fail = False
+        def file(self, path, relative):
+            if self.fail: raise OSError('upload failed')
+            return {'generation':'1', 'bytes':path.stat().st_size}
+        def json(self, *args): pass
+    sink = Sink()
+    monkeypatch.setattr(cs, 'publisher', lambda cfg:sink)
+    monkeypatch.setattr(cs, 'publish_metadata', lambda *args:None)
+    directory = tmp_path/'epoch_checkpoints'
+    directory.mkdir()
+    unknown = directory/'unknown.pt'
+    unknown.write_bytes(b'not uploaded')
+    config = {'continuous':{'keep_local_epoch_checkpoints':2}}
+    def publish(step):
+        path = directory/f'epoch_{step:06d}.pt'
+        path.write_bytes(str(step).encode())
+        cs.publish_checkpoint(path, dict(config=config,step=step,fingerprint='f',model_state_sha256='m'))
+        return path
+    first = publish(1)
+    second = publish(2)
+    first.write_bytes(b'x')  # Same size, changed contents must survive pruning.
+    third = publish(3)
+    assert first.exists() and unknown.exists()
+    first.write_bytes(b'1')
+    fourth = publish(4)
+    assert not first.exists() and not second.exists()
+    assert third.exists() and fourth.exists() and unknown.exists()
+    sink.fail = True
+    with pytest.raises(OSError, match='upload failed'): publish(5)
+    assert third.exists() and fourth.exists() and (directory/'epoch_000005.pt').exists()
+
+
 def test_muonclip_checkpoint_preserves_next_updates_lr_optimizer_and_sampler(tmp_path):
     from copy import deepcopy
     from rg_nanogpt_one_head.muonclip import install_muonclip_extension

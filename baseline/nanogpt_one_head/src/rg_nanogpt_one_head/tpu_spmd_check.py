@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import threading
 import time
 
 import torch
@@ -163,6 +164,13 @@ def main() -> None:
     print("[spmd-check] numerical and resume checks passed", flush=True)
     if benchmark_cfg is not None:
         print("[spmd-check] benchmarking training shape (5 warm-up updates)", flush=True)
+        bench_started = time.monotonic()
+        stage = ["model initialization"]
+        finished = threading.Event()
+        def heartbeat():
+            while not finished.wait(60):
+                print(f"[spmd-check] waiting in {stage[0]}; benchmark elapsed={time.monotonic()-bench_started:.0f}s (no completion yet)", flush=True)
+        threading.Thread(target=heartbeat, daemon=True).start()
         batch = int(benchmark_cfg["training"]["batch_size"])
         accum = int(benchmark_cfg["training"]["grad_accum_steps"])
         context = int(benchmark_cfg["model"]["block_size"])
@@ -185,14 +193,22 @@ def main() -> None:
             torch.nn.utils.clip_grad_norm_(net.parameters(), float(benchmark_cfg["training"]["grad_clip"]), foreach=False)
             optimizer_step(opts)
             mark_step(device)
-        for _ in range(5):
+        for index in range(5):
+            stage[0] = f"warm-up update {index+1}/5"
+            print(f"[spmd-check] starting {stage[0]}", flush=True)
             benchmark_step()
+        stage[0] = "warm-up device synchronization"
         synchronize(device)
+        print("[spmd-check] warm-up completed", flush=True)
         start = time.perf_counter()
-        for _ in range(args.benchmark_steps):
+        for index in range(args.benchmark_steps):
+            stage[0] = f"timed update {index+1}/{args.benchmark_steps}"
+            print(f"[spmd-check] submitting {stage[0]}", flush=True)
             benchmark_step()
+        stage[0] = "timed device synchronization"
         synchronize(device)
         seconds = time.perf_counter() - start
+        finished.set()
         report["benchmark"] = {"steps": args.benchmark_steps, "seconds": seconds,
                                "global_tokens_per_update": batch * accum * context,
                                "tokens_per_second": args.benchmark_steps * batch * accum * context / seconds,

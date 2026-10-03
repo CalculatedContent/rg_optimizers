@@ -2,7 +2,7 @@
 # Sourced by worker.sh; PY, BASE and the working directory are already set.
 # pip 25.0.1 connection retries do not recover a mid-download read timeout,
 # so retry the install command as well. Successful downloads remain cached.
-export PIP_CACHE_DIR="$BASE/pip-cache"
+export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$BASE/pip-cache}"
 export PIP_DEFAULT_TIMEOUT=300 PIP_RETRIES=8 PIP_PROGRESS_BAR=off
 export PIP_DISABLE_PIP_VERSION_CHECK=1
 pip_install() {
