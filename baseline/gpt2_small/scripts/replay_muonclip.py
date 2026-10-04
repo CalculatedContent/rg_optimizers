@@ -1,4 +1,4 @@
-"""Launch/status a bounded diagnostic on the EXISTING 48-hour TPU only."""
+"""Replay one saved MuonClip update on the existing TPU, preserving all evidence."""
 import argparse
 import datetime as dt
 import fcntl
@@ -14,7 +14,9 @@ import time
 PROJECT='tpu-builders-504820'; ZONE='us-west4-a'
 QUEUE='ww-gpt2-validation-48h-20261004-s1337'; NODE=QUEUE+'-node'
 BASE=Path('/mnt/disks/rg-data/gpt2small'); OLD=BASE/QUEUE
-LATEST=BASE/'PORT_CHECK_LATEST.json'
+LATEST=BASE/'MUONCLIP_REPLAY_LATEST.json'
+SOURCE=BASE/'muonclip-night-20261004-053212'
+CHECKPOINT=SOURCE/'muonclip/checkpoints/step_000000001.pt'
 
 
 def run(args,**kwargs):
@@ -29,15 +31,15 @@ def active(unit):
 
 def assert_idle():
     if active('rg-gpt2-validation.service') or active('rg-continuous8.service'):
-        raise RuntimeError('An existing training service is active; no diagnostic launched.')
+        raise RuntimeError('An existing training service is active; no training launched.')
     if LATEST.exists() and active(json.loads(LATEST.read_text())['unit']):
-        raise RuntimeError('Port diagnostic already active. Use status; no second run launched.')
+        raise RuntimeError('MuonClip replay is already active. Use status; no second replay launched.')
+    night=BASE/'PORT_CHECK_LATEST.json'
+    if night.exists() and active(json.loads(night.read_text())['unit']):
+        raise RuntimeError('Port diagnostic is active; no concurrent training launched.')
     night=BASE/'MUONCLIP_LATEST.json'
     if night.exists() and active(json.loads(night.read_text())['unit']):
-        raise RuntimeError('MuonClip service is active; no concurrent diagnostic launched.')
-    replay=BASE/'MUONCLIP_REPLAY_LATEST.json'
-    if replay.exists() and active(json.loads(replay.read_text())['unit']):
-        raise RuntimeError('An update replay is active; no concurrent trainer launched.')
+        raise RuntimeError('MuonClip training is active; no concurrent replay launched.')
     modules={'rg_gpt2_small.replay_update','rg_gpt2_small.experiment','rg_nanogpt_one_head.gpt2_experiment',
              'rg_nanogpt_one_head.continuous_run','rg_nanogpt_one_head.tpu_spmd_check'}
     for path in Path('/proc').glob('[0-9]*/cmdline'):
@@ -57,46 +59,51 @@ def launch_remote(commit):
         allocation=json.loads((OLD/'allocation.json').read_text())
         allocation_deadline=float(allocation['validation_deadline_unix'])
         if allocation_deadline-time.time()<900:
-            raise RuntimeError('Less than 15 minutes remain; diagnostic not launched.')
+            raise RuntimeError('Less than 15 minutes remain; training not launched.')
         if not Path('/mnt/disks/rg-data/continuous8/data/train.bin').is_file():
             raise RuntimeError('Preserved FineWeb is missing; no download will be started.')
+        if not CHECKPOINT.is_file() or CHECKPOINT.stat().st_size==0:
+            raise RuntimeError('Verified step-1 checkpoint is missing; replay not started.')
         stamp=dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d-%H%M%S')
-        root=BASE/('port-check-'+stamp); root.mkdir()
+        root=BASE/('muonclip-replay-'+stamp); root.mkdir()
         repo=root/'repo'; repo.mkdir()
         run(['git','-C',str(repo),'init','-q'])
         run(['git','-C',str(repo),'remote','add','origin','https://github.com/CalculatedContent/rg_optimizers.git'])
         run(['git','-C',str(repo),'fetch','--depth','1','origin',commit],timeout=180)
         run(['git','-C',str(repo),'checkout','--detach',commit])
         (root/'commit.txt').write_text(commit+'\n')
-        deadline=min(time.time()+1200,allocation_deadline-300)
+        deadline=min(time.time()+1800,allocation_deadline-600)
         if deadline-time.time()<300: raise RuntimeError('Too little time remains after source checkout.')
-        unit='rg-gpt2-port-check-'+stamp+'.service'
+        unit='rg-gpt2-replay-'+stamp+'.service'
         record={'root':str(root),'unit':unit,'commit':commit,'node':NODE,
-                'training_deadline_unix':deadline,'maximum_training_seconds':1200,
-                'purpose':'four-update AdamW numerical diagnostic','long_run_started':False}
+                'training_deadline_unix':deadline,'service_deadline_unix':min(deadline+600,allocation_deadline),
+                'source_checkpoint':str(CHECKPOINT),'source_run':str(SOURCE),
+                'purpose':'replay saved update 2 with checks after clipping, primary MuonClip and auxiliary AdamW',
+                'cloud_uri':'gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name}
         (root/'launch.json').write_text(json.dumps(record,indent=2))
         command=['systemd-run','--unit='+unit,'--property=Type=exec','--property=Restart=no',
-                 '--property=RuntimeMaxSec='+str(int(min(1800,allocation_deadline-time.time()))),
+                 '--property=RuntimeMaxSec='+str(int(min(deadline+600,allocation_deadline)-time.time())),
                  '--property=TimeoutStopSec=30','--property=KillMode=control-group',
                  '--property=StandardOutput=append:'+str(root/'run.log'),
                  '--property=StandardError=append:'+str(root/'run.log'),
-                 '/bin/bash',str(repo/'baseline/gpt2_small/scripts/diagnose_adamw.sh'),
-                 str(OLD),str(deadline),str(root)]
+                 '/bin/bash',str(repo/'baseline/gpt2_small/scripts/replay_worker.sh'),
+                 str(root),str(deadline),str(CHECKPOINT)]
         run(command)
         temp=LATEST.with_suffix('.tmp'); temp.write_text(json.dumps(record,indent=2)); temp.replace(LATEST)
-        print('Diagnostic started:',unit,flush=True)
+        print('One-update replay service started:',unit,flush=True)
         print('Log:',root/'run.log',flush=True)
-        print('Four AdamW updates only; training capped at 20 minutes, plus up to 10 minutes for backup.',flush=True)
+        print('Training cutoff UTC:',dt.datetime.fromtimestamp(deadline,dt.timezone.utc).isoformat(),flush=True)
+        print('One update only. Diagnostic capped at 30 minutes plus up to 10 minutes for backup.',flush=True)
         print('Existing TPU allocation, FineWeb and prior outputs retained.',flush=True)
 
 
 def status_remote():
     if not LATEST.exists():
-        print('No new port diagnostic has been launched.'); return
+        print('No update replay has been launched.'); return
     record=json.loads(LATEST.read_text()); root=Path(record['root'])
     print(json.dumps(record,indent=2),flush=True)
     subprocess.run(['systemctl','--no-pager','--full','status',record['unit']],check=False)
-    for file in ('PROBE_STATUS.json','adamw/TPU_PORT_FAILURE.json','adamw/diagnostics/current_stage.json'):
+    for file in ('PROBE_STATUS.json','diagnostic/REPLAY_STATUS.json','diagnostic/FIRST_INVALID.json','diagnostic/TPU_PORT_FAILURE.json','diagnostic/diagnostics/current_stage.json'):
         path=root/file
         if path.is_file(): print('\n'+file+'\n'+path.read_text(),flush=True)
     subprocess.run(['tail','-n','70',str(root/'run.log')],check=False)
@@ -130,4 +137,4 @@ def main():
 if __name__=='__main__':
     try: sys.exit(main())
     except Exception as exc:
-        print('Port diagnostic:',exc,file=sys.stderr); sys.exit(1)
+        print('MuonClip replay:',exc,file=sys.stderr); sys.exit(1)

@@ -11,7 +11,43 @@ The TPU launch scripts expose both source packages through `PYTHONPATH`. For loc
 development, from the repository root, install both with
 `pip install -e baseline/nanogpt_one_head -e baseline/gpt2_small`.
 
-## Continue with MuonClip on the existing allocation
+## Replay the failed MuonClip update first
+
+The `muonclip-night-20261004-053212` run stopped during evaluation after update 2.
+Its step-1 checkpoint and cloud backup are preserved. Do not interpret that run as
+passed validation or restart a long run on the strength of its finite initial loss.
+
+```bash
+python3 baseline/gpt2_small/scripts/replay_muonclip.py start
+python3 baseline/gpt2_small/scripts/replay_muonclip.py status
+```
+
+This uses the existing TPU and FineWeb, reads the saved step-1 checkpoint, and
+replays exactly one next update into a fresh `muonclip-replay-<timestamp>` directory.
+It checks the original config/data/software fingerprint, restores model, both
+optimizers, sampler and RNG states, and retains the original LR schedule. It checks
+the saved/restored tensors and fixed evaluation probes, gradients before/after
+clipping, and weights/moments after primary MuonClip and auxiliary AdamW separately.
+Only scalar finite flags cross to CPU; the diagnostic avoids the `stack`/extrema
+expression implicated in the earlier diagnostic abort. `FIRST_INVALID.json` names
+the first detected invalid stage/tensors. Native aborts and timeouts also get a
+separate `TPU_PORT_FAILURE.json`, stage log, environment and available XLA metrics.
+
+The updated model/optimizer state is saved **before** post-update evaluation to
+`diagnostic/update_state.pt`. This is diagnostic evidence, explicitly marked
+non-resumable. Existing checkpoints, crash logs, disk and cloud objects are untouched.
+The diagnostic is bounded to 30 minutes, plus up to 10 minutes for verified backup,
+within the current allocation. No long run, allocation, restart, package install,
+data download or cleanup follows automatically. Other launchers reject an active replay.
+
+CPU tests compare the replay with uninterrupted update 2, including weights,
+optimizer states, sampler state and evaluation metrics. TPU equivalence is still
+unproven: the extra synchronization changes graph boundaries. A passing replay
+requires a subsequent check of the original execution path; it does not establish
+that the original numerical failure is fixed. The replay module also accepts
+`--device cpu` for a separately requested comparison of the same saved state.
+
+## Previous continuous MuonClip launcher
 
 The user authorized a fresh continuous MuonClip run after the diagnostic crash.
 Use the current 48-hour TPU, installed environment and preserved FineWeb:

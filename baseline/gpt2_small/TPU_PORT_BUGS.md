@@ -109,3 +109,32 @@ a repair or root-cause diagnosis for either SIGABRT or the earlier nonfinite res
 The earlier source checkouts, diagnostics, initialization checkpoints and verified
 cloud archives are retained. New failures produce separate evidence in the new run.
 No automatic restart, cleanup, disk formatting or TPU reallocation is performed.
+
+### MuonClip update-2 evaluation failure, 2026-10-04
+
+Run `muonclip-night-20261004-053212`, commit
+`6f8d59214f51be00212a9956182a0c697225f086`, failed about ten minutes after launch;
+it did not train overnight. The first update and its evaluation completed. Step 1
+was saved locally and its cloud checkpoint upload was verified. The final cloud
+backup was also explicitly verified.
+
+- Before update 2, four microbatch losses were finite (approximately 10.99) and
+  the aggregate gradient norm was `14.34039306640625`.
+- The log then reported `completed_update: 2`, followed by `RuntimeError:
+  Nonfinite train NLL` in evaluation. The saved progress stage was `evaluating`,
+  completed step 2. The latest saved checkpoint was step 1.
+- The recorder evaluated before saving the checkpoint, so the failed update's
+  weights and optimizer state were not preserved. Neither a corrupt update nor
+  an evaluation/runtime fault has yet been isolated. Finite pre-update losses
+  and norm do not prove finite updated parameters or optimizer moments.
+- Evidence remains under `/mnt/disks/rg-data/gpt2small/muonclip-night-20261004-053212`
+  and `gs://tpu-builders-504820-ww-continuous8/gpt2small/muonclip-night-20261004-053212`.
+
+The new `replay_muonclip.py` diagnostic restores the saved step-1 state and exact
+next input windows without changing optimizer settings. It checks saved/restored
+state, fixed evaluation probes, pre/post-clipping gradients, and state after each
+of primary MuonClip and auxiliary AdamW. It saves the resulting diagnostic state
+before evaluation. Per-tensor finite reductions use scalar host transfers without
+the earlier stack/extrema diagnostic. No attribution to upstream PyTorch/XLA or
+TPU hardware is justified yet. These synchronization changes are recorded; a pass
+does not by itself reproduce or fix the original continuous execution path.

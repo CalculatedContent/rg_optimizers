@@ -35,7 +35,10 @@ def assert_idle():
     night=BASE/'PORT_CHECK_LATEST.json'
     if night.exists() and active(json.loads(night.read_text())['unit']):
         raise RuntimeError('Port diagnostic is active; no concurrent training launched.')
-    modules={'rg_gpt2_small.experiment','rg_nanogpt_one_head.gpt2_experiment',
+    replay=BASE/'MUONCLIP_REPLAY_LATEST.json'
+    if replay.exists() and active(json.loads(replay.read_text())['unit']):
+        raise RuntimeError('An update replay is active; no concurrent trainer launched.')
+    modules={'rg_gpt2_small.replay_update','rg_gpt2_small.experiment','rg_nanogpt_one_head.gpt2_experiment',
              'rg_nanogpt_one_head.continuous_run','rg_nanogpt_one_head.tpu_spmd_check'}
     for path in Path('/proc').glob('[0-9]*/cmdline'):
         try: args=set(path.read_bytes().decode().split('\0'))
