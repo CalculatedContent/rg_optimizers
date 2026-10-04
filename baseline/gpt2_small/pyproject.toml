@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rg-gpt2-small"
+version = "0.1.0"
+description = "GPT-2 Small: 12-layer, 12-head FineWeb TPU experiments"
+requires-python = ">=3.10"
+dependencies = ["rg-nanogpt-one-head==0.5.1"]
+
+[project.scripts]
+rg-gpt2-train = "rg_gpt2_small.experiment:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

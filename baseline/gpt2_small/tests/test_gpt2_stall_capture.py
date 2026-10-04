@@ -5,22 +5,22 @@ import pytest
 
 
 spec = importlib.util.spec_from_file_location(
-    'stall_capture', Path(__file__).parents[1] / 'gpt2small/capture_stall.py')
+    'stall_capture', Path(__file__).parents[1] / 'scripts/capture_stall.py')
 capture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(capture)
 
 
 def service(root, active='active', pid='6800'):
-    return {'ExecStart': f'/bin/bash {root}/repo/baseline/nanogpt_one_head/gpt2small/replacement_worker.sh {root}',
+    return {'ExecStart': f'/bin/bash {root}/repo/baseline/gpt2_small/scripts/replacement_worker.sh {root}',
             'ActiveState': active, 'MainPID': pid}
 
 
 def test_process_selection_excludes_other_training_runs(tmp_path):
     root = Path('/mnt/disks/rg-data/gpt2small/current')
     for pid, args in {
-        11: ['python', '-m', 'rg_nanogpt_one_head.gpt2_experiment', '--output', str(root / 'adamw')],
-        12: ['python', '-m', 'rg_nanogpt_one_head.gpt2_experiment', '--output', str(root / 'muonclip')],
-        13: ['python', '-m', 'rg_nanogpt_one_head.gpt2_experiment', '--output', str(root.parent / 'other/adamw')],
+        11: ['python', '-m', 'rg_gpt2_small.experiment', '--output', str(root / 'adamw')],
+        12: ['python', '-m', 'rg_gpt2_small.experiment', '--output', str(root / 'muonclip')],
+        13: ['python', '-m', 'rg_gpt2_small.experiment', '--output', str(root.parent / 'other/adamw')],
         14: ['python', 'validate.py', '--root', str(root)],
     }.items():
         folder = tmp_path / str(pid)

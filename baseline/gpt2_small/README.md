@@ -1,7 +1,31 @@
 # GPT-2 Small / FineWeb-Edu validation
 
-This is a new, isolated experiment. Existing tiny and continuous8 workflows are unchanged.
-It reuses the repository GPT, advanced MuonClip, SPMD, corpus validation and WeightWatcher adapter.
+This is the GPT-2 Small experiment, under `baseline/gpt2_small`. Its training module
+is `rg_gpt2_small.experiment`; configurations and launchers live here. It reuses the
+shared GPT implementation, optimizers, SPMD, corpus validation and WeightWatcher
+adapter from the older `rg_nanogpt_one_head` infrastructure package. That dependency
+does not constrain the head count. Existing one-head and continuous8 workflows stay
+in their original directory. Existing disk and bucket paths are retained for data reuse.
+
+The TPU launch scripts expose both source packages through `PYTHONPATH`. For local
+development, from the repository root, install both with
+`pip install -e baseline/nanogpt_one_head -e baseline/gpt2_small`.
+
+## Current validation failure
+
+The saved 2026-10-04 04:19 UTC stack from commit `4631a3d` is inside the
+nonfinite-gradient diagnostic's per-parameter CPU copy. That branch is reached only
+after detecting a nonfinite loss or aggregate gradient norm. The latest checkpoint
+pointer was step 0. This is a failed numerical validation, not evidence of healthy
+training. The origin of the nonfinite result is still unconfirmed.
+
+The failure handler now writes the scalar failure and raises immediately, avoiding
+the full gradient-copy loop. Validation synchronizes XLA before reading diagnostic
+scalars, prints its pre-update stage, and emits Python stacks every five minutes.
+Each validation phase has a 30-minute limit (also bounded by allocation time);
+on expiry its child is terminated and the report says validation is incomplete.
+These changes improve failure reporting and bound waits; TPU numerical stability
+has not yet been demonstrated. They do not change the model, data or learning rates.
 
 ## Model and data
 
@@ -45,7 +69,7 @@ change. max_tokens is rounded up to the next complete optimizer update.
 From a clean Cloud Shell checkout of this commit:
 
 ```bash
-python3 baseline/nanogpt_one_head/gpt2small/cloudshell.py
+python3 baseline/gpt2_small/scripts/cloudshell.py
 ```
 
 This verifies the existing active queue/node, gracefully stops the old trainer,
@@ -77,8 +101,8 @@ normal GPT-2 training quality, and before the long scientific experiment.
 From the updated, clean Cloud Shell checkout:
 
 ```bash
-python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py launch
-python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status
+python3 baseline/gpt2_small/scripts/reallocate_validation.py launch
+python3 baseline/gpt2_small/scripts/reallocate_validation.py status
 ```
 
 The launcher replaces only `ww-continuous8-24h-20261003-s1337` and its node.
@@ -97,8 +121,8 @@ operations. The complete logs and outputs remain on the persistent disk on failu
 
 This is a fresh validation from initialization, not continuation of the failed run.
 Before each optimizer update, the runner checks loss and gradient norm. A failure
-writes `nonfinite_diagnostics.json` with parameter names and nonfinite element
-counts, then stops before applying the invalid update. The earlier nonfinite
+writes `nonfinite_diagnostics.json` with the step, loss values and aggregate gradient
+norm, then stops before applying the invalid update. The earlier nonfinite
 gradient's cause is still unconfirmed; these checks do not claim to fix it.
 Only if the short AdamW checks pass does MuonClip validation proceed, followed by
 the existing resume checks. No long run starts automatically. The service does
@@ -108,8 +132,8 @@ delete its TPU: the allocation limit remains four hours unless stopped earlier.
 ### Allocate 48 hours instead
 
 ```bash
-python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py launch --hours 48
-python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status --hours 48
+python3 baseline/gpt2_small/scripts/reallocate_validation.py launch --hours 48
+python3 baseline/gpt2_small/scripts/reallocate_validation.py status --hours 48
 ```
 
 The queued-resource API exposes no update operation for extending the requested
@@ -135,7 +159,7 @@ the long experiment. The allocation remains available until deletion or expiry.
 From Cloud Shell on the updated branch:
 
 ```bash
-python3 baseline/nanogpt_one_head/gpt2small/capture_stall.py --stop
+python3 baseline/gpt2_small/scripts/capture_stall.py --stop
 ```
 
 This targets the 48-hour validation run above. It captures process CPU/memory,
@@ -148,6 +172,9 @@ disk; a compact summary is printed for sharing. This command does not upload the
 Omit `--stop` for a read-only capture. A blocked update may be lost on stop; no new
 checkpoint is promised. Existing checkpoints, FineWeb and the TPU allocation
 remain. The allocation continues to incur compute usage until deletion/expiry.
+Use `--show-last` to print the saved capture, native stack and current service state
+without another profiler installation or stop. Both old and new package paths are
+recognized when diagnosing the already allocated machine.
 
 The validator's `WAIT` lines only indicate a live process, not a completed update.
 Likewise `before_update: 2` confirms the gradient check before update 2, not its
@@ -189,8 +216,8 @@ no thousands of full checkpoint copies are retained.
 ## Analysis and tests
 
 ```bash
-python gpt2small/analyze.py /mnt/disks/rg-data/gpt2small/VALIDATION/muonclip
-PYTHONPATH=src python -m pytest tests/test_gpt2_experiment.py -q
+python baseline/gpt2_small/scripts/analyze.py /mnt/disks/rg-data/gpt2small/VALIDATION/muonclip
+PYTHONPATH=baseline/gpt2_small/src:baseline/nanogpt_one_head/src python -m pytest baseline/gpt2_small/tests -q
 ```
 
 Analysis creates CSVs and loss/perplexity/error-vs-token plots; mean/min raw and clipped

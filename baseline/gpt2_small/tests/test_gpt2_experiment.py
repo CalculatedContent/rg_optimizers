@@ -10,7 +10,7 @@ import torch
 import yaml
 from rg_nanogpt_one_head.model import GPT, GPTConfig, transformer_matrix_items
 from rg_nanogpt_one_head.data import write_token_splits
-from rg_nanogpt_one_head import gpt2_experiment as g
+from rg_gpt2_small import experiment as g
 BASE=Path(__file__).resolve().parents[1]
 
 def config(name='cpu_smoke'):
@@ -100,13 +100,36 @@ def test_interrupted_record_transaction_recovers(tmp_path):
     assert len(list((out/'metrics').glob('*.json')))==2
 
 
-def test_invalid_gradient_diagnostic_precedes_update(tmp_path):
+def test_invalid_gradient_diagnostic_precedes_update(tmp_path, monkeypatch):
     model=GPT(GPTConfig(**config()['model']))
     for p in model.parameters(): p.grad=torch.ones_like(p)
     name,p=next(iter(model.named_parameters())); p.grad.view(-1)[0]=float('nan')
     before=p.detach().clone()
+    def no_gradient_walk(*args, **kwargs):
+        raise AssertionError('Failure diagnostics must not walk/copy every gradient')
+    monkeypatch.setattr(model,'named_parameters',no_gradient_walk)
     with pytest.raises(RuntimeError,match='BEFORE update 1'):
         g.require_finite_update(model,torch.tensor(float('nan')),[torch.tensor(11.)],tmp_path,1)
     report=json.loads((tmp_path/'nonfinite_diagnostics.json').read_text())
-    assert [r['parameter'] for r in report['gradients'] if r['nonfinite_elements']]==[name]
+    assert report['status']=='invalid_before_update' and report['gradient_details_collected'] is False
+    assert np.isnan(report['gradient_norm']) and report['microbatch_losses']==[11.]
     assert torch.equal(before,p.detach())
+
+
+def test_validation_synchronizes_before_scalar_transfer(tmp_path,monkeypatch):
+    calls=[]
+    class Scalar:
+        device=torch.device('cpu')
+        def detach(self): return self
+        def cpu(self):
+            assert calls==['sync']
+            return torch.tensor(1.)
+    monkeypatch.setattr(g.rt,'synchronize',lambda device:calls.append('sync'))
+    g.require_finite_update(None,Scalar(),[Scalar()],tmp_path,1)
+    assert not (tmp_path/'nonfinite_diagnostics.json').exists()
+
+
+def test_nonfinite_loss_fails_even_with_finite_norm(tmp_path):
+    with pytest.raises(RuntimeError,match='BEFORE update 3'):
+        g.require_finite_update(None,torch.tensor(1.),[torch.tensor(float('inf'))],tmp_path,3)
+    assert json.loads((tmp_path/'nonfinite_diagnostics.json').read_text())['before_update']==3

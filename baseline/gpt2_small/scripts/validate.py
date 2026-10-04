@@ -9,11 +9,15 @@ import sys
 import time
 import threading
 import yaml
+from validation_watchdog import wait_for_child
 
 p=argparse.ArgumentParser()
 p.add_argument('--root',required=True); p.add_argument('--data',required=True)
 p.add_argument('--deadline',type=float,required=True)
+p.add_argument('--phase-timeout-seconds',type=float,default=1800)
 a=p.parse_args(); root=Path(a.root); base=Path(__file__).resolve().parents[1]
+if not 0 < a.phase_timeout_seconds <= 3600:
+    p.error('--phase-timeout-seconds must be in (0, 3600]')
 root.mkdir(parents=True,exist_ok=True)
 for folder in ('logs','metrics','ww_metrics','checkpoints','summaries','configs'): (root/folder).mkdir(exist_ok=True)
 configs={}
@@ -41,7 +45,7 @@ try:
             # Reserve five minutes for final checkpoint and backup; never start after the cutoff.
             if time.time()>a.deadline-300: raise RuntimeError('Insufficient allocation time for next phase; no new allocation requested')
             run=root/opt; old=history(run)
-            cmd=[sys.executable,'-u','-m','rg_nanogpt_one_head.gpt2_experiment',
+            cmd=[sys.executable,'-u','-m','rg_gpt2_small.experiment',
                  '--config',str(configs[opt]),'--data-root',a.data,'--output',str(run),
                  '--device','tpu','--stop-after',str(stop),'--deadline-unix',str(a.deadline-300)]
             if stop>4: cmd.append('--resume')
@@ -52,12 +56,11 @@ try:
                     for line in child.stdout:
                         log.write(line); log.flush(); print(line,end='',flush=True)
                 reader=threading.Thread(target=stream,daemon=True); reader.start()
-                while True:
-                    try:
-                        rc=child.wait(timeout=30); break
-                    except subprocess.TimeoutExpired:
-                        print(f'WAIT {opt} through step {stop}: process {child.pid} still running',flush=True)
-                reader.join()
+                try:
+                    rc=wait_for_child(child,f'{opt} through step {stop}',
+                                      min(time.time()+a.phase_timeout_seconds,a.deadline-300))
+                finally:
+                    reader.join(timeout=30)
                 if rc: raise subprocess.CalledProcessError(rc,cmd)
             state=json.loads((run/'status.json').read_text())
             if state['step']!=stop: raise RuntimeError(f'{opt} stopped before requested step {stop}')
@@ -81,7 +84,7 @@ try:
             report['phases'].append({'optimizer':opt,'step':stop,'metrics':latest,'ww':ww,
                                     'resume_history_unchanged':bool(old)})
             persist(); print(json.dumps(report['phases'][-1]),flush=True)
-            subprocess.run([sys.executable,str(base/'gpt2small/analyze.py'),str(run)],check=True)
+            subprocess.run([sys.executable,str(base/'scripts/analyze.py'),str(run)],check=True)
     report['status']='short_validation_completed'
     report['interpretation']='25 updates demonstrate functionality and initial direction only; not reproduction of a NanoGPT speedrun benchmark or proof of long-run stability.'
 except Exception as exc:

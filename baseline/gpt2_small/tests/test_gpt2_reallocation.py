@@ -7,7 +7,7 @@ import pytest
 
 
 def load():
-    path = Path(__file__).resolve().parents[1] / 'gpt2small/reallocate_validation.py'
+    path = Path(__file__).resolve().parents[1] / 'scripts/reallocate_validation.py'
     spec = importlib.util.spec_from_file_location('gpt2_reallocation', path)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     return module
@@ -23,7 +23,7 @@ def test_startup_mounts_only_existing_disk_and_never_restarts(hours):
     assert 'STARTED_ONCE' in script and 'replacement_worker.sh' in script
     worker = Path(m.__file__).with_name('replacement_worker.sh').read_text()
     subprocess.run(['bash', '-n'], input=worker, text=True, check=True)
-    assert worker.index('receipt=sink.file') < worker.index('gpt2small/validate.py')
+    assert worker.index('receipt=sink.file') < worker.index('scripts/validate.py')
     assert 'prepare_tpu_data' not in worker and '--allow-long-run' not in worker
 
 

@@ -382,3 +382,8 @@ GitHub Actions additionally compiles all Python sources, parses notebook code
 cells, runs a real pinned WeightWatcher integration, and executes a pinned
 nanochat CPU model/optimizer preflight. These bounded checks do not replace the
 full three-seed long-horizon campaigns or the required target-MPS preflight.
+
+## GPT-2 Small
+
+See [gpt2_small/README.md](gpt2_small/README.md) for the 124M-parameter,
+12-layer, 12-head FineWeb TPU validation workflow.

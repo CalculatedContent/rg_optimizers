@@ -4,9 +4,9 @@ set -euo pipefail
 old=$1
 deadline=$2
 base=$(cd "$(dirname "$0")/.." && pwd)
-source "$base/gpt2small/tpu_environment.sh"
+source "$base/scripts/tpu_environment.sh"
 python=/mnt/disks/rg-data/continuous8/venv/bin/python
-export PYTHONPATH="$base/src"
+export PYTHONPATH="$base/src:$base/../nanogpt_one_head/src"
 "$python" -c 'import sys,time; assert float(sys.argv[1])>time.time()+60,"Too little allocation time; diagnostic not started"' "$deadline"
 root="$old/diagnostic-$(date -u +%Y%m%d-%H%M%S)"
 mkdir "$root"
@@ -23,8 +23,8 @@ backup() {
   rc=$?
   trap - EXIT
   sync
-  "$python" "$base/gpt2small/backup.py" "$root" || exit 1
+  "$python" "$base/scripts/backup.py" "$root" || exit 1
   exit "$rc"
 }
 trap backup EXIT
-"$python" -u -m rg_nanogpt_one_head.gpt2_experiment --config "$root/config.yaml" --data-root /mnt/disks/rg-data/continuous8/data --output "$root/adamw" --device tpu --stop-after 4 --deadline-unix "$deadline" 2>&1 | tee "$root/diagnostic.log"
+"$python" -u -m rg_gpt2_small.experiment --config "$root/config.yaml" --data-root /mnt/disks/rg-data/continuous8/data --output "$root/adamw" --device tpu --stop-after 4 --deadline-unix "$deadline" 2>&1 | tee "$root/diagnostic.log"

@@ -129,7 +129,7 @@ def launch():
         stop = (f'if systemctl cat {OLD_SERVICE} >/dev/null 2>&1; then\n'
                 f'  systemctl stop {OLD_SERVICE}\nfi\n') if OLD_SERVICE else ''
         command = "sudo bash -se <<'CHECK'\n" + stop + """
-if pgrep -af '[p]ython.*(gpt2_experiment|gpt2small/validate.py|continuous_run)'; then
+if pgrep -af '[p]ython.*(gpt2_experiment|rg_gpt2_small.experiment|gpt2small/validate.py|gpt2_small/scripts/validate.py|continuous_run)'; then
   echo 'A trainer is still running; replacement aborted.' >&2
   exit 1
 fi
@@ -166,7 +166,7 @@ CHECK"""
        '--labels=experiment=gpt2-validation', '--quiet', '--async')
     save(phase='submitted; validation starts automatically when capacity is allocated')
     print('Node: ' + NODE + '\nLog: ' + ROOT + '/run.log', flush=True)
-    print(f'Check: python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status --hours {HOURS}', flush=True)
+    print(f'Check: python3 baseline/gpt2_small/scripts/reallocate_validation.py status --hours {HOURS}', flush=True)
 
 
 def main():

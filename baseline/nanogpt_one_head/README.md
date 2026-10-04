@@ -386,6 +386,6 @@ runner are disabled; the allocation cap includes setup and tokenization.
 
 ## GPT-2 Small validation
 
-See [gpt2small/README.md](gpt2small/README.md) for the isolated context-1024
+See [GPT-2 Small](../gpt2_small/README.md) for the isolated context-1024
 AdamW/MuonClip validation, corpus reuse, bounded checkpoints and resume tests.
 The long experiment requires a separate explicit launch.

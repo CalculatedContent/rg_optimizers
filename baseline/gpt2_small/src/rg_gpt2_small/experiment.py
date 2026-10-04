@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import copy
 import fcntl
+import faulthandler
 import hashlib
 import json
 import math
@@ -14,12 +15,12 @@ import time
 import numpy as np
 import torch
 import yaml
-from .model import GPT, GPTConfig, transformer_matrix_items
-from . import runtime as rt, tpu_spmd as spmd
-from .data import load_memmaps
-from .muonclip import install_muonclip_extension
-from . import optimizers
-from .spectral import WeightMatrixHolder, _attach_matrix_metadata
+from rg_nanogpt_one_head.model import GPT, GPTConfig, transformer_matrix_items
+from rg_nanogpt_one_head import runtime as rt, tpu_spmd as spmd
+from rg_nanogpt_one_head.data import load_memmaps
+from rg_nanogpt_one_head.muonclip import install_muonclip_extension
+from rg_nanogpt_one_head import optimizers
+from rg_nanogpt_one_head.spectral import WeightMatrixHolder, _attach_matrix_metadata
 
 
 def atomic_json(path, value):
@@ -130,23 +131,23 @@ def measure_ww(model, cfg, identity, metrics):
 
 def require_finite_update(model, norm, losses, output, step):
     """Diagnostic pre-update barrier for validation. Never apply known-invalid gradients."""
+    print(json.dumps({'checking_before_update':step}),flush=True)
+    # Materialize the pending XLA graph once before any individual host reads.
+    rt.synchronize(norm.device)
     value=float(norm.detach().cpu())
     loss_values=[float(x.detach().cpu()) for x in losses]
     if math.isfinite(value) and all(math.isfinite(x) for x in loss_values):
         print(json.dumps({'before_update':step,'microbatch_losses':loss_values,'gradient_norm':value}),flush=True)
         return
-    gradients=[]
-    for name,p in model.named_parameters():
-        if p.grad is None: continue
-        grad=p.grad.detach().float().cpu()
-        finite=torch.isfinite(grad)
-        gradients.append({'parameter':name,'shape':list(grad.shape),
-            'nonfinite_elements':int((~finite).sum()),
-            'max_finite_abs':float(grad[finite].abs().max()) if finite.any() else None})
-    report={'before_update':step,'gradient_norm':value,'microbatch_losses':loss_values,'gradients':gradients}
+    # Persist the known failure immediately. Copying every gradient to the host
+    # previously stalled here and hid the nonfinite result for over two hours.
+    report={'status':'invalid_before_update','before_update':step,
+            'gradient_norm':value,'microbatch_losses':loss_values,
+            'gradient_details_collected':False,
+            'reason':'Nonfinite loss or aggregate gradient norm; invalid optimizer update was not applied.'}
     atomic_json(Path(output)/'nonfinite_diagnostics.json',report)
-    bad=[r['parameter'] for r in gradients if r['nonfinite_elements']]
-    raise RuntimeError(f'Invalid loss/gradient BEFORE update {step}; bad matrices={bad}; see nonfinite_diagnostics.json')
+    print(json.dumps(report),flush=True)
+    raise RuntimeError(f'Invalid loss/gradient BEFORE update {step}; see nonfinite_diagnostics.json')
 
 
 def save_checkpoint(root, payload, keep=3, milestone=False):
@@ -178,7 +179,14 @@ def train(cfg, data_root, output, *, device='cpu', resume=False, stop_after=None
     output = Path(output); output.mkdir(parents=True, exist_ok=True)
     with (output / 'writer.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        return _train(cfg, data_root, output, device, resume, stop_after, deadline)
+        diagnostic = cfg.get('validation_gradient_checks', False)
+        if diagnostic:
+            faulthandler.dump_traceback_later(300, repeat=True)
+        try:
+            return _train(cfg, data_root, output, device, resume, stop_after, deadline)
+        finally:
+            if diagnostic:
+                faulthandler.cancel_dump_traceback_later()
 
 
 def _train(cfg, data_root, output, device, resume, stop_after, deadline):

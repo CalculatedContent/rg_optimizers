@@ -47,7 +47,7 @@ After=network-online.target
 Wants=network-online.target
 [Service]
 Type=simple
-ExecStart=/bin/bash $ROOT/repo/baseline/nanogpt_one_head/gpt2small/replacement_worker.sh $ROOT $DEADLINE
+ExecStart=/bin/bash $ROOT/repo/baseline/gpt2_small/scripts/replacement_worker.sh $ROOT $DEADLINE
 Restart=no
 KillSignal=SIGTERM
 TimeoutStopSec=600

@@ -30,8 +30,9 @@ def service_info():
 
 
 def verify_target(info, root):
-    expected = str(root / 'repo/baseline/nanogpt_one_head/gpt2small/replacement_worker.sh')
-    if expected not in info.get('ExecStart', ''):
+    expected = [str(root / ('repo/baseline/' + path)) for path in (
+        'gpt2_small/scripts/replacement_worker.sh', 'nanogpt_one_head/gpt2small/replacement_worker.sh')]
+    if not any(path in info.get('ExecStart', '') for path in expected):
         raise RuntimeError('Service belongs to another run; refusing to stop it.')
 
 
@@ -42,7 +43,7 @@ def training_pids(root, proc=Path('/proc')):
             continue
         try:
             args = (folder / 'cmdline').read_bytes().decode().strip('\0').split('\0')
-            if 'rg_nanogpt_one_head.gpt2_experiment' not in args or '--output' not in args:
+            if not {'rg_gpt2_small.experiment', 'rg_nanogpt_one_head.gpt2_experiment'}.intersection(args) or '--output' not in args:
                 continue
             output = Path(args[args.index('--output') + 1])
             if output.parent == root and output.name in ('adamw', 'muonclip'):
@@ -159,17 +160,46 @@ def on_tpu(stop=False):
         print('Read-only capture complete; validation was not stopped.', flush=True)
 
 
+def show_last():
+    """Read the saved capture without touching the trainer, allocation or data."""
+    captures = sorted((ROOT / 'diagnostics').glob('stall-*'))
+    if not captures:
+        raise RuntimeError('No saved stall capture found.')
+    dest = captures[-1]
+    print('Saved diagnostics:', dest, flush=True)
+    for path in [dest/'capture.json', dest/'service-after.txt',
+                 dest/'adamw_logs_xla_compile_metrics_after_step_2.txt',
+                 *sorted(dest.glob('pid-*-native-stack.txt'))]:
+        print('\n===', path.name, '===', flush=True)
+        if not path.is_file():
+            print('Not captured.', flush=True)
+            continue
+        lines = path.read_text(errors='replace').splitlines()
+        print('\n'.join(lines[:120]), flush=True)
+        if 'native-stack' in path.name:
+            keywords = ('Compile', 'compile', 'Execute', 'execute', 'Hlo', 'hlo', 'llvm', 'xla::')
+            matches = [line for line in lines[120:] if any(word in line for word in keywords)]
+            print('\nAdditional compiler/execution frames:\n' + '\n'.join(matches[:100]), flush=True)
+    print('\n=== Current validation service ===', flush=True)
+    print(json.dumps(service_info(), indent=2), flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--on-tpu', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--stop', action='store_true', help='Stop only the validation service after capture')
+    parser.add_argument('--show-last', action='store_true', help='Read the saved diagnostic; do not capture or stop')
     args = parser.parse_args()
+    if args.stop and args.show_last:
+        parser.error('--stop and --show-last cannot be combined')
     if args.on_tpu:
-        on_tpu(args.stop)
+        show_last() if args.show_last else on_tpu(args.stop)
         return 0
     remote = ['sudo', 'python3', '-c', Path(__file__).read_text(), '--on-tpu']
     if args.stop:
         remote.append('--stop')
+    if args.show_last:
+        remote.append('--show-last')
     # Do not alter the running checkout or ask it to fetch/checkout another commit.
     return subprocess.run(['gcloud', 'compute', 'tpus', 'tpu-vm', 'ssh', RUN + '-node',
         '--project=' + PROJECT, '--zone=' + ZONE, '--worker=0', '--command=' + shlex.join(remote)]).returncode
