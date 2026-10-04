@@ -1,0 +1,121 @@
+"""Bounded setup, optional flash check, one fresh training run, verified backup."""
+import argparse
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
+
+
+def write(root, name, value):
+    temp = root/(name+'.tmp')
+    temp.write_text(json.dumps(value, indent=2)+'\n')
+    temp.replace(root/name)
+
+
+def bounded(command, seconds, root, label, watch=False):
+    if seconds <= 0:
+        return {'exit_code':None, 'timed_out':True, 'phase':label}
+    print('START '+label, flush=True)
+    child = subprocess.Popen(command, start_new_session=True)
+    end = time.monotonic()+seconds
+    try:
+        while True:
+            remaining = end-time.monotonic()
+            if remaining <= 0:
+                raise subprocess.TimeoutExpired(command, seconds)
+            try:
+                return {'exit_code':child.wait(timeout=min(30, remaining)), 'timed_out':False, 'phase':label}
+            except subprocess.TimeoutExpired:
+                print('WAIT '+label+': '+str(int(remaining))+'s to phase cutoff', flush=True)
+                status = root/'status.json'
+                if watch and status.exists() and time.time()-status.stat().st_mtime > 900:
+                    raise RuntimeError('No training progress recorded for 15 minutes')
+    except (subprocess.TimeoutExpired, RuntimeError) as exc:
+        try:
+            os.killpg(child.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        child.wait(timeout=10)
+        return {'exit_code':child.returncode, 'timed_out':True, 'phase':label, 'error':str(exc)}
+
+
+def backup(root):
+    from rg_nanogpt_one_head.continuous_support import CloudPublisher
+    publisher = CloudPublisher('gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name)
+    receipts = []
+    for path in sorted(root.iterdir()):
+        if path.is_file() and path.suffix in ('.json', '.jsonl', '.pt', '.txt', '.log'):
+            # Logs may still grow as supervisor/upload output is appended.
+            if path.suffix == '.log':
+                publisher.snapshot_text_file(path, path.name)
+            else:
+                receipts.append(publisher.file(path, path.name))
+    publisher.json({'files':receipts, 'status':'verified'}, 'CLOUD_BACKUP_VERIFIED.json')
+    write(root, 'CLOUD_BACKUP_VERIFIED.json', {'files':receipts, 'status':'verified'})
+    print('Cloud backup verified: '+root.name, flush=True)
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument('root', type=Path)
+    p.add_argument('deadline', type=float)
+    p.add_argument('--optimizer', choices=('muon','adam'), default='muon')
+    p.add_argument('--microbatch', type=int, choices=(64,128), default=128)
+    p.add_argument('--attention', choices=('auto','flash','math'), default='auto')
+    p.add_argument('--backup-only', action='store_true')
+    a = p.parse_args()
+    if a.backup_only:
+        backup(a.root)
+        return 0
+    here = Path(__file__).resolve().parent
+    run = {'status':'preparing', 'target_met':False, 'automatic_restart':False,
+           'deadline_unix':a.deadline, 'optimizer':a.optimizer}
+    write(a.root, 'RUN_STATUS.json', run)
+    common = [sys.executable, '-u', str(here/'run.py')]
+    args = ['--root',str(a.root),'--microbatch',str(a.microbatch)]
+    train_deadline = a.deadline-600
+    try:
+        prep_deadline = min(time.time()+900, train_deadline-300)
+        result = bounded(common+['prepare',*args,'--deadline',str(prep_deadline)],
+                         prep_deadline-time.time(), a.root, 'benchmark data')
+        if result['exit_code'] != 0:
+            raise RuntimeError('Data preparation failed: '+str(result))
+        attention = 'math'
+        if a.attention != 'math':
+            check_deadline = min(time.time()+300, train_deadline-300)
+            checked = bounded(common+['attention-check',*args,'--deadline',str(check_deadline)],
+                              check_deadline-time.time(), a.root, 'TPU flash attention forward/backward')
+            if checked['exit_code'] == 0:
+                attention = 'flash'
+            else:
+                write(a.root, 'ATTENTION_CHECK_FAILURE.json', checked)
+                if a.attention == 'flash':
+                    raise RuntimeError('Requested flash attention failed validation')
+                print('TPU flash check unavailable/failed; using mathematical attention. See ATTENTION_CHECK_FAILURE.json.', flush=True)
+        run.update(status='training', attention=attention)
+        write(a.root, 'RUN_STATUS.json', run)
+        result = bounded(common+['train',*args,'--deadline',str(train_deadline),
+                                 '--attention',attention,'--optimizer',a.optimizer],
+                         train_deadline-time.time(), a.root, '3,000-update '+a.optimizer+' recipe', watch=True)
+        run.update(result)
+        if result['exit_code'] != 0:
+            run['status'] = 'failed_or_timed_out'
+        else:
+            status = json.loads((a.root/'status.json').read_text())
+            run.update(status=status['status'], target_met=status['target_met'], step=status['step'])
+    except Exception as exc:
+        run.update(status='failed', error=str(exc))
+    write(a.root, 'RUN_STATUS.json', run)
+    backed = bounded([sys.executable,'-u',__file__,str(a.root),str(a.deadline),'--backup-only'],
+                     min(590, a.deadline-time.time()-10), a.root, 'cloud backup')
+    run['backup'] = backed
+    write(a.root, 'RUN_STATUS.json', run)
+    print(json.dumps(run), flush=True)
+    return 0 if run['status'] in ('target_reached','schedule_complete_target_not_met') else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())
