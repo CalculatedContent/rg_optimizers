@@ -21,6 +21,7 @@ from rg_nanogpt_one_head.data import load_memmaps
 from rg_nanogpt_one_head.muonclip import install_muonclip_extension
 from rg_nanogpt_one_head import optimizers
 from rg_nanogpt_one_head.spectral import WeightMatrixHolder, _attach_matrix_metadata
+from . import port_debug
 
 
 def atomic_json(path, value):
@@ -47,10 +48,12 @@ def due(step, spec):
                  step in {int(k * 10**p) for p in range(12) for k in (1, 2, 5)}))
 
 
-def batch(array, generator, size, context, device):
+def batch(array, generator, size, context, device, trace=None):
     if len(array) <= context:
         raise ValueError('Split is shorter than one context')
     starts = torch.randint(len(array) - context, (size,), generator=generator).tolist()
+    if trace is not None:
+        trace.append(starts)
     x = torch.from_numpy(np.stack([np.array(array[i:i+context], dtype=np.int64) for i in starts]))
     y = torch.from_numpy(np.stack([np.array(array[i+1:i+context+1], dtype=np.int64) for i in starts]))
     return spmd.batch_to_device(x, device), spmd.batch_to_device(y, device)
@@ -180,10 +183,17 @@ def train(cfg, data_root, output, *, device='cpu', resume=False, stop_after=None
     with (output / 'writer.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         diagnostic = cfg.get('validation_gradient_checks', False)
+        port_checks = cfg.get('validation_tensor_checks', False)
+        if port_checks:
+            port_debug.environment(output)
         if diagnostic:
             faulthandler.dump_traceback_later(300, repeat=True)
         try:
             return _train(cfg, data_root, output, device, resume, stop_after, deadline)
+        except Exception as exc:
+            if port_checks:
+                port_debug.failure(output,exc)
+            raise
         finally:
             if diagnostic:
                 faulthandler.cancel_dump_traceback_later()
@@ -192,6 +202,9 @@ def train(cfg, data_root, output, *, device='cpu', resume=False, stop_after=None
 def _train(cfg, data_root, output, device, resume, stop_after, deadline):
     cfg = copy.deepcopy(cfg)
     t = cfg['training']; context = cfg['model']['block_size']
+    port_checks = cfg.get('validation_tensor_checks', False)
+    if port_checks:
+        port_debug.stage(output,'initializing_runtime_and_data',0)
     step_tokens = t['batch_size'] * t['grad_accum_steps'] * context
     total = min(t.get('max_steps', 10**12), math.ceil(t['max_tokens'] / step_tokens))
     if not 0 <= t['warmup_steps'] < t['schedule_steps'] or total < 1:
@@ -274,16 +287,37 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
                                                  peak_lr=handle.peak_lr, min_lr=handle.min_lr)
             handle.set_lr(lr)
         losses = []
+        input_windows = [] if port_checks else None
+        if port_checks:
+            port_debug.stage(output,'building_forward_backward_graph',step+1)
         for _ in range(t['grad_accum_steps']):
-            x, y = batch(arrays['train'], gen, t['batch_size'], context, dev)
+            x, y = batch(arrays['train'], gen, t['batch_size'], context, dev,trace=input_windows)
             _, loss = model(x, y); losses.append(loss.detach())
             (loss / t['grad_accum_steps']).backward()
+        if port_checks:
+            atomic_json(output/'diagnostics'/f'{step+1:06d}-input-windows.json',
+                        {'update':step+1,'split':'train','context':context,'microbatch_offsets':input_windows,
+                         'corpus_identity':'manifest.json/data','config_fingerprint':fingerprint})
         spmd.replicate_gradients(model)
         norm = rt.gradient_norm(model.parameters())
+        if port_checks:
+            port_debug.check_tensors(
+                [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None]
+                + [('microbatch_loss/'+str(i),loss) for i,loss in enumerate(losses)]
+                + [('global_gradient_norm',norm)],output,'before_clipping',step+1,dev)
         if cfg.get('validation_gradient_checks', False):
             require_finite_update(model, norm, losses, output, step + 1)
         torch.nn.utils.clip_grad_norm_(model.parameters(), t['grad_clip'], foreach=False)
+        if port_checks:
+            port_debug.check_tensors(
+                [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None],
+                output,'after_clipping',step+1,dev)
+            port_debug.stage(output,'optimizer_update_started',step+1)
         optimizers.optimizer_step(handles); rt.mark_step(dev)
+        if port_checks:
+            port_debug.check_tensors(port_debug.optimizer_tensors(model,handles),
+                                     output,'after_optimizer',step+1,dev)
+            port_debug.stage(output,'optimizer_update_completed',step+1)
         step += 1
         measurement_due = (step % cfg['metrics_interval'] == 0 or due(step, cfg['ww'])
                            or step == total or step == stop_after)

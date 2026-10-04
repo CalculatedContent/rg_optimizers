@@ -13,6 +13,27 @@ development, from the repository root, install both with
 
 ## Current validation failure
 
+Observed failures and their attribution are tracked in [TPU_PORT_BUGS.md](TPU_PORT_BUGS.md).
+Diagnosing bugs in the PyTorch/TPU port is an explicit experiment objective.
+
+From an updated Cloud Shell checkout, use the existing 48-hour TPU for a bounded
+four-update AdamW diagnostic (no allocation or data download):
+
+```bash
+python3 baseline/gpt2_small/scripts/retry_adamw.py start
+python3 baseline/gpt2_small/scripts/retry_adamw.py status
+```
+
+It runs independently of Cloud Shell under a new service and fresh output directory,
+pins the checked-in source, and refuses concurrent trainers. Training is limited to
+20 minutes with up to 10 more for backup. It records per-layer gradients, clipped
+gradients, weights and optimizer moments as finite flags/extrema; only small reduced
+tables move to CPU. Full checkpoints are saved at each completed update. Source and
+runtime versions, input offsets, XLA metrics, stage times and failures accompany the
+run. `TPU_PORT_FAILURE.json` records observed failure without assuming upstream fault;
+`PROBE_STATUS.json` reports completion or failure. Existing cloud upload verification
+runs on exit. This is diagnostic instrumentation, not a throughput measurement.
+
 The saved 2026-10-04 04:19 UTC stack from commit `4631a3d` is inside the
 nonfinite-gradient diagnostic's per-parameter CPU copy. That branch is reached only
 after detecting a nonfinite loss or aggregate gradient norm. The latest checkpoint
