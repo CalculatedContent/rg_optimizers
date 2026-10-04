@@ -15,8 +15,7 @@ git -C "$repo" checkout --detach "$commit"
 test "$(git -C "$repo" rev-parse HEAD)" = "$commit"
 git -C "$repo" rev-parse HEAD
 export PYTHONPATH="$repo/baseline/nanogpt_one_head/src"
-export OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4
-export PJRT_DEVICE=TPU
+source "$repo/baseline/nanogpt_one_head/gpt2small/tpu_environment.sh"
 cd "$repo/baseline/nanogpt_one_head"
 "$python" -c 'import torch, torch_xla, weightwatcher, yaml; print("Installed dependencies loaded")'
 deadline=$("$python" -c 'import json,sys; print(json.load(open(sys.argv[1]))["deadline_unix"])' "$root/old_allocation.json")

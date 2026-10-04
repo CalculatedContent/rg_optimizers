@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import threading
 import yaml
 
 p=argparse.ArgumentParser()
@@ -45,7 +46,18 @@ try:
             if stop>4: cmd.append('--resume')
             print('START',opt,'through step',stop,flush=True)
             with (root/'logs'/f'{opt}_{stop}.log').open('x') as log:
-                subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=True)
+                child=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
+                def stream():
+                    for line in child.stdout:
+                        log.write(line); log.flush(); print(line,end='',flush=True)
+                reader=threading.Thread(target=stream,daemon=True); reader.start()
+                while True:
+                    try:
+                        rc=child.wait(timeout=30); break
+                    except subprocess.TimeoutExpired:
+                        print(f'WAIT {opt} through step {stop}: process {child.pid} still running',flush=True)
+                reader.join()
+                if rc: raise subprocess.CalledProcessError(rc,cmd)
             state=json.loads((run/'status.json').read_text())
             if state['step']!=stop: raise RuntimeError(f'{opt} stopped before requested step {stop}')
             now=history(run)
