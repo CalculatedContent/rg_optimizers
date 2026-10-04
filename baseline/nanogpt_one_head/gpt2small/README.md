@@ -130,6 +130,31 @@ the long experiment. The allocation remains available until deletion or expiry.
 
 ## Records, checkpoints and timing
 
+### Capture a stalled validation
+
+From Cloud Shell on the updated branch:
+
+```bash
+python3 baseline/nanogpt_one_head/gpt2small/capture_stall.py --stop
+```
+
+This targets the 48-hour validation run above. It captures process CPU/memory,
+logs, saved XLA metrics and live Python/native stacks before stopping only
+`rg-gpt2-validation.service`. A bounded, optional py-spy installation goes in a
+temporary directory, leaving the training environment and checkout unchanged.
+If profiling is unavailable, process/log diagnostics are still retained.
+Reports remain under the run's `diagnostics/stall-*` directory on the persistent
+disk; a compact summary is printed for sharing. This command does not upload them.
+Omit `--stop` for a read-only capture. A blocked update may be lost on stop; no new
+checkpoint is promised. Existing checkpoints, FineWeb and the TPU allocation
+remain. The allocation continues to incur compute usage until deletion/expiry.
+
+The validator's `WAIT` lines only indicate a live process, not a completed update.
+Likewise `before_update: 2` confirms the gradient check before update 2, not its
+completion. An extended wait requires inspection, not an assumed compilation ETA.
+
+### Scientific records
+
 Per-step immutable JSON scalar and WW records are written incrementally. NLL,
 perplexity, top-1 accuracy, error (fraction), steps, token presentations, wall time,
 LR and pre-clipping gradient norm are included. All WW library columns are retained,
