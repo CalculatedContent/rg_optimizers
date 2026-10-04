@@ -14,6 +14,16 @@ From a clean checkout of the pushed commit:
 python3 baseline/gpt2_small/speedrun30/cloudshell.py start
 ```
 
+To kill the old run immediately without a final save/backup and disable new
+checkpoint saves and cloud uploads, use:
+
+```bash
+python3 baseline/gpt2_small/speedrun30/cloudshell.py start --kill-current --no-save
+```
+
+This mode retains ordinary loss/throughput logs and status records. It does not
+delete previously saved files or the mounted corpora.
+
 The launcher requests a final save from the current MuonClip service, waits up to
 90 seconds, and then stops that service if necessary. Its previously saved
 checkpoints, diagnostics, cloud archives and FineWeb-Edu corpus are retained.

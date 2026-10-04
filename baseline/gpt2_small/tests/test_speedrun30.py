@@ -134,3 +134,40 @@ def test_long_run_refuses_concurrent_reference_job(monkeypatch, tmp_path):
     monkeypatch.setattr(module, "active", lambda unit:unit == "speedrun.service")
     with pytest.raises(RuntimeError, match="reference run is active"):
         module.assert_idle()
+
+
+def test_immediate_kill_never_requests_stop_checkpoint(monkeypatch, tmp_path):
+    spec = importlib.util.spec_from_file_location("speedrun_kill_launcher", BASE/"cloudshell.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module, "BASE", tmp_path)
+    root = tmp_path/"muonclip-continuous-20261004-171413"
+    root.mkdir()
+    (tmp_path/"MUONCLIP_LATEST.json").write_text(json.dumps(
+        {"root":str(root), "unit":"rg-gpt2-muonclip-20261004-171413.service"}))
+    state = {"active":True}
+    monkeypatch.setattr(module, "active", lambda unit:state["active"])
+    commands = []
+    def execute(command, **kwargs):
+        commands.append(command)
+        if command[1] == "stop":
+            state["active"] = False
+    monkeypatch.setattr(module, "run", execute)
+    module.stop_current(kill_current=True)
+    assert commands[0][1:4] == ["kill", "--kill-who=all", "--signal=SIGKILL"]
+    assert commands[1][1] == "stop"
+    assert not (root/"muonclip/STOP").exists()
+
+
+def test_no_save_supervisor_never_starts_backup(monkeypatch, tmp_path):
+    commands = []
+    monkeypatch.setenv("RG_SPEEDRUN_NO_SAVE", "1")
+    monkeypatch.setattr(sys, "argv", ["worker.py", str(tmp_path), str(time.time()+1800)])
+    def execute(command, seconds):
+        commands.append(command)
+        return {"exit_code":0, "timed_out":False}
+    monkeypatch.setattr(supervisor, "bounded", execute)
+    assert supervisor.main() == 0
+    assert len(commands) == 1
+    assert commands[0][-1] == "--no-save"
+    assert json.loads((tmp_path/"RUN_STATUS.json").read_text())["no_save"]

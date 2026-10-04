@@ -30,7 +30,7 @@ def active(unit):
     return p.stdout.strip() in {"active", "activating", "deactivating", "reloading"}
 
 
-def stop_current():
+def stop_current(kill_current=False):
     pointer = BASE/"MUONCLIP_LATEST.json"
     if not pointer.exists():
         return
@@ -39,6 +39,13 @@ def stop_current():
     if root.parent != BASE or not re.fullmatch(r"rg-gpt2-muonclip-\d{8}-\d{6}\.service", unit):
         raise RuntimeError("Unexpected existing service identity; nothing stopped.")
     if not active(unit):
+        return
+    if kill_current:
+        print("Killing the current MuonClip service immediately; no final save or backup.", flush=True)
+        run(["systemctl", "kill", "--kill-who=all", "--signal=SIGKILL", unit], timeout=15)
+        run(["systemctl", "stop", unit], timeout=15)
+        if active(unit):
+            raise RuntimeError("Old service is still active; speedrun not launched.")
         return
     print("Requesting final save from current MuonClip run.", flush=True)
     (root/"muonclip/STOP").touch()
@@ -70,7 +77,7 @@ def status_remote():
     subprocess.run(["tail", "-n", "30", str(root/"run.log")])
 
 
-def start_remote(commit):
+def start_remote(commit, kill_current=False, no_save=False):
     if os.geteuid() != 0 or not os.path.ismount("/mnt/disks/rg-data"):
         raise RuntimeError("Requires the existing mounted data disk and root.")
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
@@ -94,7 +101,7 @@ def start_remote(commit):
              "https://github.com/CalculatedContent/rg_optimizers.git"])
         run(["git", "-C", str(repo), "fetch", "--depth", "1", "origin", commit], timeout=120)
         run(["git", "-C", str(repo), "checkout", "--detach", commit])
-        stop_current()
+        stop_current(kill_current=kill_current)
         # Existing common guard blocks other trainers/replays on this same TPU.
         path = repo/"baseline/gpt2_small/scripts/run_muonclip.py"
         spec = importlib.util.spec_from_file_location("existing_launch", path)
@@ -111,8 +118,11 @@ def start_remote(commit):
                "PJRT_DEVICE":"TPU", "TPU_ACCELERATOR_TYPE":"v5litepod-8",
                "OMP_NUM_THREADS":"4", "OPENBLAS_NUM_THREADS":"4", "MKL_NUM_THREADS":"4",
                "XLA_USE_SPMD":"1", "TOKENIZERS_PARALLELISM":"false"}
+        if no_save:
+            env["RG_SPEEDRUN_NO_SAVE"] = "1"
         record = {"root":str(root), "unit":unit, "commit":commit,
                   "started_unix":start, "deadline_unix":deadline, "limit_seconds":1800,
+                  "no_checkpoint_or_cloud_backup":no_save,
                   "cloud_uri":"gs://tpu-builders-504820-ww-continuous8/gpt2small/"+root.name}
         (root/"launch.json").write_text(json.dumps(record, indent=2))
         (root/"commit.txt").write_text(commit+"\n")
@@ -133,6 +143,8 @@ def start_remote(commit):
         print("Log:", root/"run.log", flush=True)
         print("30 minutes maximum including benchmark data, compilation, training and backup.", flush=True)
         print("No WeightWatcher, per-tensor checks, preflight, or automatic restart.", flush=True)
+        if no_save:
+            print("Checkpoint saves and cloud backups disabled; only ordinary run logs/metrics.", flush=True)
         print("The TPU allocation itself remains available after the job stops.", flush=True)
 
 
@@ -141,11 +153,17 @@ def main():
     p.add_argument("action", choices=("start", "status"))
     p.add_argument("--on-tpu", action="store_true", help=argparse.SUPPRESS)
     p.add_argument("--commit", help=argparse.SUPPRESS)
+    p.add_argument("--kill-current", action="store_true", help="Kill old service without final save or backup")
+    p.add_argument("--no-save", action="store_true", help="Disable speedrun checkpoints and cloud backup")
     a = p.parse_args()
     if a.on_tpu:
-        start_remote(a.commit) if a.action == "start" else status_remote()
+        start_remote(a.commit, a.kill_current, a.no_save) if a.action == "start" else status_remote()
         return 0
     remote = ["sudo", "python3", "-c", Path(__file__).read_text(), a.action, "--on-tpu"]
+    if a.kill_current:
+        remote.append("--kill-current")
+    if a.no_save:
+        remote.append("--no-save")
     if a.action == "start":
         repo = Path(__file__).resolve().parents[3]
         if run(["git", "-C", str(repo), "status", "--porcelain"], capture_output=True).stdout.strip():

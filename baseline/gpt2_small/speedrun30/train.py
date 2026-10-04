@@ -223,6 +223,7 @@ def main():
     p.add_argument("--deadline", type=float, required=True)
     p.add_argument("--cache", type=Path, required=True)
     p.add_argument("--device", choices=("tpu", "cpu"), default="tpu")
+    p.add_argument("--no-save", action="store_true", help="Do not save model checkpoints")
     a = p.parse_args()
     root = a.root
     source = FineWeb(a.cache, a.deadline-240)
@@ -300,7 +301,7 @@ def main():
     # Only one final model checkpoint; no optimizer/checkpoint uploading in the hot loop.
     write_json(root/"status.json", {"status":"final_evaluation", "step":step})
     result = evaluate(model, val, rt, root, step, a.deadline-45)
-    if time.time() < a.deadline-30:
+    if not a.no_save and time.time() < a.deadline-30:
         print("Saving final model checkpoint", flush=True)
         rt.step(wait=True)
         weights = {name:tensor.detach().cpu() for name,tensor in model.state_dict().items()}
