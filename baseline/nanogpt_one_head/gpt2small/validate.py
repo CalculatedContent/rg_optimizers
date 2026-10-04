@@ -23,6 +23,7 @@ for opt in ('adamw','muonclip'):
     # Only control stop points here. Keep the planned LR/token horizon immutable across resume.
     cfg['metrics_interval']=4
     cfg['benchmark_sync_every_step']=True
+    cfg['validation_gradient_checks']=True
     if opt=='muonclip': cfg['ww']['steps']=[4,25]
     path=root/'configs'/f'{opt}.yaml'; path.write_text(yaml.safe_dump(cfg,sort_keys=False)); configs[opt]=path
 report={'status':'running','deadline_unix':a.deadline,'long_run_started':False,'phases':[]}

@@ -128,6 +128,27 @@ def measure_ww(model, cfg, identity, metrics):
         rt.restore_accelerator_rng_state(states[3], device)
 
 
+def require_finite_update(model, norm, losses, output, step):
+    """Diagnostic pre-update barrier for validation. Never apply known-invalid gradients."""
+    value=float(norm.detach().cpu())
+    loss_values=[float(x.detach().cpu()) for x in losses]
+    if math.isfinite(value) and all(math.isfinite(x) for x in loss_values):
+        print(json.dumps({'before_update':step,'microbatch_losses':loss_values,'gradient_norm':value}),flush=True)
+        return
+    gradients=[]
+    for name,p in model.named_parameters():
+        if p.grad is None: continue
+        grad=p.grad.detach().float().cpu()
+        finite=torch.isfinite(grad)
+        gradients.append({'parameter':name,'shape':list(grad.shape),
+            'nonfinite_elements':int((~finite).sum()),
+            'max_finite_abs':float(grad[finite].abs().max()) if finite.any() else None})
+    report={'before_update':step,'gradient_norm':value,'microbatch_losses':loss_values,'gradients':gradients}
+    atomic_json(Path(output)/'nonfinite_diagnostics.json',report)
+    bad=[r['parameter'] for r in gradients if r['nonfinite_elements']]
+    raise RuntimeError(f'Invalid loss/gradient BEFORE update {step}; bad matrices={bad}; see nonfinite_diagnostics.json')
+
+
 def save_checkpoint(root, payload, keep=3, milestone=False):
     root = Path(root); root.mkdir(parents=True, exist_ok=True)
     path = root / f"step_{payload['step']:09d}.pt"
@@ -244,11 +265,16 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
             lr = optimizers.cosine_learning_rate(step, total_steps=t['schedule_steps'], warmup_steps=t['warmup_steps'],
                                                  peak_lr=handle.peak_lr, min_lr=handle.min_lr)
             handle.set_lr(lr)
+        losses = []
         for _ in range(t['grad_accum_steps']):
             x, y = batch(arrays['train'], gen, t['batch_size'], context, dev)
-            _, loss = model(x, y); (loss / t['grad_accum_steps']).backward()
+            _, loss = model(x, y); losses.append(loss.detach())
+            (loss / t['grad_accum_steps']).backward()
         spmd.replicate_gradients(model)
-        norm = torch.nn.utils.clip_grad_norm_(model.parameters(), t['grad_clip'])
+        norm = rt.gradient_norm(model.parameters())
+        if cfg.get('validation_gradient_checks', False):
+            require_finite_update(model, norm, losses, output, step + 1)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), t['grad_clip'], foreach=False)
         optimizers.optimizer_step(handles); rt.mark_step(dev)
         step += 1
         measurement_due = (step % cfg['metrics_interval'] == 0 or due(step, cfg['ww'])

@@ -19,7 +19,7 @@ backup() {
   rc=$?
   trap - EXIT
   sync
-  gcloud storage rsync "$root" "gs://tpu-builders-504820-ww-continuous8/gpt2small/$(basename "$root")" --recursive --project=tpu-builders-504820 || exit 1
+  "$python" "$base/gpt2small/backup.py" "$root" || exit 1
   exit "$rc"
 }
 trap backup EXIT

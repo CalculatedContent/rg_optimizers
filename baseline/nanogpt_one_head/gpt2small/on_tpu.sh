@@ -25,7 +25,7 @@ backup() {
   trap - EXIT
   sync
   # Keep backups separate from prior pilot archives. No remote deletion.
-  if ! gcloud storage rsync "$root" "$bucket/$(basename "$root")" --recursive --exclude='repo/.*' --project=tpu-builders-504820; then
+  if ! "$python" "$repo/baseline/nanogpt_one_head/gpt2small/backup.py" "$root"; then
     echo "Cloud backup FAILED; all outputs remain on persistent disk: $root" >&2
     exit 1
   fi

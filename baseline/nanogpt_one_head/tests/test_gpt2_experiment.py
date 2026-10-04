@@ -98,3 +98,15 @@ def test_interrupted_record_transaction_recovers(tmp_path):
     g.train(c,d,out,resume=True,stop_after=2)
     assert missing.read_bytes()==expected
     assert len(list((out/'metrics').glob('*.json')))==2
+
+
+def test_invalid_gradient_diagnostic_precedes_update(tmp_path):
+    model=GPT(GPTConfig(**config()['model']))
+    for p in model.parameters(): p.grad=torch.ones_like(p)
+    name,p=next(iter(model.named_parameters())); p.grad.view(-1)[0]=float('nan')
+    before=p.detach().clone()
+    with pytest.raises(RuntimeError,match='BEFORE update 1'):
+        g.require_finite_update(model,torch.tensor(float('nan')),[torch.tensor(11.)],tmp_path,1)
+    report=json.loads((tmp_path/'nonfinite_diagnostics.json').read_text())
+    assert [r['parameter'] for r in report['gradients'] if r['nonfinite_elements']]==[name]
+    assert torch.equal(before,p.detach())
