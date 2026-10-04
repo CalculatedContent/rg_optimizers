@@ -69,6 +69,15 @@ both results and a minimal reproducer before claiming a PyTorch/XLA defect.
 
 Status: open; fatal native message still required for diagnosis.
 
+Further stack evidence localizes this abort to `port_debug.py:68`: the new
+diagnostic's `torch.stack((isfinite(value).all().float(), value.amin(), value.amax()))`.
+Native frames include `torch_xla::Stack::Stack`, `XlaNode::GetOpShape`, and
+`XLANativeFunctions::stack`. The abort occurs while assembling diagnostic summaries,
+before the first optimizer update. It therefore does not reproduce or explain the
+earlier nonfinite-result failure. CPU tests passed this operation, but TPU behavior
+has not passed validation. The preceding native assertion/status text is still
+needed; the Python abort trace alone is insufficient to identify its cause.
+
 - Run: `port-check-20261004-045633`, commit `19e2bb0`.
 - Supervisor report: child exit code `-6` (SIGABRT), with last recorded stage
   `before_clipping_started`, update 1, Unix time `1791089838.8617651`.
