@@ -1,0 +1,23 @@
+{
+  "environment": "CPU, torch 2.6.0, Python 3.12; no TPU access",
+  "model_parameters": 124439808,
+  "real_weightwatcher": {
+    "records": 72,
+    "seconds": 109.84400583000024,
+    "raw_success": 72,
+    "clipped_success": 72,
+    "randomized_success": 72
+  },
+  "tpu_validation": "NOT RUN",
+  "long_run": "NOT STARTED",
+  "tests": {
+    "new_integration_tests": "7 passed",
+    "focused_training_optimizer_data_spmd_tests": "43 passed, 1 skipped (before adding one transaction-recovery test)",
+    "repository_suite": "221 passed, 1 skipped, 3 failed",
+    "existing_failures": [
+      "test_single_matrix_wrapper_preserves_loader_metadata",
+      "test_notebook_displays_the_actual_results_variable",
+      "test_repo_shell_scripts_never_reference_home"
+    ]
+  }
+}

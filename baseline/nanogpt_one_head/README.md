@@ -383,3 +383,9 @@ defaults to one six-hour v5e-8 allocation, with a two-machine/four-hour option.
 Data preparation and training run on the TPU VM and its persistent disk,
 independently of Cloud Shell. Automatic restarts and the segmented continuation
 runner are disabled; the allocation cap includes setup and tokenization.
+
+## GPT-2 Small validation
+
+See [gpt2small/README.md](gpt2small/README.md) for the isolated context-1024
+AdamW/MuonClip validation, corpus reuse, bounded checkpoints and resume tests.
+The long experiment requires a separate explicit launch.
