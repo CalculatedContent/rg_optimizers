@@ -93,3 +93,19 @@ needed; the Python abort trace alone is insufficient to identify its cause.
   file in Cloud Shell. This local checkout issue is separate from the TPU
   abort; moving that file outside the checkout preserves it and clears this
   particular cleanliness check. The real Git metadata is under `.git`.
+
+### User-authorized MuonClip bypass, 2026-10-04
+
+`run_muonclip.py` starts a separate continuous MuonClip experiment on the remaining
+48-hour allocation. Its config sets `validation_tensor_checks=false` and
+`validation_gradient_checks=false`, bypassing the crashing per-tensor stack and its
+verbose validation path. `finite_update_guard=true` still checks scalar losses and
+aggregate norm before the optimizer update; the existing numerical guard is not
+removed. Model/data/optimizer and long-run LR settings are unchanged. Additional
+synchronization, reporting and denser checkpoint/spectral measurements are explicit.
+
+The workaround has CPU integration coverage; TPU success is not claimed. It is not
+a repair or root-cause diagnosis for either SIGABRT or the earlier nonfinite result.
+The earlier source checkouts, diagnostics, initialization checkpoints and verified
+cloud archives are retained. New failures produce separate evidence in the new run.
+No automatic restart, cleanup, disk formatting or TPU reallocation is performed.

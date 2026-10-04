@@ -132,15 +132,15 @@ def measure_ww(model, cfg, identity, metrics):
         rt.restore_accelerator_rng_state(states[3], device)
 
 
-def require_finite_update(model, norm, losses, output, step):
+def require_finite_update(model, norm, losses, output, step, verbose=True):
     """Diagnostic pre-update barrier for validation. Never apply known-invalid gradients."""
-    print(json.dumps({'checking_before_update':step}),flush=True)
+    if verbose: print(json.dumps({'checking_before_update':step}),flush=True)
     # Materialize the pending XLA graph once before any individual host reads.
     rt.synchronize(norm.device)
     value=float(norm.detach().cpu())
     loss_values=[float(x.detach().cpu()) for x in losses]
     if math.isfinite(value) and all(math.isfinite(x) for x in loss_values):
-        print(json.dumps({'before_update':step,'microbatch_losses':loss_values,'gradient_norm':value}),flush=True)
+        if verbose: print(json.dumps({'before_update':step,'microbatch_losses':loss_values,'gradient_norm':value}),flush=True)
         return
     # Persist the known failure immediately. Copying every gradient to the host
     # previously stalled here and hid the nonfinite result for over two hours.
@@ -182,16 +182,17 @@ def train(cfg, data_root, output, *, device='cpu', resume=False, stop_after=None
     output = Path(output); output.mkdir(parents=True, exist_ok=True)
     with (output / 'writer.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        diagnostic = cfg.get('validation_gradient_checks', False)
+        reporting = cfg.get('progress_reporting', False)
+        diagnostic = cfg.get('validation_gradient_checks', False) or reporting
         port_checks = cfg.get('validation_tensor_checks', False)
-        if port_checks:
+        if port_checks or reporting:
             port_debug.environment(output)
         if diagnostic:
             faulthandler.dump_traceback_later(300, repeat=True)
         try:
             return _train(cfg, data_root, output, device, resume, stop_after, deadline)
         except Exception as exc:
-            if port_checks:
+            if port_checks or reporting:
                 port_debug.failure(output,exc)
             raise
         finally:
@@ -203,6 +204,15 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
     cfg = copy.deepcopy(cfg)
     t = cfg['training']; context = cfg['model']['block_size']
     port_checks = cfg.get('validation_tensor_checks', False)
+    def progress(stage, completed_step):
+        if cfg.get('progress_reporting', False):
+            atomic_json(output/'progress.json', {'stage':stage, 'completed_step':completed_step,
+                                                'unix_time':time.time()})
+    progress('initializing_runtime_and_data', 0)
+    cloud = None
+    if cfg.get('cloud_checkpoints', False):
+        from .run_backup import RunBackup
+        cloud = RunBackup(output, os.environ['RG_GPT2_GCS_URI'])
     if port_checks:
         port_debug.stage(output,'initializing_runtime_and_data',0)
     step_tokens = t['batch_size'] * t['grad_accum_steps'] * context
@@ -251,6 +261,7 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
 
     def record(step, final=False):
         nonlocal elapsed
+        progress('evaluating', step)
         metrics = evaluate(model, arrays, cfg, dev)
         wall = elapsed + time.monotonic() - started
         identity = {'run_id': cfg['run_id'], 'optimizer': cfg['optimizer']['family'], 'seed': cfg['seed'],
@@ -261,11 +272,13 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
                'end_to_end_tokens_per_second': (step-initial_step) * step_tokens / max(time.monotonic()-started, 1e-9)}
         pending = {'metrics': row}
         if cfg['ww']['enabled'] and due(step, cfg['ww']):
+            progress('weightwatcher', step)
             measured = measure_ww(model, cfg, identity, metrics)
             measured['recommended_interval_seconds_for_10pct'] = 9 * measured['seconds']
             pending['ww_metrics'] = measured
         # Checkpoint FIRST includes the pending scalar/WW transaction. On resume, finish missing rows.
-        save_checkpoint(output / 'checkpoints', {
+        progress('saving_checkpoint', step)
+        checkpoint = save_checkpoint(output / 'checkpoints', {
             'run_id': cfg['run_id'], 'config': cfg, 'fingerprint': fingerprint, 'model': model.state_dict(),
             'optimizers': optimizers.optimizer_state_dict(handles), 'step': step, 'tokens_seen': step*step_tokens,
             'scheduler_step': step, 'data_rng': gen.get_state(), 'torch_rng': torch.get_rng_state(),
@@ -275,6 +288,10 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
             milestone=step in cfg.get('milestones', []))
         for folder, value in pending.items(): append_record(output / folder / f'{step:09d}.json', value)
         print(json.dumps(row), flush=True)
+        if cloud:
+            progress('cloud_backup', step)
+            cloud.publish(checkpoint, step)
+        progress('measurement_completed', step)
 
     if not resume: record(0)
     training_window = time.monotonic(); last_timed_step = step
@@ -282,6 +299,7 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
         if (stop_after is not None and step >= stop_after) or (deadline and time.time() >= deadline) or (output / 'STOP').exists():
             break
         optimizers.zero_grad(handles)
+        progress('update_started', step)
         for handle in handles:
             lr = optimizers.cosine_learning_rate(step, total_steps=t['schedule_steps'], warmup_steps=t['warmup_steps'],
                                                  peak_lr=handle.peak_lr, min_lr=handle.min_lr)
@@ -305,8 +323,9 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
                 [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None]
                 + [('microbatch_loss/'+str(i),loss) for i,loss in enumerate(losses)]
                 + [('global_gradient_norm',norm)],output,'before_clipping',step+1,dev)
-        if cfg.get('validation_gradient_checks', False):
-            require_finite_update(model, norm, losses, output, step + 1)
+        if cfg.get('validation_gradient_checks', False) or cfg.get('finite_update_guard', False):
+            require_finite_update(model, norm, losses, output, step + 1,
+                                  verbose=cfg.get('validation_gradient_checks', False) or step < 4)
         torch.nn.utils.clip_grad_norm_(model.parameters(), t['grad_clip'], foreach=False)
         if port_checks:
             port_debug.check_tensors(
@@ -319,10 +338,14 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
                                      output,'after_optimizer',step+1,dev)
             port_debug.stage(output,'optimizer_update_completed',step+1)
         step += 1
+        progress('update_submitted', step-1)
         measurement_due = (step % cfg['metrics_interval'] == 0 or due(step, cfg['ww'])
-                           or step == total or step == stop_after)
+                           or step in cfg.get('metrics_steps', []) or step == total or step == stop_after)
         if step <= initial_step + 2 or measurement_due or cfg.get('benchmark_sync_every_step', False):
             rt.synchronize(dev)
+            progress('update_completed', step)
+            if cfg.get('progress_reporting', False) and (step <= 4 or step % 25 == 0):
+                print(json.dumps({'completed_update':step,'tokens_seen':step*step_tokens}),flush=True)
             seconds = time.monotonic() - training_window
             if step <= initial_step + 2: compile_seconds += seconds
             else: steady_seconds += seconds; steady_steps += step - last_timed_step
@@ -341,6 +364,7 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
         last_grad = norm.item(); record(step, final=True)
     atomic_json(output / 'status.json', {'step': step, 'tokens_seen': step*step_tokens,
                 'completed': step >= total, 'stopped': step < total, 'long_run_launched': cfg.get('long_run', False)})
+    progress('stopped' if step < total else 'completed', step)
     return output
 
 

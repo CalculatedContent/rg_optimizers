@@ -11,6 +11,51 @@ The TPU launch scripts expose both source packages through `PYTHONPATH`. For loc
 development, from the repository root, install both with
 `pip install -e baseline/nanogpt_one_head -e baseline/gpt2_small`.
 
+## Continue with MuonClip on the existing allocation
+
+The user authorized a fresh continuous MuonClip run after the diagnostic crash.
+Use the current 48-hour TPU, installed environment and preserved FineWeb:
+
+```bash
+python3 baseline/gpt2_small/scripts/run_muonclip.py start
+python3 baseline/gpt2_small/scripts/run_muonclip.py status
+```
+
+This starts one fresh process under `rg-gpt2-muonclip-<timestamp>.service` with
+`Restart=no`, in `/mnt/disks/rg-data/gpt2small/muonclip-night-<timestamp>`.
+It never invokes the cleanup/reallocation scripts, changes the installed packages,
+downloads the corpus, or writes into previous experiment directories/cloud prefixes.
+The saved `port-check-20261004-045633` crash evidence remains intact. A shared launch
+lock and checks for existing services/trainers prevent simultaneous TPU jobs.
+
+Only the crashing per-tensor gradient diagnostic is disabled. A scalar finite
+loss/gradient-norm guard remains before each update. The 124M GPT-2 model, data,
+MuonClip/auxiliary AdamW settings, batch size and long-run LR schedule are retained.
+This bypass does not fix or explain the earlier numerical failure or establish TPU
+stability. It is an explicitly requested experimental run, not a passed validation.
+
+Training stays in one process from initialization until the existing allocation
+cutoff (20 minutes before its recorded expiry), manual STOP, token budget or error.
+There is no AdamW gate, stop/resume transition or automatic restart. A watchdog stops
+a phase with no progress for 30 minutes and saves a failure report. First completed
+updates are printed explicitly; a watch heartbeat alone is not completion evidence.
+
+Token error, NLL and full checkpoints are recorded at steps 0, 1, 2, 4 and every 25
+updates. All 72 matrix raw/clipped alphas are paired with the same-step token metrics
+at step 25 and every 100 updates. Evaluation windows stay fixed. Synchronization,
+evaluation, spectra and checkpoint upload overhead contribute to elapsed runtime.
+
+Three rolling local full checkpoints and an initialization milestone limit disk
+usage. During training, verified uploads keep three rotating cloud slots plus
+initialization; every scalar/spectral JSON record is retained. The cloud prefix is
+`gs://tpu-builders-504820-ww-continuous8/gpt2small/<run-name>`.
+`muonclip/checkpoints/LATEST_VERIFIED.json` is published only after checkpoint and
+metrics uploads, with object generation and CRC32C. It names a cloud slot, not a
+local filename; validate generation/checksum when downloading for recovery. A failed
+upload stops the trainer, retains local evidence, and does not advance this pointer.
+Exit backup additionally archives the remaining local files using object permissions.
+Old-run checkpoints and cloud objects are never deleted by this workflow.
+
 ## Current validation failure
 
 Observed failures and their attribution are tracked in [TPU_PORT_BUGS.md](TPU_PORT_BUGS.md).
