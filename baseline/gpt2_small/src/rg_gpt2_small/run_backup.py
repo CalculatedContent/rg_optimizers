@@ -27,7 +27,8 @@ class RunBackup:
             self.sink.file(checkpoint, 'muonclip/checkpoints/initial.pt')
         for folder in ('metrics', 'ww_metrics', 'diagnostics'):
             for path in sorted((self.output/folder).glob('*.json')):
-                if path not in self.sent:
+                # Current-stage/latest diagnostic files are intentionally mutable.
+                if path not in self.sent or path.name.startswith('latest-') or path.name=='current_stage.json':
                     self.sink.file(path, 'muonclip/'+path.relative_to(self.output).as_posix())
                     self.sent.add(path)
         self.sink.file(self.output/'manifest.json', 'muonclip/manifest.json')

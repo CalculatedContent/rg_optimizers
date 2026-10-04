@@ -15,6 +15,7 @@ import numpy as np
 import torch
 
 from . import experiment as g, port_debug as debug
+from .execution_checks import check_finite, evaluate_splits
 from rg_nanogpt_one_head import runtime as rt, tpu_spmd as spmd, optimizers
 
 
@@ -25,29 +26,6 @@ def sha256(path):
     return digest.hexdigest()
 
 
-def check_finite(named, output, label, update, device):
-    """No stack/cat, extrema, or full-tensor host copies: materialize scalar flags."""
-    debug.stage(output,label+'_started',update)
-    checks=[]
-    for name,tensor in named:
-        value=tensor.detach()
-        checks.append((name,tuple(value.shape),str(value.dtype),torch.isfinite(value).all(),
-                       (value<0).any() if name.endswith('/exp_avg_sq') else None))
-    rt.synchronize(torch.device(device))
-    records=[]
-    for name,shape,dtype,finite,negative in checks:
-        records.append({'tensor':name,'shape':shape,'dtype':dtype,
-                        'all_finite':bool(finite.cpu().item()),
-                        'negative_second_moment':bool(negative.cpu().item()) if negative is not None else False})
-    bad=[row for row in records if not row['all_finite'] or row['negative_second_moment']]
-    report={'stage':label,'update':update,'records':records,'invalid_tensors':bad}
-    debug.write(Path(output)/'diagnostics'/f'{update:06d}-{label}.json',report)
-    debug.xla_metrics(output,f'{update:06d}-{label}',device)
-    if bad:
-        debug.write(Path(output)/'FIRST_INVALID.json',report)
-        raise RuntimeError(f'First invalid stage: {label}; tensors: '+', '.join(row['tensor'] for row in bad[:8]))
-    debug.stage(output,label+'_passed',update)
-
 
 def source_tensors(state):
     yield from (('weight/'+name,tensor) for name,tensor in state['model'].items())
@@ -56,34 +34,6 @@ def source_tensors(state):
             for key,value in values.items():
                 if torch.is_tensor(value): yield f'optimizer_{index}/{parameter}/{key}',value
 
-
-@torch.no_grad()
-def evaluate_splits(model, arrays, cfg, device, output, update, label):
-    model.eval(); result={}
-    try:
-        for j,split in enumerate(('train','val','test')):
-            generator=torch.Generator().manual_seed(cfg['seed']+20000+j)
-            losses=[]; accuracies=[]
-            for index in range(cfg['eval_batches']):
-                stage=f'{label}_{split}_batch_{index}'
-                debug.stage(output,stage+'_forward',update)
-                offsets=[]
-                x,y=g.batch(arrays[split],generator,cfg['training']['batch_size'],
-                            cfg['model']['block_size'],device,trace=offsets)
-                debug.write(Path(output)/'diagnostics'/f'{update:06d}-{stage}-inputs.json',
-                            {'split':split,'context':cfg['model']['block_size'],'offsets':offsets})
-                logits,loss=model(x,y)
-                accuracy=(logits.argmax(-1)==y).float().mean()
-                rt.mark_step(device)
-                check_finite([('logits',logits),('loss',loss)],output,stage,update,device)
-                losses.append(float(loss.cpu())); accuracies.append(float(accuracy.cpu()))
-            result.update({split+'_nll':sum(losses)/len(losses),
-                           split+'_token_error':1-sum(accuracies)/len(accuracies)})
-            debug.write(Path(output)/(label+'.json'),result)
-            print(json.dumps({'evaluation':label,'split':split,**result}),flush=True)
-        return result
-    finally:
-        model.train()
 
 
 def replay(checkpoint, data_root, output, device='tpu', expected_step=1):

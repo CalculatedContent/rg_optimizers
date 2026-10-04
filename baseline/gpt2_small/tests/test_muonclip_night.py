@@ -63,6 +63,7 @@ def test_config_retains_model_data_and_optimizer():
     for key in ('model','dataset','optimizer','training'): assert c[key]==old[key]
     assert c['validation_tensor_checks'] is c['validation_gradient_checks'] is False
     assert c['finite_update_guard'] and c['cloud_checkpoints']
+    assert c['synchronized_finite_checks'] and c['checkpoint_before_evaluation']
     assert c['metrics_interval']==25 and c['ww']['interval']==100
 
 

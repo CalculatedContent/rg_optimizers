@@ -18,6 +18,7 @@ def prepare_config(template, run_id):
     cfg=yaml.safe_load(Path(template).read_text())
     cfg.update(run_id=run_id, validation_tensor_checks=False, validation_gradient_checks=False,
                finite_update_guard=True, progress_reporting=True, benchmark_sync_every_step=True,
+               synchronized_finite_checks=True, checkpoint_before_evaluation=True,
                cloud_checkpoints=True, metrics_interval=25, metrics_steps=[1,2,4], milestones=[0])
     cfg['ww'].update(enabled=True, interval=100, steps=[25], logarithmic=False)
     return cfg
@@ -63,7 +64,9 @@ def main():
     base=Path(__file__).resolve().parents[1]
     child=None
     report={'status':'starting','long_run_started':False,'training_deadline_unix':args.deadline,
-            'per_tensor_diagnostic':False,'scalar_finite_guard':True,'automatic_restart':False}
+            'per_tensor_diagnostic':'scalar_flags_no_stack', 'scalar_finite_guard':True,
+            'synchronized_optimizer_stages':True, 'checkpoint_before_evaluation':True,
+            'automatic_restart':False}
     try:
         if args.deadline<=time.time()+60: raise RuntimeError('Too little allocation time remaining.')
         output.mkdir()  # Refuse reuse/overwrite of any previous run.

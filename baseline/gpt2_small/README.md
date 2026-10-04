@@ -11,7 +11,38 @@ The TPU launch scripts expose both source packages through `PYTHONPATH`. For loc
 development, from the repository root, install both with
 `pip install -e baseline/nanogpt_one_head -e baseline/gpt2_small`.
 
-## Replay the failed MuonClip update first
+## Continuous run using the successful replay's numerical checks
+
+The instrumented TPU replay `muonclip-replay-20261004-150734` passed update 2 and
+all three evaluation splits. Both optimizer stages and gradient checks passed.
+Training NLL decreased from 10.998178 to 10.982910 and test NLL from 10.984691 to
+10.969128. Its cloud backup was verified. This is one-update evidence; the original
+failure's cause and long-run stability remain unresolved.
+
+The user authorized a continuous run on the installed PyTorch/XLA environment while
+waiting for access to Google's TorchTPU. The launcher now enables the shared
+`execution_checks` path used by the passing replay: scalar finite reductions before
+and after clipping, separate synchronized MuonClip and auxiliary AdamW steps, checks
+of updated weights/moments, and synchronized evaluation with scalar host averaging.
+The older `stack`/extrema per-tensor diagnostic stays disabled. Model, corpus, input
+windows, optimizer formulas and learning-rate settings are unchanged.
+
+Before every scheduled evaluation, a full local checkpoint is committed with
+`measurement_pending=true`. Successful evaluation/spectra replace it with a full
+checkpoint containing the pending immutable result records, then publish verified
+cloud uploads. If evaluation or spectra fails, the pre-evaluation checkpoint remains
+on disk and is included in the worker's exit backup. An explicit recovery completes
+that step's measurement before training further; there is no automatic restart.
+Three rolling local/cloud checkpoints are retained plus initialization, and every
+scalar/spectral result is retained. Routine finite-check reports retain early and
+measurement steps plus current rolling reports; failures always retain their report.
+
+The checks add overhead and are retained throughout this run. A 25-update tiny-model
+CPU test matches the original CPU optimizer trajectory exactly, and injected
+evaluation/spectral failures verify checkpoint recovery and unchanged old metrics.
+The full 124M continuous path still needs the live TPU run to establish stability.
+
+## Replaying the earlier failed update
 
 The `muonclip-night-20261004-053212` run stopped during evaluation after update 2.
 Its step-1 checkpoint and cloud backup are preserved. Do not interpret that run as
@@ -47,9 +78,9 @@ requires a subsequent check of the original execution path; it does not establis
 that the original numerical failure is fixed. The replay module also accepts
 `--device cpu` for a separately requested comparison of the same saved state.
 
-## Previous continuous MuonClip launcher
+## Launch on the existing TPU
 
-The user authorized a fresh continuous MuonClip run after the diagnostic crash.
+The user authorized a fresh continuous MuonClip run after the successful replay.
 Use the current 48-hour TPU, installed environment and preserved FineWeb:
 
 ```bash
@@ -58,17 +89,16 @@ python3 baseline/gpt2_small/scripts/run_muonclip.py status
 ```
 
 This starts one fresh process under `rg-gpt2-muonclip-<timestamp>.service` with
-`Restart=no`, in `/mnt/disks/rg-data/gpt2small/muonclip-night-<timestamp>`.
+`Restart=no`, in `/mnt/disks/rg-data/gpt2small/muonclip-continuous-<timestamp>`.
 It never invokes the cleanup/reallocation scripts, changes the installed packages,
 downloads the corpus, or writes into previous experiment directories/cloud prefixes.
 The saved `port-check-20261004-045633` crash evidence remains intact. A shared launch
 lock and checks for existing services/trainers prevent simultaneous TPU jobs.
 
-Only the crashing per-tensor gradient diagnostic is disabled. A scalar finite
-loss/gradient-norm guard remains before each update. The 124M GPT-2 model, data,
-MuonClip/auxiliary AdamW settings, batch size and long-run LR schedule are retained.
-This bypass does not fix or explain the earlier numerical failure or establish TPU
-stability. It is an explicitly requested experimental run, not a passed validation.
+The replay-style finite checks described above remain enabled throughout training.
+The scalar loss/gradient-norm guard also remains before each update. The 124M GPT-2
+model, data, MuonClip/auxiliary AdamW settings, batch size and long-run LR schedule
+are retained. The original numerical failure is not yet diagnosed.
 
 Training stays in one process from initialization until the existing allocation
 cutoff (20 minutes before its recorded expiry), manual STOP, token budget or error.

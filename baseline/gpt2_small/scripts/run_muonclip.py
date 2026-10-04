@@ -61,7 +61,7 @@ def launch_remote(commit):
         if not Path('/mnt/disks/rg-data/continuous8/data/train.bin').is_file():
             raise RuntimeError('Preserved FineWeb is missing; no download will be started.')
         stamp=dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d-%H%M%S')
-        root=BASE/('muonclip-night-'+stamp); root.mkdir()
+        root=BASE/('muonclip-continuous-'+stamp); root.mkdir()
         repo=root/'repo'; repo.mkdir()
         run(['git','-C',str(repo),'init','-q'])
         run(['git','-C',str(repo),'remote','add','origin','https://github.com/CalculatedContent/rg_optimizers.git'])
@@ -73,7 +73,7 @@ def launch_remote(commit):
         unit='rg-gpt2-muonclip-'+stamp+'.service'
         record={'root':str(root),'unit':unit,'commit':commit,'node':NODE,
                 'training_deadline_unix':deadline,'service_deadline_unix':allocation_deadline,
-                'purpose':'continuous MuonClip with scalar finite guard; per-tensor diagnostic disabled',
+                'purpose':'continuous MuonClip with replay-style finite checks and synchronized optimizer stages',
                 'cloud_uri':'gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name}
         (root/'launch.json').write_text(json.dumps(record,indent=2))
         command=['systemd-run','--unit='+unit,'--property=Type=exec','--property=Restart=no',

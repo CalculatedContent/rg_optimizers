@@ -22,6 +22,7 @@ from rg_nanogpt_one_head.muonclip import install_muonclip_extension
 from rg_nanogpt_one_head import optimizers
 from rg_nanogpt_one_head.spectral import WeightMatrixHolder, _attach_matrix_metadata
 from . import port_debug
+from . import execution_checks
 
 
 def atomic_json(path, value):
@@ -185,14 +186,15 @@ def train(cfg, data_root, output, *, device='cpu', resume=False, stop_after=None
         reporting = cfg.get('progress_reporting', False)
         diagnostic = cfg.get('validation_gradient_checks', False) or reporting
         port_checks = cfg.get('validation_tensor_checks', False)
-        if port_checks or reporting:
+        synced_checks = cfg.get('synchronized_finite_checks', False)
+        if port_checks or reporting or synced_checks:
             port_debug.environment(output)
         if diagnostic:
             faulthandler.dump_traceback_later(300, repeat=True)
         try:
             return _train(cfg, data_root, output, device, resume, stop_after, deadline)
         except Exception as exc:
-            if port_checks or reporting:
+            if port_checks or reporting or synced_checks:
                 port_debug.failure(output,exc)
             raise
         finally:
@@ -204,6 +206,9 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
     cfg = copy.deepcopy(cfg)
     t = cfg['training']; context = cfg['model']['block_size']
     port_checks = cfg.get('validation_tensor_checks', False)
+    synced_checks = cfg.get('synchronized_finite_checks', False)
+    if port_checks and synced_checks:
+        raise ValueError('Choose one tensor-check implementation, not both.')
     def progress(stage, completed_step):
         if cfg.get('progress_reporting', False):
             atomic_json(output/'progress.json', {'stage':stage, 'completed_step':completed_step,
@@ -228,6 +233,7 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
     handles = make_handles(model, cfg)
     gen = torch.Generator().manual_seed(cfg['seed'] + 11)
     step = 0; elapsed = 0.; last_grad = None; compile_seconds = 0.; steady_seconds = 0.; steady_steps = 0
+    measurement_pending = False
     latest = output / 'checkpoints/latest.json'
     if resume:
         pointer = json.loads(latest.read_text())
@@ -240,6 +246,7 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
         random.setstate(state['python_rng']); np.random.set_state(state['numpy_rng'])
         rt.restore_accelerator_rng_state(state['accelerator_rng'], dev)
         step = state['step']; elapsed = state['wall_time']; last_grad = state['gradient_norm']
+        measurement_pending = state.get('measurement_pending', False)
         if state['tokens_seen'] != step * step_tokens or state['scheduler_step'] != step:
             raise RuntimeError('Checkpoint step/token/scheduler mismatch')
         for folder in ('metrics', 'ww_metrics'):
@@ -259,10 +266,28 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
     print(json.dumps({'architecture': architecture(model), 'batch_tokens': step_tokens}), flush=True)
     started = time.monotonic(); initial_step = step
 
+    def payload(step, pending, measurement_pending=False):
+        return {'run_id': cfg['run_id'], 'config': cfg, 'fingerprint': fingerprint, 'model': model.state_dict(),
+                'optimizers': optimizers.optimizer_state_dict(handles), 'step': step, 'tokens_seen': step*step_tokens,
+                'scheduler_step': step, 'data_rng': gen.get_state(), 'torch_rng': torch.get_rng_state(),
+                'python_rng': random.getstate(), 'numpy_rng': np.random.get_state(),
+                'accelerator_rng': rt.capture_accelerator_rng_state(dev), 'wall_time': elapsed + time.monotonic()-started,
+                'gradient_norm': last_grad, 'pending_records': pending, 'measurement_pending': measurement_pending}
+
     def record(step, final=False):
         nonlocal elapsed
+        if cfg.get('checkpoint_before_evaluation', False):
+            progress('saving_pre_evaluation_checkpoint', step)
+            save_checkpoint(output/'checkpoints', payload(step, {}, measurement_pending=True))
         progress('evaluating', step)
-        metrics = evaluate(model, arrays, cfg, dev)
+        if synced_checks:
+            measured = execution_checks.evaluate_splits(model, arrays, cfg, dev, output, step, 'evaluation')
+            metrics = dict(measured)
+            for split in ('train', 'val', 'test'):
+                metrics[split+'_accuracy'] = 1-measured[split+'_token_error']
+                metrics[split+'_perplexity'] = math.exp(min(measured[split+'_nll'], 700))
+        else:
+            metrics = evaluate(model, arrays, cfg, dev)
         wall = elapsed + time.monotonic() - started
         identity = {'run_id': cfg['run_id'], 'optimizer': cfg['optimizer']['family'], 'seed': cfg['seed'],
                     'step': step, 'tokens_seen': step * step_tokens, 'wall_time': wall,
@@ -278,13 +303,7 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
             pending['ww_metrics'] = measured
         # Checkpoint FIRST includes the pending scalar/WW transaction. On resume, finish missing rows.
         progress('saving_checkpoint', step)
-        checkpoint = save_checkpoint(output / 'checkpoints', {
-            'run_id': cfg['run_id'], 'config': cfg, 'fingerprint': fingerprint, 'model': model.state_dict(),
-            'optimizers': optimizers.optimizer_state_dict(handles), 'step': step, 'tokens_seen': step*step_tokens,
-            'scheduler_step': step, 'data_rng': gen.get_state(), 'torch_rng': torch.get_rng_state(),
-            'python_rng': random.getstate(), 'numpy_rng': np.random.get_state(),
-            'accelerator_rng': rt.capture_accelerator_rng_state(dev), 'wall_time': elapsed + time.monotonic()-started,
-            'gradient_norm': last_grad, 'pending_records': pending},
+        checkpoint = save_checkpoint(output / 'checkpoints', payload(step, pending),
             milestone=step in cfg.get('milestones', []))
         for folder, value in pending.items(): append_record(output / folder / f'{step:09d}.json', value)
         print(json.dumps(row), flush=True)
@@ -293,7 +312,9 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
             cloud.publish(checkpoint, step)
         progress('measurement_completed', step)
 
-    if not resume: record(0)
+    if synced_checks:
+        execution_checks.check_finite(port_debug.optimizer_tensors(model, handles), output, 'initial_state', step, dev)
+    if not resume or measurement_pending: record(step)
     training_window = time.monotonic(); last_timed_step = step
     while step < total:
         if (stop_after is not None and step >= stop_after) or (deadline and time.time() >= deadline) or (output / 'STOP').exists():
@@ -305,19 +326,27 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
                                                  peak_lr=handle.peak_lr, min_lr=handle.min_lr)
             handle.set_lr(lr)
         losses = []
-        input_windows = [] if port_checks else None
+        retain_diagnostics = (step < 4 or (step+1) % cfg['metrics_interval'] == 0 or due(step+1, cfg['ww']))
+        input_windows = [] if port_checks or synced_checks else None
         if port_checks:
             port_debug.stage(output,'building_forward_backward_graph',step+1)
         for _ in range(t['grad_accum_steps']):
             x, y = batch(arrays['train'], gen, t['batch_size'], context, dev,trace=input_windows)
             _, loss = model(x, y); losses.append(loss.detach())
             (loss / t['grad_accum_steps']).backward()
-        if port_checks:
-            atomic_json(output/'diagnostics'/f'{step+1:06d}-input-windows.json',
+        if port_checks or synced_checks:
+            prefix=f'{step+1:06d}' if retain_diagnostics or port_checks else 'latest'
+            atomic_json(output/'diagnostics'/f'{prefix}-input-windows.json',
                         {'update':step+1,'split':'train','context':context,'microbatch_offsets':input_windows,
                          'corpus_identity':'manifest.json/data','config_fingerprint':fingerprint})
         spmd.replicate_gradients(model)
         norm = rt.gradient_norm(model.parameters())
+        if synced_checks:
+            progress('checking_gradients', step)
+            execution_checks.check_finite(
+                [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None]
+                + [('loss/'+str(i),loss) for i,loss in enumerate(losses)] + [('gradient_norm',norm)],
+                output, 'before_clipping', step+1, dev, retain=retain_diagnostics)
         if port_checks:
             port_debug.check_tensors(
                 [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None]
@@ -327,12 +356,25 @@ def _train(cfg, data_root, output, device, resume, stop_after, deadline):
             require_finite_update(model, norm, losses, output, step + 1,
                                   verbose=cfg.get('validation_gradient_checks', False) or step < 4)
         torch.nn.utils.clip_grad_norm_(model.parameters(), t['grad_clip'], foreach=False)
+        if synced_checks:
+            progress('checking_clipped_gradients', step)
+            execution_checks.check_finite(
+                [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None],
+                output, 'after_clipping', step+1, dev, retain=retain_diagnostics)
         if port_checks:
             port_debug.check_tensors(
                 [('gradient/'+name,p.grad) for name,p in model.named_parameters() if p.grad is not None],
                 output,'after_clipping',step+1,dev)
             port_debug.stage(output,'optimizer_update_started',step+1)
-        optimizers.optimizer_step(handles); rt.mark_step(dev)
+        if synced_checks:
+            for handle in handles:
+                progress('applying_'+handle.role, step)
+                port_debug.stage(output, 'applying_'+handle.role, step+1)
+                handle.optimizer.step(); rt.mark_step(dev); rt.synchronize(dev)
+                execution_checks.check_finite(port_debug.optimizer_tensors(model, handles),
+                    output, 'after_'+handle.role, step+1, dev, retain=retain_diagnostics)
+        else:
+            optimizers.optimizer_step(handles); rt.mark_step(dev)
         if port_checks:
             port_debug.check_tensors(port_debug.optimizer_tensors(model,handles),
                                      output,'after_optimizer',step+1,dev)

@@ -138,3 +138,23 @@ before evaluation. Per-tensor finite reductions use scalar host transfers withou
 the earlier stack/extrema diagnostic. No attribution to upstream PyTorch/XLA or
 TPU hardware is justified yet. These synchronization changes are recorded; a pass
 does not by itself reproduce or fix the original continuous execution path.
+
+### Saved-state TPU replay passed, 2026-10-04
+
+The user supplied the final results for `muonclip-replay-20261004-150734` at commit
+`1b039b39761b13184f1cb09585b2e1e4343f8474`: `one_update_passed`, child exit 0.
+All recorded checks passed and the cloud backup was explicitly verified.
+Post-update NLL: train `10.98291015625`, validation `10.991303443908691`,
+test `10.969128131866455`. Pre-update train/test NLL reproduced the prior saved
+checkpoint's evaluation. This localizes neither the original fault nor a fix:
+additional synchronization, reductions, process state and checkpoint restoration
+differ from the failing run.
+
+The next user-authorized continuous run retains these synchronization/reduction
+boundaries on the existing PyTorch/XLA environment, starting from initialization.
+The shared `execution_checks.py` implementation is used by both replay and training.
+Checkpointing now precedes evaluation and spectra, with a pending-measurement flag
+for explicit recovery. CPU tests cover 25 continuous updates and exact state
+recovery after injected measurement failures. No continuous TPU success is claimed
+until its output is inspected. TorchTPU migration awaits repository/package access;
+the installed environment and all previous evidence remain intact.
