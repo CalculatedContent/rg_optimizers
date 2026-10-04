@@ -64,3 +64,23 @@ remains if upload fails. No long experiment starts automatically.
 To attribute an upstream bug, isolate the first failing operation and compare a
 matched CPU/TPU replay with the same inputs, weights and optimizer state. Preserve
 both results and a minimal reproducer before claiming a PyTorch/XLA defect.
+
+## 2026-10-04: instrumented diagnostic aborts at its first gradient check
+
+Status: open; fatal native message still required for diagnosis.
+
+- Run: `port-check-20261004-045633`, commit `19e2bb0`.
+- Supervisor report: child exit code `-6` (SIGABRT), with last recorded stage
+  `before_clipping_started`, update 1, Unix time `1791089838.8617651`.
+- No per-tensor results from this check were reported. This abort does not by
+  itself establish a nonfinite gradient, a particular failing operator, or an
+  upstream runtime/hardware bug. It is a separate observed failure from the
+  earlier numerical check and stalled host copy.
+- Cloud backup was explicitly verified for this run. Logs, initialization,
+  exact input-window offsets and environment metadata remain on disk and in
+  its cloud prefix. The next evidence to inspect is the fatal native message
+  immediately preceding the abort in `run.log`.
+- A later launch was blocked by an untracked repository-root `FETCH_HEAD`
+  file in Cloud Shell. This local checkout issue is separate from the TPU
+  abort; moving that file outside the checkout preserves it and clears this
+  particular cleanliness check. The real Git metadata is under `.git`.
