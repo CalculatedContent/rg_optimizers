@@ -8,7 +8,8 @@ mountpoint -q /mnt/disks/rg-data
 test -f "$old/old_allocation.json"
 test -f /mnt/disks/rg-data/continuous8/data/meta.json
 root="${old}-retry-$(date -u +%Y%m%d-%H%M%S)"
-mkdir "$root"
+sudo mkdir "$root"
+sudo chown "$(id -u):$(id -g)" "$root"
 cp "$old/old_allocation.json" "$root/old_allocation.json"
 python=/mnt/disks/rg-data/continuous8/venv/bin/python
 export PYTHONPATH="$base/src"
