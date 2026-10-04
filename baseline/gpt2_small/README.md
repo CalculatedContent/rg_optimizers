@@ -1,5 +1,12 @@
 # GPT-2 Small / FineWeb-Edu validation
 
+For the **30-minute GPT-2/FineWeb reference run**, see
+[speedrun30/README.md](speedrun30/README.md). Its launcher stops the current
+MuonClip service, preserves prior data, and uses the published benchmark's
+tokenized FineWeb validation set and upstream GPT-2 model. It does not run
+WeightWatcher or per-tensor diagnostics. The hard time cap permits a partial
+reference run; it is not a promise of reaching the final published loss.
+
 This is the GPT-2 Small experiment, under `baseline/gpt2_small`. Its training module
 is `rg_gpt2_small.experiment`; configurations and launchers live here. It reuses the
 shared GPT implementation, optimizers, SPMD, corpus validation and WeightWatcher

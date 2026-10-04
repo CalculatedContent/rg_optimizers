@@ -28,6 +28,9 @@ def active(unit):
 
 
 def assert_idle():
+    reference=BASE/'SPEEDRUN30_LATEST.json'
+    if reference.exists() and active(json.loads(reference.read_text())['unit']):
+        raise RuntimeError('The 30-minute GPT-2 reference run is active; no concurrent trainer launched.')
     if active('rg-gpt2-validation.service') or active('rg-continuous8.service'):
         raise RuntimeError('An existing training service is active; no training launched.')
     if LATEST.exists() and active(json.loads(LATEST.read_text())['unit']):
