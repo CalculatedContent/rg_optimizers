@@ -105,6 +105,29 @@ the existing resume checks. No long run starts automatically. The service does
 not restart automatically after failures or reboot. A finished service does not
 delete its TPU: the allocation limit remains four hours unless stopped earlier.
 
+### Allocate 48 hours instead
+
+```bash
+python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py launch --hours 48
+python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status --hours 48
+```
+
+The queued-resource API exposes no update operation for extending the requested
+lifetime. This replaces only the four-hour validation request with
+`ww-gpt2-validation-48h-20261004-s1337`. If its validation service is already
+running, it is stopped before deletion; all existing files remain on the same
+data disk. The new VM mounts that disk, reuses FineWeb and the environment, and
+runs fresh short validation in a separate directory. Repeating this command
+does not replace an existing 48-hour request or create a second machine.
+
+Both the server-enforced allocation limit and the startup deadline use 48 hours;
+the worker deadline reserves ten minutes, and validation reserves another five.
+The queue can wait up to four hours for capacity, independently of the 48-hour
+allocation lifetime. At the published $0.60/chip-hour Flex-start rate, eight
+chips for 48 hours cost $230.40 before storage and any earlier allocation usage.
+Short validation still stops after its checks; it does not automatically start
+the long experiment. The allocation remains available until deletion or expiry.
+
 ## Records, checkpoints and timing
 
 Per-step immutable JSON scalar and WW records are written incrementally. NLL,

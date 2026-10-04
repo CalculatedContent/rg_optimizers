@@ -13,12 +13,13 @@ def load():
     return module
 
 
-def test_startup_mounts_only_existing_disk_and_never_restarts():
-    m = load(); script = m.make_startup('a' * 40)
+@pytest.mark.parametrize('hours', [4, 48])
+def test_startup_mounts_only_existing_disk_and_never_restarts(hours):
+    m = load(); m.configure(hours); script = m.make_startup('a' * 40)
     subprocess.run(['bash', '-n'], input=script, text=True, check=True)
     assert '__' not in script and 'mkfs' not in script
     assert 'readlink -f "$DEVICE"' in script
-    assert '+4*3600-600' in script and 'Restart=no' in script
+    assert f'+{hours}*3600-600' in script and 'Restart=no' in script
     assert 'STARTED_ONCE' in script and 'replacement_worker.sh' in script
     worker = Path(m.__file__).with_name('replacement_worker.sh').read_text()
     subprocess.run(['bash', '-n'], input=worker, text=True, check=True)
@@ -27,8 +28,9 @@ def test_startup_mounts_only_existing_disk_and_never_restarts():
 
 
 @pytest.mark.parametrize('case', ['normal', 'duplicate', 'wrong_disk', 'delete_failure', 'other_user'])
-def test_replacement_sequence(tmp_path, monkeypatch, case):
-    m = load(); calls = []
+@pytest.mark.parametrize('hours', [4, 48])
+def test_replacement_sequence(tmp_path, monkeypatch, case, hours):
+    m = load(); m.configure(hours); calls = []
     old_present = case != 'other_user'
     monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))
     monkeypatch.setattr(m.subprocess, 'check_output',
@@ -59,7 +61,7 @@ def test_replacement_sequence(tmp_path, monkeypatch, case):
             old_present = False
         if 'create' in args:
             assert not old_present
-            assert '--max-run-duration=4h' in args
+            assert f'--max-run-duration={hours}h' in args
             assert '--accelerator-type=v5litepod-8' in args
             assert '--data-disk=source=' + m.DISK_PATH + ',mode=read-write' in args
 
@@ -74,3 +76,11 @@ def test_replacement_sequence(tmp_path, monkeypatch, case):
     assert not any('disks' in call and 'delete' in call for call in calls)
     if case in ('duplicate', 'wrong_disk', 'other_user'):
         assert calls == []
+    if case == 'normal':
+        ssh = next(c for c in calls if 'ssh' in c)
+        command = next(a for a in ssh if a.startswith('--command='))
+        assert ('systemctl stop rg-gpt2-validation.service' in command) == (hours == 48)
+        if hours == 48:
+            assert m.OLD_NODE == 'ww-gpt2-validation-20261004-s1337-node'
+            assert m.NODE == 'ww-gpt2-validation-48h-20261004-s1337-node'
+            assert command.index('systemctl stop') < command.index('pgrep')

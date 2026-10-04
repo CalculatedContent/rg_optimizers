@@ -19,6 +19,23 @@ DISK = 'ww-continuous8-pilot-20261002-s1337-data'
 DISK_PATH = f'projects/{PROJECT}/zones/{ZONE}/disks/{DISK}'
 ROOT = '/mnt/disks/rg-data/gpt2small/' + QUEUE
 HOURS = 4
+OLD_SERVICE = None
+
+
+def configure(hours):
+    """The 48-hour request replaces only our previous four-hour validation VM."""
+    global HOURS, OLD_QUEUE, OLD_NODE, QUEUE, NODE, ROOT, OLD_SERVICE
+    if hours not in (4, 48):
+        raise ValueError('Supported allocation lengths are 4 and 48 hours.')
+    HOURS = hours
+    OLD_QUEUE = ('ww-continuous8-24h-20261003-s1337' if hours == 4
+                 else 'ww-gpt2-validation-20261004-s1337')
+    OLD_NODE = OLD_QUEUE + '-node'
+    QUEUE = ('ww-gpt2-validation-20261004-s1337' if hours == 4
+             else 'ww-gpt2-validation-48h-20261004-s1337')
+    NODE = QUEUE + '-node'
+    ROOT = '/mnt/disks/rg-data/gpt2small/' + QUEUE
+    OLD_SERVICE = 'rg-gpt2-validation.service' if hours == 48 else None
 
 
 def gc(*args, capture=False):
@@ -103,12 +120,15 @@ def launch():
     source = make_startup(commit)
     subprocess.run(['bash', '-n'], input=source, text=True, check=True)
     startup = Path.home() / 'gpt2-validation-startup.sh'; startup.write_text(source)
-    save(commit=commit, preserved_disk=disk, phase='replacing only the expired/expiring experiment TPU')
-    print('One v5e-8, at most 4 hours including setup. Estimated compute $19.20 plus storage.', flush=True)
+    save(commit=commit, preserved_disk=disk, phase='replacing only ' + OLD_QUEUE)
+    print(f'One v5e-8, at most {HOURS} hours including setup. Estimated compute ${HOURS*8*.60:.2f} plus storage.', flush=True)
     print('Keeping the existing disk, FineWeb, environments and cloud archives. Short validation only.', flush=True)
     if old_node and detail.get('state') == 'READY':
-        # Do not terminate a newly started diagnostic or any unrelated workload.
-        command = """sudo bash -se <<'CHECK'
+        # A requested duration change may interrupt the known validation service.
+        # Other trainer processes must still prevent deletion of this VM.
+        stop = (f'if systemctl cat {OLD_SERVICE} >/dev/null 2>&1; then\n'
+                f'  systemctl stop {OLD_SERVICE}\nfi\n') if OLD_SERVICE else ''
+        command = "sudo bash -se <<'CHECK'\n" + stop + """
 if pgrep -af '[p]ython.*(gpt2_experiment|gpt2small/validate.py|continuous_run)'; then
   echo 'A trainer is still running; replacement aborted.' >&2
   exit 1
@@ -136,23 +156,25 @@ CHECK"""
         if attempt == 24:
             raise RuntimeError('Disk still attached; preserved, no replacement submitted. Rerun later.')
         time.sleep(5)
-    save(phase='submitting four-hour validation allocation')
+    save(phase=f'submitting {HOURS}-hour allocation with short validation')
     gc('alpha', 'compute', 'tpus', 'queued-resources', 'create', QUEUE, '--zone=' + ZONE,
        '--node-id=' + NODE, '--accelerator-type=v5litepod-8', '--runtime-version=v2-alpha-tpuv5-lite',
-       '--provisioning-model=flex-start', '--max-run-duration=4h', '--valid-until-duration=4h',
+       '--provisioning-model=flex-start', f'--max-run-duration={HOURS}h', '--valid-until-duration=4h',
        '--service-account=' + SA, '--scopes=https://www.googleapis.com/auth/cloud-platform',
        '--data-disk=source=' + DISK_PATH + ',mode=read-write',
        '--metadata-from-file=startup-script=' + str(startup),
        '--labels=experiment=gpt2-validation', '--quiet', '--async')
     save(phase='submitted; validation starts automatically when capacity is allocated')
     print('Node: ' + NODE + '\nLog: ' + ROOT + '/run.log', flush=True)
-    print('Check: python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status', flush=True)
+    print(f'Check: python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status --hours {HOURS}', flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['launch', 'status'], nargs='?', default='launch')
+    parser.add_argument('--hours', type=int, choices=[4, 48], default=4)
     args = parser.parse_args()
+    configure(args.hours)
     if args.action == 'status':
         status()
     else:
