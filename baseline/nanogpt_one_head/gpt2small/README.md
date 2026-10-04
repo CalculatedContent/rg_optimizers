@@ -72,6 +72,39 @@ a failed cloud copy is an error and leaves persistent-disk outputs intact.
 convergence or reproduce CE 3.28. A longer matched benchmark is needed before claiming
 normal GPT-2 training quality, and before the long scientific experiment.
 
+## Replace an expired allocation while retaining FineWeb
+
+From the updated, clean Cloud Shell checkout:
+
+```bash
+python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py launch
+python3 baseline/nanogpt_one_head/gpt2small/reallocate_validation.py status
+```
+
+The launcher replaces only `ww-continuous8-24h-20261003-s1337` and its node.
+It retains the existing `ww-continuous8-pilot-20261002-s1337-data` disk and all
+cloud objects. It waits for disk detachment and attaches that same disk to one
+new v5litepod-8 with a server-enforced four-hour allocation limit, including setup.
+The startup script mounts the existing ext4 filesystem; it never formats a disk.
+The corpus and Python environment are reused without downloading or reinstalling.
+The fixed replacement queue name prevents duplicate launches on repeated commands.
+
+Short validation runs independently of Cloud Shell in `rg-gpt2-validation.service`.
+The new root is `/mnt/disks/rg-data/gpt2small/ww-gpt2-validation-20261004-s1337`.
+Cloud uploads are tested before training using object permissions, CRC32C and
+size verification. Exit backup uses this same uploader rather than bucket-metadata
+operations. The complete logs and outputs remain on the persistent disk on failure.
+
+This is a fresh validation from initialization, not continuation of the failed run.
+Before each optimizer update, the runner checks loss and gradient norm. A failure
+writes `nonfinite_diagnostics.json` with parameter names and nonfinite element
+counts, then stops before applying the invalid update. The earlier nonfinite
+gradient's cause is still unconfirmed; these checks do not claim to fix it.
+Only if the short AdamW checks pass does MuonClip validation proceed, followed by
+the existing resume checks. No long run starts automatically. The service does
+not restart automatically after failures or reboot. A finished service does not
+delete its TPU: the allocation limit remains four hours unless stopped earlier.
+
 ## Records, checkpoints and timing
 
 Per-step immutable JSON scalar and WW records are written incrementally. NLL,
