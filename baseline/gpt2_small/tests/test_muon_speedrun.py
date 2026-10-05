@@ -210,9 +210,133 @@ def test_worker_defaults_use_smaller_microbatch_and_verified_flash(monkeypatch,t
             (root/'status.json').write_text(json.dumps(dict(status='target_reached',target_met=True,step=2875)))
         return {'exit_code':0,'timed_out':False,'phase':label}
     monkeypatch.setattr(module,'bounded',bounded)
+    monkeypatch.setattr(module,'start_tracking',lambda *args:object())
+    monkeypatch.setattr(module,'finish_tracking',lambda *args:{'status':'complete'})
     monkeypatch.setenv('PYTHONPATH','test-original')
     assert module.main()==0
     training=next(command for label,command in phases if '3,000-update' in label)
     assert training[training.index('--microbatch')+1]=='64'
     assert training[training.index('--attention')+1]=='flash'
     assert phases[0][0]=='pinned Pallas dependencies'
+
+
+def test_token_error_uses_the_same_logits_without_changing_loss_or_gradients():
+    model = small(port)
+    with torch.no_grad():
+        model.lm_head.weight.normal_(std=.02)
+    x = torch.randint(128, (2, 8)); y = torch.randint(128, (2, 8))
+    captured = []
+    hook = model.lm_head.register_forward_hook(lambda module, args, out:captured.append(out.detach()))
+    loss = model(x, y)
+    loss.backward()
+    gradients = [p.grad.clone() for p in model.parameters()]
+    model.zero_grad(set_to_none=True)
+    measured, errors = model(x, y, return_token_errors=True)
+    measured.backward()
+    hook.remove()
+    torch.testing.assert_close(loss, measured, rtol=0, atol=0)
+    for old, p in zip(gradients, model.parameters()):
+        torch.testing.assert_close(old, p.grad, rtol=0, atol=0)
+    logits = (30 * torch.tanh(captured[-1] / 30)).float()
+    assert int(errors) == int((logits.argmax(-1) != y).sum())
+
+
+def test_evaluation_pairs_exact_token_count_with_unchanged_nll(monkeypatch,tmp_path):
+    import numpy as np
+    import time
+    run=runner(); model=small(port); rt=Runtime('cpu')
+    monkeypatch.setattr(run,'VAL_TOKENS',2048)
+    tokens=np.arange(2049,dtype=np.int64)%128
+    # Zero-initialized head predicts token zero everywhere. 1/128 targets are zero.
+    row=run.evaluate(model,tokens,rt,tmp_path,125,time.time()+60,1,time.time())
+    assert row['evaluation_tokens']==2048
+    assert row['val_error_count']==2032
+    assert row['val_token_error']==2032/2048
+    assert row['val_accuracy']==16/2048
+    assert row['val_nll']==pytest.approx(float(torch.tensor(128.).log()),abs=1e-6)
+    assert model.training
+
+
+def test_spectral_snapshot_is_immutable_and_paired_with_validation(tmp_path):
+    import tracking
+    rt=Runtime('cpu'); model=small(port); muon,adam=make_optimizers(model,rt)
+    stream=types.SimpleNamespace(shard=1,position=0)
+    v=dict(step=125,full_benchmark_evaluation=True,evaluation_tokens=10485760,
+           val_nll=3.5,val_token_error=.6)
+    state=torch.get_rng_state().clone()
+    runner().save_checkpoint(tmp_path,model,muon,adam,stream,125,{},rt,v,4.)
+    assert torch.equal(state,torch.get_rng_state())
+    path=tmp_path/'tracking/snapshots/0000125.pt'
+    before=path.read_bytes()
+    with torch.no_grad():
+        model.transformer.h[0].attn.c_q.weight.add_(1)
+    runner().save_checkpoint(tmp_path,model,muon,adam,stream,250,{},rt,{**v,'step':250},4.)
+    assert path.read_bytes()==before
+    payload=torch.load(path,weights_only=False)
+    assert payload['validation']==v and payload['step']==125
+    assert len(payload['matrices'])==12
+    assert set(payload['matrices'])=={f'L{i:02d}_W_{role}' for i in range(2) for role in tracking.ROLES.values()}
+
+
+def test_weightwatcher_raw_alpha_never_falls_back_to_clipped():
+    import tracking
+    frame=types.SimpleNamespace(to_dict=lambda orient:[
+        dict(longname='L00_W_Q',status='success',alpha=1.9,raw_alpha=float('nan')),
+        dict(longname='L00_W_K',status='failed',alpha=1.8,raw_alpha=1.7)])
+    rows=tracking.normalize_rows(frame,['L00_W_Q','L00_W_K','L00_W_V'],{'step':125,'val_token_error':.6})
+    assert len(rows)==3 and all(r['alpha_raw'] is None for r in rows)
+    assert rows[0]['alpha_clip_xmax']==1.9
+    assert rows[1]['alpha_clip_xmax'] is None
+    assert rows[2]['status']=='not_returned'
+    s=tracking.summary(rows,{'step':125})
+    assert s['alpha_raw_valid_count']==0 and s['alpha_raw_mean'] is None
+    assert s['alpha_clip_xmax_valid_count']==1
+
+
+def test_replace_stops_only_the_recorded_muon_service(tmp_path,monkeypatch):
+    spec=importlib.util.spec_from_file_location('muon_restart_test',BASE/'cloudshell.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    pointer=tmp_path/'pointer.json'
+    unit='rg-muon-speedrun-20261005-020737.service'
+    pointer.write_text(json.dumps({'unit':unit}))
+    monkeypatch.setattr(module,'LATEST',pointer)
+    monkeypatch.setattr(module,'active',lambda name:False)
+    calls=[]; monkeypatch.setattr(module,'run',lambda command,**kwargs:calls.append(command))
+    module.stop_current()
+    assert calls==[['systemctl','stop',unit]]
+    pointer.write_text(json.dumps({'unit':'unrelated.service'}))
+    with pytest.raises(RuntimeError,match='Unexpected service'):
+        module.stop_current()
+    assert len(calls)==1
+
+
+def test_real_weightwatcher_pairs_snapshot_and_writes_tables(tmp_path):
+    pytest.importorskip('weightwatcher')
+    import tracking, time
+    validation=dict(step=125,val_nll=4.5,val_token_error=.8,evaluation_tokens=10485760,
+                    full_benchmark_evaluation=True)
+    matrices={f'transformer.h.0.{suffix}.weight':torch.randn(64,64) for suffix in tracking.ROLES}
+    tracking.queue_snapshot(tmp_path,dict(step=125,tokens_seen=65536000,config={'n_layer':1},
+                            model=matrices,validation=validation,manifest={}))
+    (tmp_path/'tracking/TRAINING_DONE').touch()
+    assert tracking.watch(tmp_path,time.time()+60)==0
+    result=json.loads((tmp_path/'tracking/measurements/0000125.json').read_text())
+    assert len(result['layers'])==6
+    assert all(row['step']==125 and row['val_token_error']==.8 for row in result['layers'])
+    assert result['summary']['alpha_raw_valid_count']==6
+    assert (tmp_path/'tracking/layers.csv').is_file()
+    assert (tmp_path/'tracking/summary.csv').is_file()
+    assert json.loads((tmp_path/'TRACKING_STATUS.json').read_text())['status']=='complete'
+
+
+def test_ssh_retry_cannot_replace_the_run_it_just_launched(tmp_path,monkeypatch):
+    spec=importlib.util.spec_from_file_location('muon_idempotent_restart',BASE/'cloudshell.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    pointer=tmp_path/'pointer.json'; pointer.write_text(json.dumps({'launch_id':'same-request'}))
+    monkeypatch.setattr(module,'BASE',tmp_path); monkeypatch.setattr(module,'LATEST',pointer)
+    monkeypatch.setattr(module.os,'geteuid',lambda:0)
+    monkeypatch.setattr(module.os.path,'ismount',lambda p:True)
+    seen=[]; monkeypatch.setattr(module,'status_remote',lambda:seen.append(True))
+    monkeypatch.setattr(module,'run',lambda *a,**k:pytest.fail('retry must not stop or launch'))
+    module.start_remote('a'*40,replace_current=True,launch_id='same-request')
+    assert seen==[True]

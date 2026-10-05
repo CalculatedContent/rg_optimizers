@@ -18,7 +18,11 @@ python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start
 The launcher uses the existing `ww-gpt2-validation-48h-20261004-s1337-node` in
 `tpu-builders-504820/us-west4-a`. It creates no TPU, preserves the shared environment,
 and refuses concurrent training. Repeating start while active prints status.
-It starts from scratch because the previous 30-minute run saved no model.
+Every launch starts from the same seed and initialization, without resume.
+To stop the current Muon speedrun and start fresh with tracking, use
+`start --replace-current --optimizer muon --microbatch 64 --attention flash --hours 3`.
+This stops only the service recorded in `MUON_SPEEDRUN_LATEST.json`; the TPU,
+FineWeb cache, and prior files remain.
 
 The worker stops at the first full validation with **NLL <= 3.28**, after the
 published 3,000-update schedule, or before its deadline, whichever comes first.
@@ -93,11 +97,54 @@ avoids synchronous network downloads at training shard boundaries. Existing
 FineWeb-Edu is a different corpus and is retained separately. All timings include
 end-to-end training overhead; published GPU training-only timing is labelled.
 
-There are no WeightWatcher fits, gradient scans or per-matrix host reads in the
-training loop. Scalar loss checks remain. An isolated flash check does not prove
+WeightWatcher runs in a separate CPU process on immutable snapshots made from
+the weights already transferred for checkpointing. There are no spectral fits,
+gradient scans or additional per-matrix TPU reads in the training loop. Scalar
+loss checks remain. An isolated flash check does not prove
 complete TPU optimizer/model parity. Source CUDA compilation, random seed,
 microbatch reduction order, rotary-buffer calculation and shard-boundary order
 can differ; these are recorded rather than represented as exact reproduction.
+
+## Paired WeightWatcher and token-error tracking
+
+Tracking is enabled for new runs. The model, optimizers, hyperparameters, data,
+seed, global batch, microbatch, flash attention, 3,000-update schedule, target,
+evaluation/checkpoint cadence and three-hour cap remain unchanged. Additional
+measurement work can add wall time within that cap.
+
+Every existing validation point (125 updates and final stop) now counts top-1
+prediction errors from the **same capped logits and the same benchmark tokens**
+as validation NLL. `val_token_error = val_error_count / evaluation_tokens` is a
+fraction, not a percentage. This is teacher-forced validation token error, not
+free-generation accuracy or a separate test set. Partial evaluation is explicitly
+flagged and cannot satisfy the target gate.
+
+The same saved weights are queued for WeightWatcher 0.7.7 on CPU: Q, K, V, O,
+MLP_IN and MLP_OUT in each of the twelve blocks (72 matrices). Embeddings,
+output vocabulary head and scalar parameters are excluded. Fits use `ERG=True`,
+`randomize=True`, `fix_fingers="clip_xmax"`, `max_fingers=10`, `min_evals=20`.
+`raw_alpha` is recorded as `alpha_raw`; `alpha` as `alpha_clip_xmax`. Missing or
+failed fits stay unavailable; clipped alpha is never substituted for raw alpha.
+The package's other scalar outputs, including available trap/finger counts,
+are retained. Randomization happens only in the separate CPU process.
+
+- `tracking/layers.csv`: per-matrix raw/clipped alpha, fit status and paired
+  validation loss, perplexity and token error, keyed by run and exact update.
+- `tracking/summary.csv`: mean/minimum alpha, valid-fit counts, counts below two,
+  and sample standard deviation **across matrices**, which is not a seed error bar.
+- `tracking/measurements/<step>.json`: immutable results with snapshot SHA256,
+  WeightWatcher version, diagnostic seed and fit options.
+- `tracking/snapshots/<step>.pt`: immutable CPU transformer weights and paired
+  validation metadata retained on the mounted disk for later analysis. These
+  spectral snapshots are not full training-state checkpoints and are not uploaded
+  by the final backup. Full latest/best/target checkpoints retain their existing
+  cloud backup behavior.
+- `TRACKING_STATUS.json`: completed, pending and failed measurements. A fit-process
+  failure or deadline backlog is explicitly reported; snapshots remain recoverable.
+
+Small tracking tables and JSON results are uploaded first during the existing
+final cloud backup. The CPU worker drains its queue within the existing time cap;
+there is no extension of the TPU allocation or automatic training restart.
 
 ## Checkpoints and results
 

@@ -2,8 +2,9 @@
 
 For the **published 3,000-update Muon speedrun recipe on eight TPU chips**, see
 [muon_speedrun/README.md](muon_speedrun/README.md). It uses a modified transformer,
-targets full-validation loss 3.28, saves checkpoints every 125 updates, and records
-an explicit target outcome. Its TPU performance and convergence require live
+targets full-validation loss 3.28, saves checkpoints every 125 updates, and pairs
+raw/clipped WeightWatcher alpha with validation token error at those same updates.
+It records an explicit target outcome. Its TPU performance and convergence require live
 measurement; the default three-hour budget is a cap, not a runtime prediction.
 
 For the **30-minute GPT-2/FineWeb reference run**, see

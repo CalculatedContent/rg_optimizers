@@ -132,7 +132,7 @@ class GPT(nn.Module):
         self.lm_head = CastedLinear(config.n_embd, config.vocab_size, bias=False)
         self.lm_head.weight.data.zero_() # @Grad62304977
 
-    def forward(self, idx, target):
+    def forward(self, idx, target, *, return_token_errors=False):
 
         # forward the GPT model itself
         x = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
@@ -160,4 +160,7 @@ class GPT(nn.Module):
         logits = 30 * torch.tanh(logits / 30) # @Grad62304977
         logits = logits.float()
         loss = F.cross_entropy(logits.view(-1, logits.size(-1)), target.view(-1))
+        if return_token_errors:
+            # Evaluation only; the default training graph and loss are unchanged.
+            return loss.float(), (logits.argmax(dim=-1) != target).sum(dtype=torch.int32)
         return loss.float()

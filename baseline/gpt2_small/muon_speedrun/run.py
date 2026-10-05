@@ -16,6 +16,7 @@ import model as architecture
 from data import FineWeb, TrainStream, write_json, prepare
 from optim import make_optimizers, apply_update, schedule, momentum
 from runtime import Runtime, attention_check
+from tracking import queue_snapshot
 
 TOTAL_STEPS = 3000
 BATCH_TOKENS = 524288
@@ -74,6 +75,8 @@ def save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validat
         temp.replace(root/name)
     write_json(root/'checkpoint_latest.json', {'file':checkpoint.name, 'step':step,
                                               'target_met':passed, 'validation':validation})
+    if validation is not None:
+        queue_snapshot(root, payload)
     print('Checkpoint saved at update '+str(step), flush=True)
 
 
@@ -89,22 +92,28 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
     model.eval()
     size = microbatch*1024
     total = torch.zeros((), device=rt.device, dtype=torch.float32)
+    errors = torch.zeros((), device=rt.device, dtype=torch.int32)
     evaluated = 0
     for offset in range(0, VAL_TOKENS, size):
         if time.time() >= deadline:
             break
         buf = torch.from_numpy(np.array(tokens[offset:offset+size+1], dtype=np.int64))
-        total += model(rt.put(buf[:-1].reshape(microbatch, 1024)),
-                       rt.put(buf[1:].reshape(microbatch, 1024))).detach().float()
+        batch_loss, batch_errors = model(rt.put(buf[:-1].reshape(microbatch, 1024)),
+                       rt.put(buf[1:].reshape(microbatch, 1024)), return_token_errors=True)
+        total += batch_loss.detach().float()
+        errors += batch_errors
         rt.step()
         evaluated += size
     rt.step(wait=True)
     loss = float(total.cpu())/(evaluated/size) if evaluated else None
+    error_count = int(errors.cpu())
     if loss is not None and not math.isfinite(loss):
         raise RuntimeError('Nonfinite validation NLL')
     row = {'kind':'validation', 'step':step, 'tokens_seen':step*BATCH_TOKENS,
            'evaluation_tokens':evaluated, 'full_benchmark_evaluation':evaluated == VAL_TOKENS,
            'val_nll':loss, 'val_perplexity':math.exp(loss) if loss is not None else None,
+           'val_error_count':error_count, 'val_token_error':error_count/evaluated if evaluated else None,
+           'val_accuracy':1-error_count/evaluated if evaluated else None,
            'elapsed_seconds':time.time()-started, 'recorded_unix':time.time()}
     reference = json.loads((HERE/'reference_val.json').read_text())
     row['published_at_same_step'] = next((r for r in reference if r['step'] == step), None)
@@ -149,6 +158,10 @@ def train(a):
                 'data_repo':source.manifest['repo'], 'data_revision':source.manifest['revision'],
                 'record_source_sha256':hashlib.sha256((HERE/'vendor/record_source.py').read_bytes()).hexdigest(),
                 'torch_version':torch.__version__, 'automatic_restart':False,
+                'tracking':{'interval_updates':125, 'extra_final_measurement':True,
+                            'matrices':'Q,K,V,O,MLP_IN,MLP_OUT in all 12 blocks',
+                            'execution':'separate CPU process on immutable snapshots',
+                            'token_error':'teacher-forced top-1 error on the same benchmark validation tokens'},
                 'differences':['TPU SPMD instead of CUDA DDP', 'batched matrix-partitioned Muon',
                                'microbatch accumulation and shard-boundary ordering',
                                'fixed seed 1337; original record did not pin a seed',
