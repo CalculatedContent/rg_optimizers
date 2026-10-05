@@ -5,6 +5,29 @@ an explicit objective of this project. Preserve failures as evidence. A passing
 CPU smoke test does not establish TPU correctness. Do not silently lower learning
 rates, change data, or skip nonfinite checks to make a run appear successful.
 
+## 2026-10-04: Muon speedrun missing Pallas dependency and HBM exhaustion
+
+Status: two configuration failures confirmed; corrected retry requires live TPU validation.
+These observations do not establish an upstream PyTorch/XLA or hardware bug.
+
+- Run `muon-speedrun-muon-20261004-225635`, commit `1b4548d`, v5litepod-8.
+- Flash check failed with `ModuleNotFoundError: No module named 'jax'`.
+  `torch_xla[tpu]` does not include the Pallas extras; XLA 2.6 setup.py pins
+  both JAX and jaxlib to 0.4.38 for that optional dependency group.
+- Automatic math-attention fallback kept global microbatch 128 (16/chip).
+  First forward/backward compilation failed with `RESOURCE_EXHAUSTED`:
+  16.89G required versus 15.75G HBM, exceeding capacity by 1.14G.
+- No completed training update. Step-zero checkpoint and final cloud backup
+  were saved. Disk evidence:
+  `/mnt/disks/rg-data/gpt2small/muon-speedrun-muon-20261004-225635`;
+  cloud prefix: `gs://tpu-builders-504820-ww-continuous8/gpt2small/muon-speedrun-muon-20261004-225635`.
+- Correction: per-run pinned Pallas overlay; flash forward/backward check required;
+  no implicit math fallback; microbatch 64, eight accumulation passes, unchanged
+  global batch 524,288; early checkpoints after updates 1 and 5. Failure status now
+  replaces stale `training` status and includes the actual exception.
+- The smaller microbatch and kernel must still pass a live full-model run. Do not
+  report the OOM fixed solely because CPU tests or attention-only checks pass.
+
 ## 2026-10-04: GPT-2 AdamW nonfinite result, followed by stalled failure reporting
 
 Status: numerical cause open; blocking diagnostic implementation replaced.

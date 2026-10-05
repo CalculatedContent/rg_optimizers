@@ -146,7 +146,7 @@ def test_schedule_and_full_corpus_budget(tmp_path):
     assert schedule(0)==schedule(2099)==1.
     assert schedule(2550)==.5 and schedule(3000)==0.
     files=FineWeb(tmp_path,0)
-    for micro in (64,128):
+    for micro in (32,64,128):
         names=required_shards(files,micro)
         assert len(names)==17 # validation + 16 distinct training shards
         usable=sum(((files.manifest['files'][n]['size']-1024)//2-1)//(micro*1024)*(micro*1024)
@@ -166,3 +166,53 @@ def test_launcher_does_not_duplicate_active_run(tmp_path,monkeypatch):
     monkeypatch.setattr(module,'run',lambda *a,**k:pytest.fail('must not launch twice'))
     module.start_remote('a'*40)
     assert seen==[True]
+
+
+def test_pallas_install_is_pinned_and_isolated(tmp_path):
+    spec=importlib.util.spec_from_file_location('pallas_dependency_setup',BASE/'pallas_dependencies.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    target=tmp_path/'pallas-deps'
+    command=module.install_command(target)
+    assert '--no-deps' in command and '--only-binary=:all:' in command
+    assert command[command.index('--target')+1]==str(target)
+    assert 'jax==0.4.38' in command and 'jaxlib==0.4.38' in command
+    assert not any(p.startswith(('torch==','torch_xla==','libtpu==','numpy==','scipy==')) for p in command)
+
+
+@pytest.mark.parametrize('attention',['flash','auto'])
+def test_flash_failure_never_starts_training(monkeypatch,tmp_path,attention):
+    spec=importlib.util.spec_from_file_location('muon_worker_strict_attention',BASE/'worker.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    import time
+    monkeypatch.setattr(sys,'argv',['worker.py',str(tmp_path),str(time.time()+10800),'--attention',attention])
+    phases=[]
+    def bounded(command,seconds,root,label,watch=False):
+        phases.append((label,command))
+        rc=1 if 'forward/backward' in label else 0
+        return {'exit_code':rc,'timed_out':False,'phase':label}
+    monkeypatch.setattr(module,'bounded',bounded)
+    monkeypatch.setenv('PYTHONPATH','test-original')
+    assert module.main()==1
+    assert not any('3,000-update' in label for label,_ in phases)
+    assert json.loads((tmp_path/'RUN_STATUS.json').read_text())['status']=='failed'
+    assert 'fallback' in json.loads((tmp_path/'status.json').read_text())['error']
+
+
+def test_worker_defaults_use_smaller_microbatch_and_verified_flash(monkeypatch,tmp_path):
+    spec=importlib.util.spec_from_file_location('muon_worker_defaults',BASE/'worker.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    import time
+    monkeypatch.setattr(sys,'argv',['worker.py',str(tmp_path),str(time.time()+10800)])
+    phases=[]
+    def bounded(command,seconds,root,label,watch=False):
+        phases.append((label,command))
+        if '3,000-update' in label:
+            (root/'status.json').write_text(json.dumps(dict(status='target_reached',target_met=True,step=2875)))
+        return {'exit_code':0,'timed_out':False,'phase':label}
+    monkeypatch.setattr(module,'bounded',bounded)
+    monkeypatch.setenv('PYTHONPATH','test-original')
+    assert module.main()==0
+    training=next(command for label,command in phases if '3,000-update' in label)
+    assert training[training.index('--microbatch')+1]=='64'
+    assert training[training.index('--attention')+1]=='flash'
+    assert phases[0][0]=='pinned Pallas dependencies'

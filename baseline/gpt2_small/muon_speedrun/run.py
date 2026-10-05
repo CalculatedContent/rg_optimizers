@@ -192,6 +192,8 @@ def train(a):
                 row['training_seconds_remaining_estimate'] = float(np.median(timings[-50:]))*(TOTAL_STEPS-step)
             record(root, row)
             write_json(root/'status.json', {'status':'training', **row})
+        if step in (1,5):
+            save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, None, best)
         if step % 125 == 0:
             validation = evaluate(model, val, rt, root, step, a.deadline-90, a.microbatch, started)
             save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validation, best)
@@ -219,13 +221,13 @@ def main():
     p.add_argument('--deadline', type=float, required=True)
     p.add_argument('--device', choices=('tpu', 'cpu'), default='tpu')
     p.add_argument('--attention', choices=('flash', 'math'), default='flash')
-    p.add_argument('--microbatch', type=int, choices=(64,128), default=128)
+    p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
     p.add_argument('--optimizer', choices=('muon', 'adam'), default='muon')
     a = p.parse_args()
     if a.action == 'prepare':
         prepare(a.cache, a.deadline, a.root, a.microbatch)
     elif a.action == 'attention-check':
-        attention_check(a.root)
+        attention_check(a.root, a.microbatch)
     else:
         try:
             train(a)

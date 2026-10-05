@@ -38,13 +38,14 @@ def status_remote():
     root = Path(record['root'])
     print(json.dumps(record,indent=2),flush=True)
     subprocess.run(['systemctl','--no-pager','--full','status',record['unit']])
-    for name in ('RUN_STATUS.json','status.json','latest_validation.json','checkpoint_latest.json'):
+    for name in ('RUN_STATUS.json','status.json','latest_validation.json','checkpoint_latest.json',
+                 'PALLAS_DEPENDENCIES.json','ATTENTION_CHECK.json','ATTENTION_CHECK_FAILURE.json'):
         if (root/name).exists():
             print(name+'\n'+(root/name).read_text(),flush=True)
     subprocess.run(['tail','-n','15',str(root/'run.log')])
 
 
-def start_remote(commit, hours=3, optimizer='muon', microbatch=128, attention='auto'):
+def start_remote(commit, hours=3, optimizer='muon', microbatch=64, attention='flash'):
     if os.geteuid() != 0 or not os.path.ismount('/mnt/disks/rg-data'):
         raise RuntimeError('Requires the existing mounted disk and root')
     if not re.fullmatch('[0-9a-f]{40}',commit):
@@ -76,7 +77,7 @@ def start_remote(commit, hours=3, optimizer='muon', microbatch=128, attention='a
         unit = 'rg-muon-speedrun-'+stamp+'.service'
         base = repo/'baseline/gpt2_small'
         env = {'PYTHONPATH':str(base/'src')+':'+str(base.parent/'nanogpt_one_head/src'),
-               'PJRT_DEVICE':'TPU','XLA_USE_SPMD':'1','TPU_ACCELERATOR_TYPE':'v5litepod-8',
+               'PJRT_DEVICE':'TPU','TPU_ACCELERATOR_TYPE':'v5litepod-8',
                'OMP_NUM_THREADS':'4','OPENBLAS_NUM_THREADS':'4','MKL_NUM_THREADS':'4',
                'TOKENIZERS_PARALLELISM':'false'}
         record = {'root':str(root),'unit':unit,'commit':commit,'optimizer':optimizer,
@@ -110,8 +111,8 @@ def main():
     p.add_argument('action',choices=('start','status'))
     p.add_argument('--hours',type=float,default=3)
     p.add_argument('--optimizer',choices=('muon','adam'),default='muon')
-    p.add_argument('--microbatch',type=int,choices=(64,128),default=128)
-    p.add_argument('--attention',choices=('auto','flash','math'),default='auto')
+    p.add_argument('--microbatch',type=int,choices=(32,64,128),default=64)
+    p.add_argument('--attention',choices=('auto','flash','math'),default='flash')
     p.add_argument('--on-tpu',action='store_true',help=argparse.SUPPRESS)
     p.add_argument('--commit',help=argparse.SUPPRESS)
     a = p.parse_args()

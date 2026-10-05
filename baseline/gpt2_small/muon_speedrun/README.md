@@ -16,7 +16,7 @@ python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start
 ```
 
 The launcher uses the existing `ww-gpt2-validation-48h-20261004-s1337-node` in
-`tpu-builders-504820/us-west4-a`. It creates no TPU, changes no installed packages,
+`tpu-builders-504820/us-west4-a`. It creates no TPU, preserves the shared environment,
 and refuses concurrent training. Repeating start while active prints status.
 It starts from scratch because the previous 30-minute run saved no model.
 
@@ -44,7 +44,7 @@ python3 baseline/gpt2_small/muon_speedrun/cloudshell.py status
 | Model changes | RoPE, RMSNorm/QK normalization, squared ReLU, zero output projections, value residuals, learned input/UNet skip weights, untied output head, logit soft cap 30 |
 | Parameters | About 162M total; this is a modified transformer, not standard GPT-2 Small |
 | Context / global batch | 1,024 tokens / 524,288 tokens per update |
-| Default TPU microbatch | 128 sequences globally, four accumulation passes; 16 sequences per chip |
+| Default TPU microbatch | 64 sequences globally, eight accumulation passes; 8 sequences per chip |
 | Schedule | 3,000 updates, zero warmup, constant LR through 2,100 then 900-update linear decay |
 | Hidden matrices | Muon LR 0.04; five quintic Newton–Schulz iterations |
 | Muon momentum | Linear ramp 0.85 to 0.95 over the first 500 updates; Nesterov |
@@ -55,8 +55,10 @@ python3 baseline/gpt2_small/muon_speedrun/cloudshell.py status
 | Target | Full validation NLL <= 3.28, equivalent to perplexity <= exp(3.28) |
 
 All model and optimizer settings come from the source record. The global batch
-stays fixed when microbatch size changes. `--microbatch 64` uses eight accumulation
-passes if the 128-sequence configuration exceeds device memory. No automatic
+stays fixed when microbatch size changes. `--microbatch 32` uses sixteen accumulation
+passes for additional memory headroom. The first 128-sequence/math-attention run
+failed at update zero: 16.89 GiB required versus 15.75 GiB available per chip.
+The default is now 64 and flash attention is required. No automatic
 microbatch change or restart can silently alter a run. The selected microbatch
 is a starting point, not the result of a TPU tuning sweep.
 
@@ -70,14 +72,20 @@ coefficients, Nesterov convention and rectangular scaling. It is **Muon, not
 MuonClip**. Learning rate and momentum are device tensors to avoid compiling a
 new graph solely because their Python values change.
 
-The worker tests PyTorch/XLA 2.6 TPU flash attention at sequence length 1,024 and
-head dimension 128 before using it. The check compares outputs and Q/K/V gradients
+The worker installs JAX and jaxlib **0.4.38**, the exact Pallas versions specified
+by [PyTorch/XLA 2.6 setup.py](https://github.com/pytorch/xla/blob/v2.6.0/setup.py),
+plus pinned ml-dtypes/opt-einsum into a run-local `pallas-deps` overlay. It does
+not upgrade torch, torch_xla, libtpu, NumPy, SciPy or the shared venv. It verifies
+the imports and records versions before starting the TPU check.
+
+The worker tests PyTorch/XLA 2.6 TPU flash attention at the selected batch size,
+sequence length 1,024 and head dimension 128. The check compares outputs and Q/K/V gradients
 against mathematical attention with BF16 relative-L2 tolerance 0.03. It supplies
 `sm_scale=1/sqrt(head_dim)` and the SPMD batch partition explicitly. The isolated
-check is capped at five minutes. With default `--attention auto`, an unavailable
-or failing kernel is logged and the job uses mathematical attention. Request
-`--attention flash` to require a passing kernel, or `--attention math` to select
-mathematical attention explicitly. No dependency upgrade is performed.
+check is capped at five minutes. With default `--attention flash`, an unavailable
+or failing kernel stops the job. The legacy `auto` option also requires a pass;
+there is no implicit fallback to a memory-heavier attention implementation.
+`--attention math` remains an explicit diagnostic option with microbatch <=64.
 
 The 16 necessary training shards plus validation are SHA256-verified and prepared
 before training, reusing `/mnt/disks/rg-data/benchmark-fineweb10B-889765ea`. This
@@ -96,7 +104,7 @@ can differ; these are recorded rather than represented as exact reproduction.
 Runs live at `/mnt/disks/rg-data/gpt2small/muon-speedrun-<optimizer>-<timestamp>`.
 `MUON_SPEEDRUN_LATEST.json` identifies the latest run and service.
 
-- `checkpoint_latest.pt`: atomic full-state save at initialization, every 125
+- `checkpoint_latest.pt`: atomic full-state save at initialization, updates 1 and 5, every 125
   updates, and normal stop. Includes model, optimizers, RNG, data cursor, recipe
   and next-step schedule. No automatic resume. TPU resume parity is not yet tested.
 - `checkpoint_best.pt`: best fully evaluated checkpoint; a hard link protects it

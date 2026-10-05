@@ -63,8 +63,8 @@ def main():
     p.add_argument('root', type=Path)
     p.add_argument('deadline', type=float)
     p.add_argument('--optimizer', choices=('muon','adam'), default='muon')
-    p.add_argument('--microbatch', type=int, choices=(64,128), default=128)
-    p.add_argument('--attention', choices=('auto','flash','math'), default='auto')
+    p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
+    p.add_argument('--attention', choices=('auto','flash','math'), default='flash')
     p.add_argument('--backup-only', action='store_true')
     a = p.parse_args()
     if a.backup_only:
@@ -78,6 +78,15 @@ def main():
     args = ['--root',str(a.root),'--microbatch',str(a.microbatch)]
     train_deadline = a.deadline-600
     try:
+        if a.attention == 'math' and a.microbatch > 64:
+            raise RuntimeError('Mathematical attention with microbatch 128 exceeded this TPU memory; use <=64')
+        if a.attention != 'math':
+            installed = bounded([sys.executable,'-u',str(here/'pallas_dependencies.py'),str(a.root)],
+                                min(600,train_deadline-time.time()-300),a.root,'pinned Pallas dependencies')
+            if installed['exit_code'] != 0:
+                write(a.root,'PALLAS_DEPENDENCY_FAILURE.json',installed)
+                raise RuntimeError('Pallas dependency setup failed; training not started')
+            os.environ['PYTHONPATH'] = str(a.root/'pallas-deps')+os.pathsep+os.environ.get('PYTHONPATH','')
         prep_deadline = min(time.time()+900, train_deadline-300)
         result = bounded(common+['prepare',*args,'--deadline',str(prep_deadline)],
                          prep_deadline-time.time(), a.root, 'benchmark data')
@@ -92,9 +101,7 @@ def main():
                 attention = 'flash'
             else:
                 write(a.root, 'ATTENTION_CHECK_FAILURE.json', checked)
-                if a.attention == 'flash':
-                    raise RuntimeError('Requested flash attention failed validation')
-                print('TPU flash check unavailable/failed; using mathematical attention. See ATTENTION_CHECK_FAILURE.json.', flush=True)
+                raise RuntimeError('TPU flash attention failed validation; no automatic mathematical-attention fallback')
         run.update(status='training', attention=attention)
         write(a.root, 'RUN_STATUS.json', run)
         result = bounded(common+['train',*args,'--deadline',str(train_deadline),
@@ -103,11 +110,20 @@ def main():
         run.update(result)
         if result['exit_code'] != 0:
             run['status'] = 'failed_or_timed_out'
+            failure = a.root/'FAILURE.json'
+            if failure.exists():
+                run['error'] = json.loads(failure.read_text()).get('error','')[:2000]
         else:
             status = json.loads((a.root/'status.json').read_text())
             run.update(status=status['status'], target_met=status['target_met'], step=status['step'])
     except Exception as exc:
         run.update(status='failed', error=str(exc))
+    if run['status'] in ('failed','failed_or_timed_out'):
+        previous = {}
+        if (a.root/'status.json').exists():
+            previous = json.loads((a.root/'status.json').read_text())
+        write(a.root,'status.json',{'status':run['status'],'last_recorded_step':previous.get('step'),
+                                  'error':run.get('error'), 'target_met':False})
     write(a.root, 'RUN_STATUS.json', run)
     backed = bounded([sys.executable,'-u',__file__,str(a.root),str(a.deadline),'--backup-only'],
                      min(590, a.deadline-time.time()-10), a.root, 'cloud backup')
