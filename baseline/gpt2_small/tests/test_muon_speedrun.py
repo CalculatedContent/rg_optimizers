@@ -457,3 +457,29 @@ def test_active_longrun_blocks_other_trainers(tmp_path,monkeypatch):
     monkeypatch.setattr(module,'active',lambda u:u=='longrun.service')
     with pytest.raises(RuntimeError,match='25k Muon run is active'):
         module.assert_idle()
+
+
+@pytest.mark.parametrize('full_budget,expected_steps',[(False,1),(True,3)])
+def test_full_budget_training_continues_after_target(tmp_path,monkeypatch,full_budget,expected_steps):
+    import signal, time
+    run=runner(); Config=port.GPTConfig
+    monkeypatch.setattr(port,'GPTConfig',lambda:Config(vocab_size=128,n_layer=2,n_head=2,n_embd=16))
+    monkeypatch.setattr(run,'TOTAL_STEPS',3)
+    monkeypatch.setattr(run,'MEASUREMENT_INTERVAL',1)
+    source=types.SimpleNamespace(manifest={'repo':'test','revision':'fixed'},array=lambda name:None)
+    monkeypatch.setattr(run,'FineWeb',lambda *a:source)
+    x=torch.arange(16).reshape(2,8)
+    stream=types.SimpleNamespace(shard=1,position=0,next_batch=lambda:(x,x))
+    monkeypatch.setattr(run,'TrainStream',lambda *a:stream)
+    def evaluate(model,tokens,rt,root,step,*args):
+        return dict(step=step,full_benchmark_evaluation=True,evaluation_tokens=10485760,
+                    val_nll=3.,val_token_error=.6)
+    monkeypatch.setattr(run,'evaluate',evaluate)
+    args=types.SimpleNamespace(root=tmp_path,seed=1338,device='cpu',attention='math',optimizer='adamw',
+                               cache=tmp_path,deadline=time.time()+600,microbatch=64,full_budget=full_budget)
+    previous=signal.getsignal(signal.SIGTERM)
+    try: run.train(args)
+    finally: signal.signal(signal.SIGTERM,previous)
+    assert json.loads((tmp_path/'status.json').read_text())['step']==expected_steps
+    manifest=json.loads((tmp_path/'manifest.json').read_text())
+    assert manifest['seed']==1338 and manifest['full_budget']==full_budget

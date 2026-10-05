@@ -1,4 +1,12 @@
-# GPT-2 Small / FineWeb-Edu validation
+# nanoGPT speedruns and GPT-2 validation
+
+The main repeated-seed speedrun entry point is **`python3 baseline/gpt2_small/speedrun.py plan`**.
+See [the paired-seed protocol](muon_speedrun/REPEATED_SEEDS.md) for six fresh
+3,000-update runs: three matched seeds each for Muon and AdamW, full-budget
+cooldowns, paired WeightWatcher/token-error measurements, and seed-level statistics.
+This uses the existing modified multi-head speedrun model; it is not the one-head
+FineWeb-Edu experiment or a claim of stock GPT-2 architecture.
+
 
 For the **fresh 25,000-update Muon experiment with the validated speedrun model**,
 see [muon_longrun/README.md](muon_longrun/README.md). It preserves the successful

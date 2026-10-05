@@ -28,6 +28,9 @@ def active(unit):
 
 
 def assert_idle():
+    suite=BASE/'NANOGPT_SPEEDRUN_SUITE_LATEST.json'
+    if suite.exists() and active(json.loads(suite.read_text())['unit']):
+        raise RuntimeError('The nanoGPT repeated-seed suite is active; no concurrent trainer launched.')
     longrun=BASE/'MUON_LONG25K_LATEST.json'
     if longrun.exists() and active(json.loads(longrun.read_text())['unit']):
         raise RuntimeError('The 25k Muon run is active; no concurrent trainer launched.')

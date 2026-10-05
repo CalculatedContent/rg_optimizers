@@ -22,6 +22,7 @@ TOTAL_STEPS = 3000
 BATCH_TOKENS = 524288
 VAL_TOKENS = 10485760
 TARGET = 3.28
+MEASUREMENT_INTERVAL = 125
 HERE = Path(__file__).resolve().parent
 
 
@@ -127,7 +128,7 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
 
 def train(a):
     root = a.root
-    seed = 1337
+    seed = a.seed
     torch.set_num_threads(4)
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -148,6 +149,7 @@ def train(a):
     val = source.array('fineweb_val_000000.bin')
     manifest = {'recipe':'2024-11-10_UNetDoubleLr'+('' if muon else '-'+a.optimizer+'-control'),
                 'optimizer':a.optimizer, 'seed':seed,
+                'full_budget':a.full_budget,
                 'config':asdict(model.config), 'parameters':sum(p.numel() for p in model.parameters()),
                 'steps':TOTAL_STEPS, 'batch_tokens':BATCH_TOKENS,
                 'global_microbatch_sequences':a.microbatch, 'accumulation':512//a.microbatch,
@@ -170,7 +172,7 @@ def train(a):
                             'token_error':'teacher-forced top-1 error on the same benchmark validation tokens'},
                 'differences':['TPU SPMD instead of CUDA DDP', 'batched matrix-partitioned Muon',
                                'microbatch accumulation and shard-boundary ordering',
-                               'fixed seed 1337; original record did not pin a seed',
+                               f'fixed seed {seed}; original record did not pin a seed',
                                'CPU-precomputed BF16 rotary buffers; hardware rounding differs'],
                 'optimality':('Published GPU recipe; TPU convergence/performance unvalidated' if muon else
                              'Same-model Adam(W) control; hyperparameters not tuned for this architecture'),
@@ -219,12 +221,12 @@ def train(a):
             write_json(root/'status.json', {'status':'training', **row})
         if step in (1,5):
             save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, None, best)
-        if step % 125 == 0:
+        if step % MEASUREMENT_INTERVAL == 0:
             validation = evaluate(model, val, rt, root, step, a.deadline-90, a.microbatch, started)
             save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validation, best)
             if validation['full_benchmark_evaluation']:
                 best = min(best, validation['val_nll'])
-            if target_met(validation):
+            if target_met(validation) and not a.full_budget:
                 break
     if validation is None or validation['step'] != step:
         validation = evaluate(model, val, rt, root, step, a.deadline-60, a.microbatch, started)
@@ -248,6 +250,8 @@ def main():
     p.add_argument('--attention', choices=('flash', 'math'), default='flash')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
     p.add_argument('--optimizer', choices=('muon', 'adam', 'adamw'), default='muon')
+    p.add_argument('--seed', type=int, default=1337)
+    p.add_argument('--full-budget', action='store_true', help='Complete all 3000 updates even if target is reached')
     a = p.parse_args()
     if a.action == 'prepare':
         prepare(a.cache, a.deadline, a.root, a.microbatch)

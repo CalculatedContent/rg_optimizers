@@ -101,6 +101,8 @@ def main():
     p.add_argument('root', type=Path)
     p.add_argument('deadline', type=float)
     p.add_argument('--optimizer', choices=('muon','adam','adamw'), default='muon')
+    p.add_argument('--seed', type=int, default=1337)
+    p.add_argument('--full-budget', action='store_true')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
     p.add_argument('--attention', choices=('auto','flash','math'), default='flash')
     p.add_argument('--backup-only', action='store_true')
@@ -110,10 +112,13 @@ def main():
         return 0
     here = Path(__file__).resolve().parent
     run = {'status':'preparing', 'target_met':False, 'automatic_restart':False,
-           'deadline_unix':a.deadline, 'optimizer':a.optimizer}
+           'deadline_unix':a.deadline, 'optimizer':a.optimizer, 'seed':a.seed,
+           'full_budget':a.full_budget}
     write(a.root, 'RUN_STATUS.json', run)
     common = [sys.executable, '-u', str(here/'run.py')]
-    args = ['--root',str(a.root),'--microbatch',str(a.microbatch)]
+    args = ['--root',str(a.root),'--microbatch',str(a.microbatch),'--seed',str(a.seed)]
+    if a.full_budget:
+        args += ['--full-budget']
     train_deadline = a.deadline-600
     tracker = None
     try:

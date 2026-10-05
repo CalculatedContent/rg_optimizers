@@ -7,6 +7,13 @@ excludes validation and the first ten updates and is **not a TPU prediction**.
 This is an established portable recipe, not the latest CUDA speed record and not
 a claim of optimality on v5e. TPU convergence and performance require a live run.
 
+## Repeated-seed speedrun
+
+Use the main entry point `python3 baseline/gpt2_small/speedrun.py plan`.
+[The paired-seed suite](REPEATED_SEEDS.md) runs Muon and AdamW with seeds
+1337, 1338 and 1339, keeping all 3,000 updates per run and producing mean ± SD
+across seeds. The single-run commands below retain their target-based stopping.
+
 ## Start from Cloud Shell
 
 Use a clean checkout of the published commit:
