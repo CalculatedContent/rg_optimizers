@@ -171,3 +171,31 @@ def test_real_ww_zero_and_randomized_fields(tmp_path):
     for key in ('alpha_raw','alpha_clip_xmax','alpha_weighted','log_alpha_norm','matrix_rank','max_rand_eval'):
         assert key in rows['L00_W_Q']
     assert out['summary']['weightwatcher_seconds']>0
+
+
+def test_captured_cloud_error_is_visible(monkeypatch,capsys):
+    mod=launcher()
+    def denied(*a,**k):
+        raise mod.subprocess.CalledProcessError(1,a[0],stderr='Permission denied: tpu.nodes.get')
+    monkeypatch.setattr(mod.subprocess,'run',denied)
+    with pytest.raises(RuntimeError,match='No trainer started'): mod.live_lease()
+    assert 'Permission denied: tpu.nodes.get' in capsys.readouterr().err
+
+
+@pytest.mark.parametrize('uid',[0,1000])
+def test_direct_mode_does_not_ssh_or_change_credentials(monkeypatch,uid):
+    mod=launcher(); calls=[]
+    monkeypatch.setattr(mod.os,'geteuid',lambda:uid)
+    monkeypatch.setattr(mod.subprocess,'run',lambda c:calls.append(c) or types.SimpleNamespace(returncode=0))
+    command=['sudo','python3','-c','code','start','--on-tpu']
+    assert mod.dispatch(command,True)==0
+    assert calls==[command if uid else command[1:]]
+
+
+def test_direct_start_requires_matching_live_node(monkeypatch):
+    import io
+    mod=launcher()
+    monkeypatch.setattr(mod.urllib.request,'urlopen',lambda *a,**k:io.BytesIO(b'10.0.0.7'))
+    mod.verify_local_host({'node_internal_ips':['10.0.0.7']})
+    with pytest.raises(RuntimeError,match='does not match'):
+        mod.verify_local_host({'node_internal_ips':['10.0.0.8']})

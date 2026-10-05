@@ -88,6 +88,17 @@ Output is under `/mnt/disks/rg-data/gpt2small/muon-long25k-s1337-<UTC timestamp>
 current update, then drains tracking and performs backup. There is no automatic
 restart. Do not delete the allocation before the stop/backup finishes.
 
+If your prompt is `charles@t1v-...`, you are already inside the TPU, not on your
+Mac. Prefer running the launch command from the Mac session where you logged
+into Google Cloud. Cloud CLI errors are now printed rather than hidden behind
+`CalledProcessError`. No training starts when the lease lookup fails.
+
+For direct execution on the TPU, add `--here` (also supported for status/metrics/stop).
+Start still queries the live cloud API using the invoking account, verifies the
+guest's metadata IP against the checked node, and then uses local `sudo` to create
+the service. This avoids SSHing back into the same machine. It does not grant
+the VM service account additional permissions or bypass lease verification.
+
 ## Measurement plan
 
 | Output | Cadence |

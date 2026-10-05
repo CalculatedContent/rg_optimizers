@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import uuid
+import urllib.request
 
 PROJECT='tpu-builders-504820'; ZONE='us-west4-a'
 NODE='ww-gpt2-validation-48h-20261004-s1337-node'
@@ -20,7 +21,13 @@ BASE=Path('/mnt/disks/rg-data/gpt2small'); LATEST=BASE/'MUON_LONG25K_LATEST.json
 MIN_REMAINING=12.5*3600
 
 
-def run(command,**kwargs): return subprocess.run(command,check=True,text=True,**kwargs)
+def run(command,**kwargs):
+    try:
+        return subprocess.run(command,check=True,text=True,**kwargs)
+    except subprocess.CalledProcessError as exc:
+        # capture_output previously swallowed the reason gcloud refused the query.
+        if exc.stderr: print(exc.stderr.rstrip(),file=sys.stderr,flush=True)
+        raise
 
 
 def timestamp(value):
@@ -45,6 +52,7 @@ def lease_from(node,queue,now):
     result={'node':NODE,'queue':queue['name'].rsplit('/',1)[-1],
         'queue_created':queue.get('createTime'),'node_created':node.get('createTime'),
         'max_run_duration':queue.get('runDuration',{}).get('maxRunDuration'),
+        'node_internal_ips':[item['ipAddress'] for item in node.get('networkEndpoints',[]) if item.get('ipAddress')],
         'termination_unix':expiry,'termination_utc':dt.datetime.fromtimestamp(expiry,dt.timezone.utc).isoformat(),
         'checked_unix':now,'remaining_hours':(expiry-now)/3600}
     print(json.dumps(result,indent=2),flush=True)
@@ -55,11 +63,35 @@ def lease_from(node,queue,now):
 
 def live_lease():
     flags=['--project='+PROJECT,'--zone='+ZONE,'--format=json']
-    node=json.loads(run(['gcloud','alpha','compute','tpus','tpu-vm','describe',NODE,*flags],capture_output=True).stdout)
+    try:
+        node=json.loads(run(['gcloud','alpha','compute','tpus','tpu-vm','describe',NODE,*flags],capture_output=True).stdout)
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError('Cloud lease lookup failed before launch. See the gcloud error above. '
+            'Use the Mac/Cloud Shell session authenticated as your project user; '
+            'the TPU guest may be using a different account. No trainer started.') from exc
     queue_name=node.get('queuedResource','').rsplit('/',1)[-1]
     if not queue_name: raise RuntimeError('Could not determine the node\'s queued resource')
     queue=json.loads(run(['gcloud','alpha','compute','tpus','queued-resources','describe',queue_name,*flags],capture_output=True).stdout)
     return lease_from(node,queue,time.time())
+
+
+def verify_local_host(lease):
+    """Do not launch on a different VM merely because a data mount exists there."""
+    req=urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip',
+                               headers={'Metadata-Flavor':'Google'})
+    with urllib.request.urlopen(req,timeout=5) as response:
+        address=response.read().decode().strip()
+    if address not in lease.get('node_internal_ips',[]):
+        raise RuntimeError('This VM does not match the checked TPU endpoint; no local launch')
+
+
+def dispatch(command,here):
+    # --here keeps the cloud lookup in the invoking account, then elevates locally.
+    # Credentials, IAM policies and the lease requirement are never changed.
+    if here:
+        return subprocess.run(command if os.geteuid()!=0 else command[1:]).returncode
+    return subprocess.run(['gcloud','compute','tpus','tpu-vm','ssh',NODE,'--project='+PROJECT,
+                           '--zone='+ZONE,'--worker=0','--command='+shlex.join(command)]).returncode
 
 
 def active(unit):
@@ -167,6 +199,7 @@ def start_remote(commit,lease,request_id,resume=None):
 def main():
     p=argparse.ArgumentParser(); p.add_argument('action',choices=('start','recover','status','metrics','stop'))
     p.add_argument('--checkpoint',type=Path,help='Explicit recovery from this long plan only; never used by start')
+    p.add_argument('--here',action='store_true',help='Run directly on this TPU; start still requires cloud read access')
     p.add_argument('--on-tpu',action='store_true',help=argparse.SUPPRESS)
     p.add_argument('--commit',help=argparse.SUPPRESS); p.add_argument('--lease',help=argparse.SUPPRESS)
     p.add_argument('--request-id',help=argparse.SUPPRESS); a=p.parse_args()
@@ -184,8 +217,8 @@ def main():
             raise RuntimeError('Use a clean checkout of the pushed commit')
         commit=run(['git','-C',str(repo),'rev-parse','HEAD'],capture_output=True).stdout.strip()
         lease=live_lease()
+        if a.here: verify_local_host(lease)
         command+=['--commit',commit,'--lease',json.dumps(lease),'--request-id',uuid.uuid4().hex]
-    return subprocess.run(['gcloud','compute','tpus','tpu-vm','ssh',NODE,'--project='+PROJECT,
-                           '--zone='+ZONE,'--worker=0','--command='+shlex.join(command)]).returncode
+    return dispatch(command,a.here)
 
 if __name__=='__main__': raise SystemExit(main())
