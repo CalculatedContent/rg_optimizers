@@ -1,5 +1,11 @@
 # GPT-2 Small / FineWeb-Edu validation
 
+For the **fresh 25,000-update Muon experiment with the validated speedrun model**,
+see [muon_longrun/README.md](muon_longrun/README.md). It preserves the successful
+six-head Muon/FineWeb recipe, stretches cooldown to updates 17,500–25,000,
+and records full-validation token error against all 72 raw/clipped alpha trajectories.
+The launcher checks the live TPU lease and retains the completed reference run.
+
 For the **published 3,000-update Muon speedrun recipe on eight TPU chips**, see
 [muon_speedrun/README.md](muon_speedrun/README.md). It uses a modified transformer,
 targets full-validation loss 3.28, saves checkpoints every 125 updates, and pairs
