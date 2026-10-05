@@ -14,7 +14,7 @@ import torch
 
 import model as architecture
 from data import FineWeb, TrainStream, write_json, prepare
-from optim import make_optimizers, apply_update, schedule, momentum
+from optim import make_optimizers, apply_update, schedule, momentum, optimizer_metadata
 from runtime import Runtime, attention_check
 from tracking import queue_snapshot
 
@@ -116,6 +116,7 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
            'val_accuracy':1-error_count/evaluated if evaluated else None,
            'elapsed_seconds':time.time()-started, 'recorded_unix':time.time()}
     reference = json.loads((HERE/'reference_val.json').read_text())
+    row['published_reference_optimizer'] = 'muon'
     row['published_at_same_step'] = next((r for r in reference if r['step'] == step), None)
     row['target_met'] = target_met(row)
     record(root, row)
@@ -145,7 +146,8 @@ def train(a):
     source = FineWeb(a.cache, a.deadline-180)
     stream = TrainStream(source, a.microbatch, 1024)
     val = source.array('fineweb_val_000000.bin')
-    manifest = {'recipe':'2024-11-10_UNetDoubleLr', 'optimizer':a.optimizer, 'seed':seed,
+    manifest = {'recipe':'2024-11-10_UNetDoubleLr'+('' if muon else '-'+a.optimizer+'-control'),
+                'optimizer':a.optimizer, 'seed':seed,
                 'config':asdict(model.config), 'parameters':sum(p.numel() for p in model.parameters()),
                 'steps':TOTAL_STEPS, 'batch_tokens':BATCH_TOKENS,
                 'global_microbatch_sequences':a.microbatch, 'accumulation':512//a.microbatch,
@@ -153,7 +155,11 @@ def train(a):
                 'muon_lr':0.04 if muon else None, 'adam_embedding_lr':0.6,
                 'adam_head_lr':0.008, 'adam_scalar_lr':0.04,
                 'adam_control_matrix_lr':0.0006 if not muon else None,
-                'warmup_updates':0, 'warmdown_updates':900, 'weight_decay':0,
+                'warmup_updates':0, 'warmdown_updates':900,
+                'weight_decay':0.1 if a.optimizer == 'adamw' else 0,
+                'weight_decay_scope':'hidden_matrices_only' if a.optimizer == 'adamw' else 'none',
+                'adam_implementation':optimizer_metadata(adam),
+                'comparison_reference':'muon-speedrun-muon-20261005-030026',
                 'gradient_clipping':False, 'attention':a.attention,
                 'data_repo':source.manifest['repo'], 'data_revision':source.manifest['revision'],
                 'record_source_sha256':hashlib.sha256((HERE/'vendor/record_source.py').read_bytes()).hexdigest(),
@@ -166,7 +172,13 @@ def train(a):
                                'microbatch accumulation and shard-boundary ordering',
                                'fixed seed 1337; original record did not pin a seed',
                                'CPU-precomputed BF16 rotary buffers; hardware rounding differs'],
-                'optimality':'Published GPU recipe; TPU convergence/performance unvalidated'}
+                'optimality':('Published GPU recipe; TPU convergence/performance unvalidated' if muon else
+                             'Same-model Adam(W) control; hyperparameters not tuned for this architecture'),
+                'comparison_note':('Compare to the 3000-update Muon run at equal tokens. '
+                                   'The 25000-update run used a different training budget and LR schedule.')}
+    if not muon:
+        manifest['differences'].remove('batched matrix-partitioned Muon')
+        manifest['differences'].append('Hidden Muon replaced by '+a.optimizer+'; optimizer groups recorded above')
     write_json(root/'manifest.json', manifest)
     print(json.dumps(manifest), flush=True)
     step, best, validation = 0, float('inf'), None
@@ -235,7 +247,7 @@ def main():
     p.add_argument('--device', choices=('tpu', 'cpu'), default='tpu')
     p.add_argument('--attention', choices=('flash', 'math'), default='flash')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
-    p.add_argument('--optimizer', choices=('muon', 'adam'), default='muon')
+    p.add_argument('--optimizer', choices=('muon', 'adam', 'adamw'), default='muon')
     a = p.parse_args()
     if a.action == 'prepare':
         prepare(a.cache, a.deadline, a.root, a.microbatch)

@@ -100,7 +100,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('root', type=Path)
     p.add_argument('deadline', type=float)
-    p.add_argument('--optimizer', choices=('muon','adam'), default='muon')
+    p.add_argument('--optimizer', choices=('muon','adam','adamw'), default='muon')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
     p.add_argument('--attention', choices=('auto','flash','math'), default='flash')
     p.add_argument('--backup-only', action='store_true')

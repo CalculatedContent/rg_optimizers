@@ -28,6 +28,9 @@ def active(unit):
 
 
 def assert_idle():
+    longrun=BASE/'MUON_LONG25K_LATEST.json'
+    if longrun.exists() and active(json.loads(longrun.read_text())['unit']):
+        raise RuntimeError('The 25k Muon run is active; no concurrent trainer launched.')
     speedrun=BASE/'MUON_SPEEDRUN_LATEST.json'
     if speedrun.exists() and active(json.loads(speedrun.read_text())['unit']):
         raise RuntimeError('Muon speedrun is active; no concurrent trainer launched.')

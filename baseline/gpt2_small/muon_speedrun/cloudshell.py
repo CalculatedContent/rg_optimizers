@@ -54,14 +54,30 @@ def stop_current():
     unit = record['unit']
     if not re.fullmatch(r'rg-muon-speedrun-\d{8}-\d{6}\.service', unit):
         raise RuntimeError('Unexpected service name; refusing to stop it')
+    if not active(unit):
+        return
     print('Stopping previous Muon speedrun: '+unit, flush=True)
     run(['systemctl','stop',unit], timeout=60)
     if active(unit):
         raise RuntimeError('Previous service is still active; new run not started')
 
 
+def stop_longrun():
+    pointer = BASE/'MUON_LONG25K_LATEST.json'
+    if not pointer.exists():
+        return
+    unit = json.loads(pointer.read_text())['unit']
+    if not re.fullmatch(r'rg-muon-long25k-\d{8}-\d{6}\.service', unit):
+        raise RuntimeError('Unexpected long-run service; refusing to stop it')
+    if active(unit):
+        print('Stopping recorded long run: '+unit+'; existing files retained.', flush=True)
+        run(['systemctl','stop',unit], timeout=60)
+        if active(unit):
+            raise RuntimeError('Long run is still active; comparison not started')
+
+
 def start_remote(commit, hours=3, optimizer='muon', microbatch=64, attention='flash', replace_current=False,
-                 launch_id=None):
+                 launch_id=None, replace_longrun=False):
     if os.geteuid() != 0 or not os.path.ismount('/mnt/disks/rg-data'):
         raise RuntimeError('Requires the existing mounted disk and root')
     if not re.fullmatch('[0-9a-f]{40}',commit):
@@ -91,6 +107,8 @@ def start_remote(commit, hours=3, optimizer='muon', microbatch=64, attention='fl
         run(['git','-C',str(repo),'checkout','--detach',commit])
         if replace_current:
             stop_current()
+        if replace_longrun:
+            stop_longrun()
         guard = repo/'baseline/gpt2_small/scripts/run_muonclip.py'
         spec = importlib.util.spec_from_file_location('training_guard',guard)
         module = importlib.util.module_from_spec(spec)
@@ -107,6 +125,8 @@ def start_remote(commit, hours=3, optimizer='muon', microbatch=64, attention='fl
                   'started_unix':time.time(),'deadline_unix':deadline,'hours_cap':hours,
                   'target_val_nll':3.28,'checkpoint_interval':125,'microbatch':microbatch,
                   'weightwatcher_interval':125, 'validation_token_error':True,
+                  'fresh_initialization':True, 'automatic_restart':False,
+                  'comparison_reference':'muon-speedrun-muon-20261005-030026',
                   'cloud_uri':'gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name}
         (root/'launch.json').write_text(json.dumps(record,indent=2))
         (root/'commit.txt').write_text(commit+'\n')
@@ -135,10 +155,12 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('action',choices=('start','status'))
     p.add_argument('--hours',type=float,default=3)
-    p.add_argument('--optimizer',choices=('muon','adam'),default='muon')
+    p.add_argument('--optimizer',choices=('muon','adam','adamw'),default='muon')
     p.add_argument('--microbatch',type=int,choices=(32,64,128),default=64)
     p.add_argument('--attention',choices=('auto','flash','math'),default='flash')
     p.add_argument('--replace-current',action='store_true',help='Stop the previous speedrun and start from initialization')
+    p.add_argument('--replace-longrun',action='store_true',help='Stop the recorded 25k training service, retaining its files')
+    p.add_argument('--here',action='store_true',help='Launch/status directly from the TPU terminal without self-SSH')
     p.add_argument('--on-tpu',action='store_true',help=argparse.SUPPRESS)
     p.add_argument('--commit',help=argparse.SUPPRESS)
     p.add_argument('--launch-id',help=argparse.SUPPRESS)
@@ -147,7 +169,7 @@ def main():
         raise ValueError('Hours must be between 1 and 12, bounded by existing allocation')
     if a.on_tpu:
         if a.action == 'start':
-            start_remote(a.commit,a.hours,a.optimizer,a.microbatch,a.attention,a.replace_current,a.launch_id)
+            start_remote(a.commit,a.hours,a.optimizer,a.microbatch,a.attention,a.replace_current,a.launch_id,a.replace_longrun)
         else:
             status_remote()
         return 0
@@ -156,12 +178,16 @@ def main():
                '--attention',a.attention]
     if a.replace_current:
         command += ['--replace-current']
+    if a.replace_longrun:
+        command += ['--replace-longrun']
     if a.action == 'start':
         repo = Path(__file__).resolve().parents[3]
         if run(['git','-C',str(repo),'status','--porcelain'],capture_output=True).stdout.strip():
             raise RuntimeError('Launch from a clean checkout of the pushed commit')
         commit = run(['git','-C',str(repo),'rev-parse','HEAD'],capture_output=True).stdout.strip()
         command += ['--commit',commit,'--launch-id',uuid.uuid4().hex]
+    if a.here:
+        return subprocess.run(command if os.geteuid() != 0 else command[1:]).returncode
     return subprocess.run(['gcloud','compute','tpus','tpu-vm','ssh',NODE,
         '--project='+PROJECT,'--zone='+ZONE,'--worker=0','--command='+shlex.join(command)]).returncode
 

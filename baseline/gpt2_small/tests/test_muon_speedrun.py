@@ -198,11 +198,12 @@ def test_flash_failure_never_starts_training(monkeypatch,tmp_path,attention):
     assert 'fallback' in json.loads((tmp_path/'status.json').read_text())['error']
 
 
-def test_worker_defaults_use_smaller_microbatch_and_verified_flash(monkeypatch,tmp_path):
+@pytest.mark.parametrize('optimizer',['muon','adamw'])
+def test_worker_defaults_use_smaller_microbatch_and_verified_flash(monkeypatch,tmp_path,optimizer):
     spec=importlib.util.spec_from_file_location('muon_worker_defaults',BASE/'worker.py')
     module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     import time
-    monkeypatch.setattr(sys,'argv',['worker.py',str(tmp_path),str(time.time()+10800)])
+    monkeypatch.setattr(sys,'argv',['worker.py',str(tmp_path),str(time.time()+10800),'--optimizer',optimizer])
     phases=[]
     def bounded(command,seconds,root,label,watch=False):
         phases.append((label,command))
@@ -217,6 +218,7 @@ def test_worker_defaults_use_smaller_microbatch_and_verified_flash(monkeypatch,t
     training=next(command for label,command in phases if '3,000-update' in label)
     assert training[training.index('--microbatch')+1]=='64'
     assert training[training.index('--attention')+1]=='flash'
+    assert training[training.index('--optimizer')+1]==optimizer
     assert phases[0][0]=='pinned Pallas dependencies'
 
 
@@ -300,7 +302,8 @@ def test_replace_stops_only_the_recorded_muon_service(tmp_path,monkeypatch):
     unit='rg-muon-speedrun-20261005-020737.service'
     pointer.write_text(json.dumps({'unit':unit}))
     monkeypatch.setattr(module,'LATEST',pointer)
-    monkeypatch.setattr(module,'active',lambda name:False)
+    states=iter([True,False])
+    monkeypatch.setattr(module,'active',lambda name:next(states))
     calls=[]; monkeypatch.setattr(module,'run',lambda command,**kwargs:calls.append(command))
     module.stop_current()
     assert calls==[['systemctl','stop',unit]]
@@ -340,3 +343,117 @@ def test_ssh_retry_cannot_replace_the_run_it_just_launched(tmp_path,monkeypatch)
     monkeypatch.setattr(module,'run',lambda *a,**k:pytest.fail('retry must not stop or launch'))
     module.start_remote('a'*40,replace_current=True,launch_id='same-request')
     assert seen==[True]
+
+
+def test_adamw_covers_all_parameters_and_decays_only_hidden_matrices():
+    from optim import optimizer_metadata
+    torch.manual_seed(1337)
+    model=small(port).float(); rt=Runtime('cpu')
+    initial={n:p.detach().clone() for n,p in model.named_parameters()}
+    muon,adamw=make_optimizers(model,rt,'adamw')
+    assert muon is None and type(adamw) is torch.optim.AdamW
+    params=[p for group in adamw.param_groups for p in group['params']]
+    assert len(params)==len({id(p) for p in params})==len(list(model.parameters()))
+    assert {id(p) for p in params}=={id(p) for p in model.parameters()}
+    hidden={id(p) for p in model.transformer.h.parameters() if p.ndim==2}
+    for name,p in model.named_parameters():
+        torch.testing.assert_close(p,initial[name],rtol=0,atol=0)
+        p.grad=torch.zeros_like(p)
+    apply_update(muon,adamw,rt,0)
+    for name,p in model.named_parameters():
+        factor=1-.0006*.1 if id(p) in hidden else 1.
+        torch.testing.assert_close(p,initial[name]*factor,rtol=0,atol=0)
+        # Decay is separate from Adam's moments; L2-regularized Adam fails this.
+        assert torch.count_nonzero(adamw.state[p]['exp_avg'])==0
+        assert torch.count_nonzero(adamw.state[p]['exp_avg_sq'])==0
+    meta=optimizer_metadata(adamw)
+    assert meta['class']=='torch.optim.AdamW'
+    assert [g['weight_decay'] for g in meta['groups']]==[0.,0.,0.,.1]
+    assert [g['peak_lr'] for g in meta['groups']]==[.6,.008,.04,.0006]
+
+
+def test_adamw_auxiliary_updates_match_muon_auxiliary_adam():
+    import copy
+    rt=Runtime('cpu'); model=small(port); control=copy.deepcopy(model)
+    _,adam=make_optimizers(model,rt,'muon')
+    _,adamw=make_optimizers(control,rt,'adamw')
+    for step in (0,2100,2500,2999):
+        for original,other in zip(model.parameters(),control.parameters()):
+            grad=torch.randn_like(original)
+            original.grad=grad.clone(); other.grad=grad.clone()
+        apply_update(None,adam,rt,step); apply_update(None,adamw,rt,step)
+        for group,other in zip(adam.param_groups,adamw.param_groups[:3]):
+            for p,q in zip(group['params'],other['params']):
+                torch.testing.assert_close(p,q,rtol=0,atol=0)
+
+
+def test_adamw_mixed_precision_control_learns_and_saves_optimizer(tmp_path):
+    torch.set_num_threads(1); torch.manual_seed(13)
+    model=small(port); rt=Runtime('cpu'); muon,adamw=make_optimizers(model,rt,'adamw')
+    x=torch.randint(128,(4,8)); y=x.clone(); losses=[]
+    for step in range(8):
+        model.zero_grad(set_to_none=False)
+        loss=model(x,y); loss.backward(); apply_update(muon,adamw,rt,step)
+        losses.append(float(loss.detach()))
+    assert losses[-1]<losses[0]
+    assert all(torch.isfinite(p).all() for p in model.parameters())
+    runner().save_checkpoint(tmp_path,model,muon,adamw,types.SimpleNamespace(shard=1,position=0),
+                             8,{'optimizer':'adamw'},rt,None,float('inf'))
+    state=torch.load(tmp_path/'checkpoint_latest.pt',weights_only=False)
+    assert state['muon'] is None and state['manifest']['optimizer']=='adamw'
+    assert state['adam']['param_groups'][-1]['weight_decay']==.1
+    with pytest.raises(ValueError,match='Unknown optimizer'):
+        make_optimizers(model,rt,'misspelled')
+
+
+def launch_module():
+    spec=importlib.util.spec_from_file_location('adamw_launcher_test',BASE/'cloudshell.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    return module
+
+
+def test_replace_longrun_stops_only_recorded_service_and_preserves_files(tmp_path,monkeypatch):
+    module=launch_module(); monkeypatch.setattr(module,'BASE',tmp_path)
+    unit='rg-muon-long25k-20261005-061503.service'
+    pointer=tmp_path/'MUON_LONG25K_LATEST.json'
+    pointer.write_text(json.dumps({'unit':unit}))
+    checkpoint=tmp_path/'checkpoint.pt'; checkpoint.write_bytes(b'keep')
+    states=iter([True,False]); monkeypatch.setattr(module,'active',lambda u:next(states))
+    calls=[]; monkeypatch.setattr(module,'run',lambda cmd,**kw:calls.append(cmd))
+    module.stop_longrun()
+    assert calls==[['systemctl','stop',unit]] and checkpoint.read_bytes()==b'keep'
+    monkeypatch.setattr(module,'active',lambda u:False)
+    module.stop_longrun(); assert len(calls)==1
+    pointer.write_text(json.dumps({'unit':'unrelated.service'}))
+    with pytest.raises(RuntimeError,match='Unexpected long-run'):
+        module.stop_longrun()
+    assert len(calls)==1
+
+
+def test_inactive_speedrun_needs_no_systemctl_stop(tmp_path,monkeypatch):
+    module=launch_module(); pointer=tmp_path/'latest.json'
+    pointer.write_text(json.dumps({'unit':'rg-muon-speedrun-20261005-030026.service'}))
+    monkeypatch.setattr(module,'LATEST',pointer)
+    monkeypatch.setattr(module,'active',lambda u:False)
+    monkeypatch.setattr(module,'run',lambda *a,**k:pytest.fail('inactive unit may have been collected'))
+    module.stop_current()
+
+
+def test_direct_tpu_mode_does_not_self_ssh(monkeypatch):
+    module=launch_module(); calls=[]
+    monkeypatch.setattr(sys,'argv',['cloudshell.py','status','--here'])
+    monkeypatch.setattr(module.os,'geteuid',lambda:1000)
+    monkeypatch.setattr(module.subprocess,'run',lambda cmd:calls.append(cmd) or types.SimpleNamespace(returncode=0))
+    assert module.main()==0
+    assert calls[0][:3]==['sudo','python3','-c'] and '--on-tpu' in calls[0]
+    assert not any('gcloud' in cmd for cmd in calls)
+
+
+def test_active_longrun_blocks_other_trainers(tmp_path,monkeypatch):
+    spec=importlib.util.spec_from_file_location('guard_test',BASE.parent/'scripts/run_muonclip.py')
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    monkeypatch.setattr(module,'BASE',tmp_path)
+    (tmp_path/'MUON_LONG25K_LATEST.json').write_text(json.dumps({'unit':'longrun.service'}))
+    monkeypatch.setattr(module,'active',lambda u:u=='longrun.service')
+    with pytest.raises(RuntimeError,match='25k Muon run is active'):
+        module.assert_idle()

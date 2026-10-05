@@ -78,23 +78,37 @@ class Muon:
 
 
 def make_optimizers(model, rt, kind='muon'):
+    if kind not in ('muon', 'adam', 'adamw'):
+        raise ValueError('Unknown optimizer: '+kind)
     matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
     scalars = [p for p in model.transformer.h.parameters() if p.ndim < 2] + [model.skip_weights]
     groups = [
-        {'params':[model.transformer.wte.weight], 'peak_lr':0.6},
-        {'params':[model.lm_head.weight], 'peak_lr':0.008},
-        {'params':scalars, 'peak_lr':0.04},
+        {'params':[model.transformer.wte.weight], 'peak_lr':0.6, 'role':'embedding'},
+        {'params':[model.lm_head.weight], 'peak_lr':0.008, 'role':'head'},
+        {'params':scalars, 'peak_lr':0.04, 'role':'scalars'},
     ]
     muon = Muon(matrices, rt) if kind == 'muon' else None
     if kind != 'muon':
-        # An explicit Adam control on the SAME model/data; not a tuned speed record.
-        groups.append({'params':[p for _, p in matrices], 'peak_lr':0.0006})
+        # Same-model control, not an independently tuned Adam(W) speed record.
+        # Keep auxiliary updates identical; decoupled decay is confined to the
+        # transformer matrices replacing Muon. No 0.1 decay at embedding LR 0.6.
+        groups.append({'params':[p for _, p in matrices], 'peak_lr':0.0006,
+                       'role':'hidden_matrices', 'weight_decay':0.1 if kind == 'adamw' else 0.})
     for group in groups:
         group['lr'] = group['peak_lr']
-    adam = torch.optim.Adam(groups, betas=(0.9, 0.95), eps=1e-8,
+    optimizer_class = torch.optim.AdamW if kind == 'adamw' else torch.optim.Adam
+    adam = optimizer_class(groups, betas=(0.9, 0.95), eps=1e-8,
                             weight_decay=0., foreach=False, fused=False,
                             capturable=rt.tpu)
     return muon, adam
+
+
+def optimizer_metadata(adam):
+    return {'class':'torch.optim.'+type(adam).__name__,
+            'groups':[{'role':g['role'], 'peak_lr':g['peak_lr'],
+                       'weight_decay':g['weight_decay'], 'betas':list(g['betas']),
+                       'eps':g['eps'], 'parameters':sum(p.numel() for p in g['params'])}
+                      for g in adam.param_groups]}
 
 
 def apply_update(muon, adam, rt, step):

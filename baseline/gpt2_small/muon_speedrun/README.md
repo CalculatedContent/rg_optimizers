@@ -171,6 +171,45 @@ saved. Detailed failure and attention-check records remain with the run.
 
 ## Optional Adam comparison
 
+### AdamW comparison, retaining WeightWatcher and token error
+
+From a clean checkout **on the TPU**, run:
+
+```bash
+python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start --here \
+  --optimizer adamw --microbatch 64 --attention flash --hours 3 \
+  --replace-current --replace-longrun
+```
+
+This stops only the recorded speedrun and 25k services if they are active, then
+starts from seed 1337 initialization. Existing checkpoints, CSVs, FineWeb, disk,
+bucket and TPU allocation remain. No self-SSH, new allocation or automatic restart.
+The allocation's recorded deadline still limits the three-hour service budget.
+Check with `python3 baseline/gpt2_small/muon_speedrun/cloudshell.py status --here`.
+
+`adamw` uses **torch.optim.AdamW**, not the legacy `adam` option. Hidden transformer
+matrices use LR **0.0006** and **decoupled weight decay 0.1**. Embedding/head/scalar
+LRs remain **0.6 / 0.008 / 0.04**, with **zero decay** in those auxiliary groups,
+preserving their original Adam update math. All groups use betas **0.9/0.95** and
+epsilon **1e-8**. The actual class, parameter counts and settings for every group
+are written to `manifest.json` and checkpoints.
+
+The model, initialization, data order, global batch, flash attention, 3,000-update
+schedule (no warmup, final 900-update cooldown), and measurement cadence are the
+same as the successful short Muon run. Raw/clipped WeightWatcher alphas for all
+72 matrices, full-validation NLL, perplexity, and top-1 **validation** token error
+are paired every 125 updates and at the final checkpoint. CPU tracking is isolated
+from training, and the existing disk saves and final cloud backup remain enabled.
+
+This is an **untuned, same-model AdamW control**, not a claim of an optimal AdamW
+speed record or a guaranteed NLL <=3.28. Compare at matching steps/tokens against
+`muon-speedrun-muon-20261005-030026` (3,000 updates, 1.572864B tokens). The 25k Muon
+run's final loss is not an equal-budget comparison. Decay is an additional recipe
+difference, so a loss difference alone cannot isolate the optimizer's update rule.
+The published curve retained in validation output is explicitly labeled **Muon**.
+
+### Legacy Adam control
+
 `--optimizer adam` runs the same model, seed, token stream, batch and 3,000-update
 schedule. Auxiliary Adam groups stay identical; hidden matrices use Adam with
 LR 0.0006, betas 0.9/0.95 and zero weight decay. This is an **untuned control**,
