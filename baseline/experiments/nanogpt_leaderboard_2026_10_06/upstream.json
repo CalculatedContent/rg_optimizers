@@ -1,0 +1,73 @@
+{
+  "experiment": "nanogpt_leaderboard_2026_10_06",
+  "retrieved_date": "2026-10-06",
+  "source_repo": "KellerJordan/modded-nanogpt",
+  "source_commit": "4ea6b937337a4889b8cfe3f38a93d120048d8f71",
+  "source_commit_date": "2026-09-28",
+  "record_number": 92,
+  "record_date": "2026-08-30",
+  "record_minutes": 0.665,
+  "record_seconds": 39.9,
+  "record_path": "records/track_1_short/2026-08-30_ANVIL2",
+  "record_pr": 360,
+  "source_entry": "train_gpt.py plus track_1_short/",
+  "target_validation_nll": 3.28,
+  "validation_tokens": 10485760,
+  "hardware": "8 NVIDIA H100 80GB GPUs on one node; CUDA/NCCL; not TPU",
+  "architecture": {
+    "num_layers": 11,
+    "num_heads": 6,
+    "model_dim": 768,
+    "head_dim_storage": 128,
+    "active_qk_widths": [
+      64,
+      128
+    ],
+    "active_v_widths": [
+      64,
+      128
+    ],
+    "attention_layers": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      10
+    ],
+    "ngram_rows": 84602880,
+    "ngram_width": 768,
+    "ngram_parameters": 64975011840,
+    "ngram_bf16_bytes": 129950023680
+  },
+  "optimizer": "Upstream ANVIL bank optimizer with auxiliary Adam and sparse row-wise Adam; no optimizer substitution",
+  "scheduled_base_steps": 1122,
+  "growth_steps": 52,
+  "extension_steps": 20,
+  "total_steps": 1194,
+  "stage_boundaries": [
+    0,
+    320,
+    681,
+    1107,
+    1174,
+    1194
+  ],
+  "stage_batch_tokens": [
+    131072,
+    262144,
+    393216,
+    327680,
+    131072
+  ],
+  "total_train_tokens": 328663040,
+  "train_seed": null,
+  "data_repo": "kjj0/fineweb10B-gpt2",
+  "data_revision": "upstream downloader uses repository default revision; per-run file SHA256 values are recorded",
+  "save_checkpoint_upstream_default": false,
+  "upstream_checkpoint_omits_ngram_table": true,
+  "optional_weight_export": "After final validation, dense state plus all rank-local ngram weight shards; analysis only, not optimizer resume",
+  "tpu_port": false,
+  "gpu_execution_verified": false
+}

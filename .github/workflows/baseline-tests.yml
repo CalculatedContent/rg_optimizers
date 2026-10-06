@@ -82,3 +82,4 @@ jobs:
           baseline/gpt2_small/tests/test_muon_speedrun.py
           baseline/gpt2_small/tests/test_speedrun30.py
           baseline/gpt2_small/tests/test_muon_longrun.py
+          baseline/experiments/nanogpt_leaderboard_2026_10_06/tests/test_reference.py
