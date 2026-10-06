@@ -2,6 +2,7 @@
 from collections import defaultdict
 import math
 import torch
+from stock_config import ARCHITECTURE
 
 
 def schedule(step):
@@ -80,6 +81,8 @@ class Muon:
 def make_optimizers(model, rt, kind='muon'):
     if kind not in ('muon', 'adam', 'adamw'):
         raise ValueError('Unknown optimizer: '+kind)
+    if getattr(model, 'architecture_id', None) == ARCHITECTURE:
+        return make_stock_optimizers(model, rt, kind)
     matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
     scalars = [p for p in model.transformer.h.parameters() if p.ndim < 2] + [model.skip_weights]
     groups = [
@@ -100,6 +103,30 @@ def make_optimizers(model, rt, kind='muon'):
     adam = optimizer_class(groups, betas=(0.9, 0.95), eps=1e-8,
                             weight_decay=0., foreach=False, fused=False,
                             capturable=rt.tpu)
+    return muon, adam
+
+
+def make_stock_optimizers(model, rt, kind):
+    """One owner per parameter, including the tied token embedding/output head.
+
+    Muon retains its hidden-matrix recipe; embeddings, biases and LayerNorm use
+    auxiliary AdamW at 6e-4. The control uses AdamW at 6e-4 for the entire model.
+    The legacy model's distinct 0.6 embedding / 0.008 head LRs cannot apply to a
+    tied parameter. Decay applies to AdamW matrices, never biases or LayerNorm.
+    """
+    matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
+    muon = Muon(matrices, rt) if kind == 'muon' else None
+    hidden_ids = {id(p) for _, p in matrices} if muon is not None else set()
+    auxiliary = [p for p in model.parameters() if id(p) not in hidden_ids]
+    groups = [dict(params=[p for p in auxiliary if p.ndim >= 2], role='matrices',
+                   weight_decay=0.0 if kind == 'adam' else 0.1),
+              dict(params=[p for p in auxiliary if p.ndim < 2], role='bias_and_layernorm',
+                   weight_decay=0.0)]
+    for group in groups:
+        group.update(lr=0.0006, peak_lr=0.0006)
+    cls = torch.optim.Adam if kind == 'adam' else torch.optim.AdamW
+    adam = cls(groups, betas=(0.9, 0.95), eps=1e-8,
+               foreach=False, fused=False, capturable=rt.tpu)
     return muon, adam
 
 

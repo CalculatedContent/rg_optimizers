@@ -4,21 +4,24 @@ The main repeated-seed speedrun entry point is **`python3 baseline/gpt2_small/sp
 See [the paired-seed protocol](muon_speedrun/REPEATED_SEEDS.md) for six fresh
 3,000-update runs: three matched seeds each for Muon and AdamW, full-budget
 cooldowns, paired WeightWatcher/token-error measurements, and seed-level statistics.
-This uses the existing modified multi-head speedrun model; it is not the one-head
-FineWeb-Edu experiment or a claim of stock GPT-2 architecture.
+Both optimizers now use **stock GPT-2 Small**: 12 blocks, 12 heads, width 768,
+MLP width 3072, context 1024, vocabulary 50257, learned positions, LayerNorm,
+GELU, biases and tied token/output weights. There are 124,439,808 unique parameters.
+See [the architecture audit and full matrix inventory](STOCK_ARCHITECTURE.md).
 
 
-For the **fresh 25,000-update Muon experiment with the validated speedrun model**,
+For the **historical 25,000-update Muon experiment with the modified speedrun model**,
 see [muon_longrun/README.md](muon_longrun/README.md). It preserves the successful
 six-head Muon/FineWeb recipe, stretches cooldown to updates 17,500–25,000,
 and records full-validation token error against all 72 raw/clipped alpha trajectories.
 The launcher checks the live TPU lease and retains the completed reference run.
 
-For the **published 3,000-update Muon speedrun recipe on eight TPU chips**, see
-[muon_speedrun/README.md](muon_speedrun/README.md). It uses a modified transformer,
-targets full-validation loss 3.28, saves checkpoints every 125 updates, and pairs
+For **single 3,000-update stock GPT-2 Muon or AdamW runs on eight TPU chips**, see
+[muon_speedrun/README.md](muon_speedrun/README.md). They record the historical
+full-validation loss threshold 3.28, save checkpoints every 125 updates, and pair
 raw/clipped WeightWatcher alpha with validation token error at those same updates.
-It records an explicit target outcome. Its TPU performance and convergence require live
+That threshold came from a different architecture and is not a predicted stock-model result.
+Its TPU performance and convergence require live
 measurement; the default three-hour budget is a cap, not a runtime prediction.
 
 For the **30-minute GPT-2/FineWeb reference run**, see

@@ -1,4 +1,4 @@
-"""Pinned Muon speedrun with full validation, atomic checkpoints and explicit limits."""
+"""Stock GPT-2 Small Muon/AdamW runs with paired validation and spectral tracking."""
 import argparse
 from dataclasses import asdict
 import hashlib
@@ -12,7 +12,7 @@ import time
 import numpy as np
 import torch
 
-import model as architecture
+import stock_model as architecture
 from data import FineWeb, TrainStream, write_json, prepare
 from optim import make_optimizers, apply_update, schedule, momentum, optimizer_metadata
 from runtime import Runtime, attention_check
@@ -117,8 +117,9 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
            'val_accuracy':1-error_count/evaluated if evaluated else None,
            'elapsed_seconds':time.time()-started, 'recorded_unix':time.time()}
     reference = json.loads((HERE/'reference_val.json').read_text())
-    row['published_reference_optimizer'] = 'muon'
-    row['published_at_same_step'] = next((r for r in reference if r['step'] == step), None)
+    row['historical_reference_architecture'] = '2024-11-10_UNetDoubleLr'
+    row['historical_reference_at_same_step'] = next((r for r in reference if r['step'] == step), None)
+    row['reference_note'] = 'Different architecture; 3.28 is an observational threshold, not an expected stock GPT-2 loss.'
     row['target_met'] = target_met(row)
     record(root, row)
     write_json(root/'latest_validation.json', row)
@@ -136,10 +137,7 @@ def train(a):
     started = time.time()
     rt = Runtime(a.device, root/'xla-cache')
     architecture.ATTENTION = rt.attention(a.attention)
-    model = architecture.GPT(architecture.GPTConfig()).bfloat16()
-    for module in model.modules():
-        if isinstance(module, architecture.CastedLinear):
-            module.float()
+    model = architecture.GPT(architecture.GPTConfig(), activation_dtype=torch.bfloat16)
     model = model.to(rt.device)
     for value in (*model.parameters(), *model.buffers()):
         rt.replicate(value)
@@ -147,40 +145,40 @@ def train(a):
     source = FineWeb(a.cache, a.deadline-180)
     stream = TrainStream(source, a.microbatch, 1024)
     val = source.array('fineweb_val_000000.bin')
-    manifest = {'recipe':'2024-11-10_UNetDoubleLr'+('' if muon else '-'+a.optimizer+'-control'),
+    manifest = {'recipe':'stock-gpt2-small-'+a.optimizer,
+                'architecture':architecture.ARCHITECTURE,
+                'matrix_inventory':architecture.matrix_inventory(model),
                 'optimizer':a.optimizer, 'seed':seed,
                 'full_budget':a.full_budget,
                 'config':asdict(model.config), 'parameters':sum(p.numel() for p in model.parameters()),
                 'steps':TOTAL_STEPS, 'batch_tokens':BATCH_TOKENS,
                 'global_microbatch_sequences':a.microbatch, 'accumulation':512//a.microbatch,
                 'target_val_nll':TARGET, 'validation_tokens':VAL_TOKENS,
-                'muon_lr':0.04 if muon else None, 'adam_embedding_lr':0.6,
-                'adam_head_lr':0.008, 'adam_scalar_lr':0.04,
+                'muon_lr':0.04 if muon else None, 'adam_embedding_lr':0.0006,
+                'adam_head_lr':0.0006, 'adam_scalar_lr':0.0006,
+                'head_tied_to_embedding':True, 'dropout':0.0,
                 'adam_control_matrix_lr':0.0006 if not muon else None,
                 'warmup_updates':0, 'warmdown_updates':900,
-                'weight_decay':0.1 if a.optimizer == 'adamw' else 0,
-                'weight_decay_scope':'hidden_matrices_only' if a.optimizer == 'adamw' else 'none',
+                'weight_decay':0.0 if a.optimizer == 'adam' else 0.1,
+                'weight_decay_scope':('auxiliary_matrices_only' if muon else 'all_matrices')
+                                     if a.optimizer != 'adam' else 'none',
+                'muon_weight_decay':0.0 if muon else None,
                 'adam_implementation':optimizer_metadata(adam),
-                'comparison_reference':'muon-speedrun-muon-20261005-030026',
+                'historical_reference':'muon-speedrun-muon-20261005-030026',
                 'gradient_clipping':False, 'attention':a.attention,
                 'data_repo':source.manifest['repo'], 'data_revision':source.manifest['revision'],
-                'record_source_sha256':hashlib.sha256((HERE/'vendor/record_source.py').read_bytes()).hexdigest(),
+                'model_source_sha256':hashlib.sha256((HERE/'stock_model.py').read_bytes()).hexdigest(),
+                'legacy_record_source_sha256':hashlib.sha256((HERE/'vendor/record_source.py').read_bytes()).hexdigest(),
                 'torch_version':torch.__version__, 'automatic_restart':False,
                 'tracking':{'interval_updates':125, 'extra_final_measurement':True,
                             'matrices':'Q,K,V,O,MLP_IN,MLP_OUT in all 12 blocks',
                             'execution':'separate CPU process on immutable snapshots',
                             'token_error':'teacher-forced top-1 error on the same benchmark validation tokens'},
-                'differences':['TPU SPMD instead of CUDA DDP', 'batched matrix-partitioned Muon',
-                               'microbatch accumulation and shard-boundary ordering',
-                               f'fixed seed {seed}; original record did not pin a seed',
-                               'CPU-precomputed BF16 rotary buffers; hardware rounding differs'],
-                'optimality':('Published GPU recipe; TPU convergence/performance unvalidated' if muon else
-                             'Same-model Adam(W) control; hyperparameters not tuned for this architecture'),
-                'comparison_note':('Compare to the 3000-update Muon run at equal tokens. '
-                                   'The 25000-update run used a different training budget and LR schedule.')}
-    if not muon:
-        manifest['differences'].remove('batched matrix-partitioned Muon')
-        manifest['differences'].append('Hidden Muon replaced by '+a.optimizer+'; optimizer groups recorded above')
+                'implementation':['Separate Q/K/V, mathematically equivalent to packed GPT-2 QKV',
+                                  'TPU SPMD with BF16 activations and FP32 parameters/optimizer states'],
+                'optimality':'Stock architecture; optimizer recipes and TPU throughput are not tuned or validated by the old speedrun.',
+                'comparison_note':('Only compare new stock-model seed pairs as same-architecture controls. '
+                                   'Historical six-head runs used a different model and auxiliary learning rates.')}
     write_json(root/'manifest.json', manifest)
     print(json.dumps(manifest), flush=True)
     step, best, validation = 0, float('inf'), None
@@ -252,12 +250,17 @@ def main():
     p.add_argument('--optimizer', choices=('muon', 'adam', 'adamw'), default='muon')
     p.add_argument('--seed', type=int, default=1337)
     p.add_argument('--full-budget', action='store_true', help='Complete all 3000 updates even if target is reached')
+    p.add_argument('--legacy-attention-check', action='store_true', help=argparse.SUPPRESS)
     a = p.parse_args()
     if a.action == 'prepare':
         prepare(a.cache, a.deadline, a.root, a.microbatch)
     elif a.action == 'attention-check':
-        attention_check(a.root, a.microbatch)
+        cfg = architecture.GPTConfig()
+        attention_check(a.root, a.microbatch, n_head=6 if a.legacy_attention_check else cfg.n_head,
+                        head_dim=128 if a.legacy_attention_check else cfg.n_embd // cfg.n_head)
     else:
+        if a.legacy_attention_check:
+            p.error('--legacy-attention-check is only valid for attention-check')
         try:
             train(a)
         except Exception as exc:

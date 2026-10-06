@@ -1,11 +1,17 @@
-# Muon speedrun recipe for one eight-chip TPU
+# Stock GPT-2 Small: Muon and AdamW on one eight-chip TPU
 
-This ports the published **2024-11-10 UNetDoubleLr** recipe, which reached
-**3.2753 validation NLL after 3,000 updates / 1,572,864,000 training tokens**.
-The record reports 7.23 minutes of training on eight H100 GPUs. That timing
-excludes validation and the first ten updates and is **not a TPU prediction**.
-This is an established portable recipe, not the latest CUDA speed record and not
-a claim of optimality on v5e. TPU convergence and performance require a live run.
+Both current launch paths use `stock_model.py`: **12 blocks, 12 heads, width
+768, MLP width 3072, context 1024, vocabulary 50257**, and **124,439,808 unique
+parameters**. Learned positions, LayerNorm, original GPT-2 GELU, biases, standard
+causal residual blocks and tied embedding/output weights replace the modified
+six-head speedrun. Dropout is zero for both optimizers, as in nanoGPT pretraining.
+[Architecture audit and every matrix dimension](../STOCK_ARCHITECTURE.md).
+
+The previous 2024-11-10 UNetDoubleLr model is retained in `model.py` for historical
+25k/replay reproducibility. Its published NLL 3.2753 and 7.23-minute eight-H100
+timing do **not** describe this stock-model configuration. The existing 3.28
+threshold is retained only as a labeled observation, not an expected result.
+New stock-model convergence and TPU throughput require a fresh measured run.
 
 ## Repeated-seed speedrun
 
@@ -32,7 +38,7 @@ This stops only the service recorded in `MUON_SPEEDRUN_LATEST.json`; the TPU,
 FineWeb cache, and prior files remain.
 
 The worker stops at the first full validation with **NLL <= 3.28**, after the
-published 3,000-update schedule, or before its deadline, whichever comes first.
+3,000-update schedule, or before its deadline, whichever comes first.
 It reports `schedule_complete_target_not_met` explicitly if all updates finish
 above target. It never keeps training at a zero learning rate or declares
 success merely because the process exited cleanly.
@@ -51,23 +57,24 @@ python3 baseline/gpt2_small/muon_speedrun/cloudshell.py status
 
 | Setting | Value |
 |---|---|
-| Architecture | 12 blocks, width 768, 6 heads of width 128, vocabulary 50,304 |
-| Model changes | RoPE, RMSNorm/QK normalization, squared ReLU, zero output projections, value residuals, learned input/UNet skip weights, untied output head, logit soft cap 30 |
-| Parameters | About 162M total; this is a modified transformer, not standard GPT-2 Small |
+| Architecture | Stock GPT-2 Small: 12 blocks, width 768, 12 heads of width 64, vocabulary 50,257 |
+| Model | Learned positions, LayerNorm, tanh GELU, biases, tied output, standard causal residual blocks; dropout 0 |
+| Parameters | 124,439,808 unique parameters; Q/K/V stored separately for 72 spectral traces |
 | Context / global batch | 1,024 tokens / 524,288 tokens per update |
 | Default TPU microbatch | 64 sequences globally, eight accumulation passes; 8 sequences per chip |
 | Schedule | 3,000 updates, zero warmup, constant LR through 2,100 then 900-update linear decay |
 | Hidden matrices | Muon LR 0.04; five quintic Newton–Schulz iterations |
 | Muon momentum | Linear ramp 0.85 to 0.95 over the first 500 updates; Nesterov |
-| Embeddings / head / scalars | Adam LR 0.6 / 0.008 / 0.04; betas 0.9, 0.95; epsilon 1e-8 |
-| Weight decay / global gradient clipping | None, matching the record |
-| Precision | BF16 embedding/scalars; FP32 linear weights, BF16 linear compute; BF16 Newton–Schulz |
+| Embeddings / tied head / biases / LayerNorm | AdamW LR 0.0006; betas 0.9, 0.95; epsilon 1e-8 |
+| Weight decay | AdamW matrices 0.1; biases/LayerNorm 0; Muon hidden matrices 0 |
+| Global gradient clipping | None |
+| Precision | FP32 parameters and optimizer states; BF16 activations/matmuls; FP32 LayerNorm statistics; BF16 Newton–Schulz |
 | Validation | Same pinned GPT-2-tokenized FineWeb file; first 10,485,760 tokens every 125 updates and at stop |
-| Target | Full validation NLL <= 3.28, equivalent to perplexity <= exp(3.28) |
+| Historical threshold | Full validation NLL <= 3.28; not a predicted stock GPT-2 result |
 
-All model and optimizer settings come from the source record. The global batch
+The architecture is now stock GPT-2; the Muon hidden update retains the source recipe. The global batch
 stays fixed when microbatch size changes. `--microbatch 32` uses sixteen accumulation
-passes for additional memory headroom. The first 128-sequence/math-attention run
+passes for additional memory headroom. The historical modified-model 128-sequence/math-attention run
 failed at update zero: 16.89 GiB required versus 15.75 GiB available per chip.
 The default is now 64 and flash attention is required. No automatic
 microbatch change or restart can silently alter a run. The selected microbatch
@@ -90,7 +97,7 @@ not upgrade torch, torch_xla, libtpu, NumPy, SciPy or the shared venv. It verifi
 the imports and records versions before starting the TPU check.
 
 The worker tests PyTorch/XLA 2.6 TPU flash attention at the selected batch size,
-sequence length 1,024 and head dimension 128. The check compares outputs and Q/K/V gradients
+sequence length 1,024, 12 heads and head dimension 64. The check compares outputs and Q/K/V gradients
 against mathematical attention with BF16 relative-L2 tolerance 0.03. It supplies
 `sm_scale=1/sqrt(head_dim)` and the SPMD batch partition explicitly. The isolated
 check is capped at five minutes. With default `--attention flash`, an unavailable
@@ -109,18 +116,17 @@ the weights already transferred for checkpointing. There are no spectral fits,
 gradient scans or additional per-matrix TPU reads in the training loop. Scalar
 loss checks remain. An isolated flash check does not prove
 complete TPU optimizer/model parity. Source CUDA compilation, random seed,
-microbatch reduction order, rotary-buffer calculation and shard-boundary order
+microbatch reduction order and shard-boundary order
 can differ; these are recorded rather than represented as exact reproduction.
 
 ## Paired WeightWatcher and token-error tracking
 
-Tracking is enabled for new runs. The model, optimizers, hyperparameters, data,
-seed, global batch, microbatch, flash attention, 3,000-update schedule, target,
-evaluation/checkpoint cadence and three-hour cap remain unchanged. Additional
+Tracking is enabled for both stock-model optimizers. Global batch, data order,
+measurement cadence, 3,000-update schedule and time caps are retained. Additional
 measurement work can add wall time within that cap.
 
 Every existing validation point (125 updates and final stop) now counts top-1
-prediction errors from the **same capped logits and the same benchmark tokens**
+prediction errors from the **same uncapped logits and the same benchmark tokens**
 as validation NLL. `val_token_error = val_error_count / evaluation_tokens` is a
 fraction, not a percentage. This is teacher-forced validation token error, not
 free-generation accuracy or a separate test set. Partial evaluation is explicitly
@@ -194,35 +200,19 @@ bucket and TPU allocation remain. No self-SSH, new allocation or automatic resta
 The allocation's recorded deadline still limits the three-hour service budget.
 Check with `python3 baseline/gpt2_small/muon_speedrun/cloudshell.py status --here`.
 
-`adamw` uses **torch.optim.AdamW**, not the legacy `adam` option. Hidden transformer
-matrices use LR **0.0006** and **decoupled weight decay 0.1**. Embedding/head/scalar
-LRs remain **0.6 / 0.008 / 0.04**, with **zero decay** in those auxiliary groups,
-preserving their original Adam update math. All groups use betas **0.9/0.95** and
-epsilon **1e-8**. The actual class, parameter counts and settings for every group
-are written to `manifest.json` and checkpoints.
+`adamw` uses **torch.optim.AdamW** at LR **0.0006** for all parameters, with
+**decoupled weight decay 0.1 on matrices** and zero decay on biases/LayerNorm.
+All groups use betas **0.9/0.95** and epsilon **1e-8**. Muon uses its existing
+LR **0.04** hidden-matrix updates and the same auxiliary AdamW recipe for the
+embeddings, biases and LayerNorm. The tied token embedding/output has a single
+optimizer state; the old 0.6/0.008 split rates no longer apply.
 
-The model, initialization, data order, global batch, flash attention, 3,000-update
-schedule (no warmup, final 900-update cooldown), and measurement cadence are the
-same as the successful short Muon run. Raw/clipped WeightWatcher alphas for all
-72 matrices, full-validation NLL, perplexity, and top-1 **validation** token error
-are paired every 125 updates and at the final checkpoint. CPU tracking is isolated
-from training, and the existing disk saves and final cloud backup remain enabled.
-
-This is an **untuned, same-model AdamW control**, not a claim of an optimal AdamW
-speed record or a guaranteed NLL <=3.28. Compare at matching steps/tokens against
-`muon-speedrun-muon-20261005-030026` (3,000 updates, 1.572864B tokens). The 25k Muon
-run's final loss is not an equal-budget comparison. Decay is an additional recipe
-difference, so a loss difference alone cannot isolate the optimizer's update rule.
-The published curve retained in validation output is explicitly labeled **Muon**.
-
-### Legacy Adam control
-
-`--optimizer adam` runs the same model, seed, token stream, batch and 3,000-update
-schedule. Auxiliary Adam groups stay identical; hidden matrices use Adam with
-LR 0.0006, betas 0.9/0.95 and zero weight decay. This is an **untuned control**,
-not an optimized Adam speedrun or a promise of matching the target. It must run
-sequentially on this TPU. Compare at equal tokens and end-to-end wall time; do
-not attribute all differences from the earlier standard GPT-2 run to Muon.
+Compare new stock-model Muon/AdamW runs at matching seeds and tokens. The old
+`muon-speedrun-muon-20261005-030026` and 25k runs used a different architecture
+and are historical references only. These recipes are untuned; hidden weight
+decay differs, so this does not isolate the optimizer update rule alone.
+The optional `--optimizer adam` uses the same stock model with Adam at 0.0006
+and zero weight decay everywhere.
 
 ## Pinned source and local verification
 
@@ -233,9 +223,16 @@ Record author: Brendan Hogan Rappazzo. The log blob is
 that reproducible log; `vendor/LICENSE` preserves the MIT license. Do not execute
 the vendor file on TPU: its launcher targets CUDA/DDP.
 
-`reference_val.json` preserves the 25 published validation observations. Tests
-compare the port's forward/backward math to original source definitions, batched
+`reference_val.json` preserves the 25 published validation observations. Historical-model tests
+compare its forward/backward math to original source definitions, batched
 Muon updates/state restoration to the original Newton–Schulz function, full
 mixed-dtype optimizer learning on a tiny CPU model, full-validation target gates,
 checkpoint retention and duplicate-launch prevention. These tests cannot certify
 TPU performance or convergence before the live run.
+
+`test_stock_gpt2.py` compares stock-model logits, loss and every parameter gradient
+to the independent packed-QKV GPT-2 reference in `speedrun30/vendor/llmc_train_gpt2.py`.
+It also checks causality, all dimensions, exact parameter count, weight tying across
+conversion/reload, complete nonduplicated optimizer ownership, BF16-activation
+learning for both optimizers and paired spectral snapshots. New suite reports
+require matching architecture and configuration before pooling any results.

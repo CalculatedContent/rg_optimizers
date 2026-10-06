@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import uuid
+from stock_config import ARCHITECTURE
 
 PROJECT = 'tpu-builders-504820'
 ZONE = 'us-west4-a'
@@ -121,12 +122,13 @@ def start_remote(commit, hours=3, optimizer='muon', microbatch=64, attention='fl
                'OMP_NUM_THREADS':'4','OPENBLAS_NUM_THREADS':'4','MKL_NUM_THREADS':'4',
                'TOKENIZERS_PARALLELISM':'false'}
         record = {'root':str(root),'unit':unit,'commit':commit,'optimizer':optimizer,
+                  'architecture':ARCHITECTURE,
                   'launch_id':launch_id,
                   'started_unix':time.time(),'deadline_unix':deadline,'hours_cap':hours,
                   'target_val_nll':3.28,'checkpoint_interval':125,'microbatch':microbatch,
                   'weightwatcher_interval':125, 'validation_token_error':True,
                   'fresh_initialization':True, 'automatic_restart':False,
-                  'comparison_reference':'muon-speedrun-muon-20261005-030026',
+                  'historical_reference':'muon-speedrun-muon-20261005-030026',
                   'cloud_uri':'gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name}
         (root/'launch.json').write_text(json.dumps(record,indent=2))
         (root/'commit.txt').write_text(commit+'\n')

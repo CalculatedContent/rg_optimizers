@@ -4,9 +4,11 @@
 
 Do the Muon/AdamW loss and spectral trajectories reproduce across random
 initializations at the same token budget? This is a baseline variability study,
-not a hyperparameter sweep. These are the modified 2024-11-10 UNetDoubleLr
-multi-head model and pinned GPT-2-tokenized FineWeb benchmark, not stock GPT-2
-and not the legacy one-head model.
+not a hyperparameter sweep. Both optimizers use **stock GPT-2 Small** and the
+pinned GPT-2-tokenized FineWeb benchmark. The model has 12 blocks, 12 heads,
+width 768, MLP width 3072, context 1024 and vocabulary 50257; 124,439,808 parameters.
+See [the architecture audit and all matrix dimensions](../STOCK_ARCHITECTURE.md).
+Historical modified six-head results do not enter this paired comparison.
 
 ## Frozen protocol
 
@@ -18,13 +20,17 @@ and not the legacy one-head model.
 - Same initialization within each seed pair. The initialization varies between
   pairs; token order remains fixed for all six runs. This does not estimate
   variability from corpus resampling or different training orders.
-- Existing optimizer group learning rates and mathematics remain fixed. Muon
+- Muon hidden-matrix learning rates and mathematics remain fixed. Muon
   uses LR 0.04 on hidden matrices; AdamW uses 0.0006 and decoupled decay 0.1 there.
-  Auxiliary rates remain 0.6 / 0.008 / 0.04, zero decay; betas 0.9 / 0.95.
+  Both use AdamW LR 0.0006 on embeddings, biases and LayerNorm; betas 0.9 / 0.95.
+  Embedding matrices use decay 0.1, biases/LayerNorm use zero decay. The tied
+  token embedding/output is one parameter with one optimizer state. The old
+  architecture's separate embedding/head rates cannot be retained with weight tying.
   **Weight decay differs, so this compares recipes, not an isolated optimizer effect.**
 - Zero warmup; peak LR through update 2,100; 900-update linear cooldown.
 - No target-based early stop. Record first observed NLL <=3.28, but continue to
   3,000 for equal-budget final statistics. Target times have 125-update resolution.
+  This threshold comes from the old modified-model record, not a validated stock-model expectation.
 - Every 125 updates: full 10,485,760-token validation loss, perplexity, top-1 token
   error, checkpoint and raw/clipped WeightWatcher alpha for all 72 matrices.
   These are validation metrics, not a separately held-out test score.

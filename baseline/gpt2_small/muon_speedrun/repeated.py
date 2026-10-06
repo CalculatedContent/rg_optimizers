@@ -1,5 +1,6 @@
 """Fixed-budget, paired-seed comparisons using the existing speedrun worker."""
 from collections import defaultdict
+from dataclasses import asdict
 import csv
 import json
 import math
@@ -8,6 +9,7 @@ import statistics
 import subprocess
 import sys
 import time
+from stock_config import ARCHITECTURE, GPTConfig
 
 SEEDS = (1337, 1338, 1339)
 JOB_SECONDS = 3 * 3600
@@ -30,14 +32,16 @@ def plan():
         # Alternate order to avoid putting one optimizer systematically first.
         for optimizer in (('muon', 'adamw') if index % 2 == 0 else ('adamw', 'muon')):
             jobs.append({'seed':seed, 'optimizer':optimizer, 'name':f'{optimizer}-s{seed}'})
-    return {'jobs':jobs, 'steps_per_run':3000, 'tokens_per_run':1572864000,
+    return {'jobs':jobs, 'architecture':ARCHITECTURE, 'config':asdict(GPTConfig()),
+            'steps_per_run':3000, 'tokens_per_run':1572864000,
             'microbatch':64, 'accumulation':8, 'batch_tokens':524288,
             'measurement_interval':125, 'full_validation_tokens':VAL_TOKENS,
             'full_budget':True, 'automatic_restart':False,
             'per_run_seconds_cap':JOB_SECONDS, 'suite_seconds_cap':SUITE_SECONDS,
             'randomness':'Initialization varies across seeds. All runs use the same fixed token order.',
             'schedule':'Peak LR through 2100; linear cooldown over the final 900 updates.',
-            'comparison':'Fixed recipes, not hyperparameter tuning. AdamW hidden-matrix decay is 0.1; Muon decay is zero.',
+            'comparison':'Stock GPT-2 Small; Muon hidden LR 0.04, auxiliary AdamW LR 0.0006; AdamW control LR 0.0006. AdamW matrix decay 0.1; Muon hidden decay zero.',
+            'target_note':'3.28 is a historical modified-model threshold, not an expected stock-model outcome.',
             'error_bars':'Sample standard deviation across seeds, not across matrices or updates.'}
 
 
@@ -88,6 +92,9 @@ def report(root):
                 if row.get('kind')=='validation' and row.get('full_benchmark_evaluation') and row.get('evaluation_tokens')==VAL_TOKENS:
                     rows.append(row)
         identity = manifest.get('seed')==job['seed'] and manifest.get('optimizer')==job['optimizer'] and manifest.get('full_budget') is True
+        if p.get('architecture') is not None:
+            identity = identity and (manifest.get('architecture') == p['architecture']
+                                     and manifest.get('config') == p['config'])
         complete = (identity and status.get('step')==3000 and supervisor.get('exit_code')==0
                     and supervisor.get('tracking',{}).get('status')=='complete'
                     and supervisor.get('backup',{}).get('exit_code')==0
@@ -136,7 +143,8 @@ def report(root):
     layer_rows = [dict(optimizer=o,step=s,matrix_name=n,metric=m,**stats(v)) for (o,s,n,m),v in sorted(layers.items())]
     paired_seeds = [s for s in SEEDS if ('muon',s) in finals and ('adamw',s) in finals]
     differences = {metric:stats([finals['adamw',s][metric]-finals['muon',s][metric] for s in paired_seeds]) for metric in METRICS}
-    out = {'complete_runs':sum(r['complete'] for r in runs), 'expected_runs':6, 'runs':runs,
+    out = {'architecture':p.get('architecture', 'historical-unspecified'), 'config':p.get('config'),
+           'complete_runs':sum(r['complete'] for r in runs), 'expected_runs':6, 'runs':runs,
            'paired_final_seeds':paired_seeds, 'final_adamw_minus_muon':differences,
            'target_times':{o:{**stats(times[o]), 'note':'End-to-end from each worker launch to first observed crossing; noncrossing runs are not successes.'} for o in ('muon','adamw')},
            'error_bars':'Sample SD across available seeds; n is reported at every point. No independence assumption across training steps.',
@@ -180,7 +188,8 @@ def worker_command(root, job, deadline):
 
 def execute(root, deadline):
     root=Path(root); p=read(root/'PLAN.json')
-    if p['jobs']!=plan()['jobs']:
+    expected = plan()
+    if any(p.get(key) != expected[key] for key in ('jobs', 'architecture', 'config')):
         raise ValueError('Suite plan changed; refusing to mix experiments')
     for job in p['jobs']:
         run=root/(root.name+'-'+job['name'])
@@ -191,7 +200,8 @@ def execute(root, deadline):
         if job_deadline-time.time()<JOB_SECONDS-30:
             raise RuntimeError('Insufficient time for the next complete run; suite stopped')
         write(run/'launch.json',{**job,'suite':root.name,'started_unix':time.time(),
-                                 'deadline_unix':job_deadline,'full_budget':True})
+                                 'deadline_unix':job_deadline,'full_budget':True,
+                                 'architecture':p['architecture']})
         (run/'commit.txt').write_text((root/'commit.txt').read_text())
         with (run/'run.log').open('w') as log:
             subprocess.run(worker_command(run,job,job_deadline),stdout=log,stderr=subprocess.STDOUT,

@@ -60,14 +60,14 @@ class Runtime:
         return lambda q, k, v: F.scaled_dot_product_attention(q, k, v, is_causal=True)
 
 
-def attention_check(root, microbatch=64):
+def attention_check(root, microbatch=64, *, n_head=12, head_dim=64):
     """Check forward/backward at the actual head/sequence shape in an isolated child."""
     rt = Runtime(cache=Path(root)/'xla-cache')
     from torch_xla.experimental.custom_kernel import jax_import_guard
     jax_import_guard()
     import jax
     gen = torch.Generator().manual_seed(43)
-    cpu = [torch.randn((microbatch, 6, 1024, 128), generator=gen).bfloat16() for _ in range(3)]
+    cpu = [torch.randn((microbatch, n_head, 1024, head_dim), generator=gen).bfloat16() for _ in range(3)]
     upstream = torch.randn(cpu[0].shape, generator=gen).bfloat16()
     results = []
     for kind in ('math', 'flash'):
@@ -85,6 +85,7 @@ def attention_check(root, microbatch=64):
         if relative > .03:
             raise RuntimeError('TPU flash/math relative L2 disagreement: '+str(relative))
     result = {'status':'passed', 'relative_l2_output_dq_dk_dv':errors, 'jax':jax.__version__,
-              'global_batch':microbatch, 'batch_per_chip':microbatch//8}
+              'global_batch':microbatch, 'batch_per_chip':microbatch//8,
+              'n_head':n_head, 'head_dim':head_dim, 'sequence_length':1024}
     (Path(root)/'ATTENTION_CHECK.json').write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps(result), flush=True)

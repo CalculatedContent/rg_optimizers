@@ -21,7 +21,8 @@ def populate(root, omit=None):
     for job in suite.plan()['jobs']:
         r=root/(root.name+'-'+job['name']); r.mkdir()
         complete=job['name']!=omit
-        suite.write(r/'manifest.json',dict(seed=job['seed'],optimizer=job['optimizer'],full_budget=True))
+        suite.write(r/'manifest.json',dict(seed=job['seed'],optimizer=job['optimizer'],full_budget=True,
+                    architecture=suite.plan()['architecture'],config=suite.plan()['config']))
         suite.write(r/'status.json',dict(step=3000 if complete else 125))
         suite.write(r/'RUN_STATUS.json',dict(status='schedule_complete_target_not_met',exit_code=0,
                     tracking={'status':'complete'},backup={'exit_code':0}))
@@ -37,6 +38,8 @@ def populate(root, omit=None):
 
 def test_plan_has_matched_seeds_and_equal_budgets():
     p=suite.plan()
+    assert p['architecture']=='gpt2-small-stock-v1'
+    assert p['config']==dict(vocab_size=50257,block_size=1024,n_layer=12,n_head=12,n_embd=768)
     assert len(p['jobs'])==6
     assert [(j['seed'],j['optimizer']) for j in p['jobs']]==[
         (1337,'muon'),(1337,'adamw'),(1338,'adamw'),(1338,'muon'),(1339,'muon'),(1339,'adamw')]
@@ -67,6 +70,20 @@ def test_failed_or_partial_run_is_not_a_completed_pair(tmp_path):
     result=suite.report(tmp_path)
     assert result['complete_runs']==5 and result['paired_final_seeds']==[1337,1338]
     assert result['final_adamw_minus_muon']['val_nll']['n']==2
+
+
+def test_old_architecture_cannot_enter_stock_model_comparison(tmp_path):
+    populate(tmp_path)
+    path=tmp_path/(tmp_path.name+'-muon-s1337')/'manifest.json'
+    value=json.loads(path.read_text()); value.pop('architecture'); suite.write(path,value)
+    result=suite.report(tmp_path)
+    assert result['complete_runs']==5 and result['paired_final_seeds']==[1338,1339]
+
+
+def test_old_suite_plan_cannot_start_stock_jobs(tmp_path):
+    old=suite.plan(); old.pop('architecture'); suite.write(tmp_path/'PLAN.json',old)
+    with pytest.raises(ValueError,match='refusing to mix'):
+        suite.execute(tmp_path,suite.time.time()+suite.SUITE_SECONDS)
 
 
 def test_spectral_checkpoint_mismatch_is_rejected(tmp_path):

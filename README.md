@@ -8,10 +8,13 @@ be tested against strong, restartable, statistically controlled experiments.
 ## nanoGPT speedrun: repeated-seed comparison
 
 Use `python3 baseline/gpt2_small/speedrun.py plan` for the fixed-recipe
-Muon/AdamW comparison: three matched seeds per optimizer, 3,000 updates each,
+Muon/AdamW comparison on **stock GPT-2 Small (124,439,808 parameters)**:
+12 blocks, 12 heads, width 768, context 1024. Three matched seeds per optimizer, 3,000 updates each,
 raw/clipped WeightWatcher spectra and validation token error every 125 updates.
 [Protocol, launch instructions and seed-level statistics](baseline/gpt2_small/muon_speedrun/REPEATED_SEEDS.md).
-The multi-head speedrun has its own main entry point; the legacy one-head baseline remains separate.
+[Architecture audit and every matrix dimension](baseline/gpt2_small/STOCK_ARCHITECTURE.md).
+The current paired runs use the standard architecture; the historical modified
+six-head speedrun and one-head experiments remain separately identified.
 
 ## Baseline status
 

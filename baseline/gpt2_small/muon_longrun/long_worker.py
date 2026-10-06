@@ -52,7 +52,7 @@ def main():
         os.environ['PYTHONPATH']=str(root/'pallas-deps')+os.pathsep+os.environ.get('PYTHONPATH','')
         phase([sys.executable,'-u',str(HERE/'train_long.py'),'prepare','--root',str(root),
                '--deadline',str(min(time.time()+1800,train_deadline-600))],1800,'verify full benchmark corpus')
-        phase([sys.executable,'-u',str(SHORT/'run.py'),'attention-check','--root',str(root),
+        phase([sys.executable,'-u',str(SHORT/'run.py'),'attention-check','--legacy-attention-check','--root',str(root),
                '--microbatch','64','--deadline',str(time.time()+300)],300,'8-chip flash attention check')
         env={**os.environ,'PJRT_DEVICE':'CPU','CUDA_VISIBLE_DEVICES':'',
              'OMP_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','MKL_NUM_THREADS':'1'}
