@@ -7,6 +7,11 @@ be tested against strong, restartable, statistically controlled experiments.
 
 ## nanoGPT speedrun: repeated-seed comparison
 
+For the **latest leaderboard implementation**, see the separate
+[October 6, 2026 pinned modded-nanogpt experiment](baseline/experiments/nanogpt_leaderboard_2026_10_06/README.md).
+It preserves the current CUDA/8-H100 record source, including its 65B sparse
+n-gram table and ANVIL optimizer. It is not stock GPT-2 and is not a TPU port.
+
 [Dedicated experiment folder, audited configuration and results](baseline/experiments/stock_gpt2_fineweb_muonclip_adamw/README.md).
 New TPU and cloud outputs live under `gpt2small/stock_gpt2_fineweb_muonclip_adamw/`.
 The code is configured for the pinned baseline; live TPU execution still requires
