@@ -83,7 +83,12 @@ remaining runs require an explicit decision after diagnosis.
 suite directory, pinned commit, lease and systemd service. Each child directory
 has a unique suite/optimizer/seed name, `manifest.json`, training/validation
 metrics, checkpoints, per-layer spectral CSVs and verified cloud backup under
-`gs://tpu-builders-504820-ww-continuous8/gpt2small/<child-name>`.
+`gs://tpu-builders-504820-ww-continuous8/gpt2small/stock_gpt2_fineweb_muonclip_adamw/suites/<suite-name>/<child-name>/`.
+The suite directory is under
+`/mnt/disks/rg-data/gpt2small/stock_gpt2_fineweb_muonclip_adamw/suites/`.
+See the [dedicated experiment folder](../../experiments/stock_gpt2_fineweb_muonclip_adamw/README.md)
+for the configuration audit and downloaded-results directory. Historical outputs
+remain at their original locations.
 
 The suite produces:
 

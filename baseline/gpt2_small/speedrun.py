@@ -17,6 +17,7 @@ import uuid
 HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE/'muon_speedrun'))
 from repeated import plan, write, SUITE_SECONDS
+from cloudshell import results_root, cloud_uri, EXPERIMENT
 BASE=Path('/mnt/disks/rg-data/gpt2small')
 LATEST=BASE/'NANOGPT_SPEEDRUN_SUITE_LATEST.json'
 PROJECT='tpu-builders-504820'
@@ -77,7 +78,7 @@ def start_here(a):
         spec=importlib.util.spec_from_file_location('suite_guard',HERE/'scripts/run_muonclip.py')
         guard=importlib.util.module_from_spec(spec); spec.loader.exec_module(guard); guard.assert_idle()
         stamp=dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d-%H%M%S')
-        root=BASE/('nanogpt-speedrun-suite-'+stamp); root.mkdir()
+        root=results_root('suites', 'nanogpt-speedrun-suite-'+stamp); root.mkdir(parents=True)
         repo=root/'repo'; run(['git','init','-q',str(repo)])
         run(['git','-C',str(repo),'fetch','--depth','1','https://github.com/CalculatedContent/rg_optimizers.git',a.commit],timeout=180)
         run(['git','-C',str(repo),'checkout','--detach','FETCH_HEAD'])
@@ -85,7 +86,8 @@ def start_here(a):
         deadline=time.time()+SUITE_SECONDS
         unit='rg-nanogpt-speedrun-suite-'+stamp+'.service'
         record={'root':str(root),'unit':unit,'commit':a.commit,'request_id':a.request_id,
-                'deadline_unix':deadline,'lease':checked,'automatic_restart':False}
+                'deadline_unix':deadline,'lease':checked,'automatic_restart':False,
+                'experiment':EXPERIMENT,'cloud_uri':cloud_uri(root)}
         write(root/'PLAN.json',plan()); write(root/'launch.json',record)
         (root/'commit.txt').write_text(a.commit+'\n')
         package=repo/'baseline/gpt2_small'

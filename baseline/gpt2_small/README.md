@@ -5,6 +5,11 @@ The current runner uses the **unmodified pinned upstream GPT-2 model directly**:
 packed QKV, learned positions, LayerNorm, GELU, biases and tied output embeddings.
 There are 124,439,808 unique parameters. Source SHA256 is verified before import.
 
+[Dedicated experiment folder, configuration audit and results](../experiments/stock_gpt2_fineweb_muonclip_adamw/README.md).
+New run and suite results have their own `stock_gpt2_fineweb_muonclip_adamw/`
+namespace on the TPU disk and in cloud backup. Live TPU execution remains unverified.
+
+
 [Single-run instructions and required TPU preflight](muon_speedrun/README.md) ·
 [All matrix sizes](STOCK_ARCHITECTURE.md) ·
 [Pinned benchmark configuration](muon_speedrun/BENCHMARK.md).

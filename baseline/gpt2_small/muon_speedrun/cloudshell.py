@@ -19,6 +19,24 @@ QUEUE = 'ww-gpt2-validation-48h-20261004-s1337'
 NODE = QUEUE+'-node'
 BASE = Path('/mnt/disks/rg-data/gpt2small')
 LATEST = BASE/'MUON_SPEEDRUN_LATEST.json'
+EXPERIMENT = 'stock_gpt2_fineweb_muonclip_adamw'
+CLOUD_BASE = 'gs://tpu-builders-504820-ww-continuous8/gpt2small'
+
+
+def results_root(kind, name):
+    if kind not in ('runs', 'suites') or Path(name).name != name:
+        raise ValueError('Expected a run/suite name, not a path')
+    return BASE/EXPERIMENT/kind/name
+
+
+def cloud_uri(root):
+    """Mirror experiment hierarchy; preserve historical flat backup locations."""
+    root = Path(root)
+    try:
+        relative = root.relative_to(BASE/EXPERIMENT)
+    except ValueError:
+        return CLOUD_BASE+'/'+root.name
+    return CLOUD_BASE+'/'+EXPERIMENT+'/'+relative.as_posix()
 
 
 def run(command, **kwargs):
@@ -104,8 +122,8 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
                 raise RuntimeError('Guest does not match the checked TPU')
         deadline = time.time()+hours*3600
         stamp = dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d-%H%M%S')
-        root = BASE/('muon-speedrun-'+optimizer+'-'+stamp)
-        root.mkdir()
+        root = results_root('runs', 'muon-speedrun-'+optimizer+'-'+stamp)
+        root.mkdir(parents=True)
         repo = root/'repo'
         repo.mkdir()
         run(['git','-C',str(repo),'init','-q'])
@@ -138,7 +156,7 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
                   'weightwatcher_interval':MEASUREMENT_INTERVAL, 'validation_token_error':True,
                   'fresh_initialization':True, 'automatic_restart':False,
                   'historical_reference':'muon-speedrun-muon-20261005-030026',
-                  'cloud_uri':'gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name}
+                  'experiment':EXPERIMENT, 'cloud_uri':cloud_uri(root)}
         (root/'launch.json').write_text(json.dumps(record,indent=2))
         (root/'commit.txt').write_text(commit+'\n')
         command = ['systemd-run','--unit='+unit,'--property=Type=exec','--property=Restart=no',

@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 from benchmark_config import BENCHMARK, TOTAL_STEPS
+from cloudshell import cloud_uri
 
 
 def write(root, name, value):
@@ -45,7 +46,7 @@ def bounded(command, seconds, root, label, watch=False):
 
 def backup(root):
     from rg_nanogpt_one_head.continuous_support import CloudPublisher
-    publisher = CloudPublisher('gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name)
+    publisher = CloudPublisher(cloud_uri(root))
     receipts = []
     # Upload small scientific tables first. Retain immutable spectral weights on /mnt;
     # current full-state checkpoints keep their existing cloud backup behavior.

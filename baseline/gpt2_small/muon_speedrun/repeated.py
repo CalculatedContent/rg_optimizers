@@ -11,6 +11,7 @@ import sys
 import time
 from stock_config import ARCHITECTURE, GPTConfig
 from benchmark_config import BENCHMARK, TOTAL_STEPS, MEASUREMENT_INTERVAL, protocol
+from cloudshell import cloud_uri, EXPERIMENT
 
 SEEDS = (1337, 1338, 1339)
 JOB_SECONDS = 12 * 3600
@@ -33,7 +34,7 @@ def plan():
         # Alternate order to avoid putting one optimizer systematically first.
         for optimizer in (('muon_clip', 'adamw') if index % 2 == 0 else ('adamw', 'muon_clip')):
             jobs.append({'seed':seed, 'optimizer':optimizer, 'name':f'{optimizer}-s{seed}'})
-    return {'jobs':jobs, 'architecture':ARCHITECTURE, 'config':asdict(GPTConfig()),
+    return {'jobs':jobs, 'experiment':EXPERIMENT, 'architecture':ARCHITECTURE, 'config':asdict(GPTConfig()),
             'benchmark':BENCHMARK, 'protocol':protocol(),
             'steps_per_run':TOTAL_STEPS, 'tokens_per_run':TOTAL_STEPS*524288,
             'microbatch':64, 'accumulation':8, 'batch_tokens':524288,
@@ -207,7 +208,8 @@ def execute(root, deadline):
             raise RuntimeError('Insufficient time for the next complete run; suite stopped')
         write(run/'launch.json',{**job,'suite':root.name,'started_unix':time.time(),
                                  'deadline_unix':job_deadline,'full_budget':True,
-                                 'architecture':p['architecture'], 'benchmark':p['benchmark']})
+                                 'architecture':p['architecture'], 'benchmark':p['benchmark'],
+                                 'experiment':EXPERIMENT, 'cloud_uri':cloud_uri(run)})
         (run/'commit.txt').write_text((root/'commit.txt').read_text())
         with (run/'run.log').open('w') as log:
             subprocess.run(worker_command(run,job,job_deadline),stdout=log,stderr=subprocess.STDOUT,
@@ -219,7 +221,7 @@ def execute(root, deadline):
     write(root/'SUITE_STATUS.json',{'status':'training_complete','completed_runs':6})
     # Report artifacts are small; every individual run already verified its own backup.
     from rg_nanogpt_one_head.continuous_support import CloudPublisher
-    publisher=CloudPublisher('gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name)
+    publisher=CloudPublisher(cloud_uri(root))
     receipts=[publisher.file(path,path.name) for path in sorted(root.iterdir())
               if path.name!='SUITE_STATUS.json' and path.is_file() and path.suffix in ('.json','.csv','.png','.txt')]
     write(root/'SUITE_STATUS.json',{'status':'complete','completed_runs':6,'cloud_backup':'verified'})
