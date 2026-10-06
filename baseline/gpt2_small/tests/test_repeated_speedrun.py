@@ -197,7 +197,8 @@ def test_single_and_paired_outputs_keep_hierarchy_and_historical_paths(monkeypat
 
 def test_worker_backup_uses_dedicated_nested_destination(monkeypatch,tmp_path):
     import cloudshell as paths
-    import worker
+    spec=importlib.util.spec_from_file_location('experiment_backup_worker',BASE/'muon_speedrun/worker.py')
+    worker=importlib.util.module_from_spec(spec); spec.loader.exec_module(worker)
     import rg_nanogpt_one_head.continuous_support as support
     monkeypatch.setattr(paths,'BASE',tmp_path)
     root=paths.results_root('suites','suite-1')/'suite-1-muon_clip-s1337'
