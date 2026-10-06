@@ -60,7 +60,7 @@
   "reference_logical_data_ranks": 8,
   "numerics": "Planned BF16 port; numerical equivalence to FP8 reference not established",
   "execution": "Planned XLA SPMD, one logical device; never mix with MPMD launch or NCCL",
-  "ngram_partition": "Full-size table, row-axis partition; no replication or dense table gradient",
+  "ngram_partition": "Full-size table, eight logical row-owner shards in host memory; no full-table TPU replica or dense table gradient",
   "export": "Dense tail-averaged state and every ngram row with hashes and global offsets; analysis only",
   "minimum_export_disk_bytes": 171798691840,
   "acceptance": [
@@ -69,5 +69,12 @@
     "Full TPU allocation and all five stages pass memory and numerical preflight",
     "Fresh 1194-step run, 328663040 training tokens, finite validation NLL <= 3.28 on 10485760 tokens",
     "Final dense and ngram exports have complete row coverage and verified SHA256 hashes"
-  ]
+  ],
+  "target_accelerator_type": "v5litepod-8",
+  "target_physical_chips": 8,
+  "target_hosts": 1,
+  "ngram_placement": "Planned host-DRAM backing with bounded TPU row caches; not implemented or qualified",
+  "required_host_memory_check": "Measure available RAM and cgroup limit before allocation; table and row metadata alone require about 122 GiB",
+  "host_offload_verified": false,
+  "performance_status": "Unknown; host transfers and CPU sparse updates may dominate. No H100 speed claim."
 }

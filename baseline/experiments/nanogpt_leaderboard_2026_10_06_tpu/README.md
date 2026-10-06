@@ -1,4 +1,4 @@
-# October 6 leaderboard model — TPU port capacity audit
+# October 6 leaderboard model — v5e-8 TPU port capacity audit
 
 **Status: NOT READY TO TRAIN.** This folder currently contains an offline
 capacity audit and a frozen port specification. The TPU trainer is not yet
@@ -13,11 +13,31 @@ This is the 11-block leaderboard model with the full hashed n-gram table,
 not stock GPT-2. Reducing that table or substituting MuonClip/AdamW for ANVIL
 would create a different experiment.
 
-## Hardware decision comes first
+## Selected target: the existing eight-chip v5e TPU
 
 The repository's existing `baseline/gpt2_small/scripts/tpu_environment.sh`
-sets `TPU_ACCELERATOR_TYPE=v5litepod-8`. That is v5e-8. It is not an appropriate
-allocation for this full-size leaderboard port.
+sets `TPU_ACCELERATOR_TYPE=v5litepod-8`. That is v5e-8, and the user selected
+this existing machine as the target on October 6. This fixes the hardware
+constraint; a larger TPU is not a prerequisite or an authorized allocation.
+The full table cannot remain resident in its HBM alongside training.
+
+The proposed route is **host-memory offloading of the full n-gram table**:
+keep all 84,602,880 rows and their sparse Adam state in the TPU VM's CPU RAM,
+and transfer only active rows and their gradients to/from bounded TPU caches.
+Preserve eight logical row-owner shards and the reference gradient accumulation
+semantics. The dense model and its forward/backward computations stay on the
+TPU. This changes storage and execution, without shrinking the learned table.
+
+Google lists 384 GB of host RAM for the eight-chip v5e VM, which makes this a
+capacity candidate, not a verified runtime. Measure actual available RAM and
+container/cgroup limits first; nominal RAM is not an allocation guarantee. The
+full table and row metadata need about 122 GiB before data, caches, exchange
+buffers and the OS. CPU updates and transfers can dominate runtime. No runtime
+estimate or speedrun qualification is available.
+
+**This offloading route is not implemented.** The audit below is for the
+original all-HBM placement, so its v5e-8 rejection must remain in force. Do not
+turn that rejection into a pass merely because a host-memory design is proposed.
 
 The BF16 n-gram table is **84,602,880 × 768**, or **129,950,023,680 bytes =
 121.025 GiB**. Its upstream row metadata adds 0.946 GiB: one FP32 second
@@ -58,16 +78,18 @@ do not contact Google Cloud, allocate hardware, inspect live HBM or allocate ten
 
 ## Port requirements still to implement
 
-1. Select and inspect the actual TPU allocation. Prefer a single-host v5p-8
-   for initial development if available. Use a matching, explicitly tested
+1. Inspect the selected single-host `v5litepod-8` allocation, available host
+   RAM and HBM. Implement and measure the host-memory table backend before
+   assuming this design fits. Use a matching, explicitly tested
    torch/torch_xla pair and record libtpu and runtime versions. Do not install
    the CUDA reference's cu128/FlashAttention dependencies on the TPU.
-2. Use XLA SPMD with `torch_xla.runtime.use_spmd()` and explicit row-axis
-   sharding. SPMD exposes one logical device; do not combine it with the
+2. Use XLA SPMD with `torch_xla.runtime.use_spmd()` and explicit sharding
+   of the dense computation and bounded row caches. The full table stays in
+   host RAM, divided into eight logical row-owner shards. SPMD exposes one logical device; do not combine it with the
    pasted `torch_xla.launch(_mp_fn)` MPMD sketch, manual gradient all-reduces,
    or NCCL. Physical chip count and the reference's eight logical data streams
-   are different concepts. Preserve those streams' document segmentation and
-   n-gram history when mapping them onto four or sixteen chips.
+   are different concepts. Preserve the eight streams' document segmentation
+   and n-gram history when mapping them onto the eight v5e chips.
 3. Port the model and optimizers into this sibling folder. Remove CUDA graphs,
    Triton, patched FlashAttention-3 and FP8 caches from the new implementation.
    Preserve mixed-width attention, paired heads, partial key offsets, QK norm,
@@ -76,8 +98,11 @@ do not contact Google Cloud, allocate hardware, inspect live HBM or allocate ten
    attention mask over the entire packed token stream is not a viable substitute.
 4. Preserve signed bigram/trigram hashing, sparse row pulls, touched-row gradient
    accumulation and lazy row-Adam decay/cadence. Never make the full table an
-   ordinary autograd embedding parameter or gather it into host RAM. Verify
-   XLA's gather/scatter lowering and actual per-device storage before training.
+   ordinary autograd embedding parameter, replicate it per process, or make
+   a second full host copy during transfer/export. Verify
+   host/TPU cache routing, actual per-device storage and bounded host buffers
+   before training. Offloading necessarily introduces host transfers; the CUDA
+   design's no-host-synchronization assumption cannot be reused unchanged.
 5. Preserve ANVIL's rails/equalizer and auxiliary Adam schedules, embedding
    untying, sampled softmax, MTP/prefix losses, canonical validation mask and
    final tail averaging. A BF16 port changes the FP8 numerical path; label
@@ -96,7 +121,7 @@ do not contact Google Cloud, allocate hardware, inspect live HBM or allocate ten
    loss on the full 10,485,760 validation tokens, with identical masking.
 8. Export dense tail-averaged state and every n-gram shard with global row
    offsets, outside training timing. Adapt the reference `weight_export.py`
-   receipt/hash/coverage protocol to XLA local shards. Write
+   receipt/hash/coverage protocol to dense XLA weights and CPU table shards. Write
    `WEIGHTS_COMPLETE.json` only after all shards are verified. Provide at
    least 160 GiB of free disk across the export destination; check per-host
    placement on multi-host allocations. This is a WeightWatcher analysis
