@@ -73,6 +73,9 @@ def worker(index,options):
     if xr.device_type()!='TPU' or world!=8 or xr.is_spmd():
         raise RuntimeError('Requires eight TPU processes in PJRT MPMD mode; SPMD/CPU unsupported')
     device=xm.xla_device()
+    # ANVIL's sensitive FP32 polynomial recurrence needs full matmul precision.
+    from torch_xla.backends import set_mat_mul_precision
+    set_mat_mul_precision('highest')
     root=Path(options['output'])
     dist.init_process_group('gloo',init_method='file://'+str(root/'gloo-init'),
         rank=rank,world_size=world,timeout=datetime.timedelta(hours=2))

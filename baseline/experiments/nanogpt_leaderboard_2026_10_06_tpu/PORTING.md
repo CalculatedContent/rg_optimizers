@@ -15,6 +15,7 @@ ANVIL retains both velocity rails, six polynomial maps, lookahead, lane equaliza
 - Eight PJRT MPMD processes replace CUDA ranks. Gloo exchanges host n-gram rows; XLA averages dense gradients. This is not SPMD.
 - Full n-gram weights and scalar-per-row state stay in host RAM. Only active rows enter HBM. Exchanges happen each step, without CUDA graph overlap or row-prefetch pipelines.
 - BF16 projection/MLP matmuls replace FP8 caches. FP32 softmax and bounded attention slabs replace patched FlashAttention. Checkpointing recomputes activations in backward.
+- ANVIL polynomial recurrence uses FP32 and XLA highest matmul precision: BF16 recurrence was numerically unstable in an XLA CPU rank-one-gradient test. The same six maps and rails are retained; compute cost and rounding differ from CUDA.
 - Dense optimizer state is replicated. ANVIL uses an FP32 master with ordinary BF16 rounding, instead of CUDA packed-mantissa/high-half truncation. Fused arithmetic and reduction orders differ.
 - Value embeddings use ordinary BF16 parameter-gradient accumulation instead of persistent FP16 atomics. Host sparse accumulation uses FP16 then BF16 owner exchange with a different reduction order.
 - Matching torch/torch_xla 2.9.0 packages replace the CUDA software stack. The H100 timing region and warmup are not reproduced.

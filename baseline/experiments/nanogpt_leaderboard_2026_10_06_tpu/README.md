@@ -52,7 +52,7 @@ After tail averaging and final validation, the unchanged reference exporter writ
 
 ## Verification and limitations
 
-The full dense topology passed a 16-token forward/backward smoke test on CPU and through XLA's CPU backend. Component tests cover attention masks/gradients, rotary indexing, sparse Adam, schedule and model shapes. A two-process Gloo test is included; local socket restrictions may skip it, but CI treats that failure as an error. Neither CPU backend verifies the full TPU workload.
+The full dense topology passed a 16-token forward/backward smoke test on CPU and through XLA's CPU backend. Component tests cover attention masks/gradients, rotary indexing, sparse Adam, MTP terminal gradients, optimizer cadence, schedule and model shapes. XLA CPU tests also exercise the ANVIL recurrence, embedding untie and tail averaging. A two-process Gloo test is included; local socket restrictions may skip it, but CI treats that failure as an error. Neither CPU backend verifies the full TPU workload.
 
 ```bash
 python -m pip install pytest

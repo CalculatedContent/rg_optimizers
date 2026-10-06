@@ -103,9 +103,7 @@ class CausalSelfAttention(nn.Module):
         self.paired = paired
 
     def forward(self, x: Tensor, attn_args: AttnArgs, qk_w: Tensor, v_w: Tensor, o_w: Tensor, qkv_fp8=None):
-        """qkv_fp8 (training only; None under validation): (weight_f8, weight_f8_t, weight_scale, x_scale,
-        grad_scale, x_f8, x_f8_t), this layer's packed weight cache, its static fp8 scales and its
-        already-quantized input."""
+        """BF16 attention; qkv_fp8 is an unused compatibility argument."""
         B, T = (x.size(0), x.size(1))
         assert B == 1, 'varlen sequences requires B == 1'
         assert T % 16 == 0

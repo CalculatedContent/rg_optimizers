@@ -40,19 +40,21 @@ def cascade(gradient, velocity, momentum, fast_beta, fast_weight):
     velocity[0].lerp_(g, 1 - fast_beta)
     velocity[1].lerp_(g, .02)
     blend = fast_weight * velocity[0] + (1-fast_weight) * velocity[1]
-    x = torch.lerp(g, blend, momentum).bfloat16()
+    # Keep the polynomial recurrence in FP32. BF16 rounding/fusion differences
+    # in XLA can push the intermediate singular values outside its stable basin.
+    x = torch.lerp(g, blend, momentum)
     tall = x.size(-2) > x.size(-1)
     gram = x.mT @ x if tall else x @ x.mT
     d = gram.diagonal(dim1=-2,dim2=-1).float().sum(-1)[...,None,None].sqrt() * 1.05 + 1e-6
-    x = (x.float()/d).bfloat16()
-    gram = (gram.float()/d.square()).bfloat16()
+    x = x/d
+    gram = gram/d.square()
     for index,(a,b,c) in enumerate(ANVIL_MAPS):
         if index:
             gram = x.mT @ x if tall else x @ x.mT
-        poly = (b*gram.float() + c*(gram @ gram).float()).bfloat16()
+        poly = b*gram + c*(gram @ gram)
         product = x @ poly if tall else poly @ x
-        x = (a*x.float() + product.float()).bfloat16()
-    return x
+        x = a*x + product
+    return x.bfloat16()
 
 
 class Optimizer:
