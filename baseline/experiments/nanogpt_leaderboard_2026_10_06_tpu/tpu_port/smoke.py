@@ -17,8 +17,14 @@ def smoke():
     bad=[name for name,p in model.named_parameters() if p.grad is not None and not torch.isfinite(p.grad).all()]
     if missing or bad or not torch.isfinite(sink.grad).all():
         raise RuntimeError(f'Gradient failure: missing={missing}, nonfinite={bad}')
+    model.eval()
+    with torch.no_grad():
+        evaluation=model(inputs,inputs.long(),torch.tensor([0,8,16],dtype=torch.int32),torch.arange(32),cfg)
+    if not torch.isfinite(evaluation).all() or not 0<=int(model.last_eval_correct)<=16:
+        raise RuntimeError('Evaluation NLL/accuracy failure')
     shapes={name:list(p.shape) for name,p in model.named_parameters()}
     return {'status':'cpu_forward_backward_passed','dense_parameters':sum(p.numel() for p in model.parameters()),
             'ngram_table_parameters':84602880*768,'token_rows':16,
             'shapes':shapes,'training_loss':float(losses.detach().mean()),
+            'evaluation_nll':float(evaluation.mean()),'evaluation_correct_tokens':int(model.last_eval_correct),
             'tpu_execution_verified':False,'full_table_allocated':False,'convergence_verified':False}

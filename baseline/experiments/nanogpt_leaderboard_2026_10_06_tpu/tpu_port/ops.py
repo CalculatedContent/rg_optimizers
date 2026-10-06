@@ -102,6 +102,7 @@ def language_loss(model, x, inputs, targets, mtp_weights, prefix_weight, sampled
         weight = model.lm_head.weight
         target, prefix = targets, model.prefix_table[targets]
     pieces = []
+    correct_counts = []
     for start in range(0, n, slab):
         stop = min(n, start + slab)
         # Bind offsets now: checkpoint invokes this closure again during backward.
@@ -116,7 +117,9 @@ def language_loss(model, x, inputs, targets, mtp_weights, prefix_weight, sampled
                 logits = logits.masked_fill(mask, -60)
             logp = F.log_softmax(logits, -1)
             if not train:
-                return -logp.gather(1, next_targets[start:stop, None]).squeeze(1)
+                labels=next_targets[start:stop]
+                return (-logp.gather(1, labels[:,None]).squeeze(1),
+                        (logits.argmax(-1)==labels).sum())
             result = logits.new_zeros(stop - start)
             for offset in range(mtp.numel()):
                 positions = torch.arange(start, stop, device=hidden.device) + offset
@@ -132,5 +135,12 @@ def language_loss(model, x, inputs, targets, mtp_weights, prefix_weight, sampled
             return result + pw.reshape(()) * torch.where(valid, ce, 0)
         mask_rows = (model.canon_mask[inputs[start:stop].long()] if not train
                      else torch.empty(0, dtype=torch.uint8, device=x.device))
-        pieces.append(checkpoint(loss_rows, x[start:stop], weight, target, prefix, mask_rows, mtp_weights, prefix_weight))
+        result=checkpoint(loss_rows, x[start:stop], weight, target, prefix, mask_rows, mtp_weights, prefix_weight)
+        if train:
+            pieces.append(result)
+        else:
+            losses,correct=result
+            pieces.append(losses); correct_counts.append(correct)
+    if not train:
+        model.last_eval_correct=torch.stack(correct_counts).sum()
     return torch.cat(pieces)

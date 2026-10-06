@@ -10,6 +10,7 @@ import secrets
 import shutil
 import subprocess
 import sys
+import time
 
 from capacity import HERE, GIB, load_contract, sha256, verify_reference
 
@@ -77,8 +78,23 @@ def runtime_environment():
             'python':sys.version,'host_available_bytes':available_host_memory()}
 
 
+def tracking_command(action,root):
+    return [sys.executable,'-m','tpu_port.tracking',action,'--root',str(root)]
+
+
+def tracking_environment():
+    env=os.environ.copy()
+    env.update(PJRT_DEVICE='CPU',CUDA_VISIBLE_DEVICES='',OMP_NUM_THREADS='1',
+               OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1',MPLBACKEND='Agg')
+    return env
+
+
 def launch(action,data_root,results_root,receipt=None):
     verify_reference()
+    results_root=Path(results_root).resolve(); results_root.mkdir(parents=True,exist_ok=True)
+    needed=(160 if action=='run' else 2 if action=='preflight' else 0)*GIB
+    if shutil.disk_usage(results_root).free<needed:
+        raise RuntimeError(f'Need at least {needed//GIB} GiB free results disk; no TPU allocation made')
     environment=runtime_environment()
     if action!='check' and environment['host_available_bytes']<192*GIB:
         raise RuntimeError('Need at least 192 GiB available host RAM for full table, data and CPU buffers; no allocation made')
@@ -92,14 +108,13 @@ def launch(action,data_root,results_root,receipt=None):
         receipt=Path(receipt).resolve()
         passed=json.loads(receipt.read_text())
         previous=json.loads((receipt.parent/'run_manifest.json').read_text())
+        tracking=json.loads((receipt.parent/'TRACKING_STATUS.json').read_text())
         if (passed['kind']!='preflight' or passed['training_steps']!=30 or
+                previous['status']!='complete' or tracking['status']!='complete' or
                 previous['source_files']!=fingerprint or previous['data']!=data or
                 previous['environment']['torch']!=environment['torch'] or
                 previous['environment']['torch_xla']!=environment['torch_xla']):
             raise RuntimeError('Preflight receipt does not qualify this source/data/environment')
-    results_root=Path(results_root).resolve(); results_root.mkdir(parents=True,exist_ok=True)
-    if action=='run' and shutil.disk_usage(results_root).free<160*GIB:
-        raise RuntimeError('Need at least 160 GiB free disk for complete WeightWatcher export')
     root=results_root/(datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+action+'-'+secrets.token_hex(4))
     root.mkdir()
     options={'action':action,'data_root':str(Path(data_root).resolve()),'output':str(root),
@@ -110,7 +125,14 @@ def launch(action,data_root,results_root,receipt=None):
               'preflight_receipt':str(receipt) if receipt else None,
               'status':'started','convergence_verified':False}
     (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    tracking_process=None; tracking_log=None
     try:
+        if action!='check':
+            # CPU-only subprocess: analysis cannot mutate training tensors or consume training RNG.
+            subprocess.run(tracking_command('check',root),cwd=HERE,env=tracking_environment(),check=True)
+            tracking_log=(root/'weightwatcher.log').open('w')
+            tracking_process=subprocess.Popen(tracking_command('watch',root),cwd=HERE,
+                env=tracking_environment(),stdout=tracking_log,stderr=subprocess.STDOUT)
         # Execute in a fresh interpreter: libtpu must not be initialized in the spawn parent.
         cmd=[sys.executable,str(HERE/'experiment.py'),'_worker-launch','--options',json.dumps(options)]
         with (root/'console.log').open('w') as log:
@@ -118,13 +140,29 @@ def launch(action,data_root,results_root,receipt=None):
             try:
                 for line in process.stdout:
                     print(line,end='',flush=True); log.write(line); log.flush()
+                    if tracking_process is not None and tracking_process.poll() is not None:
+                        raise RuntimeError('WeightWatcher worker exited early; inspect '+str(root/'weightwatcher.log'))
                 code=process.wait()
             except BaseException:
                 process.terminate(); process.wait(); raise
         if code: raise RuntimeError('TPU subprocess failed; inspect '+str(root/'console.log'))
+        if tracking_process is not None:
+            (root/'tracking/TRAINING_DONE').touch()
+            while tracking_process.poll() is None:
+                print('Waiting for queued WeightWatcher snapshots; see '+str(root/'TRACKING_STATUS.json'),flush=True)
+                try: tracking_process.wait(timeout=30)
+                except subprocess.TimeoutExpired: pass
+            if tracking_process.returncode:
+                raise RuntimeError('WeightWatcher analysis failed; inspect '+str(root/'TRACKING_STATUS.json'))
+            tracking=json.loads((root/'TRACKING_STATUS.json').read_text())
+            if tracking['status']!='complete' or tracking['completed']!=tracking['snapshots'] or not tracking['completed']:
+                raise RuntimeError('WeightWatcher snapshot coverage incomplete')
+            manifest['weightwatcher_complete']=True
         manifest['status']='complete'
         if action=='run':
             result=json.loads((root/'FINAL_RESULT.json').read_text())
+            result['weightwatcher_complete']=True
+            (root/'FINAL_RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
             manifest['convergence_verified']=result['target_reached'] and result['weights_complete']
         (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         print('Results:',root,flush=True)
@@ -133,6 +171,10 @@ def launch(action,data_root,results_root,receipt=None):
         manifest['status']='failed'; manifest['error']=str(error)
         (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         raise
+    finally:
+        if tracking_process is not None and tracking_process.poll() is None:
+            tracking_process.terminate(); tracking_process.wait()
+        if tracking_log is not None: tracking_log.close()
 
 
 def main():

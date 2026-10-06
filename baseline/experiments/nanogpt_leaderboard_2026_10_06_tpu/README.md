@@ -33,7 +33,7 @@ python experiment.py prepare --data-root /data/nanogpt-leaderboard
 python experiment.py preflight --data-root /data/nanogpt-leaderboard
 ```
 
-Preflight allocates the full host table, dense model, optimizer and tail-average buffers. Its 30 training steps span all five stages, sampled-softmax variants, optimizer cadence changes and embedding untie. It also evaluates one full-size validation batch. It writes `PREFLIGHT_COMPLETE.json` only after all ranks finish. Compilation can take substantial time. This is not a convergence test.
+Preflight allocates the full host table, dense model, optimizer and tail-average buffers. Its 30 training steps span all five stages, sampled-softmax variants, optimizer cadence changes and embedding untie. It also checks the CPU WeightWatcher worker, writes initial/final spectral snapshots, and evaluates one full-size validation batch. It writes `PREFLIGHT_COMPLETE.json` only after all ranks finish. Compilation can take substantial time. This is not a convergence test.
 
 Use the receipt path printed by preflight:
 
@@ -46,13 +46,29 @@ Omitting the receipt runs a fresh preflight automatically. Source fingerprints, 
 
 ## Results and WeightWatcher
 
-`run_manifest.json` records source fingerprints, all ten data-shard SHA256s, seed, package versions and completion status. Per-rank hardware reports record device attributes. `metrics.jsonl` records loss, stages, token counts and wall times. `FINAL_RESULT.json` records final NLL/perplexity and whether the full evaluation reached 3.28. Generated results are ignored by Git.
+`run_manifest.json` records source fingerprints, all ten data-shard SHA256s, seed, package versions and completion status. Per-rank hardware reports record device attributes. `metrics.jsonl` records loss, stages, token counts and wall times. `FINAL_RESULT.json` records final NLL/perplexity and whether the full evaluation reached 3.28. Generated results are ignored by Git. `memory-rank-XX.jsonl` records HBM usage and the runtime peak when available; per-step logs include host row-lookup, cache bytes, sparse-gradient transfer and CPU update timings. These timings include synchronization/CPU work and are not H100 leaderboard timings.
 
 After tail averaging and final validation, the unchanged reference exporter writes `weights/rank-00/model.pt` and every rank's `ngram-*.pt` chunks, including global row offsets and hashes. `weights/WEIGHTS_COMPLETE.json` appears only after complete row coverage and checksums pass. These are CPU-readable analysis weights for WeightWatcher, not resume checkpoints. Process n-gram chunks individually rather than loading the whole table.
 
+## Incremental WeightWatcher and paired validation
+
+Tracking runs automatically in both `preflight` and `run`; it is not just a final weight dump. The launcher starts a separate CPU process with **weightwatcher==0.7.7**. It checks the installed API before TPU allocation and waits for all queued measurements before declaring the run complete. Tracking failures are recorded and fail completion rather than being silently ignored.
+
+Full training snapshots occur at step **0, every 100 updates, and step 1194 after tail averaging** (13 snapshots). Each immutable CPU snapshot contains all **50 active attention/MLP projection matrices**: separate Q, K, V and O at seven attention blocks; input/output MLPs at ten blocks; and the extra parallel MLP at block 8. The mapping excludes unused bank padding and the frozen layer-7 MLP. Embedding tables, the n-gram table, scalars and small gates are not part of incremental spectral analysis; all learned weights remain in the final export.
+
+Each snapshot is paired with validation of the same weights: NLL, perplexity, token accuracy/error and token count. Intermediate checks use the first **131,072 validation tokens** with that stage's current windows and are explicitly marked `full_benchmark_evaluation: false`. These diagnostic values do not establish the 3.28 endpoint. Only the final tail-averaged run uses the full **10,485,760 tokens** and final windows for acceptance. Training's MTP/prefix objective is labelled separately and is never exponentiated as benchmark perplexity.
+
+- `tracking/snapshots/*.pt`: retained, immutable CPU projection weights and paired validation metadata.
+- `tracking/measurements/*.json`: per-snapshot WW output, SHA256, version and diagnostic seed.
+- `tracking/layers.csv`: raw alpha, clipped alpha, fit status and all WW diagnostics, paired with validation metrics.
+- `tracking/summary.csv`: valid-fit counts, raw-alpha mean/minimum/spread and count below two, plus clipped results in separate columns.
+- `TRACKING_STATUS.json` and `weightwatcher.log`: completion, backlog and errors.
+
+Raw alpha comes only from WW's `raw_alpha` field. Invalid/zero-matrix fits remain unavailable; clipped alpha never substitutes for raw alpha. The worker uses `ERG=True`, randomized comparisons and `fix_fingers='clip_xmax'` to retain both raw and clipped fields. It receives CPU copies and cannot mutate the live model or training RNG. Analysis may lag training; the backlog remains visible and is drained at the end. Snapshots add several GiB of disk usage. There is no automatic cloud backup.
+
 ## Verification and limitations
 
-The full dense topology passed a 16-token forward/backward smoke test on CPU and through XLA's CPU backend. Component tests cover attention masks/gradients, rotary indexing, sparse Adam, MTP terminal gradients, optimizer cadence, schedule and model shapes. XLA CPU tests also exercise the ANVIL recurrence, embedding untie and tail averaging. A two-process Gloo test is included; local socket restrictions may skip it, but CI treats that failure as an error. Neither CPU backend verifies the full TPU workload.
+The full dense topology passed a 16-token forward/backward smoke test on CPU and through XLA's CPU backend. Component tests cover attention masks/gradients, rotary indexing, sparse Adam, MTP terminal gradients, optimizer cadence, schedule and model shapes. XLA CPU tests also exercise the ANVIL recurrence, embedding untie and tail averaging. The production CPU-to-XLA parameter migration and full dense optimizer/tail allocation have also passed locally on XLA CPU. A regression test covers the metadata-loss failure found during review. A two-process Gloo test is included; local socket restrictions may skip it, but CI treats that failure as an error. Neither CPU backend verifies the full TPU workload.
 
 ```bash
 python -m pip install pytest

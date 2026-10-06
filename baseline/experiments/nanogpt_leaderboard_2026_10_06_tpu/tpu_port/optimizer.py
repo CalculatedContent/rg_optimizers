@@ -67,12 +67,15 @@ class Optimizer:
         self.state = {}
         for name,p in self.params.items():
             if name in BANKS:
-                shape = p.reshape
+                # Module.to(XLA) replaces Parameters and discards Python attributes.
+                # Derive bank layout from actual tensor shapes, never p.reshape metadata.
+                shape = ((p.shape[0]*p.shape[1],*p.shape[2:])
+                         if name=='mlp_bank' and p.ndim==4 else tuple(p.shape))
                 red_dim = -1 if shape[-2] >= shape[-1] else -2
                 shape_lane = list(shape); shape_lane[red_dim]=1
                 self.state[name] = dict(master=p.detach().view(shape).float().clone(),
                     velocity=torch.zeros((2,*shape),device=p.device),
-                    energy=torch.zeros(shape_lane,device=p.device),red_dim=red_dim)
+                    energy=torch.zeros(shape_lane,device=p.device),red_dim=red_dim,shape=shape)
             else:
                 self.state[name] = dict(m=torch.zeros_like(p,dtype=torch.float32),
                     v=torch.zeros_like(p,dtype=torch.float32),event=0)
@@ -92,7 +95,7 @@ class Optimizer:
             state = self.state[name]
             lr_mult = self.schedule.get_lr(step)
             if name in BANKS:
-                g = g.view(p.reshape)
+                g = g.view(state['shape'])
                 beta = get_rail_beta(step,self.schedule.total_steps)
                 momentum = scalar(beta,g)
                 fast_beta = scalar(.85 if step>=514 else beta,g)
@@ -110,7 +113,8 @@ class Optimizer:
                 factors=torch.ones(g.size(0),1,1,device=p.device)
                 if name=='mlp_bank':
                     factors[1::2]=2
-                    for frozen in p.frozen_matrices: factors[frozen]=0
+                    # Reference slot 7 has no MLP: its two stored matrices are frozen.
+                    factors[14:16]=0
                 effective=scalar(rate*shape_mult,p)*factors
                 master=state['master']
                 aligned=state['velocity'][1]*master>=0

@@ -22,3 +22,7 @@ ANVIL retains both velocity rails, six polynomial maps, lookahead, lane equaliza
 - Each measured step includes synchronization and host work. Python slab loops can create large graphs at full validation size. Compile time and throughput remain unmeasured on TPU.
 
 These differences require a convergence experiment. Preflight establishes only execution with finite loss for tested stages on that hardware. A full run is accepted only when data/source manifests, full validation-token count, target NLL and complete weight export all pass. No bitwise equivalence or leaderboard performance claim is made.
+
+## Monitoring instrumentation
+
+Read-only diagnostic validation and CPU WeightWatcher run initially, every 100 updates and at the final tail-averaged state. This adds wall time and extra compiled evaluation shapes but does not change training batches, update counts, optimizers or learning-rate schedules. Intermediate validation is partial and is excluded from endpoint qualification. The review also removed reliance on Python attributes attached to Parameters: CPU-to-XLA migration replaces Parameters, so optimizer bank layouts now derive from tensor shapes and the fixed layer-7 freeze rule.

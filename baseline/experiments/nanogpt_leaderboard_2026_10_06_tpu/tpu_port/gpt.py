@@ -61,8 +61,7 @@ class ForwardScheduleConfig:
     sampled_loss: object = None
 
 class GPT(nn.Module):
-    """Training runs every projection in fp8 (the attention QKV, the MLP, the lm_head loss); validation
-    runs the bf16 path under no_grad."""
+    """Portable BF16 projections for both training and no-grad validation."""
 
     def __init__(self, vocab_size: int, num_layers: int, num_heads: int, head_dim: int, model_dim: int, max_seq_len: int, *, ngram_dim: int, world_size: int, device: torch.device):
         super().__init__()

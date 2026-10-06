@@ -31,11 +31,13 @@ def test_xla_anvil_optimizer_and_tail():
             super().__init__()
             for name in (*ADAM,*BANKS):
                 shape=(24,4,2) if name=='mlp_bank' else (2,4,2) if name in BANKS else (2,4) if name=='lm_head' else (4,2)
-                p=torch.nn.Parameter(torch.full(shape,.1,dtype=torch.bfloat16,device=device));p.label=name
+                p=torch.nn.Parameter(torch.full(shape,.1,dtype=torch.bfloat16));p.label=name
                 if name in BANKS:p.reshape=shape
                 if name=='mlp_bank':p.frozen_matrices=[14,15]
                 self.register_parameter(name,p)
-    model=Fixture();sched=schedule();opt=Optimizer(model,sched);tail=TailAverages(opt.params)
+    model=Fixture().to(device)
+    assert not hasattr(model.mlp_bank,'frozen_matrices')  # reproduces production migration
+    sched=schedule();opt=Optimizer(model,sched);tail=TailAverages(opt.params)
     for step in [0,1,514,515,965,967,1175,1192,1193]:
         for p in model.parameters():p.grad=torch.ones_like(p)
         opt.step(step);tail.tick(step);torch_xla.sync(wait=True)

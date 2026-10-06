@@ -77,5 +77,16 @@
   "required_host_memory_check": "Measure available RAM and cgroup limit before allocation; table and row metadata alone require about 122 GiB",
   "host_offload_verified": false,
   "performance_status": "Unknown; host transfers and CPU sparse updates may dominate. No H100 speed claim.",
-  "dense_parameters": 302792179
+  "dense_parameters": 302792179,
+  "tracking": {
+    "weightwatcher_version": "0.7.7",
+    "interval_updates": 100,
+    "initial_and_final": true,
+    "active_projection_matrices": 50,
+    "diagnostic_validation_tokens": 131072,
+    "final_validation_tokens": 10485760,
+    "execution": "separate CPU process; required completion before run success",
+    "alpha_raw_source": "raw_alpha; no clipped fallback",
+    "ngram_table_spectra": "not computed incrementally; full weights exported"
+  }
 }
