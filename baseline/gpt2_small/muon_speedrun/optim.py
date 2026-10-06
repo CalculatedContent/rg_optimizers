@@ -80,10 +80,12 @@ class Muon:
 
 
 def make_optimizers(model, rt, kind='muon'):
-    if kind not in ('muon', 'adam', 'adamw'):
+    if kind not in ('muon', 'muon_clip', 'adam', 'adamw'):
         raise ValueError('Unknown optimizer: '+kind)
     if getattr(model, 'architecture_id', None) == ARCHITECTURE:
         return make_stock_optimizers(model, rt, kind)
+    if kind == 'muon_clip':
+        raise ValueError('MuonClip requires the upstream GPT-2 model')
     matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
     scalars = [p for p in model.transformer.h.parameters() if p.ndim < 2] + [model.skip_weights]
     groups = [
@@ -117,6 +119,9 @@ def make_stock_optimizers(model, rt, kind):
     """
     matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
     muon = Muon(matrices, rt) if kind == 'muon' else None
+    if kind == 'muon_clip':
+        from muonclip import MuonClip
+        muon = MuonClip(matrices, rt, model)
     hidden_ids = {id(p) for _, p in matrices} if muon is not None else set()
     auxiliary = [p for p in model.parameters() if id(p) not in hidden_ids]
     groups = [dict(params=[p for p in auxiliary if p.ndim >= 2], role='matrices',
@@ -143,10 +148,13 @@ def optimizer_metadata(adam):
 def apply_update(muon, adam, rt, step):
     factor = lr_factor(step) if getattr(adam, 'benchmark', None) == BENCHMARK else schedule(step)
     if muon is not None:
-        muon.step(rt.scalar(0.04 * factor), rt.scalar(momentum(step)))
+        muon.step(rt.scalar(getattr(muon, 'peak_lr', 0.04) * factor),
+                  rt.scalar(getattr(muon, 'beta', momentum(step))))
     for group in adam.param_groups:
         group['lr'] = rt.scalar(group['peak_lr'] * factor)
     adam.step()
+    if muon is not None and hasattr(muon, 'clip_qk'):
+        muon.clip_qk()
 
 
 @torch.no_grad()

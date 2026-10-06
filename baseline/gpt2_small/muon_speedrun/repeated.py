@@ -31,7 +31,7 @@ def plan():
     jobs = []
     for index, seed in enumerate(SEEDS):
         # Alternate order to avoid putting one optimizer systematically first.
-        for optimizer in (('muon', 'adamw') if index % 2 == 0 else ('adamw', 'muon')):
+        for optimizer in (('muon_clip', 'adamw') if index % 2 == 0 else ('adamw', 'muon_clip')):
             jobs.append({'seed':seed, 'optimizer':optimizer, 'name':f'{optimizer}-s{seed}'})
     return {'jobs':jobs, 'architecture':ARCHITECTURE, 'config':asdict(GPTConfig()),
             'benchmark':BENCHMARK, 'protocol':protocol(),
@@ -42,7 +42,7 @@ def plan():
             'per_run_seconds_cap':JOB_SECONDS, 'suite_seconds_cap':SUITE_SECONDS,
             'randomness':'Initialization varies across seeds. All runs use the same fixed token order.',
             'schedule':'700-update linear warmup, cosine decay to zero at 19560 updates; global gradient clipping at 1.0.',
-            'comparison':'Stock GPT-2 Small; Muon hidden LR 0.04, auxiliary AdamW LR 0.0006; AdamW control LR 0.0006. AdamW matrix decay 0.1; Muon hidden decay zero.',
+            'comparison':'Stock GPT-2 Small; MuonClip hidden LR 0.02, auxiliary AdamW LR 0.0006; AdamW control LR 0.0006. AdamW matrix decay 0.1; MuonClip hidden decay 0.1; per-head QK clip threshold 100.',
             'target_note':'3.28 is the original GPT-2/FineWeb target; this TPU/Muon port has not demonstrated convergence.',
             'error_bars':'Sample standard deviation across seeds, not across matrices or updates.'}
 
@@ -147,14 +147,14 @@ def report(root):
         runs.append(entry)
     curve_rows = [dict(optimizer=o,step=s,metric=m,**stats(v)) for (o,s,m),v in sorted(curves.items())]
     layer_rows = [dict(optimizer=o,step=s,matrix_name=n,metric=m,**stats(v)) for (o,s,n,m),v in sorted(layers.items())]
-    paired_seeds = [s for s in SEEDS if ('muon',s) in finals and ('adamw',s) in finals]
-    differences = {metric:stats([finals['adamw',s][metric]-finals['muon',s][metric] for s in paired_seeds]) for metric in METRICS}
+    paired_seeds = [s for s in SEEDS if ('muon_clip',s) in finals and ('adamw',s) in finals]
+    differences = {metric:stats([finals['adamw',s][metric]-finals['muon_clip',s][metric] for s in paired_seeds]) for metric in METRICS}
     out = {'benchmark':p.get('benchmark', 'historical-unspecified'), 'architecture':p.get('architecture', 'historical-unspecified'), 'config':p.get('config'),
            'complete_runs':sum(r['complete'] for r in runs), 'expected_runs':6, 'runs':runs,
-           'paired_final_seeds':paired_seeds, 'final_adamw_minus_muon':differences,
-           'target_times':{o:{**stats(times[o]), 'note':'End-to-end from each worker launch to first observed crossing; noncrossing runs are not successes.'} for o in ('muon','adamw')},
+           'paired_final_seeds':paired_seeds, 'final_adamw_minus_muonclip':differences,
+           'target_times':{o:{**stats(times[o]), 'note':'End-to-end from each worker launch to first observed crossing; noncrossing runs are not successes.'} for o in ('muon_clip','adamw')},
            'error_bars':'Sample SD across available seeds; n is reported at every point. No independence assumption across training steps.',
-           'interpretation':'Final differences require completed, backed-up, tracked pairs. Positive AdamW-minus-Muon NLL/error favors Muon. Recipes also differ in weight decay.'}
+           'interpretation':'Final differences require completed, backed-up, tracked pairs. Positive AdamW-minus-MuonClip NLL/error favors Muon. Recipes also differ in weight decay.'}
     table(root/'observations.csv',observations,['optimizer','seed','step','tokens_seen',
           'training_elapsed_seconds','end_to_end_seconds',*METRICS])
     write(root/'COMPARISON.json',out)
@@ -171,7 +171,7 @@ def plots(root):
         rows = list(csv.DictReader(f))
     fig, axes = plt.subplots(2,2,figsize=(12,8))
     for ax,metric in zip(axes.flat,('val_nll','val_token_error','alpha_raw_mean','alpha_raw_min')):
-        for optimizer in ('muon','adamw'):
+        for optimizer in ('muon_clip','adamw'):
             series = [r for r in rows if r['optimizer']==optimizer and r['metric']==metric]
             if not series: continue
             x=[int(r['step']) for r in series]; y=[float(r['mean']) for r in series]

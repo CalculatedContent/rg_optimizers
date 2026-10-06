@@ -1,28 +1,27 @@
-# nanoGPT speedruns and GPT-2 validation
+# Upstream GPT-2 Small / FineWeb: MuonClip and AdamW
 
-The main repeated-seed speedrun entry point is **`python3 baseline/gpt2_small/speedrun.py plan`**.
-See [the paired-seed protocol](muon_speedrun/REPEATED_SEEDS.md) for six fresh
-19,560-update runs: three matched seeds each for Muon and AdamW, 700-step warmup and full-budget
-cosine decay, paired WeightWatcher/token-error measurements, and seed-level statistics.
-Both optimizers now use **stock GPT-2 Small**: 12 blocks, 12 heads, width 768,
-MLP width 3072, context 1024, vocabulary 50257, learned positions, LayerNorm,
-GELU, biases and tied token/output weights. There are 124,439,808 unique parameters.
-See [the architecture audit and full matrix inventory](STOCK_ARCHITECTURE.md).
+The current runner uses the **unmodified pinned upstream GPT-2 model directly**:
+12 blocks, 12 heads, width 768, MLP 3072, context 1024, vocabulary 50257,
+packed QKV, learned positions, LayerNorm, GELU, biases and tied output embeddings.
+There are 124,439,808 unique parameters. Source SHA256 is verified before import.
 
+[Single-run instructions and required TPU preflight](muon_speedrun/README.md) ·
+[All matrix sizes](STOCK_ARCHITECTURE.md) ·
+[Pinned benchmark configuration](muon_speedrun/BENCHMARK.md).
 
-For the **historical 25,000-update Muon experiment with the modified speedrun model**,
-see [muon_longrun/README.md](muon_longrun/README.md). It preserves the successful
-six-head Muon/FineWeb recipe, stretches cooldown to updates 17,500–25,000,
-and records full-validation token error against all 72 raw/clipped alpha trajectories.
-The launcher checks the live TPU lease and retains the completed reference run.
+Use `--optimizer muon_clip` (default) or `--optimizer adamw` with the single-run
+launcher and a live node. The original GPT-2/FineWeb baseline uses 19,560 updates,
+700 warmup updates, cosine decay, 524,288 tokens per update and gradient clipping
+at 1.0. Full validation and spectral observations occur every 250 updates.
 
-For **single 19,560-update stock GPT-2 Muon or AdamW runs on eight TPU chips**, see
-[muon_speedrun/README.md](muon_speedrun/README.md). They use the pinned original GPT-2/FineWeb baseline and record the
-full-validation loss threshold 3.28, save checkpoints every 250 updates, and pair
-raw/clipped WeightWatcher alpha with validation token error at those same updates.
-The [benchmark audit](muon_speedrun/BENCHMARK.md) identifies the upstream recipe and TPU/Muon differences.
-Its TPU performance and convergence require live
-measurement; the default twelve-hour budget is a cap, not a runtime prediction.
+`python3 baseline/gpt2_small/speedrun.py plan` shows the
+[three-seed MuonClip/AdamW comparison](muon_speedrun/REPEATED_SEEDS.md).
+Its six 12-hour caps require 72h45m of lease; use a single run on a shorter allocation.
+CPU verification is complete only when the pinned commit's CI passes. A live TPU
+preflight is required to establish device memory fit and a successful optimizer update.
+
+The [historical 25k experiment](muon_longrun/README.md) uses the modified six-head
+model and remains separately identified; it is not this new upstream-model benchmark.
 
 For the **30-minute GPT-2/FineWeb reference run**, see
 [speedrun30/README.md](speedrun30/README.md). Its launcher stops the current

@@ -5,7 +5,7 @@ TPU port differences; this identifier must accompany every new comparison.
 """
 import math
 
-BENCHMARK = 'llmc-gpt2-124m-fineweb10b-2024-10-13-tpu-v1'
+BENCHMARK = 'llmc-gpt2-124m-fineweb10b-2024-10-13-upstream-tpu-v2'
 SOURCE_COMMIT = '7ecd8906afe6ed7a2b2cdb731c042f26d525b820'
 TOTAL_STEPS = 19560
 BATCH_TOKENS = 524288
@@ -36,5 +36,6 @@ def protocol():
                 measurement_interval=MEASUREMENT_INTERVAL,
                 validation_tokens=VAL_TOKENS,
                 data_order='upstream Python sequential shards; discard incomplete microbatch tails; wrap at corpus end',
-                implementation='TPU SPMD; BF16 activations; FP32 weights/states; split Q/K/V',
+                implementation='TPU SPMD; BF16 activations; FP32 weights/states; unchanged upstream packed QKV',
+                muonclip_variant='LR 0.02, constant momentum 0.95, RMS scale 0.2, decay 0.1, five NS steps on packed matrices; per-head causal QK clip threshold 100, balance 0.5',
                 muon_variant='LR 0.04, momentum 0.85 to 0.95 over 500 updates, five NS steps, no hidden decay; baseline LR schedule and clipping')

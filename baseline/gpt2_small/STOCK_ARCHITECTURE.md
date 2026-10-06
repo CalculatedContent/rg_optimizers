@@ -1,122 +1,72 @@
-# GPT-2 Small architecture audit
+# Unmodified upstream GPT-2 Small architecture
 
-The current `speedrun.py` paired-seed Muon/AdamW experiment and the single-run
-`muon_speedrun/cloudshell.py` launcher now use `muon_speedrun/stock_model.py`.
-Both optimizer choices instantiate the same model before building the optimizers.
-
-The previous `muon_speedrun/model.py` was **not stock GPT-2**. It had 12 blocks
-but only 6 heads, RoPE, RMSNorm/QK normalization, squared ReLU, value residuals,
-learned input/U-Net skips, zero output projections, an untied vocabulary head,
-logit soft-capping and a padded vocabulary of 50304. Its historical 25k recipe
-and old checkpoints remain identifiable and reproducible. The old one-head
-experiments are also historical small-model studies, not GPT-2 Small.
-
-## Current shared architecture
+Both MuonClip and AdamW instantiate `GPT` directly from the unchanged
+`speedrun30/vendor/llmc_train_gpt2.py`, pinned to llm.c commit
+`7ecd8906afe6ed7a2b2cdb731c042f26d525b820`. The adapter checks the complete file's
+SHA256 before import. No model class, layer or forward method is rewritten.
+The architecture identifier is `gpt2-small-upstream-packed-v2`.
 
 | Property | Value |
 |---|---|
-| Transformer blocks | 12 independent blocks, indices 0–11 |
-| Attention heads per block | 12 |
-| Hidden width / head width | 768 / 64 |
-| MLP intermediate width | 3072 |
-| Context length | 1024 |
-| Vocabulary | 50257, no padding |
-| Positions | Learned absolute position embeddings |
-| Normalization | Pre-LayerNorm with affine weight and bias; epsilon 1e-5 |
+| Blocks / heads / hidden width | 12 / 12 / 768 |
+| Head width / MLP width | 64 / 3072 |
+| Context / vocabulary | 1024 / 50257 |
+| Positions | Learned absolute embeddings |
+| Normalization | Pre-LayerNorm, affine scales and biases, epsilon 1e-5 |
 | Activation | Original GPT-2 tanh GELU |
-| Linear biases | Enabled in all block projections; no output-head bias |
-| Output head | Tied to token embedding, one shared parameter |
-| Residuals | Standard attention and MLP residuals, no additional skips or mixing |
-| Initialization | Normal standard deviation 0.02; residual projections scaled by 1/sqrt(24) |
-| Dropout | 0 for both experiments, following nanoGPT pretraining/llm.c |
+| Linear biases | Enabled; vocabulary head has no bias |
+| Output head | Tied to token embedding |
+| Dropout | 0, as in the upstream pretraining model |
 | Unique trainable parameters | **124,439,808** |
+| Single-run initialization | Upstream initializer, seed 42 |
 
-Q, K and V are stored as three matrices instead of one packed QKV matrix so the
-existing per-projection Muon updates and 72 WeightWatcher traces remain available.
-Concatenating the three weights/biases recovers the standard GPT-2 packed QKV
-projection. This storage choice preserves the architecture's forward and backward
-equations. Applying Muon independently to Q/K/V is an optimizer choice; it is not
-the same update as orthogonalizing their concatenation.
+## Stored layer weight matrices
 
-## Every block matrix
+Shapes use PyTorch `[output features, input features]` storage. **QKV is packed**
+in the upstream `attn.c_attn.weight` parameter. The following four matrices occur
+in each of the twelve blocks, indexed 0–11:
 
-Shapes are **stored PyTorch `[output features, input features]`**. Each Q/K/V
-matrix covers all 12 heads; one head corresponds to a 64 × 768 row slice.
+| Block | QKV `attn.c_attn` | O `attn.c_proj` | MLP IN `mlp.c_fc` | MLP OUT `mlp.c_proj` |
+|---|---|---|---|---|
+| L00 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L01 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L02 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L03 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L04 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L05 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L06 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L07 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L08 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L09 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L10 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| L11 | 2304 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
 
-| Block | W_Q | W_K | W_V | W_O | W_MLP_IN | W_MLP_OUT |
-|---|---|---|---|---|---|---|
-| L00 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L01 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L02 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L03 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L04 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L05 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L06 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L07 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L08 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L09 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L10 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
-| L11 | 768 × 768 | 768 × 768 | 768 × 768 | 768 × 768 | 3072 × 768 | 768 × 3072 |
+| Other weight | Shape |
+|---|---|
+| Token embedding `transformer.wte.weight` | 50257 × 768 |
+| Position embedding `transformer.wpe.weight` | 1024 × 768 |
+| Vocabulary output `lm_head.weight` | 50257 × 768; alias of token embedding |
 
-The checkpoint paths are `transformer.h.<block>.attn.c_q.weight`, `c_k.weight`,
-`c_v.weight`, `c_proj.weight`, and `transformer.h.<block>.mlp.c_fc.weight`,
-`c_proj.weight`. Packed QKV would be **2304 × 768**, an alternate representation
-of the same three 768 × 768 matrices, not an additional parameter.
+There are **48 stored block matrices**, two embedding matrices and one named tied
+output alias: **50 unique matrix parameters, 51 named entries**. The full machine
+readable list is [stock_weight_matrices.csv](stock_weight_matrices.csv).
+Each block also has LayerNorm scales/biases of length 768, packed QKV bias 2304,
+attention output bias 768, MLP input bias 3072 and output bias 768. Final LayerNorm
+has scale and bias vectors of length 768. Each block contains 7,087,872 parameters.
+The upstream causal-mask buffers are not learned parameters.
 
-| Other weight | Shape | Unique elements |
-|---|---|---:|
-| Token embedding `transformer.wte.weight` | 50257 × 768 | 38,597,376 |
-| Position embedding `transformer.wpe.weight` | 1024 × 768 | 786,432 |
-| Vocabulary output `lm_head.weight` | 50257 × 768 | 0 additional; tied token embedding |
+Q, K and V are each a 768 × 768 **slice** of the packed 2304 × 768 matrix; a single
+head occupies 64 × 768 rows. WeightWatcher extracts these slices only from saved
+CPU weights, retaining 72 projection traces without changing trainable storage.
 
-Each block also has two LayerNorm scale/bias pairs of length 768; Q/K/V/O biases
-of length 768 each; and MLP biases of length 3072 and 768. Final LayerNorm has
-one scale and one bias vector of length 768. There are no other learned tensors.
-Each block has 7,087,872 parameters including vectors. The count is
-38,597,376 + 786,432 + 12 × 7,087,872 + 1,536 = **124,439,808**.
+MuonClip observes QK logits without modifying the forward output. Its parameter
+and bias rescaling occurs in the optimizer update. TPU attention selection and
+BF16 autocast live outside the upstream model. The worker requires attention
+parity plus a full-sized accumulated optimizer preflight before fresh training.
 
-[stock_weight_matrices.csv](stock_weight_matrices.csv) lists all 75 named matrix
-entries: 72 block matrices, 2 embedding matrices and 1 explicitly marked shared
-output alias (74 unique matrix parameters). Regenerate the inventory directly:
+[Configuration and provenance](muon_speedrun/BENCHMARK.md) ·
+[Launch instructions](muon_speedrun/README.md) ·
+[Paired-seed protocol](muon_speedrun/REPEATED_SEEDS.md)
 
-```bash
-python baseline/gpt2_small/muon_speedrun/stock_model.py
-```
-
-## Optimizer and experiment integration
-
-The old untied embedding/head rates of 0.6/0.008 cannot be assigned to the same
-tied parameter. Both optimizers now use AdamW at 6e-4 for embeddings, biases and
-LayerNorm; matrix decay 0.1 and vector decay 0. Muon retains LR 0.04, its momentum
-ramp and five Newton–Schulz iterations on the 72 block matrices, without decay.
-The AdamW control also updates all block matrices at 6e-4 with decay 0.1.
-All trainable tensors have FP32 parameters and optimizer state; TPU activations
-and matrix multiplies use BF16 with FP32 LayerNorm statistics and output loss.
-
-The paired 3-seed protocol now uses the [pinned original GPT-2/FineWeb baseline](muon_speedrun/BENCHMARK.md):
-19,560 updates, 700 warmup updates, cosine decay, global gradient clipping at 1.0,
-and validation/checkpoint/spectral measurements every 250 updates. Plans/manifests
-include `gpt2-small-stock-v1` and the full configuration. Reports exclude runs
-with a different architecture/configuration, and execution rejects old suite plans.
-The flash-attention preflight now tests 12 heads of width 64. The historical
-25k worker explicitly requests its original 6-head/width-128 preflight.
-
-The NLL target 3.28 comes from the original GPT-2/FineWeb reference; reaching it
-on this TPU port has not been demonstrated. These optimizer settings are not tuned for the
-new architecture. Existing running jobs keep their pinned source; this repository
-upgrade applies to fresh runs. No TPU training is started by the architecture audit.
-
-## Verification and references
-
-CPU tests compare logits, loss and every gradient against the independent packed
-QKV GPT-2 implementation already pinned in
-`speedrun30/vendor/llmc_train_gpt2.py`; they also check causality, dimensions,
-parameter count, tying, optimizer coverage, both mixed-precision training paths,
-checkpoint reload and paired spectral snapshots. Full-model dimensions/counts
-are checked on the meta device without allocating weights. Live TPU execution
-and convergence require a new run and are not established by these CPU checks.
-
-- [OpenAI GPT-2 implementation](https://github.com/openai/gpt-2/blob/master/src/model.py)
-- [Karpathy nanoGPT implementation](https://github.com/karpathy/nanoGPT/blob/master/model.py)
-- [Pinned llm.c reference and provenance](speedrun30/README.md)
-- [Current paired-seed protocol](muon_speedrun/REPEATED_SEEDS.md)
+Historical six-head modified-model runs and the earlier split-QKV port have
+different architecture/protocol identifiers and are excluded from new comparisons.

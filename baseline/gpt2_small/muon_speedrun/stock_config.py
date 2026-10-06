@@ -1,7 +1,7 @@
 """Stock GPT-2 Small dimensions; importable without PyTorch for launch plans."""
 from dataclasses import dataclass
 
-ARCHITECTURE = 'gpt2-small-stock-v1'
+ARCHITECTURE = 'gpt2-small-upstream-packed-v2'
 
 
 @dataclass(frozen=True)

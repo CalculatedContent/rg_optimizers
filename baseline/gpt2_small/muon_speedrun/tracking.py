@@ -37,7 +37,13 @@ def queue_snapshot(root, checkpoint):
     for block in range(checkpoint['config']['n_layer']):
         for suffix, role in ROLES.items():
             source = f'transformer.h.{block}.{suffix}.weight'
-            matrices[f'L{block:02d}_W_{role}'] = checkpoint['model'][source]
+            if source in checkpoint['model']:
+                value = checkpoint['model'][source]
+            elif role in ('Q','K','V'):
+                value = checkpoint['model'][f'transformer.h.{block}.attn.c_attn.weight'].chunk(3, dim=0)[('Q','K','V').index(role)]
+            else:
+                raise KeyError(source)
+            matrices[f'L{block:02d}_W_{role}'] = value
     folder = root/'tracking/snapshots'
     folder.mkdir(parents=True, exist_ok=True)
     path = folder/f'{step:07d}.pt'

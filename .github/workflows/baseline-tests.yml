@@ -71,3 +71,14 @@ jobs:
           PYTHONPATH: baseline/nanogpt_one_head/src
           MPLBACKEND: Agg
         run: pytest -q baseline/nanogpt_one_head/tests
+
+      - name: Verify upstream GPT-2, MuonClip and AdamW integration
+        env:
+          PYTHONPATH: baseline/nanogpt_one_head/src
+          MPLBACKEND: Agg
+        run: >-
+          pytest -q baseline/gpt2_small/tests/test_stock_gpt2.py
+          baseline/gpt2_small/tests/test_repeated_speedrun.py
+          baseline/gpt2_small/tests/test_muon_speedrun.py
+          baseline/gpt2_small/tests/test_speedrun30.py
+          baseline/gpt2_small/tests/test_muon_longrun.py

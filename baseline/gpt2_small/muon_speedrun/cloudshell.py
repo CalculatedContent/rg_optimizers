@@ -76,7 +76,7 @@ def stop_longrun():
             raise RuntimeError('Long run is still active; comparison not started')
 
 
-def start_remote(commit, hours=12, optimizer='muon', microbatch=64, attention='flash', replace_current=False,
+def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attention='flash', replace_current=False,
                  launch_id=None, replace_longrun=False, checked_lease=None):
     if os.geteuid() != 0 or not os.path.ismount('/mnt/disks/rg-data'):
         raise RuntimeError('Requires the existing mounted disk and root')
@@ -166,7 +166,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('action',choices=('start','status'))
     p.add_argument('--hours',type=float,default=12)
-    p.add_argument('--optimizer',choices=('muon','adam','adamw'),default='muon')
+    p.add_argument('--optimizer',choices=('muon','muon_clip','adam','adamw'),default='muon_clip')
     p.add_argument('--microbatch',type=int,choices=(32,64,128),default=64)
     p.add_argument('--attention',choices=('auto','flash','math'),default='flash')
     p.add_argument('--replace-current',action='store_true',help='Stop the previous speedrun and start from initialization')

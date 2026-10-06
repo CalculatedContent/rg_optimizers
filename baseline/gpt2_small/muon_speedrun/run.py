@@ -54,7 +54,7 @@ def save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validat
                'rng':{'torch':torch.get_rng_state(), 'numpy':np.random.get_state(),
                       'python':random.getstate()},
                'manifest':manifest, 'validation':validation,
-               'next_lr_factor':lr_factor(step), 'next_momentum':momentum(step),
+               'next_lr_factor':lr_factor(step), 'next_momentum':getattr(muon, 'beta', momentum(step)) if muon else None,
                'resume_validation':'Full state saved; automatic resume disabled. TPU resume parity not yet validated.'}
     checkpoint = root/'checkpoint_latest.pt'
     temporary = checkpoint.with_suffix('.tmp')
@@ -99,8 +99,10 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
         if time.time() >= deadline:
             break
         buf = torch.from_numpy(np.array(tokens[offset:offset+size+1], dtype=np.int64))
-        batch_loss, batch_errors = model(rt.put(buf[:-1].reshape(microbatch, 1024)),
-                       rt.put(buf[1:].reshape(microbatch, 1024)), return_token_errors=True)
+        targets = rt.put(buf[1:].reshape(microbatch, 1024))
+        with rt.autocast():
+            logits, batch_loss = model(rt.put(buf[:-1].reshape(microbatch, 1024)), targets)
+        batch_errors = (logits.argmax(dim=-1) != targets).sum(dtype=torch.int32)
         total += batch_loss.detach().float()
         errors += batch_errors
         rt.step()
@@ -127,8 +129,61 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
     return row
 
 
+
+def preflight_identity(a):
+    return dict(architecture=architecture.ARCHITECTURE,
+                config=asdict(architecture.GPTConfig()),
+                source_sha256=architecture.SOURCE_SHA256,
+                optimizer=a.optimizer, microbatch=a.microbatch, device=a.device,
+                attention=a.attention, seed=a.seed, benchmark=BENCHMARK)
+
+
+def require_preflight(a):
+    proof=json.loads((a.root/'MODEL_PREFLIGHT.json').read_text())
+    if proof.get('status') != 'passed' or proof.get('identity') != preflight_identity(a):
+        raise RuntimeError('Missing or mismatched full-model/optimizer TPU preflight')
+    return proof
+
+
+def model_preflight(a):
+    """A disposable full-sized accumulated update on the actual device/kernel."""
+    rt=Runtime(a.device,a.root/'xla-cache')
+    architecture.configure_attention(rt.attention(a.attention))
+    model=architecture.make_model(seed=a.seed,device=rt.device)
+    for p in (*model.parameters(),*model.buffers()): rt.replicate(p)
+    muon,adam=make_optimizers(model,rt,a.optimizer)
+    generator=torch.Generator().manual_seed(a.seed)
+    model.zero_grad(set_to_none=False)
+    accumulated=torch.zeros((),device=rt.device)
+    count=512//a.microbatch
+    for _ in range(count):
+        tokens=torch.randint(model.config.vocab_size,(a.microbatch,1025),generator=generator)
+        with rt.autocast():
+            _,loss=model(rt.put(tokens[:,:-1].contiguous()),rt.put(tokens[:,1:].contiguous()),return_logits=False)
+        (loss/count).backward(); accumulated+=loss.detach()/count; rt.step()
+    for p in model.parameters():
+        if p.grad is not None: rt.replicate(p.grad)
+    norm=clip_gradients(model)
+    apply_update(muon,adam,rt,0)
+    finite=torch.stack([torch.isfinite(p).all() for p in model.parameters()]).all()
+    rt.step(wait=True)
+    loss_value, norm_value=float(accumulated.cpu()),float(norm.cpu())
+    if not bool(finite.cpu()) or not math.isfinite(loss_value) or not math.isfinite(norm_value):
+        raise RuntimeError('Full-model optimizer preflight produced nonfinite values')
+    if model.lm_head.weight is not model.transformer.wte.weight:
+        raise RuntimeError('Upstream embedding/output alias was lost')
+    proof=dict(status='passed',identity=preflight_identity(a),parameters=sum(p.numel() for p in model.parameters()),
+               global_batch_tokens=BATCH_TOKENS,accumulation=count,loss=loss_value,gradient_norm=norm_value,
+               torch_version=torch.__version__,completed_unix=time.time(),
+               note='Disposable synthetic update; training starts from fresh upstream initialization')
+    write_json(a.root/'MODEL_PREFLIGHT.json',proof)
+    print(json.dumps(proof),flush=True)
+
+
 def train(a):
     root = a.root
+    if a.device == 'tpu':
+        require_preflight(a)
     seed = a.seed
     torch.set_num_threads(4)
     torch.manual_seed(seed)
@@ -136,9 +191,8 @@ def train(a):
     random.seed(seed)
     started = time.time()
     rt = Runtime(a.device, root/'xla-cache')
-    architecture.ATTENTION = rt.attention(a.attention)
-    model = architecture.GPT(architecture.GPTConfig(), activation_dtype=torch.bfloat16)
-    model = model.to(rt.device)
+    architecture.configure_attention(rt.attention(a.attention))
+    model = architecture.make_model(seed=seed, device=rt.device)
     for value in (*model.parameters(), *model.buffers()):
         rt.replicate(value)
     muon, adam = make_optimizers(model, rt, a.optimizer)
@@ -155,27 +209,28 @@ def train(a):
                 'steps':TOTAL_STEPS, 'batch_tokens':BATCH_TOKENS,
                 'global_microbatch_sequences':a.microbatch, 'accumulation':512//a.microbatch,
                 'target_val_nll':TARGET, 'validation_tokens':VAL_TOKENS,
-                'muon_lr':0.04 if muon else None, 'adam_embedding_lr':0.0006,
+                'muon_lr':getattr(muon, 'peak_lr', 0.04) if muon else None, 'adam_embedding_lr':0.0006,
                 'adam_head_lr':0.0006, 'adam_scalar_lr':0.0006,
                 'head_tied_to_embedding':True, 'dropout':0.0,
                 'adam_control_matrix_lr':0.0006 if not muon else None,
                 'warmup_updates':WARMUP, 'lr_schedule':'cosine_to_zero',
                 'weight_decay':0.0 if a.optimizer == 'adam' else 0.1,
-                'weight_decay_scope':('auxiliary_matrices_only' if muon else 'all_matrices')
+                'weight_decay_scope':('auxiliary_matrices_only' if a.optimizer == 'muon' else 'all_matrices')
                                      if a.optimizer != 'adam' else 'none',
-                'muon_weight_decay':0.0 if muon else None,
+                'muon_weight_decay':getattr(muon, 'weight_decay', 0.0) if muon else None,
+                'muonclip':dict(threshold=muon.threshold, balance=muon.balance, rms_scale=muon.rms_scale, momentum=muon.beta) if a.optimizer == 'muon_clip' else None,
                 'adam_implementation':optimizer_metadata(adam),
                 'historical_reference':'muon-speedrun-muon-20261005-030026',
                 'gradient_clipping':True, 'gradient_clip_norm':GRAD_CLIP, 'attention':a.attention,
                 'data_repo':source.manifest['repo'], 'data_revision':source.manifest['revision'],
-                'model_source_sha256':hashlib.sha256((HERE/'stock_model.py').read_bytes()).hexdigest(),
+                'model_source_sha256':hashlib.sha256(architecture.SOURCE.read_bytes()).hexdigest(),
                 'legacy_record_source_sha256':hashlib.sha256((HERE/'vendor/record_source.py').read_bytes()).hexdigest(),
                 'torch_version':torch.__version__, 'automatic_restart':False,
                 'tracking':{'interval_updates':MEASUREMENT_INTERVAL, 'extra_final_measurement':True,
                             'matrices':'Q,K,V,O,MLP_IN,MLP_OUT in all 12 blocks',
                             'execution':'separate CPU process on immutable snapshots',
                             'token_error':'teacher-forced top-1 error on the same benchmark validation tokens'},
-                'implementation':['Separate Q/K/V, mathematically equivalent to packed GPT-2 QKV',
+                'implementation':['Byte-identical pinned upstream GPT class and packed QKV; observation-only optimizer hooks',
                                   'TPU SPMD with BF16 activations and FP32 parameters/optimizer states'],
                 'optimality':'Pinned original GPT-2/FineWeb core hyperparameters; Muon is an experimental optimizer substitution. See BENCHMARK.md for TPU port differences.',
                 'comparison_note':('Only compare new stock-model seed pairs as same-architecture controls. '
@@ -195,7 +250,8 @@ def train(a):
         loss_sum = torch.zeros((), device=rt.device, dtype=torch.float32)
         for _ in range(512//a.microbatch):
             x, y = stream.next_batch()
-            loss = model(rt.put(x), rt.put(y))
+            with rt.autocast():
+                _, loss = model(rt.put(x), rt.put(y), return_logits=False)
             (loss/(512//a.microbatch)).backward()
             loss_sum += loss.detach()/(512//a.microbatch)
             rt.step()
@@ -215,6 +271,8 @@ def train(a):
                'train_nll':loss_value, 'seconds':seconds, 'tokens_per_second':BATCH_TOKENS/seconds,
                'elapsed_seconds':time.time()-started, 'lr_factor':lr_factor(step-1),
                'gradient_norm_before_clip':float(grad_norm.cpu())}
+        if a.optimizer == 'muon_clip':
+            row['muonclip'] = {k:float(v.cpu()) for k,v in muon.last_diagnostics.items()}
         if step <= 5 or step % 10 == 0:
             if step >= 20:
                 row['training_seconds_remaining_estimate'] = float(np.median(timings[-50:]))*(TOTAL_STEPS-step)
@@ -256,15 +314,15 @@ def training_outcome(step, validation, full_budget):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('action', choices=('prepare', 'attention-check', 'train'))
+    p.add_argument('action', choices=('prepare', 'attention-check', 'model-preflight', 'train'))
     p.add_argument('--root', type=Path, required=True)
     p.add_argument('--cache', type=Path, default=Path('/mnt/disks/rg-data/benchmark-fineweb10B-889765ea'))
     p.add_argument('--deadline', type=float, required=True)
     p.add_argument('--device', choices=('tpu', 'cpu'), default='tpu')
     p.add_argument('--attention', choices=('flash', 'math'), default='flash')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
-    p.add_argument('--optimizer', choices=('muon', 'adam', 'adamw'), default='muon')
-    p.add_argument('--seed', type=int, default=1337)
+    p.add_argument('--optimizer', choices=('muon', 'muon_clip', 'adam', 'adamw'), default='muon_clip')
+    p.add_argument('--seed', type=int, default=42)
     budget = p.add_mutually_exclusive_group()
     budget.add_argument('--full-budget', action='store_true', default=True, help='Default: complete all 19560 updates')
     budget.add_argument('--stop-at-target', action='store_false', dest='full_budget', help='Explicit non-default early stop at NLL <= 3.28')
@@ -272,6 +330,8 @@ def main():
     a = p.parse_args()
     if a.action == 'prepare':
         prepare(a.cache, a.deadline, a.root, a.microbatch, updates=TOTAL_STEPS)
+    elif a.action == 'model-preflight':
+        model_preflight(a)
     elif a.action == 'attention-check':
         cfg = architecture.GPTConfig()
         attention_check(a.root, a.microbatch, n_head=6 if a.legacy_attention_check else cfg.n_head,

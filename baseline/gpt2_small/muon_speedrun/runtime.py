@@ -1,4 +1,5 @@
 """One-process SPMD runtime; TPU flash attention has explicit scale and sharding."""
+from contextlib import nullcontext
 import json
 import math
 from pathlib import Path
@@ -24,6 +25,9 @@ class Runtime:
             self.device = xm.xla_device()
         else:
             self.device = torch.device('cpu')
+
+    def autocast(self):
+        return torch.autocast('xla', dtype=torch.bfloat16) if self.tpu else nullcontext()
 
     def scalar(self, value):
         return torch.tensor(value, dtype=torch.float32).to(self.device) if self.tpu else value

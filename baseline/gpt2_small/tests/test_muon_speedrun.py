@@ -246,7 +246,9 @@ def test_token_error_uses_the_same_logits_without_changing_loss_or_gradients():
 def test_evaluation_pairs_exact_token_count_with_unchanged_nll(monkeypatch,tmp_path):
     import numpy as np
     import time
-    run=runner(); model=small(port); rt=Runtime('cpu')
+    run=runner(); rt=Runtime('cpu')
+    model=run.architecture.make_model(run.architecture.GPTConfig(vocab_size=128,block_size=1024,n_layer=2,n_head=2,n_embd=16))
+    with torch.no_grad(): model.lm_head.weight.zero_()
     monkeypatch.setattr(run,'VAL_TOKENS',2048)
     tokens=np.arange(2049,dtype=np.int64)%128
     # Zero-initialized head predicts token zero everywhere. 1/128 targets are zero.
@@ -493,3 +495,21 @@ def test_full_budget_target_crossing_cannot_hide_interrupted_or_partial_run():
     assert run.training_outcome(run.TOTAL_STEPS,validation,True)=='target_reached'
     assert run.training_outcome(run.TOTAL_STEPS,{**validation,'val_nll':3.4},True)=='schedule_complete_target_not_met'
     assert run.training_outcome(run.TOTAL_STEPS,{**validation,'full_benchmark_evaluation':False},True)=='schedule_complete_evaluation_incomplete'
+
+
+def test_full_model_preflight_failure_prevents_training(monkeypatch,tmp_path):
+    spec=importlib.util.spec_from_file_location('preflight_worker',BASE/'worker.py')
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    import time
+    monkeypatch.setattr(sys,'argv',['worker.py',str(tmp_path),str(time.time()+43200),'--optimizer','muon_clip'])
+    phases=[]
+    def bounded(command,seconds,root,label,watch=False):
+        phases.append((label,command))
+        return dict(exit_code=1 if 'full upstream GPT-2' in label else 0,timed_out=False,phase=label)
+    monkeypatch.setattr(module,'bounded',bounded)
+    monkeypatch.setattr(module,'start_tracking',lambda *a:pytest.fail('must not begin training or tracking'))
+    assert module.main()==1
+    assert not any('19,560-update' in label for label,_ in phases)
+    command=next(c for label,c in phases if 'full upstream GPT-2' in label)
+    assert command[command.index('--optimizer')+1]=='muon_clip'
+    assert (tmp_path/'MODEL_PREFLIGHT_FAILURE.json').exists()

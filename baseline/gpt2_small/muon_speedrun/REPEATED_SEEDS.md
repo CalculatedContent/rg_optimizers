@@ -2,9 +2,9 @@
 
 ## Scientific question
 
-Do the Muon/AdamW loss and spectral trajectories reproduce across random
+Do the MuonClip/AdamW loss and spectral trajectories reproduce across random
 initializations at the same token budget? This is a baseline variability study,
-not a hyperparameter sweep. Both optimizers use **stock GPT-2 Small** and the
+not a hyperparameter sweep. Both optimizers instantiate the **unchanged pinned upstream GPT-2 Small class** and the
 pinned GPT-2-tokenized FineWeb benchmark. The model has 12 blocks, 12 heads,
 width 768, MLP width 3072, context 1024 and vocabulary 50257; 124,439,808 parameters.
 See [the architecture audit and all matrix dimensions](../STOCK_ARCHITECTURE.md).
@@ -12,7 +12,7 @@ Historical modified six-head results do not enter this paired comparison.
 
 ## Frozen protocol
 
-- Six sequential fresh runs: Muon/AdamW paired at seeds **1337, 1338, 1339**.
+- Six sequential fresh runs: MuonClip/AdamW paired at seeds **1337, 1338, 1339**.
   Optimizer order alternates by seed. Previous single-run results are retained
   separately and are not silently substituted for new replicates.
 - **19,560 updates / 10,255,073,280 tokens per run**, 524,288 tokens per update;
@@ -20,20 +20,18 @@ Historical modified six-head results do not enter this paired comparison.
 - Same initialization within each seed pair. The initialization varies between
   pairs; token order remains fixed for all six runs. This does not estimate
   variability from corpus resampling or different training orders.
-- Muon hidden-matrix learning rates and mathematics remain fixed. Muon
-  uses LR 0.04 on hidden matrices; AdamW uses 0.0006 and decoupled decay 0.1 there.
-  Both use AdamW LR 0.0006 on embeddings, biases and LayerNorm; betas 0.9 / 0.95.
-  Embedding matrices use decay 0.1, biases/LayerNorm use zero decay. The tied
-  token embedding/output is one parameter with one optimizer state. The old
-  architecture's separate embedding/head rates cannot be retained with weight tying.
-  **Weight decay differs, so this compares recipes, not an isolated optimizer effect.**
+- MuonClip uses LR 0.02, momentum 0.95, five NS steps, RMS scale 0.2 and matrix
+  decay 0.1. Per-head QK clipping uses threshold 100 and balance 0.5. AdamW uses
+  LR 0.0006, betas (0.9,0.95), epsilon 1e-8 and matrix decay 0.1. Auxiliary
+  embeddings/biases/LayerNorm use the same AdamW in both arms, with zero decay
+  on vectors. Packed QKV is one parameter and one MuonClip matrix update.
 - 700-update warmup, cosine decay to zero at update 19,560; global L2 gradient clipping at 1.0.
   [Pinned reference and explicit TPU/Muon differences](BENCHMARK.md).
 - No target-based early stop. Record first observed NLL <=3.28, but continue to
   19,560 for equal-budget final statistics. Target times have 250-update resolution.
   This target comes from the original GPT-2/FineWeb reference; TPU convergence remains unverified.
 - Every 250 updates: full 10,485,760-token validation loss, perplexity, top-1 token
-  error, checkpoint and raw/clipped WeightWatcher alpha for all 72 matrices.
+  error, checkpoint and raw/clipped WeightWatcher alpha for 72 projection views extracted from the 48 stored block matrices.
   These are validation metrics, not a separately held-out test score.
 - Existing CPU-only spectral worker, immutable snapshots, disk saves and verified
   final cloud backup are retained. No in-training per-tensor diagnostic scans added.
@@ -91,7 +89,7 @@ The suite produces:
 
 - `PLAN.json`, `SUITE_STATUS.json`: frozen plan, current job, explicit outcome.
 - `COMPARISON.json`: all six completion states, paired final differences
-  **AdamW minus Muon**, first-observed target times and sample sizes.
+  **AdamW minus MuonClip**, first-observed target times and sample sizes.
 - `observations.csv`: per-seed validation observations with training elapsed and
   end-to-end elapsed time (including that run's setup).
 - `curves.csv`: optimizer/update/metric mean and sample SD across available seeds.

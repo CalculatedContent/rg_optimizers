@@ -23,33 +23,37 @@ substitution. This TPU port is not claimed to reproduce H100 wall-clock records.
 | Validation | First 10,485,760 validation tokens every 250 updates and at exit |
 | Stop condition | Full training budget by default; deadline interruptions are incomplete |
 
-Muon replaces AdamW on the 72 transformer projection matrices only. It uses peak
-LR 0.04, momentum 0.85→0.95 over 500 updates, five Newton–Schulz iterations and
-zero hidden-matrix decay. It shares the baseline warmup/cosine schedule and global
-clipping. Embeddings, biases and LayerNorm use auxiliary AdamW at 0.0006.
-These Muon settings have not been tuned or validated for convergence on this model.
+Both arms load the byte-identical upstream GPT class directly, with packed QKV,
+its unchanged layers, forward methods and initialization algorithm. Default seed
+42 is upstream's seed; repeated-seed runs explicitly reseed the same initializer.
+`stock_model.py` verifies source SHA256
+`757d0cea0d48cbc4c7d7d70371f955d49cdf3a7cfb4c87701a720c2fe0905c34` before import.
 
-The architecture is numerically checked against the repository's independently
-pinned upstream packed-QKV GPT-2 implementation. Q/K/V are stored separately for
-per-projection Muon and WeightWatcher measurements; orthogonalizing them separately
-is not the same Muon update as orthogonalizing one packed matrix. AdamW is elementwise.
-TPU SPMD, BF16 arithmetic, microbatch reduction order, split-QKV initialization draw
-order, diagnostic overhead and token loading differ from the CUDA record. The
-loader follows the upstream **Python** sequential shard order, discards incomplete
-microbatch tails and wraps at the corpus end; it is not the C loader's shuffled
-order. All 103 training shards plus validation are verified before training.
-These differences are recorded in `protocol` rather than hidden behind a
-claim of exact benchmark reproduction.
+MuonClip is an explicit optimizer substitution: peak LR 0.02, Nesterov momentum
+0.95, five Newton–Schulz steps, RMS scale `0.2*sqrt(max(rows,columns))`, hidden
+weight decay 0.1, and per-head QK clipping threshold 100 with balance 0.5. It uses
+48 packed block matrices; auxiliary embeddings/biases/LayerNorm use AdamW 0.0006.
+It shares the baseline warmup, cosine schedule and global clipping. The optional
+plain `muon` arm retains LR 0.04, its 500-step momentum ramp and zero hidden decay.
+These optimizer substitutions are not claims of a published GPT-2 MuonClip record.
+
+The architecture itself is unchanged. Hardware adaptation is explicit: TPU SPMD,
+BF16 autocast and checked flash attention replace the CUDA execution environment.
+The loader follows the upstream Python sequential shard order, discards incomplete
+microbatch tails and wraps at corpus end; it differs from the C loader's shuffled
+order. All 103 training shards plus validation are hash-verified before training.
+WeightWatcher adds measurement overhead. Loss convergence and H100 wall-clock
+records are not guaranteed by matching model definitions and core hyperparameters.
 
 `benchmark_config.py` is the single source for the schedule, budget and protocol
 identifier. Plans, manifests and comparison reports carry
-`llmc-gpt2-124m-fineweb10b-2024-10-13-tpu-v1`. Reports exclude mismatched protocols;
+`llmc-gpt2-124m-fineweb10b-2024-10-13-upstream-tpu-v2`. Reports exclude mismatched protocols;
 old 3,000-update plans cannot start new runs. Old jobs keep their pinned source.
 
-For one new Muon run, use a clean checkout of merged `main` and a live allocation:
+For one new MuonClip run, use a clean checkout of merged `main` and a live allocation:
 
 ```bash
-python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start --node YOUR_TPU_NODE --optimizer muon --hours 12
+python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start --node YOUR_TPU_NODE --optimizer muon_clip --hours 12
 ```
 
 Use `--optimizer adamw` for the control, or `--here` from the TPU terminal. The

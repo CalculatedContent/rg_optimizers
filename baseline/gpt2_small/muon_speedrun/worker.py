@@ -101,8 +101,8 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('root', type=Path)
     p.add_argument('deadline', type=float)
-    p.add_argument('--optimizer', choices=('muon','adam','adamw'), default='muon')
-    p.add_argument('--seed', type=int, default=1337)
+    p.add_argument('--optimizer', choices=('muon','muon_clip','adam','adamw'), default='muon_clip')
+    p.add_argument('--seed', type=int, default=42)
     p.add_argument('--full-budget', action='store_true', default=True)
     p.add_argument('--stop-at-target', action='store_false', dest='full_budget')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
@@ -150,6 +150,13 @@ def main():
             else:
                 write(a.root, 'ATTENTION_CHECK_FAILURE.json', checked)
                 raise RuntimeError('TPU flash attention failed validation; no automatic mathematical-attention fallback')
+        preflight_deadline = min(time.time()+900, train_deadline-300)
+        checked = bounded(common+['model-preflight',*args,'--deadline',str(preflight_deadline),
+                                  '--attention',attention,'--optimizer',a.optimizer],
+                          preflight_deadline-time.time(),a.root,'full upstream GPT-2 and optimizer update')
+        if checked['exit_code'] != 0:
+            write(a.root,'MODEL_PREFLIGHT_FAILURE.json',checked)
+            raise RuntimeError('Full-model optimizer preflight failed; training not started')
         tracker = start_tracking(a.root, train_deadline)
         run.update(status='training', attention=attention)
         write(a.root, 'RUN_STATUS.json', run)
