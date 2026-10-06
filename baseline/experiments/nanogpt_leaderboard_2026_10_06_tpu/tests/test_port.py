@@ -151,3 +151,65 @@ def test_port_imports_no_cuda_performance_modules():
         for node in ast.walk(tree):
             if isinstance(node,ast.ImportFrom):
                 assert not (node.module or '').startswith(('triton','kernels','track_1_short.perf'))
+
+
+def test_mtp_prefix_loss_matches_reference_terminal_gradient():
+    from types import SimpleNamespace
+    torch.manual_seed(7)
+    x=torch.randn(5,4,requires_grad=True)
+    weight=torch.randn(4,8,requires_grad=True)
+    targets=torch.tensor([2,4,1,3,5])
+    prefix=torch.tensor([-1,-1,1,2,3,4,5,6])
+    mtp=torch.tensor([1.,.5,.25]); pw=torch.tensor([.25])
+    model=SimpleNamespace(training=True,lm_head=SimpleNamespace(weight=weight),prefix_table=prefix)
+    loss=language_loss(model,x,targets,targets,mtp,pw,None,slab=2)
+    loss.sum().backward(); gx=x.grad.clone(); gw=weight.grad.clone()
+    x.grad=None; weight.grad=None
+    logits=23*torch.sigmoid((x@weight+5)/7.5)
+    probabilities=logits.softmax(-1)
+    expected_grad=probabilities*mtp.sum()
+    expected_loss=torch.zeros(5)
+    logp=logits.log_softmax(-1)
+    for i in range(5):
+        for k in range(3):
+            if i+k<5:
+                expected_loss[i]-=mtp[k]*logp[i,targets[i+k]]
+                expected_grad[i,targets[i+k]]-=mtp[k]
+        if prefix[targets[i]]>=0:
+            expected_loss[i]-=pw[0]*logp[i,prefix[targets[i]]]
+            expected_grad[i]+=pw[0]*probabilities[i]
+            expected_grad[i,prefix[targets[i]]]-=pw[0]
+    torch.testing.assert_close(loss,expected_loss)
+    logits.backward(expected_grad.detach())
+    torch.testing.assert_close(gx,x.grad,atol=2e-6,rtol=2e-5)
+    torch.testing.assert_close(gw,weight.grad,atol=2e-6,rtol=2e-5)
+
+
+def test_optimizer_cadence_tie_and_frozen_mlp():
+    from tpu_port.optimizer import Optimizer, ADAM, BANKS
+    class Fixture(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            for name in (*ADAM,*BANKS):
+                shape=(24,4,2) if name=='mlp_bank' else (2,4,2) if name in BANKS else (2,4) if name=='lm_head' else (4,2)
+                p=torch.nn.Parameter(torch.full(shape,.1,dtype=torch.bfloat16)); p.label=name
+                if name in BANKS: p.reshape=shape
+                if name=='mlp_bank': p.frozen_matrices=[14,15]
+                self.register_parameter(name,p)
+    model=Fixture(); s=schedule(); opt=Optimizer(model,s)
+    initial={n:p.clone() for n,p in model.named_parameters()}
+    for p in model.parameters(): p.grad=torch.ones_like(p)
+    opt.step(0)
+    torch.testing.assert_close(model.scalars,initial['scalars'],atol=0,rtol=0)
+    for p in model.parameters():
+        if p.grad is None: p.grad=torch.ones_like(p)
+        else: p.grad.add_(1)
+    opt.step(1)
+    torch.testing.assert_close(model.embed,model.lm_head.T,atol=0,rtol=0)
+    torch.testing.assert_close(model.mlp_bank[14:16],initial['mlp_bank'][14:16],atol=0,rtol=0)
+    assert opt.state['lm_head']['event']==1
+    for p in model.parameters(): p.grad=torch.ones_like(p)
+    opt.step(s.split_step)
+    assert opt.split
+    torch.testing.assert_close(opt.state['embed']['m'],opt.state['lm_head']['m'].T)
+    torch.testing.assert_close(opt.state['embed']['v'],opt.state['lm_head']['v'].T)

@@ -35,8 +35,7 @@
     "ngram_rows": 84602880,
     "ngram_width": 768,
     "ngram_parameters": 64975011840,
-    "ngram_bf16_bytes": 129950023680,
-    "dense_parameters": 302792179
+    "ngram_bf16_bytes": 129950023680
   },
   "optimizer": "Upstream ANVIL bank optimizer with auxiliary Adam and sparse row-wise Adam; no optimizer substitution",
   "total_steps": 1194,
@@ -77,5 +76,6 @@
   "ngram_placement": "Implemented full-size host-DRAM row-owner shards and bounded TPU row caches; hardware qualification pending",
   "required_host_memory_check": "Measure available RAM and cgroup limit before allocation; table and row metadata alone require about 122 GiB",
   "host_offload_verified": false,
-  "performance_status": "Unknown; host transfers and CPU sparse updates may dominate. No H100 speed claim."
+  "performance_status": "Unknown; host transfers and CPU sparse updates may dominate. No H100 speed claim.",
+  "dense_parameters": 302792179
 }
