@@ -16,6 +16,15 @@ cosine decay to zero, global gradient clipping at 1.0, and full 10,485,760-token
 validation every 250 updates and at exit. Single-run initialization defaults to
 the upstream seed 42. Deadline interruptions do not count as completed runs.
 
+## Experiment folder and results
+
+[Experiment README and audited configuration](../../experiments/stock_gpt2_fineweb_muonclip_adamw/README.md).
+New single runs save beneath `/mnt/disks/rg-data/gpt2small/stock_gpt2_fineweb_muonclip_adamw/runs/`;
+paired suites use `suites/`. Cloud backup mirrors this hierarchy under
+`gs://tpu-builders-504820-ww-continuous8/gpt2small/stock_gpt2_fineweb_muonclip_adamw/`.
+Each `launch.json` records the concrete paths. Downloaded results belong in the
+experiment folder's `results/` directory. Historical results retain their locations.
+
 ## Checkout and run
 
 Use a clean checkout of the published commit, the preserved data disk and the

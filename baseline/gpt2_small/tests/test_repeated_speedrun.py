@@ -164,3 +164,53 @@ def test_single_run_lease_uses_requested_cap(monkeypatch):
     m.require_time(dict(checked_unix=1000,termination_unix=1000+13*3600),12*3600+600)
     with pytest.raises(RuntimeError,match='12h10m'):
         m.require_time(dict(checked_unix=1000,termination_unix=1000+12*3600),12*3600+600)
+
+
+def test_dedicated_experiment_config_matches_live_recipe():
+    import hashlib
+    from cloudshell import EXPERIMENT
+    folder=BASE.parent/'experiments'/EXPERIMENT
+    config=json.loads((folder/'configuration.json').read_text())
+    p=suite.plan()
+    for key in ('experiment','architecture','config','protocol'):
+        assert config[key]==p[key]
+    assert config['source_sha256']==hashlib.sha256((BASE/'speedrun30/vendor/llmc_train_gpt2.py').read_bytes()).hexdigest()
+    assert config['optimizers']==['muon_clip','adamw']
+    assert config['paired_seeds']==list(suite.SEEDS)
+    assert (folder/'results/README.md').is_file()
+
+
+def test_single_and_paired_outputs_keep_hierarchy_and_historical_paths(monkeypatch,tmp_path):
+    import cloudshell as paths
+    monkeypatch.setattr(paths,'BASE',tmp_path)
+    single=paths.results_root('runs','muon-speedrun-muon_clip-20261006-120000')
+    paired=paths.results_root('suites','nanogpt-speedrun-suite-20261006-120000')
+    child=paired/(paired.name+'-adamw-s1337')
+    for root in (single,paired,child):
+        assert paths.cloud_uri(root)==paths.CLOUD_BASE+'/'+root.relative_to(tmp_path).as_posix()
+        assert paths.EXPERIMENT in root.parts
+    assert paths.cloud_uri(tmp_path/'old-run')==paths.CLOUD_BASE+'/old-run'
+    assert launcher().results_root is paths.results_root
+    assert suite.cloud_uri is paths.cloud_uri
+    with pytest.raises(ValueError): paths.results_root('runs','../outside')
+
+
+def test_worker_backup_uses_dedicated_nested_destination(monkeypatch,tmp_path):
+    import cloudshell as paths
+    import worker
+    import rg_nanogpt_one_head.continuous_support as support
+    monkeypatch.setattr(paths,'BASE',tmp_path)
+    root=paths.results_root('suites','suite-1')/'suite-1-muon_clip-s1337'
+    (root/'tracking').mkdir(parents=True)
+    (root/'manifest.json').write_text('{}')
+    (root/'tracking/summary.csv').write_text('step,val_nll\n19560,3.3\n')
+    destinations=[]; uploaded=[]
+    class Publisher:
+        def __init__(self,uri): destinations.append(uri)
+        def file(self,path,key): uploaded.append(key); return {'key':key}
+        def json(self,value,key): uploaded.append(key)
+    monkeypatch.setattr(support,'CloudPublisher',Publisher)
+    worker.backup(root)
+    assert destinations==[paths.cloud_uri(root)]
+    assert set(uploaded)=={'tracking/summary.csv','manifest.json','CLOUD_BACKUP_VERIFIED.json'}
+    assert json.loads((root/'CLOUD_BACKUP_VERIFIED.json').read_text())['status']=='verified'
