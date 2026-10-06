@@ -7,6 +7,7 @@ import signal
 import subprocess
 import sys
 import time
+from benchmark_config import BENCHMARK, TOTAL_STEPS
 
 
 def write(root, name, value):
@@ -102,7 +103,8 @@ def main():
     p.add_argument('deadline', type=float)
     p.add_argument('--optimizer', choices=('muon','adam','adamw'), default='muon')
     p.add_argument('--seed', type=int, default=1337)
-    p.add_argument('--full-budget', action='store_true')
+    p.add_argument('--full-budget', action='store_true', default=True)
+    p.add_argument('--stop-at-target', action='store_false', dest='full_budget')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
     p.add_argument('--attention', choices=('auto','flash','math'), default='flash')
     p.add_argument('--backup-only', action='store_true')
@@ -113,12 +115,14 @@ def main():
     here = Path(__file__).resolve().parent
     run = {'status':'preparing', 'target_met':False, 'automatic_restart':False,
            'deadline_unix':a.deadline, 'optimizer':a.optimizer, 'seed':a.seed,
-           'full_budget':a.full_budget}
+           'full_budget':a.full_budget, 'benchmark':BENCHMARK}
     write(a.root, 'RUN_STATUS.json', run)
     common = [sys.executable, '-u', str(here/'run.py')]
     args = ['--root',str(a.root),'--microbatch',str(a.microbatch),'--seed',str(a.seed)]
     if a.full_budget:
         args += ['--full-budget']
+    else:
+        args += ['--stop-at-target']
     train_deadline = a.deadline-600
     tracker = None
     try:
@@ -131,7 +135,7 @@ def main():
                 write(a.root,'PALLAS_DEPENDENCY_FAILURE.json',installed)
                 raise RuntimeError('Pallas dependency setup failed; training not started')
             os.environ['PYTHONPATH'] = str(a.root/'pallas-deps')+os.pathsep+os.environ.get('PYTHONPATH','')
-        prep_deadline = min(time.time()+900, train_deadline-300)
+        prep_deadline = min(time.time()+3600, train_deadline-300)
         result = bounded(common+['prepare',*args,'--deadline',str(prep_deadline)],
                          prep_deadline-time.time(), a.root, 'benchmark data')
         if result['exit_code'] != 0:
@@ -151,7 +155,7 @@ def main():
         write(a.root, 'RUN_STATUS.json', run)
         result = bounded(common+['train',*args,'--deadline',str(train_deadline),
                                  '--attention',attention,'--optimizer',a.optimizer],
-                         train_deadline-time.time(), a.root, '3,000-update '+a.optimizer+' recipe', watch=True)
+                         train_deadline-time.time(), a.root, f'{TOTAL_STEPS:,}-update '+a.optimizer+' recipe', watch=True)
         run.update(result)
         if result['exit_code'] != 0:
             run['status'] = 'failed_or_timed_out'
@@ -179,7 +183,9 @@ def main():
     write(a.root, 'RUN_STATUS.json', run)
     print(json.dumps(run), flush=True)
     return 0 if (run['status'] in ('target_reached','schedule_complete_target_not_met')
-                 and run.get('tracking', {}).get('status') == 'complete') else 1
+                 and (not a.full_budget or run.get('step') == TOTAL_STEPS)
+                 and run.get('tracking', {}).get('status') == 'complete'
+                 and backed.get('exit_code') == 0) else 1
 
 
 if __name__ == '__main__':

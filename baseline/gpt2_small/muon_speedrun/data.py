@@ -26,12 +26,17 @@ def required_shards(source, microbatch=128, updates=3000):
         needed.append(name)
         if remaining <= 0:
             return needed
-    raise RuntimeError('Pinned corpus too small for requested schedule')
+    # The pinned Python loader cycles after dropping incomplete microbatch
+    # tails. A full 19,560-update run can cross that epoch boundary slightly.
+    # Verify the whole corpus up front, including shards needed after wrapping.
+    if len(needed) == 1:
+        raise RuntimeError('Pinned corpus has no training shards')
+    return needed
 
 
-def prepare(cache, deadline, root, microbatch):
+def prepare(cache, deadline, root, microbatch, updates=3000):
     source = FineWeb(cache, deadline)
-    needed = required_shards(source, microbatch)
+    needed = required_shards(source, microbatch, updates)
     with ThreadPoolExecutor(max_workers=4) as pool:
         for name, _ in zip(needed, pool.map(source.array, needed)):
             print('Verified benchmark shard: '+name, flush=True)

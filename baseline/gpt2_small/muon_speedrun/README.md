@@ -9,41 +9,42 @@ six-head speedrun. Dropout is zero for both optimizers, as in nanoGPT pretrainin
 
 The previous 2024-11-10 UNetDoubleLr model is retained in `model.py` for historical
 25k/replay reproducibility. Its published NLL 3.2753 and 7.23-minute eight-H100
-timing do **not** describe this stock-model configuration. The existing 3.28
-threshold is retained only as a labeled observation, not an expected result.
+timing do **not** describe this stock-model configuration. The 3.28 target comes from the original GPT-2/FineWeb baseline.
+[The pinned baseline audit](BENCHMARK.md) lists the full defaults and port differences.
 New stock-model convergence and TPU throughput require a fresh measured run.
 
 ## Repeated-seed speedrun
 
 Use the main entry point `python3 baseline/gpt2_small/speedrun.py plan`.
 [The paired-seed suite](REPEATED_SEEDS.md) runs Muon and AdamW with seeds
-1337, 1338 and 1339, keeping all 3,000 updates per run and producing mean ± SD
-across seeds. The single-run commands below retain their target-based stopping.
+1337, 1338 and 1339, keeping all 19,560 updates per run and producing mean ± SD
+across seeds. The single-run commands below also default to the full training budget.
 
 ## Start from Cloud Shell
 
 Use a clean checkout of the published commit:
 
 ```bash
-python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start
+python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start --node YOUR_TPU_NODE
 ```
 
-The launcher uses the existing `ww-gpt2-validation-48h-20261004-s1337-node` in
-`tpu-builders-504820/us-west4-a`. It creates no TPU, preserves the shared environment,
+Specify a live node in `tpu-builders-504820/us-west4-a`. The old
+`ww-gpt2-validation-48h-20261004-s1337-node` lease has expired. The launcher checks
+the live expiry and guest identity before starting. It creates no TPU, preserves the shared environment,
 and refuses concurrent training. Repeating start while active prints status.
 Every launch starts from the same seed and initialization, without resume.
 To stop the current Muon speedrun and start fresh with tracking, use
-`start --replace-current --optimizer muon --microbatch 64 --attention flash --hours 3`.
+`start --replace-current --optimizer muon --microbatch 64 --attention flash --hours 12`.
 This stops only the service recorded in `MUON_SPEEDRUN_LATEST.json`; the TPU,
 FineWeb cache, and prior files remain.
 
-The worker stops at the first full validation with **NLL <= 3.28**, after the
-3,000-update schedule, or before its deadline, whichever comes first.
+The worker completes the **19,560-update schedule** by default or stops at its
+deadline. A target crossing is recorded without ending full-budget training.
 It reports `schedule_complete_target_not_met` explicitly if all updates finish
 above target. It never keeps training at a zero learning rate or declares
 success merely because the process exited cleanly.
 
-Default allocation budget: **three hours maximum**, including data preparation,
+Default allocation budget: **twelve hours maximum**, including data preparation,
 attention verification, compilation, training and final cloud backup. This is a
 safety cap, not an ETA. It is also bounded by the existing TPU allocation expiry.
 `--hours 1` requests a one-hour cap; a cap can truncate the schedule without
@@ -62,15 +63,15 @@ python3 baseline/gpt2_small/muon_speedrun/cloudshell.py status
 | Parameters | 124,439,808 unique parameters; Q/K/V stored separately for 72 spectral traces |
 | Context / global batch | 1,024 tokens / 524,288 tokens per update |
 | Default TPU microbatch | 64 sequences globally, eight accumulation passes; 8 sequences per chip |
-| Schedule | 3,000 updates, zero warmup, constant LR through 2,100 then 900-update linear decay |
+| Schedule | 19,560 updates, 700-update warmup, cosine decay to zero |
 | Hidden matrices | Muon LR 0.04; five quintic Newton–Schulz iterations |
 | Muon momentum | Linear ramp 0.85 to 0.95 over the first 500 updates; Nesterov |
 | Embeddings / tied head / biases / LayerNorm | AdamW LR 0.0006; betas 0.9, 0.95; epsilon 1e-8 |
 | Weight decay | AdamW matrices 0.1; biases/LayerNorm 0; Muon hidden matrices 0 |
-| Global gradient clipping | None |
+| Global gradient clipping | Global L2 norm 1.0 after accumulation |
 | Precision | FP32 parameters and optimizer states; BF16 activations/matmuls; FP32 LayerNorm statistics; BF16 Newton–Schulz |
-| Validation | Same pinned GPT-2-tokenized FineWeb file; first 10,485,760 tokens every 125 updates and at stop |
-| Historical threshold | Full validation NLL <= 3.28; not a predicted stock GPT-2 result |
+| Validation | Same pinned GPT-2-tokenized FineWeb file; first 10,485,760 tokens every 250 updates and at stop |
+| Reference target | Full validation NLL <= 3.28; TPU convergence unverified |
 
 The architecture is now stock GPT-2; the Muon hidden update retains the source recipe. The global batch
 stays fixed when microbatch size changes. `--microbatch 32` uses sixteen accumulation
@@ -105,16 +106,15 @@ or failing kernel stops the job. The legacy `auto` option also requires a pass;
 there is no implicit fallback to a memory-heavier attention implementation.
 `--attention math` remains an explicit diagnostic option with microbatch <=64.
 
-The 16 necessary training shards plus validation are SHA256-verified and prepared
+All 103 training shards plus validation are SHA256-verified and prepared
 before training, reusing `/mnt/disks/rg-data/benchmark-fineweb10B-889765ea`. This
 avoids synchronous network downloads at training shard boundaries. Existing
 FineWeb-Edu is a different corpus and is retained separately. All timings include
 end-to-end training overhead; published GPU training-only timing is labelled.
 
 WeightWatcher runs in a separate CPU process on immutable snapshots made from
-the weights already transferred for checkpointing. There are no spectral fits,
-gradient scans or additional per-matrix TPU reads in the training loop. Scalar
-loss checks remain. An isolated flash check does not prove
+the weights already transferred for checkpointing. There are no spectral fits or additional per-matrix host reads in the training
+loop. Global gradient clipping and scalar loss/norm checks run during training. An isolated flash check does not prove
 complete TPU optimizer/model parity. Source CUDA compilation, random seed,
 microbatch reduction order and shard-boundary order
 can differ; these are recorded rather than represented as exact reproduction.
@@ -122,10 +122,10 @@ can differ; these are recorded rather than represented as exact reproduction.
 ## Paired WeightWatcher and token-error tracking
 
 Tracking is enabled for both stock-model optimizers. Global batch, data order,
-measurement cadence, 3,000-update schedule and time caps are retained. Additional
+measurement cadence and the pinned 19,560-update baseline schedule are shared. Additional
 measurement work can add wall time within that cap.
 
-Every existing validation point (125 updates and final stop) now counts top-1
+Every existing validation point (250 updates and final stop) now counts top-1
 prediction errors from the **same uncapped logits and the same benchmark tokens**
 as validation NLL. `val_token_error = val_error_count / evaluation_tokens` is a
 fraction, not a percentage. This is teacher-forced validation token error, not
@@ -164,7 +164,7 @@ there is no extension of the TPU allocation or automatic training restart.
 Runs live at `/mnt/disks/rg-data/gpt2small/muon-speedrun-<optimizer>-<timestamp>`.
 `MUON_SPEEDRUN_LATEST.json` identifies the latest run and service.
 
-- `checkpoint_latest.pt`: atomic full-state save at initialization, updates 1 and 5, every 125
+- `checkpoint_latest.pt`: atomic full-state save at initialization, updates 1 and 5, every 250
   updates, and normal stop. Includes model, optimizers, RNG, data cursor, recipe
   and next-step schedule. No automatic resume. TPU resume parity is not yet tested.
 - `checkpoint_best.pt`: best fully evaluated checkpoint; a hard link protects it
@@ -190,7 +190,7 @@ From a clean checkout **on the TPU**, run:
 
 ```bash
 python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start --here \
-  --optimizer adamw --microbatch 64 --attention flash --hours 3 \
+  --optimizer adamw --microbatch 64 --attention flash --hours 12 \
   --replace-current --replace-longrun
 ```
 

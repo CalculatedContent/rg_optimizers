@@ -29,7 +29,7 @@ def run(command,**kwargs):
         raise
 
 
-def lease(a):
+def lease(a, required_seconds=SUITE_SECONDS+1800):
     flags=['--project='+PROJECT,'--zone='+a.zone,'--format=json']
     node=json.loads(run(['gcloud','compute','tpus','tpu-vm','describe',a.node,*flags],capture_output=True).stdout)
     queue_name=node.get('queuedResource','').rsplit('/',1)[-1]
@@ -45,15 +45,15 @@ def lease(a):
     if not expiries: raise RuntimeError('No explicit lease expiry; nothing launched')
     result={'node':a.node,'checked_unix':time.time(),'termination_unix':min(expiries),
             'ips':[v['ipAddress'] for v in node.get('networkEndpoints',[]) if v.get('ipAddress')]}
-    require_time(result)
+    require_time(result, required_seconds)
     return result
 
 
-def require_time(checked):
+def require_time(checked, required_seconds=SUITE_SECONDS+1800):
     if not -30<=time.time()-checked['checked_unix']<=600:
         raise RuntimeError('Lease check expired; rerun start')
-    if checked['termination_unix']-time.time()<SUITE_SECONDS+1800:
-        raise RuntimeError('Need at least 18h45m remaining for six 3h caps plus reporting and lease margin. Existing training untouched.')
+    if checked['termination_unix']-time.time()<required_seconds:
+        raise RuntimeError(f'Need at least {int(required_seconds)//3600}h{int(required_seconds)%3600//60:02d}m remaining for the requested caps and lease margin. Existing training untouched.')
 
 
 def start_here(a):
@@ -68,8 +68,8 @@ def start_here(a):
     python=Path('/mnt/disks/rg-data/continuous8/venv/bin/python')
     if not python.is_file(): raise RuntimeError('Existing experiment environment is missing')
     if not re.fullmatch('[0-9a-f]{40}',a.commit): raise ValueError('Pinned commit required')
-    if shutil.disk_usage(BASE).free<80*1024**3:
-        raise RuntimeError('Need 80 GiB free for six sets of checkpoint/spectral outputs; nothing deleted')
+    if shutil.disk_usage(BASE).free<240*1024**3:
+        raise RuntimeError('Need 240 GiB free for six sets of checkpoint/spectral outputs; nothing deleted')
     with (BASE/'port-check-launch.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         if LATEST.exists() and json.loads(LATEST.read_text()).get('request_id')==a.request_id:
@@ -102,7 +102,7 @@ def start_here(a):
         write(LATEST,record)
         run(command)
         print(json.dumps(record,indent=2))
-        print('Six sequential fresh 3000-update runs; tracking every 125; no target-based early stop.')
+        print('Six sequential fresh 19560-update runs; tracking every 250; no target-based early stop.')
 
 
 def main():

@@ -193,7 +193,7 @@ def test_flash_failure_never_starts_training(monkeypatch,tmp_path,attention):
     monkeypatch.setattr(module,'bounded',bounded)
     monkeypatch.setenv('PYTHONPATH','test-original')
     assert module.main()==1
-    assert not any('3,000-update' in label for label,_ in phases)
+    assert not any('19,560-update' in label for label,_ in phases)
     assert json.loads((tmp_path/'RUN_STATUS.json').read_text())['status']=='failed'
     assert 'fallback' in json.loads((tmp_path/'status.json').read_text())['error']
 
@@ -207,15 +207,15 @@ def test_worker_defaults_use_smaller_microbatch_and_verified_flash(monkeypatch,t
     phases=[]
     def bounded(command,seconds,root,label,watch=False):
         phases.append((label,command))
-        if '3,000-update' in label:
-            (root/'status.json').write_text(json.dumps(dict(status='target_reached',target_met=True,step=2875)))
+        if '19,560-update' in label:
+            (root/'status.json').write_text(json.dumps(dict(status='target_reached',target_met=True,step=module.TOTAL_STEPS)))
         return {'exit_code':0,'timed_out':False,'phase':label}
     monkeypatch.setattr(module,'bounded',bounded)
     monkeypatch.setattr(module,'start_tracking',lambda *args:object())
     monkeypatch.setattr(module,'finish_tracking',lambda *args:{'status':'complete'})
     monkeypatch.setenv('PYTHONPATH','test-original')
     assert module.main()==0
-    training=next(command for label,command in phases if '3,000-update' in label)
+    training=next(command for label,command in phases if '19,560-update' in label)
     assert training[training.index('--microbatch')+1]=='64'
     assert training[training.index('--attention')+1]=='flash'
     assert training[training.index('--optimizer')+1]==optimizer
@@ -483,3 +483,13 @@ def test_full_budget_training_continues_after_target(tmp_path,monkeypatch,full_b
     assert json.loads((tmp_path/'status.json').read_text())['step']==expected_steps
     manifest=json.loads((tmp_path/'manifest.json').read_text())
     assert manifest['seed']==1338 and manifest['full_budget']==full_budget
+
+
+def test_full_budget_target_crossing_cannot_hide_interrupted_or_partial_run():
+    run=runner()
+    validation=dict(evaluation_tokens=run.VAL_TOKENS,full_benchmark_evaluation=True,val_nll=3.2)
+    assert run.training_outcome(3000,validation,True)=='stopped_before_schedule_complete'
+    assert run.training_outcome(3000,validation,False)=='target_reached'
+    assert run.training_outcome(run.TOTAL_STEPS,validation,True)=='target_reached'
+    assert run.training_outcome(run.TOTAL_STEPS,{**validation,'val_nll':3.4},True)=='schedule_complete_target_not_met'
+    assert run.training_outcome(run.TOTAL_STEPS,{**validation,'full_benchmark_evaluation':False},True)=='schedule_complete_evaluation_incomplete'

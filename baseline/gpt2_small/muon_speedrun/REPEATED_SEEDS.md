@@ -15,7 +15,7 @@ Historical modified six-head results do not enter this paired comparison.
 - Six sequential fresh runs: Muon/AdamW paired at seeds **1337, 1338, 1339**.
   Optimizer order alternates by seed. Previous single-run results are retained
   separately and are not silently substituted for new replicates.
-- **3,000 updates / 1,572,864,000 tokens per run**, 524,288 tokens per update;
+- **19,560 updates / 10,255,073,280 tokens per run**, 524,288 tokens per update;
   global microbatch 64, eight accumulation passes, verified TPU flash attention.
 - Same initialization within each seed pair. The initialization varies between
   pairs; token order remains fixed for all six runs. This does not estimate
@@ -27,11 +27,12 @@ Historical modified six-head results do not enter this paired comparison.
   token embedding/output is one parameter with one optimizer state. The old
   architecture's separate embedding/head rates cannot be retained with weight tying.
   **Weight decay differs, so this compares recipes, not an isolated optimizer effect.**
-- Zero warmup; peak LR through update 2,100; 900-update linear cooldown.
+- 700-update warmup, cosine decay to zero at update 19,560; global L2 gradient clipping at 1.0.
+  [Pinned reference and explicit TPU/Muon differences](BENCHMARK.md).
 - No target-based early stop. Record first observed NLL <=3.28, but continue to
-  3,000 for equal-budget final statistics. Target times have 125-update resolution.
-  This threshold comes from the old modified-model record, not a validated stock-model expectation.
-- Every 125 updates: full 10,485,760-token validation loss, perplexity, top-1 token
+  19,560 for equal-budget final statistics. Target times have 250-update resolution.
+  This target comes from the original GPT-2/FineWeb reference; TPU convergence remains unverified.
+- Every 250 updates: full 10,485,760-token validation loss, perplexity, top-1 token
   error, checkpoint and raw/clipped WeightWatcher alpha for all 72 matrices.
   These are validation metrics, not a separately held-out test score.
 - Existing CPU-only spectral worker, immutable snapshots, disk saves and verified
@@ -41,15 +42,14 @@ Historical modified six-head results do not enter this paired comparison.
 
 Runs use one existing, single-host v5e-8 TPU and the mounted experiment disk.
 The launcher checks the live Google Cloud lease under the invoking account and
-refuses less than **18 hours 45 minutes remaining**. Each run is capped at three
+refuses less than **72 hours 45 minutes remaining**. Each run is capped at twelve
 hours including setup and backup; the suite reserves another 15 minutes for
 reporting, plus a 30-minute lease margin. These are conservative limits, not ETAs.
-Actual six-run duration must be measured; this is the short speedrun study,
-not six 25k trajectories. A new 24–48h allocation with the preserved experiment
-disk is appropriate. This entry point does not allocate, extend, or delete TPUs.
+Actual six-run duration must be measured. A 48-hour allocation cannot accommodate
+the six 12-hour caps; use the single-run launcher for one full-budget experiment. This entry point does not allocate, extend, or delete TPUs.
 
 It requires the existing environment at `/mnt/disks/rg-data/continuous8/venv`,
-reuses the verified benchmark cache, and requires 80 GiB free for retained
+reuses the verified benchmark cache, and requires 240 GiB free for retained
 checkpoints and spectral snapshots. Missing requirements are explicit failures;
 it never deletes old data to free space or silently changes microbatch.
 

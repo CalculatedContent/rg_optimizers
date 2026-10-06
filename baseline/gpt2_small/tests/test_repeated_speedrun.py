@@ -22,12 +22,13 @@ def populate(root, omit=None):
         r=root/(root.name+'-'+job['name']); r.mkdir()
         complete=job['name']!=omit
         suite.write(r/'manifest.json',dict(seed=job['seed'],optimizer=job['optimizer'],full_budget=True,
-                    architecture=suite.plan()['architecture'],config=suite.plan()['config']))
-        suite.write(r/'status.json',dict(step=3000 if complete else 125))
+                    architecture=suite.plan()['architecture'],config=suite.plan()['config'],
+                    benchmark=suite.BENCHMARK,protocol=suite.protocol()))
+        suite.write(r/'status.json',dict(step=suite.TOTAL_STEPS if complete else 125))
         suite.write(r/'RUN_STATUS.json',dict(status='schedule_complete_target_not_met',exit_code=0,
                     tracking={'status':'complete'},backup={'exit_code':0}))
         offset=(job['seed']-1337)*.1+(.2 if job['optimizer']=='adamw' else 0)
-        v=dict(kind='validation',step=3000 if complete else 125,evaluation_tokens=suite.VAL_TOKENS,
+        v=dict(kind='validation',step=suite.TOTAL_STEPS if complete else 125,evaluation_tokens=suite.VAL_TOKENS,
                full_benchmark_evaluation=True,val_nll=3.3+offset,val_perplexity=27+offset,
                val_token_error=.6+offset/100,elapsed_seconds=1000)
         (r/'metrics.jsonl').write_text(json.dumps(v)+'\n')
@@ -89,15 +90,15 @@ def test_old_suite_plan_cannot_start_stock_jobs(tmp_path):
 def test_spectral_checkpoint_mismatch_is_rejected(tmp_path):
     populate(tmp_path)
     path=tmp_path/(tmp_path.name+'-muon-s1337')/'tracking/summary.csv'
-    path.write_text('step,val_token_error,alpha_raw_mean\n3000,0.5,4\n')
+    path.write_text(f'step,val_token_error,alpha_raw_mean\n{suite.TOTAL_STEPS},0.5,4\n')
     with pytest.raises(ValueError,match='Spectrum/validation mismatch'): suite.report(tmp_path)
 
 
 def test_short_or_stale_lease_never_starts_suite(monkeypatch):
     m=launcher(); monkeypatch.setattr(m.time,'time',lambda:1000.)
-    with pytest.raises(RuntimeError,match='18h45m'): m.require_time(dict(checked_unix=1000,termination_unix=1000+7200))
+    with pytest.raises(RuntimeError,match='72h45m'): m.require_time(dict(checked_unix=1000,termination_unix=1000+7200))
     with pytest.raises(RuntimeError,match='expired'): m.require_time(dict(checked_unix=0,termination_unix=1e9))
-    m.require_time(dict(checked_unix=1000,termination_unix=1000+86400))
+    m.require_time(dict(checked_unix=1000,termination_unix=1000+suite.SUITE_SECONDS+1800))
 
 
 def test_job_failure_stops_suite_without_retry(tmp_path,monkeypatch):
@@ -135,3 +136,31 @@ def test_target_time_includes_setup_and_does_not_count_non_crossers(tmp_path):
     assert result['target_times']['muon']['n']==1
     assert result['target_times']['muon']['mean']==1500.
     assert result['target_times']['adamw']['n']==0
+
+
+def test_old_3000_step_protocol_cannot_enter_new_comparison(tmp_path):
+    populate(tmp_path)
+    path=tmp_path/(tmp_path.name+'-muon-s1337')/'manifest.json'
+    value=json.loads(path.read_text()); value.pop('benchmark'); suite.write(path,value)
+    result=suite.report(tmp_path)
+    assert result['complete_runs']==5 and result['paired_final_seeds']==[1338,1339]
+
+
+def test_stock_baseline_schedule_matches_pinned_reference_for_every_update(tmp_path):
+    from benchmark_config import lr_factor, TOTAL_STEPS, WARMUP
+    from data import reference, required_shards, FineWeb
+    assert TOTAL_STEPS==reference.TOTAL_STEPS==19560 and WARMUP==reference.WARMUP==700
+    for step in range(TOTAL_STEPS+1):
+        assert .0006*lr_factor(step)==pytest.approx(reference.learning_rate(step),abs=1e-16)
+    assert lr_factor(0)==1/700 and lr_factor(699)==lr_factor(700)==1
+    assert lr_factor(TOTAL_STEPS)==0
+    source=FineWeb(tmp_path,0)
+    names=required_shards(source,64,updates=TOTAL_STEPS)
+    assert len(names)==104 and set(names)==set(source.manifest['files'])
+
+
+def test_single_run_lease_uses_requested_cap(monkeypatch):
+    m=launcher(); monkeypatch.setattr(m.time,'time',lambda:1000.)
+    m.require_time(dict(checked_unix=1000,termination_unix=1000+13*3600),12*3600+600)
+    with pytest.raises(RuntimeError,match='12h10m'):
+        m.require_time(dict(checked_unix=1000,termination_unix=1000+12*3600),12*3600+600)

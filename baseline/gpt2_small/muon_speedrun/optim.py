@@ -3,6 +3,7 @@ from collections import defaultdict
 import math
 import torch
 from stock_config import ARCHITECTURE
+from benchmark_config import BENCHMARK, lr_factor, GRAD_CLIP
 
 
 def schedule(step):
@@ -127,6 +128,7 @@ def make_stock_optimizers(model, rt, kind):
     cls = torch.optim.Adam if kind == 'adam' else torch.optim.AdamW
     adam = cls(groups, betas=(0.9, 0.95), eps=1e-8,
                foreach=False, fused=False, capturable=rt.tpu)
+    adam.benchmark = BENCHMARK
     return muon, adam
 
 
@@ -139,9 +141,22 @@ def optimizer_metadata(adam):
 
 
 def apply_update(muon, adam, rt, step):
-    factor = schedule(step)
+    factor = lr_factor(step) if getattr(adam, 'benchmark', None) == BENCHMARK else schedule(step)
     if muon is not None:
         muon.step(rt.scalar(0.04 * factor), rt.scalar(momentum(step)))
     for group in adam.param_groups:
         group['lr'] = rt.scalar(group['peak_lr'] * factor)
     adam.step()
+
+
+@torch.no_grad()
+def clip_gradients(model):
+    """Global L2 clipping once after accumulation, before either optimizer."""
+    grads = [p.grad for p in model.parameters() if p.grad is not None]
+    if not grads:
+        raise RuntimeError('No gradients to clip')
+    norm = sum(g.detach().float().square().sum() for g in grads).sqrt()
+    scale = torch.clamp(GRAD_CLIP / (norm + 1e-6), max=1.0)
+    for grad in grads:
+        grad.mul_(scale)
+    return norm

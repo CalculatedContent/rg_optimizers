@@ -14,15 +14,15 @@ import torch
 
 import stock_model as architecture
 from data import FineWeb, TrainStream, write_json, prepare
-from optim import make_optimizers, apply_update, schedule, momentum, optimizer_metadata
+from optim import make_optimizers, apply_update, momentum, optimizer_metadata, clip_gradients
 from runtime import Runtime, attention_check
 from tracking import queue_snapshot
 
-TOTAL_STEPS = 3000
-BATCH_TOKENS = 524288
-VAL_TOKENS = 10485760
+from benchmark_config import (BENCHMARK, TOTAL_STEPS, BATCH_TOKENS, VAL_TOKENS,
+                              MEASUREMENT_INTERVAL, WARMUP, GRAD_CLIP,
+                              lr_factor, protocol)
+
 TARGET = 3.28
-MEASUREMENT_INTERVAL = 125
 HERE = Path(__file__).resolve().parent
 
 
@@ -54,7 +54,7 @@ def save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validat
                'rng':{'torch':torch.get_rng_state(), 'numpy':np.random.get_state(),
                       'python':random.getstate()},
                'manifest':manifest, 'validation':validation,
-               'next_lr_factor':schedule(step), 'next_momentum':momentum(step),
+               'next_lr_factor':lr_factor(step), 'next_momentum':momentum(step),
                'resume_validation':'Full state saved; automatic resume disabled. TPU resume parity not yet validated.'}
     checkpoint = root/'checkpoint_latest.pt'
     temporary = checkpoint.with_suffix('.tmp')
@@ -119,7 +119,7 @@ def evaluate(model, tokens, rt, root, step, deadline, microbatch, started):
     reference = json.loads((HERE/'reference_val.json').read_text())
     row['historical_reference_architecture'] = '2024-11-10_UNetDoubleLr'
     row['historical_reference_at_same_step'] = next((r for r in reference if r['step'] == step), None)
-    row['reference_note'] = 'Different architecture; 3.28 is an observational threshold, not an expected stock GPT-2 loss.'
+    row['reference_note'] = 'This curve uses a different architecture. The original GPT-2/FineWeb baseline reached approximately 3.28 after 19560 updates; no TPU convergence guarantee.'
     row['target_met'] = target_met(row)
     record(root, row)
     write_json(root/'latest_validation.json', row)
@@ -145,7 +145,8 @@ def train(a):
     source = FineWeb(a.cache, a.deadline-180)
     stream = TrainStream(source, a.microbatch, 1024)
     val = source.array('fineweb_val_000000.bin')
-    manifest = {'recipe':'stock-gpt2-small-'+a.optimizer,
+    manifest = {'recipe':BENCHMARK+'-'+a.optimizer,
+                'benchmark':BENCHMARK, 'protocol':protocol(),
                 'architecture':architecture.ARCHITECTURE,
                 'matrix_inventory':architecture.matrix_inventory(model),
                 'optimizer':a.optimizer, 'seed':seed,
@@ -158,25 +159,25 @@ def train(a):
                 'adam_head_lr':0.0006, 'adam_scalar_lr':0.0006,
                 'head_tied_to_embedding':True, 'dropout':0.0,
                 'adam_control_matrix_lr':0.0006 if not muon else None,
-                'warmup_updates':0, 'warmdown_updates':900,
+                'warmup_updates':WARMUP, 'lr_schedule':'cosine_to_zero',
                 'weight_decay':0.0 if a.optimizer == 'adam' else 0.1,
                 'weight_decay_scope':('auxiliary_matrices_only' if muon else 'all_matrices')
                                      if a.optimizer != 'adam' else 'none',
                 'muon_weight_decay':0.0 if muon else None,
                 'adam_implementation':optimizer_metadata(adam),
                 'historical_reference':'muon-speedrun-muon-20261005-030026',
-                'gradient_clipping':False, 'attention':a.attention,
+                'gradient_clipping':True, 'gradient_clip_norm':GRAD_CLIP, 'attention':a.attention,
                 'data_repo':source.manifest['repo'], 'data_revision':source.manifest['revision'],
                 'model_source_sha256':hashlib.sha256((HERE/'stock_model.py').read_bytes()).hexdigest(),
                 'legacy_record_source_sha256':hashlib.sha256((HERE/'vendor/record_source.py').read_bytes()).hexdigest(),
                 'torch_version':torch.__version__, 'automatic_restart':False,
-                'tracking':{'interval_updates':125, 'extra_final_measurement':True,
+                'tracking':{'interval_updates':MEASUREMENT_INTERVAL, 'extra_final_measurement':True,
                             'matrices':'Q,K,V,O,MLP_IN,MLP_OUT in all 12 blocks',
                             'execution':'separate CPU process on immutable snapshots',
                             'token_error':'teacher-forced top-1 error on the same benchmark validation tokens'},
                 'implementation':['Separate Q/K/V, mathematically equivalent to packed GPT-2 QKV',
                                   'TPU SPMD with BF16 activations and FP32 parameters/optimizer states'],
-                'optimality':'Stock architecture; optimizer recipes and TPU throughput are not tuned or validated by the old speedrun.',
+                'optimality':'Pinned original GPT-2/FineWeb core hyperparameters; Muon is an experimental optimizer substitution. See BENCHMARK.md for TPU port differences.',
                 'comparison_note':('Only compare new stock-model seed pairs as same-architecture controls. '
                                    'Historical six-head runs used a different model and auxiliary learning rates.')}
     write_json(root/'manifest.json', manifest)
@@ -201,6 +202,7 @@ def train(a):
         for p in model.parameters():
             if p.grad is not None:
                 rt.replicate(p.grad)
+        grad_norm = clip_gradients(model)
         apply_update(muon, adam, rt, step)
         rt.step(wait=True)
         step += 1
@@ -211,7 +213,8 @@ def train(a):
         timings.append(seconds)
         row = {'kind':'train', 'step':step, 'tokens_seen':step*BATCH_TOKENS,
                'train_nll':loss_value, 'seconds':seconds, 'tokens_per_second':BATCH_TOKENS/seconds,
-               'elapsed_seconds':time.time()-started, 'lr_factor':schedule(step-1)}
+               'elapsed_seconds':time.time()-started, 'lr_factor':lr_factor(step-1),
+               'gradient_norm_before_clip':float(grad_norm.cpu())}
         if step <= 5 or step % 10 == 0:
             if step >= 20:
                 row['training_seconds_remaining_estimate'] = float(np.median(timings[-50:]))*(TOTAL_STEPS-step)
@@ -229,13 +232,26 @@ def train(a):
     if validation is None or validation['step'] != step:
         validation = evaluate(model, val, rt, root, step, a.deadline-60, a.microbatch, started)
         save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validation, best)
-    outcome = 'target_reached' if target_met(validation) else (
-        'schedule_complete_target_not_met' if step == TOTAL_STEPS else 'stopped_before_schedule_complete')
+    outcome = training_outcome(step, validation, a.full_budget)
     result = {'status':outcome, 'step':step, 'validation':validation,
-              'target_met':target_met(validation), 'elapsed_seconds':time.time()-started,
+              'target_met':target_met(validation), 'full_training_recipe_completed':step == TOTAL_STEPS,
+              'elapsed_seconds':time.time()-started,
               'checkpoint':str(root/'checkpoint_latest.pt')}
     write_json(root/'status.json', result)
     print(json.dumps(result), flush=True)
+
+
+
+def training_outcome(step, validation, full_budget):
+    # A deadline/STOP must not masquerade as completion just because NLL passed.
+    if step == TOTAL_STEPS:
+        if not (validation and validation.get('full_benchmark_evaluation')
+                and validation.get('evaluation_tokens') == VAL_TOKENS):
+            return 'schedule_complete_evaluation_incomplete'
+        return 'target_reached' if target_met(validation) else 'schedule_complete_target_not_met'
+    if not full_budget and target_met(validation):
+        return 'target_reached'
+    return 'stopped_before_schedule_complete'
 
 
 def main():
@@ -249,11 +265,13 @@ def main():
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
     p.add_argument('--optimizer', choices=('muon', 'adam', 'adamw'), default='muon')
     p.add_argument('--seed', type=int, default=1337)
-    p.add_argument('--full-budget', action='store_true', help='Complete all 3000 updates even if target is reached')
+    budget = p.add_mutually_exclusive_group()
+    budget.add_argument('--full-budget', action='store_true', default=True, help='Default: complete all 19560 updates')
+    budget.add_argument('--stop-at-target', action='store_false', dest='full_budget', help='Explicit non-default early stop at NLL <= 3.28')
     p.add_argument('--legacy-attention-check', action='store_true', help=argparse.SUPPRESS)
     a = p.parse_args()
     if a.action == 'prepare':
-        prepare(a.cache, a.deadline, a.root, a.microbatch)
+        prepare(a.cache, a.deadline, a.root, a.microbatch, updates=TOTAL_STEPS)
     elif a.action == 'attention-check':
         cfg = architecture.GPTConfig()
         attention_check(a.root, a.microbatch, n_head=6 if a.legacy_attention_check else cfg.n_head,

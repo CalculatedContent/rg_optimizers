@@ -96,6 +96,28 @@ def test_forward_and_all_gradients_match_packed_qkv_gpt2():
     torch.testing.assert_close(actual.logits(changed)[:,:7], actual_logits[:,:7], rtol=0, atol=0)
 
 
+    # An actual clipped first AdamW update must also match packed upstream GPT-2.
+    from optim import clip_gradients
+    from benchmark_config import lr_factor
+    reference_adam = torch.optim.AdamW([
+        dict(params=[p for p in expected.parameters() if p.ndim >= 2], weight_decay=.1),
+        dict(params=[p for p in expected.parameters() if p.ndim < 2], weight_decay=0.)],
+        lr=.0006*lr_factor(0), betas=(.9,.95), eps=1e-8, foreach=False, fused=False)
+    rt = Runtime('cpu')
+    muon, actual_adam = make_optimizers(actual, rt, 'adamw')
+    norm = torch.nn.utils.clip_grad_norm_(expected.parameters(), 1.)
+    torch.testing.assert_close(clip_gradients(actual), norm, rtol=1e-5, atol=1e-6)
+    reference_adam.step(); apply_update(muon, actual_adam, rt, 0)
+    updated = expected.state_dict()
+    for name, p in actual.state_dict().items():
+        if any('.'+role+'.' in name for role in ('c_q','c_k','c_v')):
+            role = next(r for r in ('c_q','c_k','c_v') if '.'+r+'.' in name)
+            q = updated[name.replace('.'+role+'.', '.c_attn.')].chunk(3, dim=0)[('c_q','c_k','c_v').index(role)]
+        else:
+            q = updated[name]
+        torch.testing.assert_close(p, q, rtol=2e-5, atol=2e-7)
+
+
 @pytest.mark.parametrize('kind', ['muon', 'adamw'])
 def test_both_recipes_own_every_parameter_once_and_learn(kind, tmp_path):
     torch.set_num_threads(1); torch.manual_seed(1337)

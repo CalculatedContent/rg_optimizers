@@ -93,15 +93,16 @@ The AdamW control also updates all block matrices at 6e-4 with decay 0.1.
 All trainable tensors have FP32 parameters and optimizer state; TPU activations
 and matrix multiplies use BF16 with FP32 LayerNorm statistics and output loss.
 
-The paired 3-seed protocol, 3000 updates, token order/budget, cooldown, validation,
-checkpointing and spectral measurement cadence are retained. Plans/manifests
+The paired 3-seed protocol now uses the [pinned original GPT-2/FineWeb baseline](muon_speedrun/BENCHMARK.md):
+19,560 updates, 700 warmup updates, cosine decay, global gradient clipping at 1.0,
+and validation/checkpoint/spectral measurements every 250 updates. Plans/manifests
 include `gpt2-small-stock-v1` and the full configuration. Reports exclude runs
 with a different architecture/configuration, and execution rejects old suite plans.
 The flash-attention preflight now tests 12 heads of width 64. The historical
 25k worker explicitly requests its original 6-head/width-128 preflight.
 
-The old modified-model NLL target 3.28 remains a labeled historical threshold,
-not a predicted stock-model loss. These optimizer settings are not tuned for the
+The NLL target 3.28 comes from the original GPT-2/FineWeb reference; reaching it
+on this TPU port has not been demonstrated. These optimizer settings are not tuned for the
 new architecture. Existing running jobs keep their pinned source; this repository
 upgrade applies to fresh runs. No TPU training is started by the architecture audit.
 

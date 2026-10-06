@@ -2,8 +2,8 @@
 
 The main repeated-seed speedrun entry point is **`python3 baseline/gpt2_small/speedrun.py plan`**.
 See [the paired-seed protocol](muon_speedrun/REPEATED_SEEDS.md) for six fresh
-3,000-update runs: three matched seeds each for Muon and AdamW, full-budget
-cooldowns, paired WeightWatcher/token-error measurements, and seed-level statistics.
+19,560-update runs: three matched seeds each for Muon and AdamW, 700-step warmup and full-budget
+cosine decay, paired WeightWatcher/token-error measurements, and seed-level statistics.
 Both optimizers now use **stock GPT-2 Small**: 12 blocks, 12 heads, width 768,
 MLP width 3072, context 1024, vocabulary 50257, learned positions, LayerNorm,
 GELU, biases and tied token/output weights. There are 124,439,808 unique parameters.
@@ -16,13 +16,13 @@ six-head Muon/FineWeb recipe, stretches cooldown to updates 17,500–25,000,
 and records full-validation token error against all 72 raw/clipped alpha trajectories.
 The launcher checks the live TPU lease and retains the completed reference run.
 
-For **single 3,000-update stock GPT-2 Muon or AdamW runs on eight TPU chips**, see
-[muon_speedrun/README.md](muon_speedrun/README.md). They record the historical
-full-validation loss threshold 3.28, save checkpoints every 125 updates, and pair
+For **single 19,560-update stock GPT-2 Muon or AdamW runs on eight TPU chips**, see
+[muon_speedrun/README.md](muon_speedrun/README.md). They use the pinned original GPT-2/FineWeb baseline and record the
+full-validation loss threshold 3.28, save checkpoints every 250 updates, and pair
 raw/clipped WeightWatcher alpha with validation token error at those same updates.
-That threshold came from a different architecture and is not a predicted stock-model result.
+The [benchmark audit](muon_speedrun/BENCHMARK.md) identifies the upstream recipe and TPU/Muon differences.
 Its TPU performance and convergence require live
-measurement; the default three-hour budget is a cap, not a runtime prediction.
+measurement; the default twelve-hour budget is a cap, not a runtime prediction.
 
 For the **30-minute GPT-2/FineWeb reference run**, see
 [speedrun30/README.md](speedrun30/README.md). Its launcher stops the current
