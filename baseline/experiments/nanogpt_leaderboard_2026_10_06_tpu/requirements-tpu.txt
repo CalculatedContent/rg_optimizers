@@ -1,0 +1,7 @@
+# Install torch from the CPU wheel index first; no CUDA/Triton/FlashAttention package.
+torch==2.9.0
+torch_xla[tpu]==2.9.0
+numpy==2.2.6
+tiktoken==0.11.0
+huggingface_hub==0.34.4
+weightwatcher==0.7.7

@@ -1,0 +1,92 @@
+{
+  "experiment": "nanogpt_leaderboard_2026_10_06_tpu",
+  "mode": "tpu-port",
+  "status": "implemented candidate; requires full-size TPU preflight and convergence qualification",
+  "ready_to_train": false,
+  "tpu_execution_verified": false,
+  "convergence_verified": false,
+  "reference_folder": "nanogpt_leaderboard_2026_10_06",
+  "source_repo": "KellerJordan/modded-nanogpt",
+  "source_commit": "4ea6b937337a4889b8cfe3f38a93d120048d8f71",
+  "reference_metadata_sha256": "8120a8e530af0245e8580f72efde184498ff423fb2a7acfd8523fcb6abab153d",
+  "reference_file_manifest_sha256": "b5251aa2ce559408963fce8edfac70acc07bd2816a34ebb2d68bc6a985518b60",
+  "architecture": {
+    "num_layers": 11,
+    "num_heads": 6,
+    "model_dim": 768,
+    "head_dim_storage": 128,
+    "active_qk_widths": [
+      64,
+      128
+    ],
+    "active_v_widths": [
+      64,
+      128
+    ],
+    "attention_layers": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      10
+    ],
+    "ngram_rows": 84602880,
+    "ngram_width": 768,
+    "ngram_parameters": 64975011840,
+    "ngram_bf16_bytes": 129950023680
+  },
+  "optimizer": "Upstream ANVIL bank optimizer with auxiliary Adam and sparse row-wise Adam; no optimizer substitution",
+  "total_steps": 1194,
+  "stage_boundaries": [
+    0,
+    320,
+    681,
+    1107,
+    1174,
+    1194
+  ],
+  "stage_batch_tokens": [
+    131072,
+    262144,
+    393216,
+    327680,
+    131072
+  ],
+  "total_train_tokens": 328663040,
+  "target_validation_nll": 3.28,
+  "validation_tokens": 10485760,
+  "reference_logical_data_ranks": 8,
+  "numerics": "BF16/FP32 correctness port; rounding and accumulation differ from CUDA FP8 reference; see PORTING.md",
+  "execution": "Eight PJRT MPMD processes, one v5e chip each; XLA dense collectives and Gloo CPU table exchange; SPMD rejected",
+  "ngram_partition": "Full-size table, eight logical row-owner shards in host memory; no full-table TPU replica or dense table gradient",
+  "export": "Dense tail-averaged state and every ngram row with hashes and global offsets; analysis only",
+  "minimum_export_disk_bytes": 171798691840,
+  "acceptance": [
+    "Source identity and full architecture preserved; port differences recorded",
+    "Same hashed training and validation files across reference and port",
+    "Full TPU allocation and all five stages pass memory and numerical preflight",
+    "Fresh 1194-step run, 328663040 training tokens, finite validation NLL <= 3.28 on 10485760 tokens",
+    "Final dense and ngram exports have complete row coverage and verified SHA256 hashes"
+  ],
+  "target_accelerator_type": "v5litepod-8",
+  "target_physical_chips": 8,
+  "target_hosts": 1,
+  "ngram_placement": "Implemented full-size host-DRAM row-owner shards and bounded TPU row caches; hardware qualification pending",
+  "required_host_memory_check": "Measure available RAM and cgroup limit before allocation; table and row metadata alone require about 122 GiB",
+  "host_offload_verified": false,
+  "performance_status": "Unknown; host transfers and CPU sparse updates may dominate. No H100 speed claim.",
+  "dense_parameters": 302792179,
+  "tracking": {
+    "weightwatcher_version": "0.7.7",
+    "interval_updates": 100,
+    "initial_and_final": true,
+    "active_projection_matrices": 50,
+    "diagnostic_validation_tokens": 131072,
+    "final_validation_tokens": 10485760,
+    "execution": "separate CPU process; required completion before run success",
+    "alpha_raw_source": "raw_alpha; no clipped fallback",
+    "ngram_table_spectra": "not computed incrementally; full weights exported"
+  }
+}
