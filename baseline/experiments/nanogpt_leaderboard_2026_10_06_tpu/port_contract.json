@@ -1,0 +1,73 @@
+{
+  "experiment": "nanogpt_leaderboard_2026_10_06_tpu",
+  "mode": "tpu-port",
+  "status": "capacity-audit-only; trainer not implemented",
+  "ready_to_train": false,
+  "tpu_execution_verified": false,
+  "convergence_verified": false,
+  "reference_folder": "nanogpt_leaderboard_2026_10_06",
+  "source_repo": "KellerJordan/modded-nanogpt",
+  "source_commit": "4ea6b937337a4889b8cfe3f38a93d120048d8f71",
+  "reference_metadata_sha256": "8120a8e530af0245e8580f72efde184498ff423fb2a7acfd8523fcb6abab153d",
+  "reference_file_manifest_sha256": "b5251aa2ce559408963fce8edfac70acc07bd2816a34ebb2d68bc6a985518b60",
+  "architecture": {
+    "num_layers": 11,
+    "num_heads": 6,
+    "model_dim": 768,
+    "head_dim_storage": 128,
+    "active_qk_widths": [
+      64,
+      128
+    ],
+    "active_v_widths": [
+      64,
+      128
+    ],
+    "attention_layers": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      10
+    ],
+    "ngram_rows": 84602880,
+    "ngram_width": 768,
+    "ngram_parameters": 64975011840,
+    "ngram_bf16_bytes": 129950023680
+  },
+  "optimizer": "Upstream ANVIL bank optimizer with auxiliary Adam and sparse row-wise Adam; no optimizer substitution",
+  "total_steps": 1194,
+  "stage_boundaries": [
+    0,
+    320,
+    681,
+    1107,
+    1174,
+    1194
+  ],
+  "stage_batch_tokens": [
+    131072,
+    262144,
+    393216,
+    327680,
+    131072
+  ],
+  "total_train_tokens": 328663040,
+  "target_validation_nll": 3.28,
+  "validation_tokens": 10485760,
+  "reference_logical_data_ranks": 8,
+  "numerics": "Planned BF16 port; numerical equivalence to FP8 reference not established",
+  "execution": "Planned XLA SPMD, one logical device; never mix with MPMD launch or NCCL",
+  "ngram_partition": "Full-size table, row-axis partition; no replication or dense table gradient",
+  "export": "Dense tail-averaged state and every ngram row with hashes and global offsets; analysis only",
+  "minimum_export_disk_bytes": 171798691840,
+  "acceptance": [
+    "Source identity and full architecture preserved; port differences recorded",
+    "Same hashed training and validation files across reference and port",
+    "Full TPU allocation and all five stages pass memory and numerical preflight",
+    "Fresh 1194-step run, 328663040 training tokens, finite validation NLL <= 3.28 on 10485760 tokens",
+    "Final dense and ngram exports have complete row coverage and verified SHA256 hashes"
+  ]
+}
