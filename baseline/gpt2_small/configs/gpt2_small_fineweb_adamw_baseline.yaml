@@ -1,0 +1,56 @@
+run_id: gpt2_small_fineweb_adamw_baseline_s1337
+seed: 1337
+model:
+  vocab_size: 50257
+  block_size: 1024
+  n_layer: 12
+  n_head: 12
+  n_embd: 768
+  dropout: 0.0
+  bias: true
+  tie_weights: true
+dataset:
+  name: HuggingFaceFW/fineweb-edu
+  config: sample-10BT
+  split: train
+  revision: 593b3a867298afb8ce42625a270ef20ddcad28f9
+  tokenizer: gpt2
+  encoding_workers: 16
+  encoding_batch_size: 256
+  train_tokens: 5000000000
+  val_tokens: 10000000
+  test_tokens: 10000000
+runtime:
+  matmul_precision: highest
+  mps_fallback: true
+  deterministic_algorithms: false
+  empty_mps_cache_after_weightwatcher: true
+  tpu_spmd: true
+  tpu_expected_chips: 8
+training:
+  batch_size: 8
+  grad_accum_steps: 4
+  max_steps: 1000
+  max_tokens: 32768000
+  warmup_steps: 20
+  schedule_steps: 1000
+  grad_clip: 1.0
+eval_batches: 2
+metrics_interval: 25
+ww:
+  enabled: false
+  interval: 0
+  steps: []
+  logarithmic: false
+  min_evals: 20
+optimizer:
+  display_name: AdamW
+  family: adamw
+  learning_rate: 0.0006
+  min_learning_rate: 6.0e-05
+  warmup_fraction: 0.01
+  schedule: warmup_cosine
+  beta1: 0.9
+  beta2: 0.95
+  epsilon: 1.0e-08
+  weight_decay: 0.1

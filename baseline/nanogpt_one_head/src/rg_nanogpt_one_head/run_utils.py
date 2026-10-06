@@ -27,6 +27,7 @@ from .provenance import (
 from .runtime import runtime_metadata
 
 METRIC_FIELDS = [
+    "global_step", "global_epoch",
     "step", "tokens_seen", "epoch", "elapsed_sec", "tokens_per_sec",
     "primary_lr", "auxiliary_lr", "train_loss", "train_perplexity",
     "train_bits_per_token", "train_accuracy", "train_top5_accuracy",
@@ -101,6 +102,7 @@ _ACCELERATOR_RUNTIME_IDENTITY_FIELDS = {
     "tpu": (
         "torch_xla_version",
         "pjrt_device",
+        "xla_matmul_precision",
         "tpu_accelerator_type",
         "xla_process_count",
         "xla_process_index",
@@ -129,6 +131,12 @@ def runtime_identity_payload(metadata: dict) -> dict:
         *_COMMON_RUNTIME_IDENTITY_FIELDS,
         *_ACCELERATOR_RUNTIME_IDENTITY_FIELDS.get(accelerator, ()),
     )
+    if accelerator == "tpu":
+        # Old single-chip manifests remain readable. New SPMD runs record
+        # topology so a masked device cannot silently change a resumed run.
+        metadata = {"xla_spmd": False, "xla_spmd_chips": 1,
+                    "xla_matmul_precision": "unset", **metadata}
+        fields = (*fields, "xla_spmd", "xla_spmd_chips")
     missing = [field for field in fields if field not in metadata]
     if missing:
         raise RuntimeError(
@@ -393,6 +401,7 @@ def write_manifest(
         "data_metadata": data_metadata,
         "training": cfg["training"],
         "evaluation": cfg["evaluation"],
+        "continuation": cfg.get("continuation"),
         "weightwatcher": cfg["weightwatcher"],
         "tokens_per_step": tokens_per_step(cfg),
         "max_steps": int(total_steps),
@@ -411,6 +420,12 @@ def write_manifest(
             "not translation BLEU"
         ),
     }
+    if int(cfg["evaluation"].get("test_interval_steps", 0)) > 0:
+        payload["test_policy"] = (
+            "fixed test probe used for monitoring; validation selects the best "
+            "checkpoint; test never selects checkpoints automatically; this is "
+            "not an untouched held-out evaluation after human monitoring"
+        )
     temporary = run_dir / "manifest.json.tmp"
     temporary.write_text(
         json.dumps(

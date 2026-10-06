@@ -367,3 +367,25 @@ update paths, common probe identity, exact split-writing and cache corruption
 detection, checkpoint round-tripping, LR logging semantics, Student-t
 intervals, direct `ERG_gap`/`num_traps` handling, tiny CPU training, and
 notebook structure. The same tests run in the repository's baseline CI.
+
+## Extended TPU training
+
+See [TPU_CONTINUATION.md](TPU_CONTINUATION.md) for full-state continuation beyond
+the original training horizon, periodic test accuracy, retained metric history,
+and safe pause/resume with bounded checkpoint storage.
+
+## Continuous single-host eight-chip run
+
+For the fresh 124M-parameter MuonClip experiment with 5B training tokens, fixed
+document token-error probes, raw/clipped alpha and synchronous Cloud Storage
+checkpoints, see [continuous8/README.md](continuous8/README.md). This launcher
+defaults to one six-hour v5e-8 allocation, with a two-machine/four-hour option.
+Data preparation and training run on the TPU VM and its persistent disk,
+independently of Cloud Shell. Automatic restarts and the segmented continuation
+runner are disabled; the allocation cap includes setup and tokenization.
+
+## GPT-2 Small validation
+
+See [GPT-2 Small](../gpt2_small/README.md) for the isolated context-1024
+AdamW/MuonClip validation, corpus reuse, bounded checkpoints and resume tests.
+The long experiment requires a separate explicit launch.

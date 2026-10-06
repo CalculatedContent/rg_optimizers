@@ -47,6 +47,8 @@ from .runtime import (
     synchronize,
 )
 from .train_loop import execute_training_loop
+from .tpu_spmd import initialize as initialize_spmd, replicate_model
+from .continuation import import_parent_state, pause_reason, TrainingPaused
 
 
 def run_one(
@@ -67,6 +69,9 @@ def run_one(
     if resume and overwrite:
         raise ValueError("resume and overwrite are mutually exclusive")
 
+    if cfg.get("continuous", {}).get("enabled") and (resume or overwrite or cfg.get("continuation")):
+        raise ValueError("Continuous experiment must start fresh: no resume, overwrite, or segments")
+    initialize_spmd(cfg, device)
     data_root = Path(data_root)
     results_root = Path(results_root)
     run_dir = run_directory(results_root, optimizer_name, int(seed))
@@ -128,6 +133,7 @@ def run_one(
         )
 
     model = GPT(GPTConfig(**cfg["model"])).to(resolved_device)
+    replicate_model(model)
     handles = make_optimizer_handles(model, profile)
     train_generator = torch.Generator(device="cpu").manual_seed(
         int(seed) + 11
@@ -209,6 +215,7 @@ def run_one(
             )
         resumed_from_checkpoint = True
         model.to(resolved_device)
+        replicate_model(model)
         synchronize(resolved_device)
         truncate_spectral_after(run_dir, start_step)
         truncate_muonclip_qk_after(run_dir, start_step)
@@ -237,6 +244,15 @@ def run_one(
                 f"cannot resume {run_dir}: checkpoint_latest.pt is missing"
             )
 
+    if cfg.get("continuation") and resume_checkpoint is None:
+        resume_diagnostics = import_parent_state(
+            cfg, model=model, handles=handles, train_generator=train_generator,
+            data_metadata=data_metadata, seed=int(seed), current_runtime=current_runtime,
+        )
+        model.to(resolved_device)
+        replicate_model(model)
+        synchronize(resolved_device)
+
     write_manifest(
         run_dir,
         cfg=cfg,
@@ -253,6 +269,10 @@ def run_one(
         fingerprint=fingerprint,
         model=model,
     )
+
+    if cfg["evaluation"].get("document_probe", False):
+        from .continuous_support import build_document_probes
+        train_probe, val_probe, test_probe = build_document_probes(cfg, arrays, run_dir, data_metadata)
 
     # Persist an immutable step-zero checkpoint before evaluation, WeightWatcher,
     # or the first optimizer update. This makes initial-versus-final angular
@@ -271,6 +291,7 @@ def run_one(
             optimizer_name=optimizer_name,
             seed=int(seed),
             train_generator=train_generator,
+            resume_diagnostics=resume_diagnostics,
         )
         if progress:
             print(
@@ -285,6 +306,10 @@ def run_one(
             "unavailable for this run",
             flush=True,
         )
+
+    reason = pause_reason(cfg, run_dir)
+    if reason:
+        raise TrainingPaused(reason)
 
     metrics_path = run_dir / "metrics.csv"
     epoch_metrics_path = run_dir / "epoch_metrics.csv"
@@ -323,6 +348,7 @@ def run_one(
                 arrays=arrays,
                 train_probe=train_probe,
                 val_probe=val_probe,
+                test_probe=test_probe,
                 device=resolved_device,
                 optimizer_name=optimizer_name,
                 seed=int(seed),
@@ -414,6 +440,13 @@ def run_one(
         "final": final_test,
         "validation_selected": best_test,
     }
+    if int(eval_cfg.get("test_interval_steps", 0)) > 0:
+        test_results["policy"] = (
+            "fixed test probe used for monitoring; validation selects checkpoints; "
+            "test never selects checkpoints automatically; not an untouched held-out audit"
+        )
+        test_results["test_interval_steps"] = int(eval_cfg["test_interval_steps"])
+        test_results["probe_tokens"] = eval_batches * batch_size * block_size
     (run_dir / "test_results.json").write_text(
         json.dumps(
             test_results,
@@ -428,6 +461,7 @@ def run_one(
         "optimizer": optimizer_name,
         "seed": int(seed),
         "optimizer_steps": int(total_steps),
+        "global_step": int(cfg.get("continuation", {}).get("global_step_offset", 0)) + int(total_steps),
         "train_epochs": float(
             total_steps * tokens_per_step(cfg) / train_tokens
         ),

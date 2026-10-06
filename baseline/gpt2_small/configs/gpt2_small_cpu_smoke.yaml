@@ -1,0 +1,56 @@
+run_id: tiny_cpu_smoke
+seed: 1337
+model:
+  vocab_size: 64
+  block_size: 8
+  n_layer: 2
+  n_head: 2
+  n_embd: 32
+  dropout: 0.0
+  bias: true
+  tie_weights: true
+dataset:
+  name: HuggingFaceFW/fineweb-edu
+  config: sample-10BT
+  split: train
+  revision: 593b3a867298afb8ce42625a270ef20ddcad28f9
+  tokenizer: gpt2
+  encoding_workers: 16
+  encoding_batch_size: 256
+  train_tokens: 512
+  val_tokens: 128
+  test_tokens: 128
+runtime:
+  matmul_precision: highest
+  mps_fallback: true
+  deterministic_algorithms: false
+  empty_mps_cache_after_weightwatcher: true
+  tpu_spmd: false
+  tpu_expected_chips: 8
+training:
+  batch_size: 2
+  grad_accum_steps: 1
+  max_steps: 4
+  max_tokens: 64
+  warmup_steps: 1
+  schedule_steps: 4
+  grad_clip: 1.0
+eval_batches: 1
+metrics_interval: 2
+ww:
+  enabled: false
+  interval: 0
+  steps: []
+  logarithmic: false
+  min_evals: 20
+optimizer:
+  display_name: AdamW
+  family: adamw
+  learning_rate: 0.0006
+  min_learning_rate: 6.0e-05
+  warmup_fraction: 0.01
+  schedule: warmup_cosine
+  beta1: 0.9
+  beta2: 0.95
+  epsilon: 1.0e-08
+  weight_decay: 0.1

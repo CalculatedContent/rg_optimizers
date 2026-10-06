@@ -8,13 +8,11 @@ this order:
 TPU/XLA -> CUDA -> Apple MPS -> CPU
 ```
 
-The implementation is intentionally **single-process**. On a multi-chip TPU
-slice it uses one XLA device. This preserves the reference batch size, gradient
-accumulation, optimizer-step count, and learning-rate schedule. A future
-multi-device protocol must explicitly define gradient reduction, global batch
-size, data sampling, checkpoint ownership, and WeightWatcher ownership; the
-current runner refuses a multi-process XLA launch rather than silently changing
-the experiment.
+Historical configs use one XLA device. For **one MuonClip model across all four
+chips**, use the opt-in SPMD configs and [multi-chip runbook](TPU_SPMD.md).
+SPMD retains one Python process, one global batch/RNG stream, and one checkpoint
+writer while XLA partitions the batch across the chips. Multi-process and
+multi-host launches remain unsupported by this trainer.
 
 ## TPU Builders v5e Flex-Start quick path
 
@@ -138,7 +136,8 @@ torch_xla: 2.6.0
 TPU devices: ['xla:0', 'xla:1', 'xla:2', 'xla:3']
 ```
 
-The baseline still uses only `xla:0` in its current single-process protocol.
+Historical configs use one chip. With `runtime.tpu_spmd: true`, `xla:0` is a
+logical device spanning the configured physical chips; see [TPU_SPMD.md](TPU_SPMD.md).
 
 ## Manual installation fallback
 

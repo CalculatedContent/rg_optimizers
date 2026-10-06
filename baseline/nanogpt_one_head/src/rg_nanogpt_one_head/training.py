@@ -25,6 +25,7 @@ from .data import prepare_fineweb_edu
 from .engine import run_one
 from .run_utils import run_directory, run_is_complete
 from .runtime import choose_device
+from .tpu_spmd import initialize as initialize_spmd
 
 
 def _resolve_roots(
@@ -110,6 +111,7 @@ def run_optimizer_replicates(
     progress: bool = True,
 ) -> list[Path]:
     del config_path
+    initialize_spmd(cfg, device)
     data_path, results_path, resolved_device = _resolve_roots(
         data_root=data_root,
         results_root=results_root,
@@ -153,6 +155,7 @@ def run_all_replicates(
     overwrite: bool = False,
     progress: bool = True,
 ) -> list[Path]:
+    initialize_spmd(cfg, device)
     data_path, results_path, resolved_device = _resolve_roots(
         data_root=data_root,
         results_root=results_root,
@@ -548,6 +551,7 @@ def main() -> None:
     if not seeds:
         parser.error("at least one seed is required")
 
+    initialize_spmd(cfg, args.device)
     resolved_device = choose_device(args.device)
     if (
         resolved_device.type == "mps"

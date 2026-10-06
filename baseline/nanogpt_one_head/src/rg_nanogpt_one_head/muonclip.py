@@ -18,6 +18,8 @@ from typing import Any, Iterable
 import torch
 import torch.nn.functional as F
 
+from .tpu_spmd import replicate
+
 _INSTALLED = False
 _CURRENT_RUN_DIR: Path | None = None
 
@@ -370,6 +372,13 @@ class MuonClip(torch.optim.Optimizer):
             self._flush_diagnostics()
         return loss
 
+    def reset_phase_diagnostics(self) -> None:
+        """Start a new logging interval without resetting optimization history."""
+        self.step_index = 0
+        self.last_diagnostics = {}
+        self._diagnostic_interval_state = None
+        self.reset_qk_tracking()
+
     def state_dict(self) -> dict[str, Any]:
         payload = super().state_dict()
         payload["muonclip_global_state"] = {
@@ -409,6 +418,9 @@ def _record_qk_logits(attention, scores: torch.Tensor) -> None:
         .amax(dim=0)
         .float()
     )
+    # The amax includes the GLOBAL batch axis. Replication forces the
+    # compiler to complete the cross-chip max before per-head QK clipping.
+    replicate(value)
     previous = getattr(attention, "_muonclip_max_logits", None)
     setattr(
         attention,

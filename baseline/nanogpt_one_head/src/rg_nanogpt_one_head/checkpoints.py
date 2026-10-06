@@ -177,6 +177,8 @@ def _atomic_torch_save(payload: dict[str, Any], path: Path) -> Path:
     temporary = path.with_suffix(path.suffix + ".tmp")
     torch.save(payload, temporary)
     temporary.replace(path)
+    from .continuous_support import publish_checkpoint
+    publish_checkpoint(path, payload)
     return path
 
 
@@ -272,6 +274,7 @@ def save_training_checkpoint(
         "model_state_sha256": model_state_sha256(model_state),
         "optimizer_state_sha256": optimizer_state_sha256(optimizer_states),
         "step": int(step),
+        "global_step": int(cfg.get("continuation", {}).get("global_step_offset", 0)) + int(step),
         "best_validation_loss": float(best_validation_loss),
         "best_validation_step": int(best_validation_step),
         "elapsed_seconds": float(elapsed_seconds),

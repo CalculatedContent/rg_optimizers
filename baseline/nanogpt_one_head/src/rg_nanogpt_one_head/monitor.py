@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import time
 
@@ -72,6 +73,45 @@ def load_monitor_frames(
     return metrics, layers
 
 
+def load_series_frames(root: str | Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Join retained CSV history even after older model files are pruned."""
+    root = Path(root)
+    state = json.loads((root / "series.json").read_text())
+    dirs = [Path(state["origin_checkpoint"]).parent]
+    dirs.extend(root / record["directory"] / "muon_clip" / f"seed_{state['seed']}"
+                for record in state["completed_segments"])
+    if state.get("active_segment"):
+        dirs.append(root / state["active_segment"] / "muon_clip" / f"seed_{state['seed']}")
+    collected = [[], []]
+    for run_dir in dirs:
+        manifest_path = run_dir / "manifest.json"
+        if not manifest_path.is_file():
+            continue
+        manifest = json.loads(manifest_path.read_text())
+        offset = int((manifest.get("continuation") or {}).get("global_step_offset", 0))
+        tokens = int(manifest["tokens_per_step"])
+        train_tokens = int(manifest["data_metadata"]["splits"]["train"])
+        for index, frame in enumerate(load_monitor_frames(run_dir)):
+            if frame.empty:
+                continue
+            frame = frame.copy()
+            frame["step"] = pd.to_numeric(frame["step"], errors="coerce") + offset
+            frame["epoch"] = frame["step"] * tokens / train_tokens
+            frame["segment_run_dir"] = str(run_dir)
+            if run_dir == dirs[0]:
+                frame = frame.loc[frame["step"] <= state["origin_global_step"]]
+            collected[index].append(frame)
+    frames = []
+    for index, parts in enumerate(collected):
+        if not parts:
+            frames.append(pd.DataFrame())
+            continue
+        frame = pd.concat(parts, ignore_index=True)
+        keys = ["step", "matrix_name"] if index else ["step"]
+        frames.append(frame.drop_duplicates(keys, keep="last").sort_values(keys))
+    return tuple(frames)
+
+
 def _finite_summary(values: pd.Series) -> str:
     array = pd.to_numeric(values, errors="coerce").to_numpy(dtype=float)
     finite = array[np.isfinite(array)]
@@ -129,6 +169,16 @@ def format_monitor_snapshot(
                     ),
                 ]
             )
+
+    if not metrics.empty and "test_accuracy" in metrics.columns:
+        measured = metrics.loc[pd.to_numeric(metrics["test_accuracy"], errors="coerce").notna()]
+        if not measured.empty:
+            row = measured.iloc[-1]
+            lines.extend(["", f"LATEST FIXED TEST PROBE: step={int(row['step'])} "
+                          f"test_loss={float(row['test_loss']):.4f} "
+                          f"test_acc={100 * float(row['test_accuracy']):.2f}%",
+                          "RECENT TEST PROBE HISTORY",
+                          _format_table(measured[["step", "epoch", "test_loss", "test_accuracy", "val_accuracy"]].tail(recent))])
 
     if layers.empty:
         lines.extend(["", "Waiting for spectral/layers.csv..."])
@@ -240,6 +290,8 @@ def main() -> None:
         )
     )
     parser.add_argument("--run-dir")
+    parser.add_argument("--series-root", help="join all continuation segments on cumulative steps")
+    parser.add_argument("--export-metrics", type=Path, help="write the displayed metrics history as CSV")
     parser.add_argument("--results-root")
     parser.add_argument("--optimizer", default="muon")
     parser.add_argument("--seed", type=int, default=1337)
@@ -259,7 +311,7 @@ def main() -> None:
     if args.recent < 1:
         parser.error("--recent must be positive")
 
-    run_dir = resolve_run_dir(
+    run_dir = Path(args.series_root) if args.series_root else resolve_run_dir(
         run_dir=args.run_dir,
         results_root=args.results_root,
         optimizer=args.optimizer,
@@ -269,7 +321,12 @@ def main() -> None:
 
     try:
         while True:
-            metrics, layers = load_monitor_frames(run_dir)
+            metrics, layers = (load_series_frames(run_dir) if args.series_root else load_monitor_frames(run_dir))
+            if args.export_metrics:
+                args.export_metrics.parent.mkdir(parents=True, exist_ok=True)
+                temporary = args.export_metrics.with_suffix(".csv.tmp")
+                metrics.to_csv(temporary, index=False)
+                temporary.replace(args.export_metrics)
             if not args.no_clear and not args.once:
                 print("\033[2J\033[H", end="")
             print(

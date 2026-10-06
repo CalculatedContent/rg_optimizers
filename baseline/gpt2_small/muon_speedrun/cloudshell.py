@@ -1,0 +1,213 @@
+"""Launch a checkpointed Muon recipe on the existing eight-chip TPU."""
+import argparse
+import datetime as dt
+import fcntl
+import importlib.util
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import subprocess
+import sys
+import time
+import uuid
+
+PROJECT = 'tpu-builders-504820'
+ZONE = 'us-west4-a'
+QUEUE = 'ww-gpt2-validation-48h-20261004-s1337'
+NODE = QUEUE+'-node'
+BASE = Path('/mnt/disks/rg-data/gpt2small')
+LATEST = BASE/'MUON_SPEEDRUN_LATEST.json'
+
+
+def run(command, **kwargs):
+    return subprocess.run(command, check=True, text=True, **kwargs)
+
+
+def active(unit):
+    r = subprocess.run(['systemctl','show',unit,'--property=ActiveState','--value'],
+                       capture_output=True,text=True,timeout=10)
+    return r.stdout.strip() in ('active','activating','deactivating','reloading')
+
+
+def status_remote():
+    if not LATEST.exists():
+        print('No Muon speedrun launched.')
+        return
+    record = json.loads(LATEST.read_text())
+    root = Path(record['root'])
+    print(json.dumps(record,indent=2),flush=True)
+    subprocess.run(['systemctl','--no-pager','--full','status',record['unit']])
+    for name in ('RUN_STATUS.json','status.json','latest_validation.json','checkpoint_latest.json',
+                 'PALLAS_DEPENDENCIES.json','ATTENTION_CHECK.json','ATTENTION_CHECK_FAILURE.json',
+                 'TRACKING_CONFIG.json','TRACKING_STATUS.json'):
+        if (root/name).exists():
+            print(name+'\n'+(root/name).read_text(),flush=True)
+    subprocess.run(['tail','-n','15',str(root/'run.log')])
+
+
+def stop_current():
+    if not LATEST.exists():
+        return
+    record = json.loads(LATEST.read_text())
+    unit = record['unit']
+    if not re.fullmatch(r'rg-muon-speedrun-\d{8}-\d{6}\.service', unit):
+        raise RuntimeError('Unexpected service name; refusing to stop it')
+    if not active(unit):
+        return
+    print('Stopping previous Muon speedrun: '+unit, flush=True)
+    run(['systemctl','stop',unit], timeout=60)
+    if active(unit):
+        raise RuntimeError('Previous service is still active; new run not started')
+
+
+def stop_longrun():
+    pointer = BASE/'MUON_LONG25K_LATEST.json'
+    if not pointer.exists():
+        return
+    unit = json.loads(pointer.read_text())['unit']
+    if not re.fullmatch(r'rg-muon-long25k-\d{8}-\d{6}\.service', unit):
+        raise RuntimeError('Unexpected long-run service; refusing to stop it')
+    if active(unit):
+        print('Stopping recorded long run: '+unit+'; existing files retained.', flush=True)
+        run(['systemctl','stop',unit], timeout=60)
+        if active(unit):
+            raise RuntimeError('Long run is still active; comparison not started')
+
+
+def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attention='flash', replace_current=False,
+                 launch_id=None, replace_longrun=False, checked_lease=None):
+    if os.geteuid() != 0 or not os.path.ismount('/mnt/disks/rg-data'):
+        raise RuntimeError('Requires the existing mounted disk and root')
+    if not re.fullmatch('[0-9a-f]{40}',commit):
+        raise ValueError('Expected pinned commit')
+    with (BASE/'port-check-launch.lock').open('a') as lock:
+        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        if LATEST.exists() and launch_id and json.loads(LATEST.read_text()).get('launch_id') == launch_id:
+            print('This launch request was already handled; SSH retry will not restart it.')
+            status_remote()
+            return
+        if not replace_current and LATEST.exists() and active(json.loads(LATEST.read_text())['unit']):
+            print('A speedrun is already active; no duplicate launched.')
+            status_remote()
+            return
+        checked = json.loads(checked_lease or '{}')
+        if not checked or not -30 <= time.time()-checked['checked_unix'] <= 600:
+            raise RuntimeError('A fresh live lease check is required; nothing started')
+        if checked['termination_unix']-time.time() < hours*3600+300:
+            raise RuntimeError('Lease is too short for the requested run cap and backup margin')
+        import urllib.request
+        req = urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip', headers={'Metadata-Flavor':'Google'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            if response.read().decode().strip() not in checked['ips']:
+                raise RuntimeError('Guest does not match the checked TPU')
+        deadline = time.time()+hours*3600
+        stamp = dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d-%H%M%S')
+        root = BASE/('muon-speedrun-'+optimizer+'-'+stamp)
+        root.mkdir()
+        repo = root/'repo'
+        repo.mkdir()
+        run(['git','-C',str(repo),'init','-q'])
+        run(['git','-C',str(repo),'remote','add','origin','https://github.com/CalculatedContent/rg_optimizers.git'])
+        run(['git','-C',str(repo),'fetch','--depth','1','origin',commit],timeout=120)
+        run(['git','-C',str(repo),'checkout','--detach',commit])
+        if replace_current:
+            stop_current()
+        if replace_longrun:
+            stop_longrun()
+        guard = repo/'baseline/gpt2_small/scripts/run_muonclip.py'
+        spec = importlib.util.spec_from_file_location('training_guard',guard)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.assert_idle()
+        unit = 'rg-muon-speedrun-'+stamp+'.service'
+        base = repo/'baseline/gpt2_small'
+        sys.path.insert(0, str(base/'muon_speedrun'))
+        from stock_config import ARCHITECTURE
+        from benchmark_config import BENCHMARK, TOTAL_STEPS, MEASUREMENT_INTERVAL
+        env = {'PYTHONPATH':str(base/'src')+':'+str(base.parent/'nanogpt_one_head/src'),
+               'PJRT_DEVICE':'TPU','TPU_ACCELERATOR_TYPE':'v5litepod-8',
+               'OMP_NUM_THREADS':'4','OPENBLAS_NUM_THREADS':'4','MKL_NUM_THREADS':'4',
+               'TOKENIZERS_PARALLELISM':'false'}
+        record = {'root':str(root),'unit':unit,'commit':commit,'optimizer':optimizer,
+                  'architecture':ARCHITECTURE, 'benchmark':BENCHMARK, 'steps':TOTAL_STEPS,
+                  'launch_id':launch_id, 'lease':checked,
+                  'started_unix':time.time(),'deadline_unix':deadline,'hours_cap':hours,
+                  'target_val_nll':3.28,'checkpoint_interval':MEASUREMENT_INTERVAL,'microbatch':microbatch,
+                  'weightwatcher_interval':MEASUREMENT_INTERVAL, 'validation_token_error':True,
+                  'fresh_initialization':True, 'automatic_restart':False,
+                  'historical_reference':'muon-speedrun-muon-20261005-030026',
+                  'cloud_uri':'gs://tpu-builders-504820-ww-continuous8/gpt2small/'+root.name}
+        (root/'launch.json').write_text(json.dumps(record,indent=2))
+        (root/'commit.txt').write_text(commit+'\n')
+        command = ['systemd-run','--unit='+unit,'--property=Type=exec','--property=Restart=no',
+                   '--property=RuntimeMaxSec='+str(int(deadline-time.time())-5),
+                   '--property=TimeoutStopSec=5','--property=KillMode=control-group',
+                   '--property=StandardOutput=append:'+str(root/'run.log'),
+                   '--property=StandardError=append:'+str(root/'run.log')]
+        command += ['--setenv='+k+'='+v for k,v in env.items()]
+        command += ['/mnt/disks/rg-data/continuous8/venv/bin/python','-u',
+                    str(base/'muon_speedrun/worker.py'),str(root),str(deadline),
+                    '--optimizer',optimizer,'--microbatch',str(microbatch),'--attention',attention]
+        run(command)
+        temp = LATEST.with_suffix('.tmp')
+        temp.write_text(json.dumps(record,indent=2))
+        temp.replace(LATEST)
+        print('Started '+optimizer+' recipe: '+unit,flush=True)
+        print('Log: '+str(root/'run.log'),flush=True)
+        print('19,560 updates, 700 warmup, cosine decay, gradient clipping 1.0; full-budget default.',flush=True)
+        print('Paired validation token error and raw/clipped WeightWatcher alpha every 250 updates and final.',flush=True)
+        print('Hard cutoff UTC: '+dt.datetime.fromtimestamp(deadline,dt.timezone.utc).isoformat(),flush=True)
+        print('No automatic restart or new TPU allocation. The selected hours limit is a cap, not an ETA. A deadline-stopped run is incomplete.',flush=True)
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('action',choices=('start','status'))
+    p.add_argument('--hours',type=float,default=12)
+    p.add_argument('--optimizer',choices=('muon','muon_clip','adam','adamw'),default='muon_clip')
+    p.add_argument('--microbatch',type=int,choices=(32,64,128),default=64)
+    p.add_argument('--attention',choices=('auto','flash','math'),default='flash')
+    p.add_argument('--replace-current',action='store_true',help='Stop the previous speedrun and start from initialization')
+    p.add_argument('--replace-longrun',action='store_true',help='Stop the recorded 25k training service, retaining its files')
+    p.add_argument('--node', default=NODE, help='Existing TPU node; the old October 4 allocation has expired')
+    p.add_argument('--zone', default=ZONE)
+    p.add_argument('--lease', help=argparse.SUPPRESS)
+    p.add_argument('--here',action='store_true',help='Launch/status directly from the TPU terminal without self-SSH')
+    p.add_argument('--on-tpu',action='store_true',help=argparse.SUPPRESS)
+    p.add_argument('--commit',help=argparse.SUPPRESS)
+    p.add_argument('--launch-id',help=argparse.SUPPRESS)
+    a = p.parse_args()
+    if not 1 <= a.hours <= 12:
+        raise ValueError('Hours must be between 1 and 12, bounded by existing allocation')
+    if a.on_tpu:
+        if a.action == 'start':
+            start_remote(a.commit,a.hours,a.optimizer,a.microbatch,a.attention,a.replace_current,a.launch_id,a.replace_longrun,a.lease)
+        else:
+            status_remote()
+        return 0
+    command = ['sudo','python3','-c',Path(__file__).read_text(),a.action,'--on-tpu',
+               '--hours',str(a.hours),'--optimizer',a.optimizer,'--microbatch',str(a.microbatch),
+               '--attention',a.attention]
+    if a.replace_current:
+        command += ['--replace-current']
+    if a.replace_longrun:
+        command += ['--replace-longrun']
+    if a.action == 'start':
+        repo = Path(__file__).resolve().parents[3]
+        if run(['git','-C',str(repo),'status','--porcelain'],capture_output=True).stdout.strip():
+            raise RuntimeError('Launch from a clean checkout of the pushed commit')
+        commit = run(['git','-C',str(repo),'rev-parse','HEAD'],capture_output=True).stdout.strip()
+        spec = importlib.util.spec_from_file_location('live_lease_check', repo/'baseline/gpt2_small/speedrun.py')
+        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        checked = module.lease(a, required_seconds=a.hours*3600+600)
+        command += ['--commit',commit,'--launch-id',uuid.uuid4().hex,'--lease',json.dumps(checked)]
+    if a.here:
+        return subprocess.run(command if os.geteuid() != 0 else command[1:]).returncode
+    return subprocess.run(['gcloud','compute','tpus','tpu-vm','ssh',a.node,
+        '--project='+PROJECT,'--zone='+a.zone,'--worker=0','--command='+shlex.join(command)]).returncode
+
+
+if __name__ == '__main__':
+    sys.exit(main())
