@@ -1,7 +1,7 @@
 {
   "experiment": "nanogpt_leaderboard_2026_10_06_tpu",
   "mode": "tpu-port",
-  "status": "capacity-audit-only; trainer not implemented",
+  "status": "implemented candidate; requires full-size TPU preflight and convergence qualification",
   "ready_to_train": false,
   "tpu_execution_verified": false,
   "convergence_verified": false,
@@ -35,7 +35,8 @@
     "ngram_rows": 84602880,
     "ngram_width": 768,
     "ngram_parameters": 64975011840,
-    "ngram_bf16_bytes": 129950023680
+    "ngram_bf16_bytes": 129950023680,
+    "dense_parameters": 302792179
   },
   "optimizer": "Upstream ANVIL bank optimizer with auxiliary Adam and sparse row-wise Adam; no optimizer substitution",
   "total_steps": 1194,
@@ -58,8 +59,8 @@
   "target_validation_nll": 3.28,
   "validation_tokens": 10485760,
   "reference_logical_data_ranks": 8,
-  "numerics": "Planned BF16 port; numerical equivalence to FP8 reference not established",
-  "execution": "Planned XLA SPMD, one logical device; never mix with MPMD launch or NCCL",
+  "numerics": "BF16/FP32 correctness port; rounding and accumulation differ from CUDA FP8 reference; see PORTING.md",
+  "execution": "Eight PJRT MPMD processes, one v5e chip each; XLA dense collectives and Gloo CPU table exchange; SPMD rejected",
   "ngram_partition": "Full-size table, eight logical row-owner shards in host memory; no full-table TPU replica or dense table gradient",
   "export": "Dense tail-averaged state and every ngram row with hashes and global offsets; analysis only",
   "minimum_export_disk_bytes": 171798691840,
@@ -73,7 +74,7 @@
   "target_accelerator_type": "v5litepod-8",
   "target_physical_chips": 8,
   "target_hosts": 1,
-  "ngram_placement": "Planned host-DRAM backing with bounded TPU row caches; not implemented or qualified",
+  "ngram_placement": "Implemented full-size host-DRAM row-owner shards and bounded TPU row caches; hardware qualification pending",
   "required_host_memory_check": "Measure available RAM and cgroup limit before allocation; table and row metadata alone require about 122 GiB",
   "host_offload_verified": false,
   "performance_status": "Unknown; host transfers and CPU sparse updates may dominate. No H100 speed claim."

@@ -1,0 +1,57 @@
+{
+  "config.py": {
+    "source": "config.py",
+    "source_sha256": "699443a301f245ddd5c47e957c3d891969d191e5030c6b9068ccae228113255d",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "schedule.py": {
+    "source": "schedule.py",
+    "source_sha256": "067602a2b8392411b81d446c1b2345451b410ef84761959d3ecdb80318726133",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "layers.py": {
+    "source": "model/layers.py",
+    "source_sha256": "a40436f2c206564b7558d696c4ce190143f5dd31444adfde15a84c10ffd8ed17",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "prefix_prediction.py": {
+    "source": "model/prefix_prediction.py",
+    "source_sha256": "22aba6065addaea0014d81dbea861b28c8aa9a67aaec2e4765230cc4338b13fa",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "canonical_mask.py": {
+    "source": "canonical_mask.py",
+    "source_sha256": "1b81cd66285f072bb186794dbe3775f08eefe5f88bd4bb57e7230e5cf6844144",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "ngram_math.py": {
+    "source": "ngram_table.py",
+    "source_sha256": "86ef2c38edfcfa9ce75aa25132c98af0d184262c1634511ed8e3e886337f7102",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "sampled_softmax.py": {
+    "source": "sampled_softmax.py",
+    "source_sha256": "472e2ce1ce99c815544c4df1efec534810e6ce9dc650dffe229805b6b6cdca8f",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "data.py": {
+    "source": "data.py",
+    "source_sha256": "b261f2728e3f240f36e220213ae0685fc28ccd24055ac108bc95a8718dfb4121",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "gpt.py": {
+    "source": "model/gpt.py",
+    "source_sha256": "af1e189e42112af7ca68700549fbd4a411fd9e0281596990ac4d671cbacb7c2e",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "attention.py": {
+    "source": "model/attention.py",
+    "source_sha256": "615d855f51cd61d27feb70449b0db829131e34333182b4dff61927785978c70c",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  },
+  "residual.py": {
+    "source": "perf/residual_fusion.py",
+    "source_sha256": "e39760a57d310c4eeef371df72d5ab618b471365618b8a4e6bc7abcfe9700ca3",
+    "note": "Derived algorithmic source; see PORTING.md for runtime/numerical differences"
+  }
+}

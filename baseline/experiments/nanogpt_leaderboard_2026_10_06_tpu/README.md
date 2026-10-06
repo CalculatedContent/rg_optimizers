@@ -1,169 +1,63 @@
-# October 6 leaderboard model — v5e-8 TPU port capacity audit
+# ANVIL2 nanoGPT leaderboard — Google TPU port
 
-**Status: NOT READY TO TRAIN.** This folder currently contains an offline
-capacity audit and a frozen port specification. The TPU trainer is not yet
-implemented, and no TPU execution or convergence has been verified. There is
-deliberately no `run` command. Passing `check-capacity` is not training approval.
+This folder implements a PyTorch/XLA BF16 port for the existing **v5litepod-8 (v5e-8), eight chips on one host**. Model, optimizer, host-backed n-gram table, training loop, validation and weight export are implemented. **Actual TPU execution, full-size memory fit and convergence remain unqualified.** `run` requires a successful on-device preflight; CPU tests cannot satisfy that gate.
 
-The [CUDA reference](../nanogpt_leaderboard_2026_10_06/README.md), including its
-entire `vendor/` directory and launcher, remains unchanged. The proposed port
-targets its exact upstream commit
-`4ea6b937337a4889b8cfe3f38a93d120048d8f71` (ANVIL2, record #92).
-This is the 11-block leaderboard model with the full hashed n-gram table,
-not stock GPT-2. Reducing that table or substituting MuonClip/AdamW for ANVIL
-would create a different experiment.
+The sibling [CUDA reference](../nanogpt_leaderboard_2026_10_06) remains byte-verified at upstream `4ea6b937337a4889b8cfe3f38a93d120048d8f71`. This is the evolved ANVIL2 leaderboard model, **not stock GPT-2 or a MuonClip/AdamW comparison**. No CUDA reference files are changed.
 
-## Selected target: the existing eight-chip v5e TPU
+## Fixed experiment
 
-The repository's existing `baseline/gpt2_small/scripts/tpu_environment.sh`
-sets `TPU_ACCELERATOR_TYPE=v5litepod-8`. That is v5e-8, and the user selected
-this existing machine as the target on October 6. This fixes the hardware
-constraint; a larger TPU is not a prerequisite or an authorized allocation.
-The full table cannot remain resident in its HBM alongside training.
+| Item | Value |
+|---|---|
+| Dense model | 11 blocks, width 768, six heads; 302,792,179 parameters |
+| N-gram table | 84,602,880 × 768 BF16; 64,975,011,840 values; 121.025 GiB |
+| Optimizers | ANVIL twin rails and six-map cascade; auxiliary cautious Adam; sparse row-wise Adam |
+| Steps / training tokens | 1,194 / 328,663,040 |
+| Stage boundaries | 0, 320, 681, 1107, 1174, 1194 |
+| Global batch tokens | 131072, 262144, 393216, 327680, 131072 |
+| Final evaluation | 10,485,760 FineWeb tokens; NLL ≤ 3.28; perplexity ≤ 26.576 |
 
-The proposed route is **host-memory offloading of the full n-gram table**:
-keep all 84,602,880 rows and their sparse Adam state in the TPU VM's CPU RAM,
-and transfer only active rows and their gradients to/from bounded TPU caches.
-Preserve eight logical row-owner shards and the reference gradient accumulation
-semantics. The dense model and its forward/backward computations stay on the
-TPU. This changes storage and execution, without shrinking the learned table.
+The table is **not shrunk**. Eight CPU row owners hold it in host RAM, exchange requested rows through Gloo, and upload bounded BF16 caches to their TPU chips. Dense gradients use XLA collectives. One PJRT process runs per chip (MPMD); SPMD is rejected. Dense optimizer state is replicated. The launcher requires **192 GiB available host RAM** and **160 GiB free export disk**; these guards do not prove HBM fit. `capacity.py` separately explains why the all-HBM approach fails on this machine.
 
-Google lists 384 GB of host RAM for the eight-chip v5e VM, which makes this a
-capacity candidate, not a verified runtime. Measure actual available RAM and
-container/cgroup limits first; nominal RAM is not an allocation guarantee. The
-full table and row metadata need about 122 GiB before data, caches, exchange
-buffers and the OS. CPU updates and transfers can dominate runtime. No runtime
-estimate or speedrun qualification is available.
+## Run on the TPU VM
 
-**This offloading route is not implemented.** The audit below is for the
-original all-HBM placement, so its v5e-8 rejection must remain in force. Do not
-turn that rejection into a pass merely because a host-memory design is proposed.
-
-The BF16 n-gram table is **84,602,880 × 768**, or **129,950,023,680 bytes =
-121.025 GiB**. Its upstream row metadata adds 0.946 GiB: one FP32 second
-moment, one int32 last-event value and one int32 row-map value per row.
-There is no full per-element Adam state or dense table gradient.
-
-| Allocation | Physical chips | HBM/chip | Table + row state/chip | HBM left/chip | Capacity decision |
-|---|---:|---:|---:|---:|---|
-| v5e-8 / v5litepod-8 | 8 | ≤16 GiB* | 15.246 GiB | ≤0.754 GiB | Reject |
-| v4-8 | 4 | 32 GiB | 30.493 GiB | 1.507 GiB | Reject |
-| v5p-8 | 4 | 95 GiB | 30.493 GiB | 64.507 GiB | Single-host candidate |
-| v5p-16 | 8 | 95 GiB | 15.246 GiB | 79.754 GiB | Multi-host candidate |
-| v4-32 | 16 | 32 GiB | 7.623 GiB | 24.377 GiB | Multi-host candidate |
-
-*Google documents v5e HBM as 16 GB. The audit optimistically treats this as
-16 GiB; even that upper bound fails. v4/v5p allocation names count TensorCores:
-**v5p-8 has four chips, not eight**. Runtime device counts must also be checked
-on the actual allocation instead of inferred from the allocation's suffix.
-
-The capacity gate reserves a provisional **16 GiB per chip** beyond the table
-and row state. This is a planning allowance, not measured peak memory. It must
-cover dense weights/optimizer state, activations, row caches, sparse exchanges
-and XLA temporaries. Compiler partitioning, accidental replication, temporary
-table copies, validation and export can still make a candidate fail.
-
-Read-only commands from the repository root (standard library only):
+Use Python 3.11 or 3.12 and `python3-venv` on the existing v5e-8 VM. No H100 Docker image, CUDA wheel or FlashAttention install is needed.
 
 ```bash
-python3 baseline/experiments/nanogpt_leaderboard_2026_10_06_tpu/capacity.py plan
-python3 baseline/experiments/nanogpt_leaderboard_2026_10_06_tpu/capacity.py verify-reference
-python3 baseline/experiments/nanogpt_leaderboard_2026_10_06_tpu/capacity.py check-capacity --accelerator-type v5p-8
-# Returns exit code 2 for the existing small allocation:
-python3 baseline/experiments/nanogpt_leaderboard_2026_10_06_tpu/capacity.py check-capacity --accelerator-type v5litepod-8
+cd baseline/experiments/nanogpt_leaderboard_2026_10_06_tpu
+bash setup_tpu.sh
+source .venv/bin/activate
+export PJRT_DEVICE=TPU
+python experiment.py verify
+python experiment.py check
+python experiment.py prepare --data-root /data/nanogpt-leaderboard
+python experiment.py preflight --data-root /data/nanogpt-leaderboard
 ```
 
-Each command verifies the frozen source hashes and schedule first. These commands
-do not contact Google Cloud, allocate hardware, inspect live HBM or allocate tensors.
+Preflight allocates the full host table, dense model, optimizer and tail-average buffers. Its 30 training steps span all five stages, sampled-softmax variants, optimizer cadence changes and embedding untie. It also evaluates one full-size validation batch. It writes `PREFLIGHT_COMPLETE.json` only after all ranks finish. Compilation can take substantial time. This is not a convergence test.
 
-## Port requirements still to implement
-
-1. Inspect the selected single-host `v5litepod-8` allocation, available host
-   RAM and HBM. Implement and measure the host-memory table backend before
-   assuming this design fits. Use a matching, explicitly tested
-   torch/torch_xla pair and record libtpu and runtime versions. Do not install
-   the CUDA reference's cu128/FlashAttention dependencies on the TPU.
-2. Use XLA SPMD with `torch_xla.runtime.use_spmd()` and explicit sharding
-   of the dense computation and bounded row caches. The full table stays in
-   host RAM, divided into eight logical row-owner shards. SPMD exposes one logical device; do not combine it with the
-   pasted `torch_xla.launch(_mp_fn)` MPMD sketch, manual gradient all-reduces,
-   or NCCL. Physical chip count and the reference's eight logical data streams
-   are different concepts. Preserve the eight streams' document segmentation
-   and n-gram history when mapping them onto the eight v5e chips.
-3. Port the model and optimizers into this sibling folder. Remove CUDA graphs,
-   Triton, patched FlashAttention-3 and FP8 caches from the new implementation.
-   Preserve mixed-width attention, paired heads, partial key offsets, QK norm,
-   YaRN/windows, XSA, smear, value embeddings, MUDD and residual topology.
-   Attention must be document-aware and memory-bounded: constructing a dense
-   attention mask over the entire packed token stream is not a viable substitute.
-4. Preserve signed bigram/trigram hashing, sparse row pulls, touched-row gradient
-   accumulation and lazy row-Adam decay/cadence. Never make the full table an
-   ordinary autograd embedding parameter, replicate it per process, or make
-   a second full host copy during transfer/export. Verify
-   host/TPU cache routing, actual per-device storage and bounded host buffers
-   before training. Offloading necessarily introduces host transfers; the CUDA
-   design's no-host-synchronization assumption cannot be reused unchanged.
-5. Preserve ANVIL's rails/equalizer and auxiliary Adam schedules, embedding
-   untying, sampled softmax, MTP/prefix losses, canonical validation mask and
-   final tail averaging. A BF16 port changes the FP8 numerical path; label
-   that change and check forward, backward and optimizer math. The upstream
-   `eval()` path is not a substitute for its training loss.
-6. Preserve the complete schedule in `port_contract.json`: 1,194 updates,
-   boundaries `[0, 320, 681, 1107, 1174, 1194]`, batch tokens
-   `[131072, 262144, 393216, 327680, 131072]`, 328,663,040 training tokens.
-   Use static-shape stage variants and bounded row routing. Five stages do
-   not by themselves guarantee only five compiled graphs: optimizer cadence,
-   sampled loss and validation introduce additional variants. Measure recompiles.
-7. Reuse the unchanged reference data downloader, then hash all nine training
-   shards and the validation shard. The upstream HF revision is not pinned;
-   a filename alone does not establish the same data. Record an immutable
-   shared data manifest before comparing reference and port. Compare final
-   loss on the full 10,485,760 validation tokens, with identical masking.
-8. Export dense tail-averaged state and every n-gram shard with global row
-   offsets, outside training timing. Adapt the reference `weight_export.py`
-   receipt/hash/coverage protocol to dense XLA weights and CPU table shards. Write
-   `WEIGHTS_COMPLETE.json` only after all shards are verified. Provide at
-   least 160 GiB of free disk across the export destination; check per-host
-   placement on multi-host allocations. This is a WeightWatcher analysis
-   export, not an optimizer resume checkpoint.
-
-To download the data using the reference's existing entry point:
+Use the receipt path printed by preflight:
 
 ```bash
-python3 baseline/experiments/nanogpt_leaderboard_2026_10_06/experiment.py prepare --data-root /data/nanogpt-leaderboard
+python experiment.py run --data-root /data/nanogpt-leaderboard \
+  --preflight-receipt results/<preflight-run>/PREFLIGHT_COMPLETE.json
 ```
 
-The CUDA reference's `check` and `run` must continue to reject a TPU.
+Omitting the receipt runs a fresh preflight automatically. Source fingerprints, data hashes and package versions must match the receipt. `--results-root /path/with/space` selects another output disk. Each invocation creates a unique results directory. There is no resume support: failed training must restart.
 
-## Acceptance and results
+## Results and WeightWatcher
 
-Future runs belong under this folder's ignored `results/` directory (or an
-explicit persistent results destination). Each run must retain the port commit,
-source pin, numerical differences, data hashes, actual hardware/runtime versions,
-stage token counts, validation result, memory/compile measurements and export
-receipts. Do not commit a successful-looking result or completion marker without
-the corresponding run.
+`run_manifest.json` records source fingerprints, all ten data-shard SHA256s, seed, package versions and completion status. Per-rank hardware reports record device attributes. `metrics.jsonl` records loss, stages, token counts and wall times. `FINAL_RESULT.json` records final NLL/perplexity and whether the full evaluation reached 3.28. Generated results are ignored by Git.
 
-Acceptance requires a fresh full TPU run with finite FineWeb validation
-cross-entropy **≤3.28 over exactly 10,485,760 tokens**, plus verified complete
-weight export. CPU checks and capacity estimates cannot establish this.
-The H100 record's 39.9-second timing is not a TPU target or estimate. Compilation
-time and training wall time are currently unknown; even a claim that compilation
-must exceed seven minutes would be speculative.
+After tail averaging and final validation, the unchanged reference exporter writes `weights/rank-00/model.pt` and every rank's `ngram-*.pt` chunks, including global row offsets and hashes. `weights/WEIGHTS_COMPLETE.json` appears only after complete row coverage and checksums pass. These are CPU-readable analysis weights for WeightWatcher, not resume checkpoints. Process n-gram chunks individually rather than loading the whole table.
 
-## Sources and checks
+## Verification and limitations
 
-- [Google TPU v5p specifications and topology](https://docs.cloud.google.com/tpu/docs/v5p)
-- [Google TPU v5e specifications](https://docs.cloud.google.com/tpu/docs/v5e)
-- [Google TPU v4 specifications and topology](https://docs.cloud.google.com/tpu/docs/v4)
-- [PyTorch/XLA SPMD guide](https://docs.pytorch.org/xla/master/perf/spmd_basic.html)
-- [Pinned upstream table state](../nanogpt_leaderboard_2026_10_06/vendor/track_1_short/ngram_table.py)
-- [Pinned upstream model](../nanogpt_leaderboard_2026_10_06/vendor/track_1_short/model/gpt.py)
+The full dense topology passed a 16-token forward/backward smoke test on CPU and through XLA's CPU backend. Component tests cover attention masks/gradients, rotary indexing, sparse Adam, schedule and model shapes. A two-process Gloo test is included; local socket restrictions may skip it, but CI treats that failure as an error. Neither CPU backend verifies the full TPU workload.
 
 ```bash
-python3 -m pytest -q baseline/experiments/nanogpt_leaderboard_2026_10_06_tpu/tests/test_capacity.py
+python -m pip install pytest
+python -m pytest -q tests
+python experiment.py cpu-smoke
 ```
 
-The tests cover reference tampering, the fixed schedule/token budget, hardware
-chip counts, small-allocation rejection and the distinction between capacity
-eligibility and training readiness. They do not test a TPU trainer.
+See [PORTING.md](PORTING.md) for numerical differences. BF16 replaces FP8; ordinary XLA operations replace CUDA kernels. Long packed sequences create large compiled graphs. Compilation time, HBM peak, host-transfer throughput and convergence must be measured on the TPU. **No defensible time-to-3.28 estimate is available yet. The 39.9-second H100 record is not a TPU estimate.**

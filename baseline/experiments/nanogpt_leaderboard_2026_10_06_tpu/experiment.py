@@ -1,0 +1,159 @@
+"""TPU correctness port launcher. No CUDA reference modifications or hardware provisioning."""
+import argparse
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import secrets
+import shutil
+import subprocess
+import sys
+
+from capacity import HERE, GIB, load_contract, sha256, verify_reference
+
+
+def source_fingerprint():
+    paths=[HERE/'experiment.py',HERE/'capacity.py',HERE/'port_contract.json']
+    paths+=sorted((HERE/'tpu_port').glob('*.py'))
+    paths+=[HERE/'requirements-tpu.txt']
+    return {p.relative_to(HERE).as_posix():sha256(p) for p in paths}
+
+
+def available_host_memory():
+    # MemAvailable avoids counting the page cache as permanently occupied.
+    fields={line.split(':')[0]:line.split(':')[1].strip() for line in Path('/proc/meminfo').read_text().splitlines()}
+    available=int(fields['MemAvailable'].split()[0])*1024
+    # Respect a container's memory limit, when present.
+    for base in [Path('/sys/fs/cgroup')]:
+        maximum=base/'memory.max'; current=base/'memory.current'
+        if maximum.exists() and current.exists() and maximum.read_text().strip()!='max':
+            available=min(available,max(0,int(maximum.read_text())-int(current.read_text())))
+    return available
+
+
+def data_manifest(root):
+    folder=Path(root)/'data/fineweb10B'
+    expected=['fineweb_val_000000.bin']+[f'fineweb_train_{i:06d}.bin' for i in range(1,10)]
+    actual={p.name for p in folder.glob('fineweb_*.bin')}
+    if actual!=set(expected):
+        raise RuntimeError('Expected exactly the pinned downloader\'s validation shard and nine training shards; use prepare in a clean data root')
+    result={}
+    import struct
+    for name in expected:
+        path=folder/name
+        with path.open('rb') as handle: header=handle.read(1024)
+        if len(header)!=1024: raise RuntimeError('Truncated shard header: '+name)
+        magic,version,tokens=struct.unpack_from('<iii',header)
+        if (magic,version)!=(20240520,1) or tokens<=0 or path.stat().st_size!=1024+2*tokens:
+            raise RuntimeError('Invalid FineWeb shard: '+name)
+        if name.startswith('fineweb_val') and tokens<10485761:
+            raise RuntimeError('Validation shard too short')
+        result[name]={'bytes':path.stat().st_size,'tokens':tokens,'sha256':sha256(path)}
+    return result
+
+
+def reference_module():
+    path=HERE.parent/load_contract()['reference_folder']/'experiment.py'
+    spec=importlib.util.spec_from_file_location('pinned_cuda_reference',path)
+    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    return module
+
+
+def runtime_environment():
+    for variable in ('XLA_USE_SPMD','XLA_AUTO_SPMD','XLA_USE_BF16','XLA_DOWNCAST_BF16','NUM_SCHEDULED_ITERATIONS','TRAIN_SEED'):
+        if variable in os.environ:
+            raise RuntimeError('Unset '+variable+'; this port fixes execution, precision and schedule explicitly')
+    if os.environ.get('PJRT_DEVICE','TPU')!='TPU':
+        raise RuntimeError('Production/preflight requires PJRT_DEVICE=TPU')
+    os.environ['PJRT_DEVICE']='TPU'
+    os.environ.setdefault('OMP_NUM_THREADS','4')
+    import torch, torch_xla
+    versions=[torch.__version__.split('+')[0],torch_xla.__version__.split('+')[0]]
+    if versions!=['2.9.0','2.9.0']:
+        raise RuntimeError('Use matching torch==2.9.0 and torch_xla==2.9.0: '+repr(versions))
+    return {'torch':torch.__version__,'torch_xla':torch_xla.__version__,
+            'python':sys.version,'host_available_bytes':available_host_memory()}
+
+
+def launch(action,data_root,results_root,receipt=None):
+    verify_reference()
+    environment=runtime_environment()
+    if action!='check' and environment['host_available_bytes']<192*GIB:
+        raise RuntimeError('Need at least 192 GiB available host RAM for full table, data and CPU buffers; no allocation made')
+    data=None if action=='check' else data_manifest(data_root)
+    fingerprint=source_fingerprint()
+    if action=='run':
+        if receipt is None:
+            # Preflight is a real fresh process run, not a fabricated ready flag.
+            checked=launch('preflight',data_root,results_root)
+            receipt=checked/'PREFLIGHT_COMPLETE.json'
+        receipt=Path(receipt).resolve()
+        passed=json.loads(receipt.read_text())
+        previous=json.loads((receipt.parent/'run_manifest.json').read_text())
+        if (passed['kind']!='preflight' or passed['training_steps']!=30 or
+                previous['source_files']!=fingerprint or previous['data']!=data or
+                previous['environment']['torch']!=environment['torch'] or
+                previous['environment']['torch_xla']!=environment['torch_xla']):
+            raise RuntimeError('Preflight receipt does not qualify this source/data/environment')
+    results_root=Path(results_root).resolve(); results_root.mkdir(parents=True,exist_ok=True)
+    if action=='run' and shutil.disk_usage(results_root).free<160*GIB:
+        raise RuntimeError('Need at least 160 GiB free disk for complete WeightWatcher export')
+    root=results_root/(datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+action+'-'+secrets.token_hex(4))
+    root.mkdir()
+    options={'action':action,'data_root':str(Path(data_root).resolve()),'output':str(root),
+             'reference':str(HERE.parent/load_contract()['reference_folder']),
+             'seed':secrets.randbits(31)}
+    manifest={'mode':'tpu-port','target':'v5litepod-8','environment':environment,
+              'source_files':fingerprint,'data':data,'options':options,
+              'preflight_receipt':str(receipt) if receipt else None,
+              'status':'started','convergence_verified':False}
+    (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    try:
+        # Execute in a fresh interpreter: libtpu must not be initialized in the spawn parent.
+        cmd=[sys.executable,str(HERE/'experiment.py'),'_worker-launch','--options',json.dumps(options)]
+        with (root/'console.log').open('w') as log:
+            process=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
+            try:
+                for line in process.stdout:
+                    print(line,end='',flush=True); log.write(line); log.flush()
+                code=process.wait()
+            except BaseException:
+                process.terminate(); process.wait(); raise
+        if code: raise RuntimeError('TPU subprocess failed; inspect '+str(root/'console.log'))
+        manifest['status']='complete'
+        if action=='run':
+            result=json.loads((root/'FINAL_RESULT.json').read_text())
+            manifest['convergence_verified']=result['target_reached'] and result['weights_complete']
+        (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+        print('Results:',root,flush=True)
+        return root
+    except BaseException as error:
+        manifest['status']='failed'; manifest['error']=str(error)
+        (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+        raise
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action',choices=['plan','verify','prepare','check','preflight','run','cpu-smoke','_worker-launch'])
+    parser.add_argument('--data-root',type=Path,default=HERE/'cache')
+    parser.add_argument('--results-root',type=Path,default=HERE/'results')
+    parser.add_argument('--preflight-receipt',type=Path)
+    parser.add_argument('--options',help=argparse.SUPPRESS)
+    args=parser.parse_args()
+    if args.action=='_worker-launch':
+        import torch_xla
+        from tpu_port.runtime import worker
+        torch_xla.launch(worker,args=(json.loads(args.options),))
+    elif args.action=='verify': print(json.dumps(verify_reference(),indent=2))
+    elif args.action=='plan': print(json.dumps(load_contract(),indent=2))
+    elif args.action=='prepare': reference_module().prepare(args.data_root.resolve())
+    elif args.action=='cpu-smoke':
+        from tpu_port.smoke import smoke
+        print(json.dumps(smoke(),indent=2))
+    else: launch(args.action,args.data_root,args.results_root,args.preflight_receipt)
+
+
+if __name__=='__main__': main()
