@@ -3,11 +3,13 @@ import argparse
 import datetime
 import hashlib
 import importlib.util
+import importlib.metadata
 import json
 import os
 from pathlib import Path
 import secrets
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -70,11 +72,12 @@ def runtime_environment():
         raise RuntimeError('Production/preflight requires PJRT_DEVICE=TPU')
     os.environ['PJRT_DEVICE']='TPU'
     os.environ.setdefault('OMP_NUM_THREADS','4')
-    import torch, torch_xla
-    versions=[torch.__version__.split('+')[0],torch_xla.__version__.split('+')[0]]
+    torch_version=importlib.metadata.version('torch')
+    xla_version=importlib.metadata.version('torch_xla')
+    versions=[torch_version.split('+')[0],xla_version.split('+')[0]]
     if versions!=['2.9.0','2.9.0']:
         raise RuntimeError('Use matching torch==2.9.0 and torch_xla==2.9.0: '+repr(versions))
-    return {'torch':torch.__version__,'torch_xla':torch_xla.__version__,
+    return {'torch':torch_version,'torch_xla':xla_version,
             'python':sys.version,'host_available_bytes':available_host_memory()}
 
 
@@ -89,6 +92,30 @@ def tracking_environment():
     return env
 
 
+def probe_subprocess(cmd,root):
+    # Poll failure reports even when compilation emits no stdout. On an OOM,
+    # stop the entire launch process group, including ranks blocked in a collective.
+    with (root/'console.log').open('w') as log:
+        process=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+        try:
+            while process.poll() is None:
+                for path in root.glob('probe-rank-*.json'):
+                    report=json.loads(path.read_text())
+                    if report.get('status')=='failed':
+                        raise RuntimeError(f"Probe rank {report['rank']} failed at {report['failed_stage']}: {report['exception']}")
+                try: process.wait(timeout=1)
+                except subprocess.TimeoutExpired: pass
+            return process.returncode
+        finally:
+            # Kill remaining descendants too if a rank or the launch parent failed.
+            if process.poll() is None or process.returncode:
+                try: os.killpg(process.pid,signal.SIGTERM)
+                except ProcessLookupError: pass
+                try: process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid,signal.SIGKILL); process.wait()
+
+
 def launch(action,data_root,results_root,receipt=None):
     verify_reference()
     results_root=Path(results_root).resolve(); results_root.mkdir(parents=True,exist_ok=True)
@@ -96,9 +123,9 @@ def launch(action,data_root,results_root,receipt=None):
     if shutil.disk_usage(results_root).free<needed:
         raise RuntimeError(f'Need at least {needed//GIB} GiB free results disk; no TPU allocation made')
     environment=runtime_environment()
-    if action!='check' and environment['host_available_bytes']<192*GIB:
+    if action not in ('check','probe') and environment['host_available_bytes']<192*GIB:
         raise RuntimeError('Need at least 192 GiB available host RAM for full table, data and CPU buffers; no allocation made')
-    data=None if action=='check' else data_manifest(data_root)
+    data=None if action in ('check','probe') else data_manifest(data_root)
     fingerprint=source_fingerprint()
     if action=='run':
         if receipt is None:
@@ -127,7 +154,7 @@ def launch(action,data_root,results_root,receipt=None):
     (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     tracking_process=None; tracking_log=None
     try:
-        if action!='check':
+        if action not in ('check','probe'):
             # CPU-only subprocess: analysis cannot mutate training tensors or consume training RNG.
             subprocess.run(tracking_command('check',root),cwd=HERE,env=tracking_environment(),check=True)
             tracking_log=(root/'weightwatcher.log').open('w')
@@ -135,17 +162,24 @@ def launch(action,data_root,results_root,receipt=None):
                 env=tracking_environment(),stdout=tracking_log,stderr=subprocess.STDOUT)
         # Execute in a fresh interpreter: libtpu must not be initialized in the spawn parent.
         cmd=[sys.executable,str(HERE/'experiment.py'),'_worker-launch','--options',json.dumps(options)]
-        with (root/'console.log').open('w') as log:
-            process=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
-            try:
-                for line in process.stdout:
-                    print(line,end='',flush=True); log.write(line); log.flush()
-                    if tracking_process is not None and tracking_process.poll() is not None:
-                        raise RuntimeError('WeightWatcher worker exited early; inspect '+str(root/'weightwatcher.log'))
-                code=process.wait()
-            except BaseException:
-                process.terminate(); process.wait(); raise
+        if action=='probe':
+            code=probe_subprocess(cmd,root)
+        else:
+            with (root/'console.log').open('w') as log:
+                process=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
+                try:
+                    for line in process.stdout:
+                        print(line,end='',flush=True); log.write(line); log.flush()
+                        if tracking_process is not None and tracking_process.poll() is not None:
+                            raise RuntimeError('WeightWatcher worker exited early; inspect '+str(root/'weightwatcher.log'))
+                    code=process.wait()
+                except BaseException:
+                    process.terminate(); process.wait(); raise
         if code: raise RuntimeError('TPU subprocess failed; inspect '+str(root/'console.log'))
+        if action=='probe':
+            from tpu_port.probe_report import summarize
+            if summarize(root,final=True)['status']!='complete':
+                raise RuntimeError('Probe did not complete all eight ranks, including full-size evaluation')
         if tracking_process is not None:
             (root/'tracking/TRAINING_DONE').touch()
             while tracking_process.poll() is None:
@@ -172,6 +206,9 @@ def launch(action,data_root,results_root,receipt=None):
         (root/'run_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         raise
     finally:
+        if action=='probe':
+            from tpu_port.probe_report import summarize
+            summarize(root,final=True,exception=manifest.get('error'))
         if tracking_process is not None and tracking_process.poll() is None:
             tracking_process.terminate(); tracking_process.wait()
         if tracking_log is not None: tracking_log.close()
@@ -179,7 +216,7 @@ def launch(action,data_root,results_root,receipt=None):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action',choices=['plan','verify','prepare','check','preflight','run','cpu-smoke','_worker-launch'])
+    parser.add_argument('action',choices=['plan','verify','prepare','check','probe','preflight','run','cpu-smoke','_worker-launch'])
     parser.add_argument('--data-root',type=Path,default=HERE/'cache')
     parser.add_argument('--results-root',type=Path,default=HERE/'results')
     parser.add_argument('--preflight-receipt',type=Path)

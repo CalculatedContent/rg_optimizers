@@ -113,11 +113,28 @@ def evaluate(model,table,data,device,cfg,*,step,tokens_seen,batch_tokens,batches
 
 
 def worker(index,options):
+    if options['action']!='probe': return _worker(index,options)
+    from .probe_report import ProbeReport
+    report=ProbeReport(options['output'],index)
+    error=None
+    try:
+        return _worker(index,options,report)
+    except BaseException as caught:
+        error=caught
+        raise
+    finally:
+        report.finish(error)
+
+
+def _worker(index,options,probe_report=None):
     import torch_xla
     import torch_xla.core.xla_model as xm
     import torch_xla.runtime as xr
     import torch_xla.debug.metrics as metrics
     rank,world=xr.global_ordinal(),xr.world_size()
+    if probe_report is not None:
+        probe_report.data.update(torch=torch.__version__,torch_xla=torch_xla.__version__,world_size=world)
+        probe_report.flush()
     if xr.device_type()!='TPU' or world!=8 or xr.is_spmd():
         raise RuntimeError('Requires eight TPU processes in PJRT MPMD mode; SPMD/CPU unsupported')
     device=xm.xla_device()
@@ -129,6 +146,9 @@ def worker(index,options):
         rank=rank,world_size=world,timeout=datetime.timedelta(hours=2))
     try:
         attributes=xr.global_runtime_device_attributes()
+        if probe_report is not None:
+            probe_report.data.update(device=str(device),runtime_device_attributes=attributes)
+            probe_report.begin('hardware_and_collective')
         # Runtime reports the actual kind; never infer eight chips from a v4/v5p core suffix.
         kinds={str(a.get('device_kind','')).lower() for a in attributes}
         if not kinds or any(not ('v5' in k and ('lite' in k or 'v5e' in k)) for k in kinds):
@@ -143,6 +163,12 @@ def worker(index,options):
             raise RuntimeError('TPU collective preflight failed')
         write_json(root/f'hardware-rank-{rank:02d}.json',report)
         if options['action']=='check': return
+        if probe_report is not None:
+            event=probe_report.data['stages'][-1]; event['status']='complete'
+            probe_report.memory(xm,device,event)
+            from .probe import run
+            run(probe_report,device,xm)
+            return
 
         # CPU init is explicitly broadcast, including the signed n-gram pool.
         torch.manual_seed(options['seed'])
