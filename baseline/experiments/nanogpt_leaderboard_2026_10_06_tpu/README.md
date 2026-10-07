@@ -18,6 +18,21 @@ The sibling [CUDA reference](../nanogpt_leaderboard_2026_10_06) remains byte-ver
 
 The table is **not shrunk**. Eight CPU row owners hold it in host RAM, exchange requested rows through Gloo, and upload bounded BF16 caches to their TPU chips. Dense gradients use XLA collectives. One PJRT process runs per chip (MPMD); SPMD is rejected. Dense optimizer state is replicated. The launcher requires **192 GiB available host RAM** and **160 GiB free export disk**; these guards do not prove HBM fit. `capacity.py` separately explains why the all-HBM approach fails on this machine.
 
+## Probe before preflight
+
+After installing the pinned environment with `setup_tpu.sh` and activating `.venv`, run:
+
+```bash
+export PJRT_DEVICE=TPU
+python experiment.py probe
+```
+
+The probe needs the real v5litepod-8 but no data shards. It does not allocate the 121 GiB n-gram table, build the canonical mask, or start WeightWatcher. It retains the real model's 262144-token buffers and replicated optimizer/tail state, trains twice at 128 and 49152 tokens per chip, releases optimizer/tail state, and evaluates once at 262144 tokens per chip. It uses synthetic full-softmax batches and a zero canonical mask; the loss is not benchmark NLL.
+
+Each rank writes `results/<probe-run>/probe-rank-XX.json`; rank 0 writes `PROBE_SUMMARY.json`, which the launcher finalizes after all workers exit. Reports contain hardware, package versions, host memory, HBM by stage, finite-loss checks, and step wall times plus XLA compile counts/seconds. The second step is labeled **steady**, but its first Adam update can compile an additional graph; it is not guaranteed compilation-free. Failures record the stage and exception, exit nonzero, and stop the ladder. The launcher stops the other ranks after a reported failure. A hard process kill cannot execute Python's `finally`; the summary records missing/incomplete ranks as failure.
+
+**The probe must be green on all eight ranks, including the 262144-token evaluation forward, before attempting preflight.** A successful probe is not qualification, not a 3.28 run, and not a reason to set `ready_to_train`. Preflight remains mandatory before `run`; a probe report never substitutes for its receipt. Qualification flags remain false. The probe has no 192 GiB host-RAM or 160 GiB export-disk gate, but still requires enough memory for the dense ladder and writable space for its reports. `--results-root` can select another directory.
+
 ## Run on the TPU VM
 
 Use Python 3.11 or 3.12 and `python3-venv` on the existing v5e-8 VM. No H100 Docker image, CUDA wheel or FlashAttention install is needed.
@@ -29,6 +44,7 @@ source .venv/bin/activate
 export PJRT_DEVICE=TPU
 python experiment.py verify
 python experiment.py check
+python experiment.py probe  # require a green PROBE_SUMMARY.json before proceeding
 python experiment.py prepare --data-root /data/nanogpt-leaderboard
 python experiment.py preflight --data-root /data/nanogpt-leaderboard
 ```
