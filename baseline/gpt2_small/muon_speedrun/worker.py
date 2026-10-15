@@ -102,7 +102,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('root', type=Path)
     p.add_argument('deadline', type=float)
-    p.add_argument('--optimizer', choices=('muon','muon_clip','adam','adamw'), default='muon_clip')
+    p.add_argument('--optimizer', choices=('muon','muon_clip','adam','adamw','sgd_momentum'), default='muon_clip')
     p.add_argument('--seed', type=int, default=42)
     p.add_argument('--full-budget', action='store_true', default=True)
     p.add_argument('--stop-at-target', action='store_false', dest='full_budget')

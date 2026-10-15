@@ -12,6 +12,9 @@ BATCH_TOKENS = 524288
 VAL_TOKENS = 10485760
 WARMUP = 700
 PEAK_ADAM_LR = 0.0006
+# Untuned starting point: NOT an empirically established best SGD recipe.
+SGD_PEAK_LR = 0.01
+SGD_MOMENTUM = 0.9
 GRAD_CLIP = 1.0
 MEASUREMENT_INTERVAL = 250
 
@@ -30,7 +33,9 @@ def protocol():
                 source_commit=SOURCE_COMMIT, steps=TOTAL_STEPS,
                 batch_tokens=BATCH_TOKENS, tokens=TOTAL_STEPS * BATCH_TOKENS,
                 warmup_updates=WARMUP, lr_schedule='cosine_to_zero',
-                adam_peak_lr=PEAK_ADAM_LR, adam_betas=[0.9, 0.95],
+                adam_peak_lr=PEAK_ADAM_LR,
+                sgd_peak_lr=SGD_PEAK_LR, sgd_momentum=SGD_MOMENTUM,
+                sgd_weight_decay=0.0, sgd_nesterov=False, adam_betas=[0.9, 0.95],
                 adam_eps=1e-8, matrix_weight_decay=0.1,
                 gradient_clip_norm=GRAD_CLIP,
                 measurement_interval=MEASUREMENT_INTERVAL,
