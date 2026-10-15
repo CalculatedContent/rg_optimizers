@@ -214,12 +214,13 @@ def train(a):
                 'head_tied_to_embedding':True, 'dropout':0.0,
                 'adam_control_matrix_lr':0.0006 if not muon else None,
                 'warmup_updates':WARMUP, 'lr_schedule':'cosine_to_zero',
-                'weight_decay':0.0 if a.optimizer == 'adam' else 0.1,
+                'weight_decay':0.0 if a.optimizer in ('adam', 'sgd_momentum') else 0.1,
                 'weight_decay_scope':('auxiliary_matrices_only' if a.optimizer == 'muon' else 'all_matrices')
-                                     if a.optimizer != 'adam' else 'none',
+                                     if a.optimizer not in ('adam', 'sgd_momentum') else 'none',
                 'muon_weight_decay':getattr(muon, 'weight_decay', 0.0) if muon else None,
                 'muonclip':dict(threshold=muon.threshold, balance=muon.balance, rms_scale=muon.rms_scale, momentum=muon.beta) if a.optimizer == 'muon_clip' else None,
-                'adam_implementation':optimizer_metadata(adam),
+                'optimizer_implementation':optimizer_metadata(adam),
+                'adam_implementation':optimizer_metadata(adam) if a.optimizer != 'sgd_momentum' else None,
                 'historical_reference':'muon-speedrun-muon-20261005-030026',
                 'gradient_clipping':True, 'gradient_clip_norm':GRAD_CLIP, 'attention':a.attention,
                 'data_repo':source.manifest['repo'], 'data_revision':source.manifest['revision'],
@@ -321,7 +322,7 @@ def main():
     p.add_argument('--device', choices=('tpu', 'cpu'), default='tpu')
     p.add_argument('--attention', choices=('flash', 'math'), default='flash')
     p.add_argument('--microbatch', type=int, choices=(32,64,128), default=64)
-    p.add_argument('--optimizer', choices=('muon', 'muon_clip', 'adam', 'adamw'), default='muon_clip')
+    p.add_argument('--optimizer', choices=('muon', 'muon_clip', 'adam', 'adamw', 'sgd_momentum'), default='muon_clip')
     p.add_argument('--seed', type=int, default=42)
     budget = p.add_mutually_exclusive_group()
     budget.add_argument('--full-budget', action='store_true', default=True, help='Default: complete all 19560 updates')
