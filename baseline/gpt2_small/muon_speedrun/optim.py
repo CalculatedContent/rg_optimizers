@@ -3,7 +3,7 @@ from collections import defaultdict
 import math
 import torch
 from stock_config import ARCHITECTURE
-from benchmark_config import BENCHMARK, lr_factor, GRAD_CLIP
+from benchmark_config import BENCHMARK, lr_factor, GRAD_CLIP, SGD_PEAK_LR, SGD_MOMENTUM
 
 
 def schedule(step):
@@ -80,7 +80,7 @@ class Muon:
 
 
 def make_optimizers(model, rt, kind='muon'):
-    if kind not in ('muon', 'muon_clip', 'adam', 'adamw'):
+    if kind not in ('muon', 'muon_clip', 'adam', 'adamw', 'sgd_momentum'):
         raise ValueError('Unknown optimizer: '+kind)
     if getattr(model, 'architecture_id', None) == ARCHITECTURE:
         return make_stock_optimizers(model, rt, kind)
@@ -119,6 +119,17 @@ def make_stock_optimizers(model, rt, kind):
     """
     matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
     muon = Muon(matrices, rt) if kind == 'muon' else None
+    if kind == 'sgd_momentum':
+        # Plain classical momentum: no Adam, Nesterov, adaptive rescaling or decay.
+        # Every unique trainable parameter, including tied embeddings, has one owner.
+        groups = [dict(params=[p for p in model.parameters() if p.ndim >= 2], role='matrices',
+                       lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=0.0),
+                  dict(params=[p for p in model.parameters() if p.ndim < 2], role='bias_and_layernorm',
+                       lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=0.0)]
+        sgd = torch.optim.SGD(groups, momentum=SGD_MOMENTUM, nesterov=False,
+                              dampening=0.0, foreach=False)
+        sgd.benchmark = BENCHMARK
+        return None, sgd
     if kind == 'muon_clip':
         from muonclip import MuonClip
         muon = MuonClip(matrices, rt, model)
@@ -138,6 +149,11 @@ def make_stock_optimizers(model, rt, kind):
 
 
 def optimizer_metadata(adam):
+    if isinstance(adam, torch.optim.SGD):
+        return {'class':'torch.optim.SGD', 'groups':[
+            {'role':g['role'], 'peak_lr':g['peak_lr'], 'weight_decay':g['weight_decay'],
+             'momentum':g['momentum'], 'nesterov':g['nesterov'],
+             'parameters':sum(p.numel() for p in g['params'])} for g in adam.param_groups]}
     return {'class':'torch.optim.'+type(adam).__name__,
             'groups':[{'role':g['role'], 'peak_lr':g['peak_lr'],
                        'weight_decay':g['weight_decay'], 'betas':list(g['betas']),
