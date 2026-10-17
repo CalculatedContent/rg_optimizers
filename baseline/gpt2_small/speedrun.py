@@ -35,7 +35,8 @@ def lease(a, required_seconds=SUITE_SECONDS+1800):
     node=json.loads(run(['gcloud','compute','tpus','tpu-vm','describe',a.node,*flags],capture_output=True).stdout)
     queue_name=node.get('queuedResource','').rsplit('/',1)[-1]
     if not queue_name: raise RuntimeError('No queued-resource lease found')
-    queue=json.loads(run(['gcloud','compute','tpus','queued-resources','describe',queue_name,*flags],capture_output=True).stdout)
+    # Flex-start terminationTimestamp is exposed on the alpha queued-resource surface.
+    queue=json.loads(run(['gcloud','alpha','compute','tpus','queued-resources','describe',queue_name,*flags],capture_output=True).stdout)
     if node.get('state')!='READY' or queue.get('state',{}).get('state')!='ACTIVE' or node.get('acceleratorType')!='v5litepod-8':
         raise RuntimeError('Requires an active single-host v5e-8 allocation')
     expiries=[node.get('schedulingConfig',{}).get('terminationTimestamp'),queue.get('runDuration',{}).get('terminationTime')]
