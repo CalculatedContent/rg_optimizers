@@ -4,12 +4,12 @@ This experiment reuses the **unchanged, SHA256-verified upstream GPT-2 Small mod
 
 Architecture: 12 layers, 12 heads, width 768, MLP 3072, context 1024, vocabulary 50257, 124439808 unique parameters; packed QKV, learned positions, affine LayerNorm, GPT-2 GELU, tied token/output embeddings.
 
-## Candidate SGD recipe (not yet empirically optimized)
+## Published-center short speedrun profile
 
-- Optimizer: `torch.optim.SGD`, classical momentum **0.90**, Nesterov **off**, dampening 0, weight decay **0** on all parameters.
-- Peak learning rate **0.01** is an initial screening candidate, **not a proven best value**. Do not label it optimal until a validation-only sweep on the actual GPT-2 model/data/hardware is complete.
-- 700 warmup updates, cosine decay to zero; global gradient norm clipping at 1.0.
-- 19560 optimizer updates, 524288 tokens/update, microbatch 64 sequences with 8 accumulation steps.
+- Optimizer: `torch.optim.SGD`, classical momentum **0.90**, Nesterov **off**, dampening 0, matrix/embedding weight decay **3e-5**.
+- Peak learning rate **0.3**, matching the released GPT-2 Small SGDM experiment center.
+- 400 linear warmup updates, constant peak LR through update 4400, then 1800-update linear warmdown to zero; global gradient norm clipping at 1.0.
+- 6200 optimizer updates, 524288 tokens/update, microbatch 64 sequences with 8 accumulation steps.
 - Same FineWeb10B revision, fixed validation tokens, seed, spectral checkpoints, and stopping budget as the existing controls.
 - Zero weight decay intentionally isolates SGD + momentum and avoids additional weight-scale effects; it differs from the AdamW control's matrix weight decay.
 
