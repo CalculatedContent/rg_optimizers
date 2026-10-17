@@ -3,7 +3,8 @@ from collections import defaultdict
 import math
 import torch
 from stock_config import ARCHITECTURE
-from benchmark_config import BENCHMARK, lr_factor, GRAD_CLIP, SGD_PEAK_LR, SGD_MOMENTUM
+from benchmark_config import (BENCHMARK, PROFILE, SGD_SPEEDRUN_PROFILE, lr_factor, GRAD_CLIP,
+                              SGD_PEAK_LR, SGD_MOMENTUM, SGD_WEIGHT_DECAY, SGD_NESTEROV)
 
 
 def schedule(step):
@@ -120,13 +121,13 @@ def make_stock_optimizers(model, rt, kind):
     matrices = [(n, p) for n, p in model.transformer.h.named_parameters() if p.ndim == 2]
     muon = Muon(matrices, rt) if kind == 'muon' else None
     if kind == 'sgd_momentum':
-        # Plain classical momentum: no Adam, Nesterov, adaptive rescaling or decay.
-        # Every unique trainable parameter, including tied embeddings, has one owner.
+        if PROFILE != SGD_SPEEDRUN_PROFILE:
+            raise RuntimeError('sgd_momentum requires the launcher-selected sgd_speedrun profile')
         groups = [dict(params=[p for p in model.parameters() if p.ndim >= 2], role='matrices',
-                       lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=0.0),
+                       lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=SGD_WEIGHT_DECAY),
                   dict(params=[p for p in model.parameters() if p.ndim < 2], role='bias_and_layernorm',
                        lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=0.0)]
-        sgd = torch.optim.SGD(groups, momentum=SGD_MOMENTUM, nesterov=False,
+        sgd = torch.optim.SGD(groups, momentum=SGD_MOMENTUM, nesterov=SGD_NESTEROV,
                               dampening=0.0, foreach=False)
         sgd.benchmark = BENCHMARK
         return None, sgd
@@ -152,7 +153,7 @@ def optimizer_metadata(adam):
     if isinstance(adam, torch.optim.SGD):
         return {'class':'torch.optim.SGD', 'groups':[
             {'role':g['role'], 'peak_lr':g['peak_lr'], 'weight_decay':g['weight_decay'],
-             'momentum':g['momentum'], 'nesterov':g['nesterov'],
+             'momentum':g['momentum'], 'nesterov':g['nesterov'], 'dampening':g['dampening'],
              'parameters':sum(p.numel() for p in g['params'])} for g in adam.param_groups]}
     return {'class':'torch.optim.'+type(adam).__name__,
             'groups':[{'role':g['role'], 'peak_lr':g['peak_lr'],
