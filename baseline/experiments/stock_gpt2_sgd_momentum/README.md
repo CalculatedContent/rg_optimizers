@@ -1,29 +1,31 @@
-# Stock GPT-2 Small / FineWeb10B — classical SGD + momentum
+# Stock GPT-2 Small / FineWeb10B — SGD + momentum target run
 
-This experiment reuses the **unchanged, SHA256-verified upstream GPT-2 Small model** and the same pinned FineWeb10B data and training protocol as the AdamW/MuonClip control. No rotary embeddings, RMSNorm, six-head attention, U-Net skips, or untied head.
+This experiment uses the unchanged SHA256-verified upstream GPT-2 Small model: 12 layers, 12 heads, width 768, MLP 3072, context 1024, vocabulary 50257, and 124439808 unique parameters.
 
-Architecture: 12 layers, 12 heads, width 768, MLP 3072, context 1024, vocabulary 50257, 124439808 unique parameters; packed QKV, learned positions, affine LayerNorm, GPT-2 GELU, tied token/output embeddings.
+## Optimizer
 
-## Published-center short speedrun profile
+- Classical `torch.optim.SGD`
+- peak LR **0.3**
+- momentum **0.90**
+- Nesterov off
+- matrix/embedding weight decay **3e-5**
+- bias/LayerNorm weight decay 0
+- global gradient clipping 1.0
 
-- Optimizer: `torch.optim.SGD`, classical momentum **0.90**, Nesterov **off**, dampening 0, matrix/embedding weight decay **3e-5**.
-- Peak learning rate **0.3**, matching the released GPT-2 Small SGDM experiment center.
-- 400 linear warmup updates, constant peak LR through update 4400, then 1800-update linear warmdown to zero; global gradient norm clipping at 1.0.
-- 6200 optimizer updates, 524288 tokens/update, microbatch 64 sequences with 8 accumulation steps.
-- Same FineWeb10B revision, fixed validation tokens, seed, spectral checkpoints, and stopping budget as the existing controls.
-- Zero weight decay intentionally isolates SGD + momentum and avoids additional weight-scale effects; it differs from the AdamW control's matrix weight decay.
+## Full target-reaching schedule
 
-## Run
+The previous 6200-update short profile cooled down before the model was converged. It is retained only as historical output and must not be treated as a converged SGD control.
+
+The replacement run starts from fresh initialization and uses the full original GPT-2/FineWeb horizon: **19560 updates**, **700-update linear warmup**, then **cosine decay to zero**. Validation and WeightWatcher run every **250 updates** and at exit. With `--stop-at-target`, training stops only after a full 10485760-token validation reaches **NLL <= 3.28**; otherwise the 19560-update schedule is the safety cap.
+
+This combines the published SGDM optimizer center (LR 0.3, momentum 0.9, small matrix decay) with the repository's original full GPT-2/FineWeb training horizon. It is not claimed to be a published end-to-end SGDM schedule.
+
+## Launch
 
 ```bash
-python3 -m unittest baseline/gpt2_small/muon_speedrun/test_sgd_momentum.py
-python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start --node YOUR_TPU_NODE --optimizer sgd_momentum --hours 12
+python3 baseline/gpt2_small/muon_speedrun/cloudshell.py start \
+  --node YOUR_TPU_NODE --optimizer sgd_momentum --hours 12 \
+  --stop-at-target --replace-current
 ```
 
-The launcher checks the existing TPU lease and performs the full-model TPU forward/backward/optimizer preflight before training. No TPU allocation or training is initiated by this change.
-
-## Qualification before calling these hyperparameters best
-
-On the fixed architecture/data/batch/seed/horizon, sweep peak LR `[0.001, 0.003, 0.01, 0.03, 0.1]` and momentum `[0.9, 0.95]`; reject nonfinite/divergent runs, rank by held-out **validation NLL only**, then repeat the leading candidates over three seeds and a full 19560-update horizon. Preserve the untouched test set until the recipe is locked. These sweeps are a **proposed protocol**, not completed experiments.
-
-Compare loss, perplexity and WeightWatcher alpha against the **stock-GPT-2** controls only; historical modified-architecture speedruns are not comparable.
+The launcher performs dependency, attention, and full-model optimizer preflights before training. The target is selected solely by validation NLL; alpha is diagnostic and is never used for stopping.
