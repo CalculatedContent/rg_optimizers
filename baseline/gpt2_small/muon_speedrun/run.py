@@ -19,7 +19,8 @@ from runtime import Runtime, attention_check
 from tracking import queue_snapshot
 
 from benchmark_config import (BENCHMARK, TOTAL_STEPS, BATCH_TOKENS, VAL_TOKENS,
-                              MEASUREMENT_INTERVAL, WARMUP, GRAD_CLIP,
+                              MEASUREMENT_INTERVAL, WARMUP, WARMDOWN, LR_SCHEDULE, GRAD_CLIP,
+                              SGD_PEAK_LR, SGD_MOMENTUM, SGD_WEIGHT_DECAY, SGD_NESTEROV,
                               lr_factor, protocol)
 
 TARGET = 3.28
@@ -135,7 +136,7 @@ def preflight_identity(a):
                 config=asdict(architecture.GPTConfig()),
                 source_sha256=architecture.SOURCE_SHA256,
                 optimizer=a.optimizer, microbatch=a.microbatch, device=a.device,
-                attention=a.attention, seed=a.seed, benchmark=BENCHMARK)
+                attention=a.attention, seed=a.seed, benchmark=BENCHMARK, protocol=protocol())
 
 
 def require_preflight(a):
@@ -213,12 +214,14 @@ def train(a):
                 'adam_head_lr':0.0006, 'adam_scalar_lr':0.0006,
                 'head_tied_to_embedding':True, 'dropout':0.0,
                 'adam_control_matrix_lr':0.0006 if not muon else None,
-                'warmup_updates':WARMUP, 'lr_schedule':'cosine_to_zero',
-                'weight_decay':0.0 if a.optimizer in ('adam', 'sgd_momentum') else 0.1,
-                'weight_decay_scope':('auxiliary_matrices_only' if a.optimizer == 'muon' else 'all_matrices')
-                                     if a.optimizer not in ('adam', 'sgd_momentum') else 'none',
+                'warmup_updates':WARMUP, 'warmdown_updates':WARMDOWN, 'lr_schedule':LR_SCHEDULE,
+                'weight_decay':SGD_WEIGHT_DECAY if a.optimizer == 'sgd_momentum' else (0.0 if a.optimizer == 'adam' else 0.1),
+                'weight_decay_scope':'matrices_only' if a.optimizer == 'sgd_momentum' else (('auxiliary_matrices_only' if a.optimizer == 'muon' else 'all_matrices') if a.optimizer != 'adam' else 'none'),
                 'muon_weight_decay':getattr(muon, 'weight_decay', 0.0) if muon else None,
                 'muonclip':dict(threshold=muon.threshold, balance=muon.balance, rms_scale=muon.rms_scale, momentum=muon.beta) if a.optimizer == 'muon_clip' else None,
+                'sgd_peak_lr':SGD_PEAK_LR if a.optimizer == 'sgd_momentum' else None,
+                'sgd_momentum':SGD_MOMENTUM if a.optimizer == 'sgd_momentum' else None,
+                'sgd_nesterov':SGD_NESTEROV if a.optimizer == 'sgd_momentum' else None,
                 'optimizer_implementation':optimizer_metadata(adam),
                 'adam_implementation':optimizer_metadata(adam) if a.optimizer != 'sgd_momentum' else None,
                 'historical_reference':'muon-speedrun-muon-20261005-030026',
@@ -325,7 +328,7 @@ def main():
     p.add_argument('--optimizer', choices=('muon', 'muon_clip', 'adam', 'adamw', 'sgd_momentum'), default='muon_clip')
     p.add_argument('--seed', type=int, default=42)
     budget = p.add_mutually_exclusive_group()
-    budget.add_argument('--full-budget', action='store_true', default=True, help='Default: complete all 19560 updates')
+    budget.add_argument('--full-budget', action='store_true', default=True, help=f'Default: complete all {TOTAL_STEPS} updates')
     budget.add_argument('--stop-at-target', action='store_false', dest='full_budget', help='Explicit non-default early stop at NLL <= 3.28')
     p.add_argument('--legacy-attention-check', action='store_true', help=argparse.SUPPRESS)
     a = p.parse_args()
