@@ -9,14 +9,14 @@ import os
 LLMC_PROFILE = 'llmc_reference'
 SGD_SPEEDRUN_PROFILE = 'sgd_speedrun'
 PROFILE = os.environ.get('RG_GPT2_PROFILE', LLMC_PROFILE)
-BENCHMARK = ('stock-gpt2-124m-fineweb10b-sgdm-published-center-short-v1' if PROFILE == SGD_SPEEDRUN_PROFILE else 'llmc-gpt2-124m-fineweb10b-2024-10-13-upstream-tpu-v2')
+BENCHMARK = ('stock-gpt2-124m-fineweb10b-sgdm-full-target-v1' if PROFILE == SGD_SPEEDRUN_PROFILE else 'llmc-gpt2-124m-fineweb10b-2024-10-13-upstream-tpu-v2')
 SOURCE_COMMIT = '7ecd8906afe6ed7a2b2cdb731c042f26d525b820'
-TOTAL_STEPS = 6200 if PROFILE == SGD_SPEEDRUN_PROFILE else 19560
+TOTAL_STEPS = 19560
 BATCH_TOKENS = 524288
 VAL_TOKENS = 10485760
-WARMUP = 400 if PROFILE == SGD_SPEEDRUN_PROFILE else 700
-WARMDOWN = 1800 if PROFILE == SGD_SPEEDRUN_PROFILE else 0
-LR_SCHEDULE = 'linear_warmup_constant_linear_warmdown' if PROFILE == SGD_SPEEDRUN_PROFILE else 'cosine_to_zero'
+WARMUP = 700
+WARMDOWN = 0
+LR_SCHEDULE = 'cosine_to_zero'
 PEAK_ADAM_LR = 0.0006
 # Published GPT-2 Small SGDM center from tml-epfl/why-weight-decay.
 SGD_PEAK_LR = 0.3
@@ -24,7 +24,7 @@ SGD_MOMENTUM = 0.9
 SGD_WEIGHT_DECAY = 3e-5
 SGD_NESTEROV = False
 GRAD_CLIP = 1.0
-MEASUREMENT_INTERVAL = 125 if PROFILE == SGD_SPEEDRUN_PROFILE else 250
+MEASUREMENT_INTERVAL = 250
 
 
 def lr_factor(step):
@@ -32,11 +32,6 @@ def lr_factor(step):
         raise ValueError('Training update must be nonnegative')
     if step < WARMUP:
         return (step + 1) / WARMUP
-    if PROFILE == SGD_SPEEDRUN_PROFILE:
-        warmdown_start = TOTAL_STEPS - WARMDOWN
-        if step < warmdown_start:
-            return 1.0
-        return max(0.0, (TOTAL_STEPS - step) / WARMDOWN)
     ratio = min(1.0, (step - WARMUP) / (TOTAL_STEPS - WARMUP))
     return 0.5 * (1.0 + math.cos(math.pi * ratio))
 

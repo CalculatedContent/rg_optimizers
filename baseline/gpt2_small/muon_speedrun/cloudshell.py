@@ -96,7 +96,7 @@ def stop_longrun():
 
 
 def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attention='flash', replace_current=False,
-                 launch_id=None, replace_longrun=False, checked_lease=None):
+                 launch_id=None, replace_longrun=False, checked_lease=None, stop_at_target=False):
     if os.geteuid() != 0 or not os.path.ismount('/mnt/disks/rg-data'):
         raise RuntimeError('Requires the existing mounted disk and root')
     if not re.fullmatch('[0-9a-f]{40}',commit):
@@ -160,7 +160,7 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
                   'started_unix':time.time(),'deadline_unix':deadline,'hours_cap':hours,
                   'target_val_nll':3.28,'checkpoint_interval':MEASUREMENT_INTERVAL,'microbatch':microbatch,
                   'weightwatcher_interval':MEASUREMENT_INTERVAL, 'validation_token_error':True,
-                  'fresh_initialization':True, 'automatic_restart':False,
+                  'fresh_initialization':True, 'automatic_restart':False, 'stop_at_target':stop_at_target,
                   'historical_reference':'muon-speedrun-muon-20261005-030026',
                   'experiment':EXPERIMENT, 'cloud_uri':cloud_uri(root)}
         (root/'launch.json').write_text(json.dumps(record,indent=2))
@@ -174,14 +174,16 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
         command += ['/mnt/disks/rg-data/continuous8/venv/bin/python','-u',
                     str(base/'muon_speedrun/worker.py'),str(root),str(deadline),
                     '--optimizer',optimizer,'--microbatch',str(microbatch),'--attention',attention]
+        if stop_at_target:
+            command += ['--stop-at-target']
         run(command)
         temp = LATEST.with_suffix('.tmp')
         temp.write_text(json.dumps(record,indent=2))
         temp.replace(LATEST)
         print('Started '+optimizer+' recipe: '+unit,flush=True)
         print('Log: '+str(root/'run.log'),flush=True)
-        print(f'{TOTAL_STEPS:,} updates; profile {PROFILE}; full-budget default.',flush=True)
-        print('Paired validation token error and raw/clipped WeightWatcher alpha every 250 updates and final.',flush=True)
+        print(f'{TOTAL_STEPS:,} update cap; profile {PROFILE}; stop_at_target={stop_at_target}.',flush=True)
+        print(f'Paired validation token error and raw/clipped WeightWatcher alpha every {MEASUREMENT_INTERVAL} updates and final.',flush=True)
         print('Hard cutoff UTC: '+dt.datetime.fromtimestamp(deadline,dt.timezone.utc).isoformat(),flush=True)
         print('No automatic restart or new TPU allocation. The selected hours limit is a cap, not an ETA. A deadline-stopped run is incomplete.',flush=True)
 
@@ -195,6 +197,7 @@ def main():
     p.add_argument('--attention',choices=('auto','flash','math'),default='flash')
     p.add_argument('--replace-current',action='store_true',help='Stop the previous speedrun and start from initialization')
     p.add_argument('--replace-longrun',action='store_true',help='Stop the recorded 25k training service, retaining its files')
+    p.add_argument('--stop-at-target',action='store_true',help='Stop after a full validation reaches NLL <= 3.28')
     p.add_argument('--node', default=NODE, help='Existing TPU node; the old October 4 allocation has expired')
     p.add_argument('--zone', default=ZONE)
     p.add_argument('--lease', help=argparse.SUPPRESS)
@@ -207,7 +210,7 @@ def main():
         raise ValueError('Hours must be between 1 and 12, bounded by existing allocation')
     if a.on_tpu:
         if a.action == 'start':
-            start_remote(a.commit,a.hours,a.optimizer,a.microbatch,a.attention,a.replace_current,a.launch_id,a.replace_longrun,a.lease)
+            start_remote(a.commit,a.hours,a.optimizer,a.microbatch,a.attention,a.replace_current,a.launch_id,a.replace_longrun,a.lease,a.stop_at_target)
         else:
             status_remote()
         return 0
@@ -218,6 +221,8 @@ def main():
         command += ['--replace-current']
     if a.replace_longrun:
         command += ['--replace-longrun']
+    if a.stop_at_target:
+        command += ['--stop-at-target']
     if a.action == 'start':
         repo = Path(__file__).resolve().parents[3]
         if run(['git','-C',str(repo),'status','--porcelain'],capture_output=True).stdout.strip():
