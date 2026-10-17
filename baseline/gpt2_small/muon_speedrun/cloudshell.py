@@ -19,7 +19,8 @@ QUEUE = 'ww-gpt2-validation-48h-20261004-s1337'
 NODE = QUEUE+'-node'
 BASE = Path('/mnt/disks/rg-data/gpt2small')
 LATEST = BASE/'MUON_SPEEDRUN_LATEST.json'
-EXPERIMENT = 'stock_gpt2_fineweb_muonclip_adamw'
+PROFILE = os.environ.get('RG_GPT2_PROFILE', 'llmc_reference')
+EXPERIMENT = ('stock_gpt2_sgd_momentum' if PROFILE == 'sgd_speedrun' else 'stock_gpt2_fineweb_muonclip_adamw')
 CLOUD_BASE = 'gs://tpu-builders-504820-ww-continuous8/gpt2small'
 
 
@@ -100,6 +101,11 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
         raise RuntimeError('Requires the existing mounted disk and root')
     if not re.fullmatch('[0-9a-f]{40}',commit):
         raise ValueError('Expected pinned commit')
+    global PROFILE, EXPERIMENT
+    profile = 'sgd_speedrun' if optimizer == 'sgd_momentum' else 'llmc_reference'
+    os.environ['RG_GPT2_PROFILE'] = profile
+    PROFILE = profile
+    EXPERIMENT = ('stock_gpt2_sgd_momentum' if profile == 'sgd_speedrun' else 'stock_gpt2_fineweb_muonclip_adamw')
     with (BASE/'port-check-launch.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         if LATEST.exists() and launch_id and json.loads(LATEST.read_text()).get('launch_id') == launch_id:
@@ -147,7 +153,7 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
         env = {'PYTHONPATH':str(base/'src')+':'+str(base.parent/'nanogpt_one_head/src'),
                'PJRT_DEVICE':'TPU','TPU_ACCELERATOR_TYPE':'v5litepod-8',
                'OMP_NUM_THREADS':'4','OPENBLAS_NUM_THREADS':'4','MKL_NUM_THREADS':'4',
-               'TOKENIZERS_PARALLELISM':'false'}
+               'TOKENIZERS_PARALLELISM':'false', 'RG_GPT2_PROFILE':profile}
         record = {'root':str(root),'unit':unit,'commit':commit,'optimizer':optimizer,
                   'architecture':ARCHITECTURE, 'benchmark':BENCHMARK, 'steps':TOTAL_STEPS,
                   'launch_id':launch_id, 'lease':checked,
@@ -174,7 +180,7 @@ def start_remote(commit, hours=12, optimizer='muon_clip', microbatch=64, attenti
         temp.replace(LATEST)
         print('Started '+optimizer+' recipe: '+unit,flush=True)
         print('Log: '+str(root/'run.log'),flush=True)
-        print('19,560 updates, 700 warmup, cosine decay, gradient clipping 1.0; full-budget default.',flush=True)
+        print(f'{TOTAL_STEPS:,} updates; profile {PROFILE}; full-budget default.',flush=True)
         print('Paired validation token error and raw/clipped WeightWatcher alpha every 250 updates and final.',flush=True)
         print('Hard cutoff UTC: '+dt.datetime.fromtimestamp(deadline,dt.timezone.utc).isoformat(),flush=True)
         print('No automatic restart or new TPU allocation. The selected hours limit is a cap, not an ETA. A deadline-stopped run is incomplete.',flush=True)
