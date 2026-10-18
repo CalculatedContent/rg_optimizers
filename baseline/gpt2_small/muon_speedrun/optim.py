@@ -4,7 +4,8 @@ import math
 import torch
 from stock_config import ARCHITECTURE
 from benchmark_config import (BENCHMARK, PROFILE, SGD_SPEEDRUN_PROFILE, lr_factor, GRAD_CLIP,
-                              SGD_PEAK_LR, SGD_MOMENTUM, SGD_WEIGHT_DECAY, SGD_NESTEROV)
+                              SGD_PEAK_LR, SGD_MOMENTUM, SGD_WEIGHT_DECAY, SGD_NESTEROV,
+                              SGD_EMBEDDING_MULTIPLIER, SGD_OTHER_MULTIPLIER, SGD_BLOCK_MULTIPLIERS)
 
 
 def schedule(step):
@@ -123,10 +124,29 @@ def make_stock_optimizers(model, rt, kind):
     if kind == 'sgd_momentum':
         if PROFILE != SGD_SPEEDRUN_PROFILE:
             raise RuntimeError('sgd_momentum requires the launcher-selected sgd_speedrun profile')
-        groups = [dict(params=[p for p in model.parameters() if p.ndim >= 2], role='matrices',
-                       lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=SGD_WEIGHT_DECAY),
-                  dict(params=[p for p in model.parameters() if p.ndim < 2], role='bias_and_layernorm',
-                       lr=SGD_PEAK_LR, peak_lr=SGD_PEAK_LR, weight_decay=0.0)]
+        grouped = defaultdict(list)
+        seen = set()
+        for name, p in model.named_parameters():
+            if id(p) in seen:
+                continue
+            seen.add(id(p))
+            if name.startswith('transformer.h.'):
+                block = int(name.split('.')[2])
+                role = f'block_{block}'
+                multiplier = SGD_BLOCK_MULTIPLIERS[block]
+            elif name in ('transformer.wte.weight', 'transformer.wpe.weight', 'lm_head.weight'):
+                role = 'embedding'
+                multiplier = SGD_EMBEDDING_MULTIPLIER
+            else:
+                role = 'other'
+                multiplier = SGD_OTHER_MULTIPLIER
+            decay = SGD_WEIGHT_DECAY if p.ndim >= 2 else 0.0
+            grouped[(role, multiplier, decay)].append(p)
+        groups = []
+        for (role, multiplier, decay), params in grouped.items():
+            peak = SGD_PEAK_LR * multiplier
+            groups.append(dict(params=params, role=role, lr=peak, peak_lr=peak,
+                               lr_multiplier=multiplier, weight_decay=decay))
         sgd = torch.optim.SGD(groups, momentum=SGD_MOMENTUM, nesterov=SGD_NESTEROV,
                               dampening=0.0, foreach=False)
         sgd.benchmark = BENCHMARK
@@ -152,7 +172,7 @@ def make_stock_optimizers(model, rt, kind):
 def optimizer_metadata(adam):
     if isinstance(adam, torch.optim.SGD):
         return {'class':'torch.optim.SGD', 'groups':[
-            {'role':g['role'], 'peak_lr':g['peak_lr'], 'weight_decay':g['weight_decay'],
+            {'role':g['role'], 'peak_lr':g['peak_lr'], 'lr_multiplier':g.get('lr_multiplier', 1.0), 'weight_decay':g['weight_decay'],
              'momentum':g['momentum'], 'nesterov':g['nesterov'], 'dampening':g['dampening'],
              'parameters':sum(p.numel() for p in g['params'])} for g in adam.param_groups]}
     return {'class':'torch.optim.'+type(adam).__name__,
