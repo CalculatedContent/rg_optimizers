@@ -159,6 +159,24 @@ def measure(path):
     return {'layers':rows, 'summary':summary(rows, identity), 'options':WW_OPTIONS}
 
 
+def publish_alpha_control(root, result):
+    """Publish completed raw-alpha block means atomically for the trainer."""
+    by_block = {}
+    for row in result['layers']:
+        alpha = row.get('alpha_raw')
+        if alpha is not None:
+            by_block.setdefault(int(row['block']), []).append(float(alpha))
+    blocks = {}
+    for block in range(12):
+        values = by_block.get(block, [])
+        if len(values) >= 4:
+            blocks[str(block)] = {'raw_alpha_mean':sum(values)/len(values),
+                                  'valid_count':len(values)}
+    write_json(root/'ALPHA_CONTROL.json',
+               {'schema':1, 'step':result['summary']['step'], 'source':'raw_alpha',
+                'blocks':blocks})
+
+
 def csv_write(path, rows):
     temp = path.with_suffix('.csv.tmp')
     fields = list(dict.fromkeys(key for row in rows for key in row))
@@ -203,6 +221,7 @@ def watch(root, deadline):
                 result = measure(path)
                 write_json(output, result)
                 collect(root)
+                publish_alpha_control(root, result)
                 print('[weightwatcher] '+json.dumps(result['summary']), flush=True)
             except Exception as exc:
                 write_json(failure, {'step':int(path.stem), 'error':repr(exc)})
