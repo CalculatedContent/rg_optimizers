@@ -1,5 +1,9 @@
 # rg_optimizers
 
+For the small **784–256–256–10 MNIST / FashionMNIST SGD experiment**, see
+[`grid_search/`](grid_search/README.md): editable JSON grids, Mac/CPU/CUDA/TPU
+entry points, and one CSV row per configuration and seed with all three alphas.
+
 Research implementations of optimizer extensions motivated by the WeightWatcher
 spectral renormalization-group program. The repository keeps the unmodified
 reference baselines separate from every RG intervention so optimizer claims can
