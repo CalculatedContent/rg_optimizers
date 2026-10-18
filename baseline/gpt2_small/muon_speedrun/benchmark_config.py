@@ -9,7 +9,7 @@ import os
 LLMC_PROFILE = 'llmc_reference'
 SGD_SPEEDRUN_PROFILE = 'sgd_speedrun'
 PROFILE = os.environ.get('RG_GPT2_PROFILE', LLMC_PROFILE)
-BENCHMARK = ('stock-gpt2-124m-fineweb10b-sgdm-layerlr-v1' if PROFILE == SGD_SPEEDRUN_PROFILE else 'llmc-gpt2-124m-fineweb10b-2024-10-13-upstream-tpu-v2')
+BENCHMARK = ('stock-gpt2-124m-fineweb10b-sgdm-alpha-control-v1' if PROFILE == SGD_SPEEDRUN_PROFILE else 'llmc-gpt2-124m-fineweb10b-2024-10-13-upstream-tpu-v2')
 SOURCE_COMMIT = '7ecd8906afe6ed7a2b2cdb731c042f26d525b820'
 TOTAL_STEPS = 19560
 BATCH_TOKENS = 524288
@@ -30,6 +30,13 @@ SGD_EMBEDDING_MULTIPLIER = 0.60
 SGD_OTHER_MULTIPLIER = 0.75
 SGD_BLOCK_MULTIPLIERS = (0.75, 0.80, 0.85, 0.90, 1.20, 1.35, 1.45, 1.40, 1.30, 1.15, 1.00, 0.90)
 RESUMABLE_CHECKPOINT_INTERVAL = 2000
+ALPHA_TARGET = 2.0
+ALPHA_CONTROL_GAIN = 0.08
+ALPHA_CONTROL_EMA = 0.5
+ALPHA_MULTIPLIER_MIN = 0.5
+ALPHA_MULTIPLIER_MAX = 2.0
+ALPHA_MAX_LOG_CHANGE = 0.12
+ALPHA_CONTROL_MIN_STEP = 1000
 
 
 def lr_factor(step):
@@ -55,6 +62,10 @@ def protocol():
                 sgd_block_multipliers=list(SGD_BLOCK_MULTIPLIERS),
                 sgd_cosine_floor=SGD_COSINE_FLOOR,
                 resumable_checkpoint_interval=RESUMABLE_CHECKPOINT_INTERVAL,
+                alpha_control=dict(target=ALPHA_TARGET, gain=ALPHA_CONTROL_GAIN, ema=ALPHA_CONTROL_EMA,
+                                   multiplier_min=ALPHA_MULTIPLIER_MIN, multiplier_max=ALPHA_MULTIPLIER_MAX,
+                                   max_log_change=ALPHA_MAX_LOG_CHANGE, min_step=ALPHA_CONTROL_MIN_STEP,
+                                   source='raw_alpha_block_mean'),
                 adam_betas=[0.9, 0.95],
                 adam_eps=1e-8, matrix_weight_decay=0.1,
                 gradient_clip_norm=GRAD_CLIP,
