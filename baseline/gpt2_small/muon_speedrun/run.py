@@ -21,7 +21,9 @@ from tracking import queue_snapshot
 from benchmark_config import (BENCHMARK, TOTAL_STEPS, BATCH_TOKENS, VAL_TOKENS,
                               MEASUREMENT_INTERVAL, WARMUP, WARMDOWN, LR_SCHEDULE, GRAD_CLIP,
                               SGD_PEAK_LR, SGD_MOMENTUM, SGD_WEIGHT_DECAY, SGD_NESTEROV,
-                              lr_factor, protocol, RESUMABLE_CHECKPOINT_INTERVAL)
+                              lr_factor, protocol, RESUMABLE_CHECKPOINT_INTERVAL, ALPHA_TARGET, ALPHA_CONTROL_GAIN,
+                              ALPHA_CONTROL_EMA, ALPHA_MULTIPLIER_MIN, ALPHA_MULTIPLIER_MAX,
+                              ALPHA_MAX_LOG_CHANGE, ALPHA_CONTROL_MIN_STEP)
 
 TARGET = 3.28
 HERE = Path(__file__).resolve().parent
@@ -84,6 +86,46 @@ def save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validat
     if validation is not None:
         queue_snapshot(root, payload)
     print('Checkpoint saved at update '+str(step), flush=True)
+
+
+def alpha_controller(root, adam, state, step):
+    """Consume only completed atomic WeightWatcher measurements; adjust block peak LRs."""
+    path = root/'ALPHA_CONTROL.json'
+    if step < ALPHA_CONTROL_MIN_STEP or not path.exists():
+        return state, None
+    try:
+        signal = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return state, None
+    measured_step = int(signal.get('step', -1))
+    if measured_step <= state.get('last_measurement_step', -1) or measured_step > step:
+        return state, None
+    event = {'kind':'alpha_lr_control', 'step':step, 'measurement_step':measured_step, 'blocks':{}}
+    for block in range(12):
+        item = signal.get('blocks', {}).get(str(block))
+        if not item or int(item.get('valid_count', 0)) < 4:
+            continue
+        alpha = float(item['raw_alpha_mean'])
+        old_ema = state.setdefault('ema', {}).get(str(block), alpha)
+        ema = ALPHA_CONTROL_EMA*old_ema + (1-ALPHA_CONTROL_EMA)*alpha
+        state['ema'][str(block)] = ema
+        current = state.setdefault('multipliers', {}).get(str(block))
+        if current is None:
+            candidates = [g.get('lr_multiplier') for g in adam.param_groups
+                          if g['role'].startswith(f'block_{block}_')]
+            current = candidates[0]
+        log_delta = max(-ALPHA_MAX_LOG_CHANGE, min(ALPHA_MAX_LOG_CHANGE,
+                        ALPHA_CONTROL_GAIN*(ema-ALPHA_TARGET)))
+        new = max(ALPHA_MULTIPLIER_MIN, min(ALPHA_MULTIPLIER_MAX, current*math.exp(log_delta)))
+        state['multipliers'][str(block)] = new
+        for group in adam.param_groups:
+            if group['role'].startswith(f'block_{block}_'):
+                group['lr_multiplier'] = new
+                group['peak_lr'] = SGD_PEAK_LR*new
+        event['blocks'][str(block)] = {'raw_alpha_mean':alpha, 'ema':ema,
+                                       'old_multiplier':current, 'new_multiplier':new}
+    state['last_measurement_step'] = measured_step
+    return state, event
 
 
 def target_met(validation):
@@ -252,7 +294,12 @@ def train(a):
     rt.step(wait=True)
     save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, None, best)
     timings = []
+    alpha_state = {'last_measurement_step':-1, 'ema':{}, 'multipliers':{}}
     while step < TOTAL_STEPS and time.time() < a.deadline-180 and not stopped[0] and not (root/'STOP').exists():
+        alpha_state, control_event = alpha_controller(root, adam, alpha_state, step)
+        if control_event and control_event['blocks']:
+            record(root, control_event)
+            write_json(root/'ALPHA_CONTROLLER_STATE.json', alpha_state)
         began = time.monotonic()
         model.zero_grad(set_to_none=False)
         loss_sum = torch.zeros((), device=rt.device, dtype=torch.float32)
