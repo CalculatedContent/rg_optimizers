@@ -38,9 +38,10 @@ class SGDTests(unittest.TestCase):
         self.assertEqual(len(params), len(set(map(id, params))))
         self.assertEqual(set(map(id, params)), set(map(id, model.parameters())))
         groups = {g['role']:g for g in opt.param_groups}
-        self.assertAlmostEqual(groups['block_0']['lr_multiplier'], SGD_BLOCK_MULTIPLIERS[0])
-        self.assertEqual(groups['block_0']['weight_decay'], SGD_WEIGHT_DECAY)
-        self.assertEqual(groups['other']['weight_decay'], 0.0)
+        self.assertAlmostEqual(groups['block_0_matrices']['lr_multiplier'], SGD_BLOCK_MULTIPLIERS[0])
+        self.assertEqual(groups['block_0_matrices']['weight_decay'], SGD_WEIGHT_DECAY)
+        self.assertEqual(groups['block_0_bias_and_layernorm']['weight_decay'], 0.0)
+        self.assertEqual(groups['other_bias_and_layernorm']['weight_decay'], 0.0)
         self.assertTrue(all(g["momentum"] == SGD_MOMENTUM for g in opt.param_groups))
         self.assertTrue(all(not g["nesterov"] for g in opt.param_groups))
         self.assertEqual(optimizer_metadata(opt)["class"], "torch.optim.SGD")
