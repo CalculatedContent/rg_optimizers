@@ -21,7 +21,7 @@ from tracking import queue_snapshot
 from benchmark_config import (BENCHMARK, TOTAL_STEPS, BATCH_TOKENS, VAL_TOKENS,
                               MEASUREMENT_INTERVAL, WARMUP, WARMDOWN, LR_SCHEDULE, GRAD_CLIP,
                               SGD_PEAK_LR, SGD_MOMENTUM, SGD_WEIGHT_DECAY, SGD_NESTEROV,
-                              lr_factor, protocol)
+                              lr_factor, protocol, RESUMABLE_CHECKPOINT_INTERVAL)
 
 TARGET = 3.28
 HERE = Path(__file__).resolve().parent
@@ -75,6 +75,10 @@ def save_checkpoint(root, model, muon, adam, stream, step, manifest, rt, validat
         temp.unlink(missing_ok=True)
         os.link(checkpoint, temp)
         temp.replace(root/name)
+    if step > 0 and step % RESUMABLE_CHECKPOINT_INTERVAL == 0:
+        archive = root/f'checkpoint_step_{step:05d}.pt'
+        archive.unlink(missing_ok=True)
+        os.link(checkpoint, archive)
     write_json(root/'checkpoint_latest.json', {'file':checkpoint.name, 'step':step,
                                               'target_met':passed, 'validation':validation})
     if validation is not None:
@@ -274,7 +278,8 @@ def train(a):
         row = {'kind':'train', 'step':step, 'tokens_seen':step*BATCH_TOKENS,
                'train_nll':loss_value, 'seconds':seconds, 'tokens_per_second':BATCH_TOKENS/seconds,
                'elapsed_seconds':time.time()-started, 'lr_factor':lr_factor(step-1),
-               'gradient_norm_before_clip':float(grad_norm.cpu())}
+               'gradient_norm_before_clip':float(grad_norm.cpu()),
+               'learning_rates':{g['role']:float(g['peak_lr'] * lr_factor(step-1)) for g in adam.param_groups}}
         if a.optimizer == 'muon_clip':
             row['muonclip'] = {k:float(v.cpu()) for k,v in muon.last_diagnostics.items()}
         if step <= 5 or step % 10 == 0:
