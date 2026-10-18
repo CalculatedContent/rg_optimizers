@@ -140,8 +140,11 @@ def make_stock_optimizers(model, rt, kind):
             else:
                 role = 'other'
                 multiplier = SGD_OTHER_MULTIPLIER
+            # Keep matrix decay and bias/LayerNorm no-decay groups separate even
+            # when they share a blockwise LR multiplier.
             decay = SGD_WEIGHT_DECAY if p.ndim >= 2 else 0.0
-            grouped[(role, multiplier, decay)].append(p)
+            decay_role = role + ('_matrices' if p.ndim >= 2 else '_bias_and_layernorm')
+            grouped[(decay_role, multiplier, decay)].append(p)
         groups = []
         for (role, multiplier, decay), params in grouped.items():
             peak = SGD_PEAK_LR * multiplier
