@@ -12,6 +12,8 @@ from common import (Config, atomic_json, batch_indices, config_dict, make_optimi
                     stratified_split, lr_at, TensorSGD)
 from prepare import prepare
 from train import worker
+from spectra import summarize
+from accuracy_report import correlate, seed_means, AGGREGATE_METRICS, report
 from sweep import plan
 from cloudshell import bounded_deadline
 import time
@@ -122,12 +124,79 @@ class ExperimentTests(unittest.TestCase):
                     y = json.loads((resumed / 'measurements' / metric.name).read_text())
                     self.assertEqual(x['train'], y['train'])
                     self.assertEqual(x['validation'], y['validation'])
+                    self.assertEqual(x['test'], y['test'])
+                    self.assertEqual(x['test']['examples'], 32)
                 # Corrupted checkpoints are refused, never silently restarted.
                 generation = json.loads((resumed / 'latest_checkpoint.json').read_text())['generation']
                 with (resumed / generation / 'rng_rank0.pt').open('ab') as f:
                     f.write(b'corruption')
                 with self.assertRaisesRegex(RuntimeError, 'hash mismatch'):
                     worker(0, SimpleNamespace(**args, root=str(resumed), stop_after=0))
+
+    def test_fit_quality_and_missing_values(self):
+        rows = [dict(name='one', shape=[16, 16], alpha=1.8, included_in_mean=True,
+                     fit=dict(D=.05, sigma=.1, xmin=.01, xmax=1., num_pl_spikes=8, num_evals=16, status='success')),
+                dict(name='two', shape=[16, 16], alpha=2.2, included_in_mean=True,
+                     fit=dict(D=.15, sigma=.2, xmin=.02, xmax=2., num_pl_spikes=4, num_evals=16, status='success')),
+                dict(name='classifier', shape=[2, 16], included_in_mean=False)]
+        measured = dict(step=1, epoch=1, train={'accuracy': 1.}, validation={'accuracy': .8},
+                        test={'accuracy': .75}, generalization_gap_pp=20., synthetic_engineering_only=True)
+        result = summarize(rows, measured)
+        self.assertAlmostEqual(result['mean_D'], .1)
+        self.assertEqual(result['max_D'], .15)
+        self.assertAlmostEqual(result['mean_alpha'], 2.)
+        self.assertEqual(rows[0]['tail_fraction'], .5)
+        self.assertFalse(rows[2]['D_valid'])
+        rows[0]['fit']['D'] = None
+        missing = summarize(rows, measured)
+        self.assertIsNone(missing['mean_D'])
+        self.assertEqual(missing['valid_D_layers'], 1)
+        self.assertEqual(missing['test'], measured['test'])
+
+    def test_correlation_units(self):
+        self.assertEqual(correlate([{'D': i, 'acc': 5-i} for i in range(4)], 'D', 'acc')['spearman_rho'], -1.)
+        self.assertIsNone(correlate([{'D': i, 'acc': 1.} for i in range(4)], 'D', 'acc')['spearman_rho'])
+        rows = [dict(protocol='same', optimizer='adamw', setting='one', seed=s, synthetic=False,
+                     completed_endpoint=True, mean_D=v, test_accuracy_pct=90.+v)
+                for s, v in zip((401, 402, 403), (.1, .2, .3))]
+        means, excluded = seed_means(rows, AGGREGATE_METRICS)
+        self.assertEqual(len(means), 1)
+        self.assertAlmostEqual(means[0]['mean_D'], .2)
+        self.assertAlmostEqual(means[0]['mean_D_sd'], .1)
+        self.assertFalse(excluded)
+        self.assertFalse(seed_means(rows[:2], AGGREGATE_METRICS)[0])
+        self.assertFalse(seed_means(rows + [rows[0]], AGGREGATE_METRICS)[0])
+
+    def test_test_labels_do_not_change_training(self):
+        from common import file_hash
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            c = replace(Config(), synthetic=True, epochs=1, max_length=8, per_device_batch=8,
+                        precision='fp32', validation_per_class=4)
+            config = folder / 'config.json'
+            atomic_json(config, config_dict(c))
+            data = folder / 'data'
+            prepare(data, c)
+            train_sha = file_hash(data / 'prepared.json')
+            args = dict(config=str(config), data=str(data), backend='cpu', deadline=math.inf, stop_after=0)
+            a, b = folder / 'normal', folder / 'changed_test'
+            worker(0, SimpleNamespace(**args, root=str(a)))
+            changed = dict(np.load(data / 'test_tokens.npz'))
+            changed['labels'] = 1 - changed['labels']
+            np.savez(data / 'test_tokens.npz', **changed)
+            manifest = json.loads((data / 'test_prepared.json').read_text())
+            manifest['sha256'] = file_hash(data / 'test_tokens.npz')
+            atomic_json(data / 'test_prepared.json', manifest)
+            worker(0, SimpleNamespace(**args, root=str(b)))
+            self.assertEqual(file_hash(data / 'prepared.json'), train_sha)
+            def payload(root):
+                gen = json.loads((root / 'latest_checkpoint.json').read_text())['generation']
+                return torch.load(root / gen / 'state.pt', weights_only=False), torch.load(root / gen / 'rng_rank0.pt', weights_only=False)
+            assert_tree(self, payload(a), payload(b))
+            for p in (a / 'measurements').glob('*.json'):
+                x, y = json.loads(p.read_text()), json.loads((b / 'measurements' / p.name).read_text())
+                self.assertEqual(x['train'], y['train'])
+                self.assertEqual(x['validation'], y['validation'])
 
 
 if __name__ == '__main__':

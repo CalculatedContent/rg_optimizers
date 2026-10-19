@@ -113,16 +113,22 @@ def main(root, deadline, resume=None, job_id=None):
         status = json.loads((runroot / 'status.json').read_text())
         write(runroot / 'TRAINING_DONE.json', status)
         try:
-            tracker.wait(timeout=max(1, deadline - 90 - time.time()))
+            tracker.wait(timeout=max(1, deadline - 240 - time.time()))
         except subprocess.TimeoutExpired:
             os.killpg(tracker.pid, signal.SIGTERM)
             tracker.wait(timeout=15)
         expected = {p.name for p in (runroot / 'measurements').glob('*.json')}
         actual = {p.name for p in (runroot / 'spectra').glob('*.json')}
+        report_command = [python, str(HERE / 'accuracy_report.py'), '--runs', str(runroot), '--output', str(root / 'report')]
+        if deadline - time.time() < 150:
+            report_command.append('--no-plots')
+        run(report_command, deadline - 15, env=env)
+        runtime = json.loads((runroot / 'runtime.json').read_text())
         write(root / 'RESULT.json', {'training': status, 'spectra_complete': expected <= actual,
               'spectra_exit_code': tracker.returncode, 'run_root': str(runroot),
               'status': 'complete' if status['status'] == 'training_complete' and expected <= actual and tracker.returncode == 0 else 'partial_saved',
-              'test_accessed': False, 'time': time.time()})
+              'test_accessed': runtime.get('test_accessed', False), 'test_used_for_selection': False,
+              'report': str(root / 'report'), 'time': time.time()})
     except BaseException as exc:
         write(root / 'ERROR.json', {'error': repr(exc), 'traceback': traceback.format_exc(), 'time': time.time()})
         raise

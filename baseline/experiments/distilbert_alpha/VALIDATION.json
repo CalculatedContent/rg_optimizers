@@ -31,5 +31,29 @@
     "weightwatcher": "0.7.7"
   },
   "tpu_launch_status": "Not launched from this session: Cloud console unavailable and no authenticated gcloud connection. Use Cloud Shell launcher.",
-  "tpu_bitwise_resume_validated": false
+  "tpu_bitwise_resume_validated": false,
+  "fit_quality_test_monitoring_update": {
+    "checked_utc": "2026-10-19T21:21:43.180670+00:00",
+    "unittest_count": 9,
+    "passed": true,
+    "test_label_invariance": "Replacing every synthetic test label leaves trained weights, optimizer, RNG, train and validation metrics exactly identical",
+    "full_imdb_test_preparation": {
+      "examples": 25000,
+      "test_sha256": "ba6b319df923357bb37d9a57073f77d825bd16f11e112ff89aa736756523187d",
+      "training_manifest_unchanged": true,
+      "split_sha256_unchanged": "cdb611bde9284199d64ff85c00c68b9853525f776f8a28379a1cb01ce0e6fa20",
+      "test_used_for_selection": false
+    },
+    "synthetic_end_to_end": {
+      "checkpoints": 4,
+      "layer_rows": 56,
+      "eligible_layers_per_checkpoint": 13,
+      "train_examples": 56,
+      "validation_examples": 8,
+      "test_examples": 32,
+      "csv_correlations_png_pdf_generated": true
+    },
+    "tpu_executed": false,
+    "real_distilbert_accuracy_correlations_established": false
+  }
 }

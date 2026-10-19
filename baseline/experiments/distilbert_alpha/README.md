@@ -13,7 +13,7 @@ does not start the future sweep.
 | Model revision | `12040accade4e8a0f71eabdb258fecc2e7e948be` |
 | Dataset | `stanfordnlp/imdb`, revision `e6281661ce1c48d982bc483cf8a173c1bbeb5d31` |
 | Split | 22,500 optimization / 2,500 validation examples from the official training partition; stratified, seed 1701 |
-| Test set | Neither downloaded nor evaluated |
+| Test set | Full official 25,000-example IMDb test partition, monitoring only, at initialization and every epoch |
 | Optimizer | AdamW, peak LR 2e-5, weight decay 0.01, betas 0.9/0.999, epsilon 1e-8 |
 | Dropout | Hidden 0.1; attention 0.1; classifier 0.2 |
 | Schedule | 10% linear warmup, then linear decay; three full epochs |
@@ -22,7 +22,7 @@ does not start the future sweep.
 | Precision | bfloat16 forward/backward autocast, FP32 parameters and optimizer states |
 | Seed | 401 |
 | Gradient clipping | Global norm 1.0, after averaging gradients across all eight devices |
-| Measurements | Initialization and each epoch: frozen-model training and validation loss, accuracy, errors, gap, and raw matrix spectra |
+| Measurements | Initialization and each epoch: frozen-model training, validation and test loss/accuracy/errors, generalization gaps, and raw matrix spectra including fit quality D |
 | Checkpoints | Every 50 updates, epoch boundaries, and cooperative budget stop; retain last two full states |
 | Budget | Default 5.5 hours, maximum 6; automatically shortened to the checked existing lease minus five minutes |
 
@@ -80,8 +80,10 @@ when removing the TPU VM.
 Each `initial-TIMESTAMP/` contains source, selected configuration, package versions,
 launch/lease provenance, logs, run results, and a prospective sweep plan. Prepared
 data, tokenizer and pretrained model have pinned upstream revisions and SHA256
-manifests; `data_path.json` records the shared prepared-data directory. No test
-parquet file is fetched.
+manifests; `data_path.json` records the shared prepared-data directory.
+`prepared.json` remains the original training/validation manifest. The separately
+authorized test data have their own `test_prepared.json` and `test_tokens.npz`;
+the original training split and identity are preserved.
 
 Within `initial/`:
 
@@ -89,8 +91,8 @@ Within `initial/`:
 - `checkpoints/step_*/`: model, optimizer, cursor, per-rank Python/NumPy/torch/XLA RNG
   states, and SHA256 manifest. `latest_checkpoint.json` is published only after
   every rank has saved. The last two committed generations are retained.
-- `measurements/`: training/validation measurements, exact example counts, and
-  generalization gap in percentage points.
+- `measurements/`: training/validation/test measurements, exact example counts,
+  and both train–validation and train–test gaps in percentage points.
 - `spectral_snapshots/`: immutable raw dense-matrix weights at measured steps.
 - `spectra/`: per-layer WeightWatcher results and aggregate alphas joined to the
   matching accuracy measurements.
@@ -120,7 +122,16 @@ two FFN matrices in each of six transformer blocks, plus the pre-classifier.
 Embeddings are outside this declared aggregate. The binary classifier has only
 two singular values and is reported as excluded from power-law fitting.
 
-Every eligible layer's full fit record and validity are retained. The aggregate
+Every eligible layer's full fit record and validity are retained. **D was already
+present in the original saved WeightWatcher fit records.** It is now also an
+explicit exported column, alongside alpha, sigma, xmin, xmax, number of fitted
+tail eigenvalues (`num_pl_spikes`), tail fraction, fit status and warnings.
+**Lower D means a closer power-law fit to the empirical tail**: D is the
+Kolmogorov–Smirnov distance, rather than a p-value. See the
+[WeightWatcher metric definitions](https://github.com/CalculatedContent/WeightWatcher#readme).
+
+Model summaries include mean, median and maximum D. Maximum D identifies the
+layer with the weakest fit by this metric. The aggregate
 is null if any eligible fit is invalid; missing layers cannot silently change
 the average. The fraction of eligible layers with alpha < 2 is also reported.
 
@@ -130,6 +141,46 @@ improvement in training performance. A low-alpha snapshot and a widening gap
 are distinct recorded measurements. This enables a prospective diagnostic
 assessment as replicated runs accumulate. The initial seed is a pilot, and
 the validation partition remains the selection source.
+
+### Accuracy correlations and plots
+
+The [October 19 test-monitoring amendment](test_monitoring_amendment.json) records
+the user's explicit authorization to measure test accuracy. All three partitions
+are evaluated on the **same frozen model**, in evaluation mode with dropout off.
+Measurement restores training RNG state. Test metrics do not affect updates,
+schedules, stopping decisions or configuration selection. Repeated test exposure
+is disclosed in the output manifests.
+
+The supervisor automatically creates a `report/` directory with:
+
+- `checkpoint_metrics.csv`: mean/median/worst D, mean alpha, all three accuracies,
+  losses, error counts and gaps, one row per run/checkpoint.
+- `layer_metrics.csv`: the full per-layer fit-quality fields and matching accuracies.
+- `configuration_means.csv` and `layer_configuration_means.csv`: complete 401–403
+  seed groups, with means and sample standard deviations.
+- `correlations.json`: Pearson r and Spearman rho for alpha and fit quality versus
+  training, validation and test accuracy. It also retains layer sigma, tail
+  fraction, xmin and tail-size correlations.
+- PNG summaries of D and alpha against all three accuracies, plus per-layer PDF
+  figures. The pilot uses a clearly labeled single-run trajectory with points
+  colored by training step. Across complete settings, error bars show seed SD.
+
+Each layer is analyzed separately. Single-run checkpoint trajectories and
+between-configuration comparisons have separate correlation records. The latter
+use one point per complete three-seed setting, stratified by optimizer and fixed
+model/data/compute protocol. Fewer than three paired points, a constant variable,
+or unavailable test metrics produce a documented null coefficient.
+
+Combine saved runs without retraining:
+
+```bash
+python accuracy_report.py \
+  --runs /mnt/disks/rg-data/distilbert_alpha/initial-*/initial \
+  --output /mnt/disks/rg-data/distilbert_alpha/combined_report
+```
+
+If little wall time remains, the supervisor writes the tables first and defers
+plots; the same command can generate them later from saved data.
 
 ## Configurable variations
 
@@ -184,7 +235,10 @@ Tests check exact-once padded coverage across eight shards, the stratified split
 decay exclusions, finite sweep/lease bounds, tensor-SGD reference parity, and
 interrupted versus uninterrupted tiny DistilBERT training under all three
 optimizers. Resume matches model, optimizer, RNG and metrics exactly on CPU;
-corrupted checkpoint state is refused. A separate tiny-model spectral end-to-end
+corrupted checkpoint state is refused. Additional checks verify D aggregates,
+correlation units and missing/constant cases, and show that replacing all test
+labels leaves training weights, optimizer, RNG and training/validation metrics
+exactly unchanged. A separate tiny-model spectral end-to-end
 check exercises saving, default WW fits and joined metrics.
 
 These CPU checks qualify the implementation path. The first live TPU launch is

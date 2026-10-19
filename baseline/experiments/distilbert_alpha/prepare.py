@@ -1,13 +1,14 @@
-"""Download only official IMDb training data; freeze resolved revisions and split."""
+"""Freeze IMDb training/validation inputs and separate authorized test-monitoring inputs."""
 import argparse
 import importlib.metadata
 import json
+import datetime as dt
 from pathlib import Path
 import numpy as np
 from common import atomic_json, build_model, config_dict, digest, file_hash, read_config, seed_all, stratified_split
 
 
-def prepare(root, c):
+def prepare_train(root, c):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     identity = {k: config_dict(c)[k] for k in ('model', 'dataset', 'model_revision', 'dataset_revision', 'split_seed', 'validation_per_class', 'max_length', 'synthetic')}
@@ -67,6 +68,56 @@ def prepare(root, c):
            'versions': {p: importlib.metadata.version(p) for p in ('torch', 'transformers', 'numpy')}}
     atomic_json(manifest, out)
     return out
+
+
+def prepare_test(root, c):
+    """Separate manifest preserves the original training data identity and split."""
+    root = Path(root)
+    identity = {'training_manifest_sha256': file_hash(root / 'prepared.json'),
+                'dataset_revision': c.dataset_revision, 'max_length': c.max_length,
+                'purpose': 'monitoring_only', 'synthetic': c.synthetic}
+    target = root / 'test_prepared.json'
+    if target.exists():
+        old = json.loads(target.read_text())
+        if old['identity'] != identity or file_hash(root / 'test_tokens.npz') != old['sha256']:
+            raise ValueError('Test monitoring inputs changed')
+        return old
+    if c.synthetic:
+        rng = np.random.default_rng(45)
+        labels = np.tile(np.array([0, 1], dtype=np.int64), 16)
+        ids = rng.integers(1, 64, (len(labels), c.max_length), dtype=np.int64)
+        masks = np.ones_like(ids)
+    else:
+        from datasets import load_dataset
+        from huggingface_hub import snapshot_download
+        from transformers import AutoTokenizer
+        source = snapshot_download(c.dataset, repo_type='dataset', revision=c.dataset_revision,
+                                   allow_patterns=['plain_text/test-*.parquet'], cache_dir=str(root / 'hf'))
+        shards = sorted(str(p) for p in Path(source).glob('plain_text/test-*.parquet'))
+        if not shards:
+            raise RuntimeError('Official IMDb test shards missing')
+        data = load_dataset('parquet', data_files={'test': shards}, split='test', cache_dir=str(root / 'hf'))
+        labels = np.array(data['label'], dtype=np.int64)
+        if len(labels) != 25000 or set(labels) != {0, 1}:
+            raise ValueError('Unexpected IMDb test set')
+        tokenizer = AutoTokenizer.from_pretrained(root / 'model', local_files_only=True)
+        encoded = tokenizer(data['text'], padding='max_length', truncation=True, max_length=c.max_length, return_tensors='np')
+        ids, masks = encoded['input_ids'], encoded['attention_mask']
+    tmp = root / 'test_tokens.tmp.npz'
+    np.savez(tmp, input_ids=ids, attention_mask=masks, labels=labels)
+    tmp.replace(root / 'test_tokens.npz')
+    out = {'identity': identity, 'sha256': file_hash(root / 'test_tokens.npz'), 'examples': len(labels),
+           'prepared_utc': dt.datetime.now(dt.timezone.utc).isoformat(),
+           'test_accessed': not c.synthetic, 'test_used_for_selection': False,
+           'authorization': 'test_monitoring_amendment.json; user request 2026-10-19 14:16:33 America/Los_Angeles'}
+    atomic_json(target, out)
+    return out
+
+
+def prepare(root, c):
+    training = prepare_train(root, c)
+    test = prepare_test(root, c)
+    return {'training': training, 'test_monitoring': test}
 
 
 if __name__ == '__main__':

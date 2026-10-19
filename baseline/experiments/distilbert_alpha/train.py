@@ -141,20 +141,28 @@ def restore(root, model, optimizer, c, data_hash, rt):
     return state
 
 
-def measure(root, model, arrays, split, c, rt, state, started):
+def measure(root, model, arrays, split, c, rt, state, started, test_arrays):
     step = state['step']
     path = root / 'measurements' / f'step_{step:06d}.json'
     # Resume after an already-completed measurement doesn't duplicate it.
-    if path.exists():
+    if path.exists() and json.loads(path.read_text()).get('test') is not None:
         return
-    train = evaluate(model, arrays, split['train'], c, rt)
-    validation = evaluate(model, arrays, split['validation'], c, rt)
+    saved_rng = rt.rng()
+    try:
+        train = evaluate(model, arrays, split['train'], c, rt)
+        validation = evaluate(model, arrays, split['validation'], c, rt)
+        test = evaluate(model, test_arrays, np.arange(len(test_arrays['labels'])), c, rt)
+    finally:
+        rt.restore(saved_rng)
     if rt.rank == 0:
         snapshot = root / 'spectral_snapshots' / f'step_{step:06d}.pt'
         matrices = {name: p for name, p in model.named_parameters() if p.ndim == 2 and 'embeddings' not in name}
         atomic_torch(snapshot, matrices)
-        atomic_json(path, {'step': step, 'epoch': state['epoch'], 'train': train, 'validation': validation,
+        atomic_json(path, {'step': step, 'epoch': state['epoch'], 'train': train, 'validation': validation, 'test': test,
                           'generalization_gap_pp': 100 * (train['accuracy'] - validation['accuracy']),
+                          'train_test_gap_pp': 100 * (train['accuracy'] - test['accuracy']),
+                          'test_evaluated': True, 'official_test_accessed': not c.synthetic,
+                          'test_used_for_selection': False,
                           'elapsed_this_process_seconds': time.monotonic() - started,
                           'spectral_snapshot': str(snapshot.relative_to(root)),
                           'snapshot_sha256': file_hash(snapshot), 'synthetic_engineering_only': c.synthetic})
@@ -174,6 +182,10 @@ def worker(index, args):
         raise RuntimeError('Config differs from prepared data')
     arrays = dict(np.load(data / 'tokens.npz'))
     split = dict(np.load(data / 'split.npz'))
+    test_manifest = json.loads((data / 'test_prepared.json').read_text())
+    if test_manifest['identity']['training_manifest_sha256'] != data_hash or file_hash(data / 'test_tokens.npz') != test_manifest['sha256']:
+        raise RuntimeError('Test monitoring manifest/hash mismatch')
+    test_arrays = dict(np.load(data / 'test_tokens.npz'))
     seed_all(c.seed)  # Identical pretrained encoder + random classifier on all ranks.
     model = build_model(c, data / 'model').to(rt.device)
     optimizer = make_optimizer(model, c)
@@ -190,13 +202,15 @@ def worker(index, args):
                     'data_manifest_sha256': data_hash, 'precision': c.precision,
                     'decay_semantics': 'decoupled' if c.optimizer == 'adamw' else 'coupled_L2',
                     'no_decay_parameters': 'All vectors: biases and LayerNorm scale/offset',
-                    'test_accessed': False})
+                    'test_accessed': not c.synthetic, 'test_monitoring_enabled': True,
+                    'test_manifest_sha256': file_hash(data / 'test_prepared.json'),
+                    'test_used_for_selection': False})
     if state['step'] == 0:
-        measure(root, model, arrays, split, c, rt, state, start)
+        measure(root, model, arrays, split, c, rt, state, start, test_arrays)
         save(root, model, optimizer, state, c, data_hash, rt)
     # Revisit the epoch-boundary measurement if interrupted between checkpoint and evaluation.
     if state['batch'] == 0 and state['step']:
-        measure(root, model, arrays, split, c, rt, state, start)
+        measure(root, model, arrays, split, c, rt, state, start, test_arrays)
     for epoch in range(state['epoch'], c.epochs):
         model.train()
         skip = state['batch'] if epoch == state['epoch'] else 0
@@ -235,7 +249,7 @@ def worker(index, args):
             if state['step'] % c.checkpoint_steps == 0 or end_epoch:
                 save(root, model, optimizer, state, c, data_hash, rt)
             if end_epoch:
-                measure(root, model, arrays, split, c, rt, state, start)
+                measure(root, model, arrays, split, c, rt, state, start, test_arrays)
     save(root, model, optimizer, state, c, data_hash, rt)
     if rt.rank == 0:
         atomic_json(root / 'status.json', {'status': 'training_complete', **state, 'time': time.time(),

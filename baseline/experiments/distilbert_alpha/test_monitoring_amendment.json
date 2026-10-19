@@ -1,0 +1,12 @@
+{
+  "authorized_at": "2026-10-19T14:16:33-07:00",
+  "scope": "DistilBERT alpha experiment in baseline/experiments/distilbert_alpha",
+  "request": "Record power-law fit quality and correlate it with training, validation, and test accuracy; measure test accuracy if not already measured.",
+  "test_policy": "Evaluate the complete official IMDb test partition at initialization and every completed epoch, alongside frozen-model training and validation metrics.",
+  "test_role": "Monitoring and descriptive correlations only. Validation remains the selection source. Test measurements do not control optimization, early stopping, schedules, or sweep generation.",
+  "data": "The original training/validation split and prepared.json remain unchanged. Separate test_tokens.npz and test_prepared.json freeze test inputs and record exposure.",
+  "fit_quality": "Default WeightWatcher 0.7.7 analyze(); raw unnormalized matrices. Retain D, alpha, sigma, xmin, xmax, num_pl_spikes, num_evals, status and warnings.",
+  "D_definition": "Kolmogorov-Smirnov distance for the fitted power-law tail; lower D means a closer empirical-tail fit. D is not a p-value.",
+  "correlations": "Per-layer and model-average metrics versus all three accuracies. Separate single-run trajectories from between-configuration comparisons; use complete three-seed configuration means for the latter, stratified by optimizer and fixed protocol.",
+  "interpretation": "Record repeated test exposure in reports. No unobserved test results or fit-quality correlations are inferred from the pilot."
+}

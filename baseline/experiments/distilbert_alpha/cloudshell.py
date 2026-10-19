@@ -151,7 +151,9 @@ def start_remote(a):
                   'deadline_unix': deadline, 'maximum_hours': a.hours, 'resume_run': a.resume_run,
                   'job_id': a.job_id,
                   'automatic_restart': False, 'experiment_count': 1,
-                  'storage': str(MOUNT), 'test_accessed': False}
+                  'storage': str(MOUNT), 'test_accessed_at_launch': False,
+                  'test_monitoring_enabled': True, 'test_used_for_selection': False,
+                  'test_policy': 'test_monitoring_amendment.json'}
         write(root / 'launch.json', record)
         env = {'PJRT_DEVICE': 'TPU', 'TPU_ACCELERATOR_TYPE': 'v5litepod-8',
                'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1',
