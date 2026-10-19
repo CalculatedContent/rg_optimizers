@@ -187,6 +187,21 @@ optimizer.set_support_states(checkpoint.supports, replace=True)
 
 After each later outer checkpoint, call `set_support_states(...)` again.
 
+## Provenance logging (step stats)
+
+`pop_step_stats()` rows include logging-only provenance fields aligned with the
+local-delta package grammar and the midpoint `trace_log_tracker` extension:
+
+- `actuator_id = self_consistent_trace_log_tracker`
+- `ecs_backend = self_consistent_F_m` (bulk-effective participation-ratio / `F(m)` lineage — **not** a free-fit MP edge label)
+- `dose_definition = correction_frobenius_over_base_step_delta_frobenius`
+- `dose_value` (null when no correction applied)
+- `is_first_apply` (first **successful** correction per parameter)
+- `is_first_due` (first schedule-due clock step; may have null dose)
+
+These fields do **not** change correction mathematics. See
+[`docs/PROVENANCE_INVENTORY.md`](../../docs/PROVENANCE_INVENTORY.md).
+
 ## Run the tests
 
 ```bash
