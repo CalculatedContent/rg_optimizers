@@ -1,0 +1,14 @@
+{
+  "seed": 401,
+  "optimizer": "adamw",
+  "lr": 0.00002,
+  "weight_decay": 0.01,
+  "dropout": 0.1,
+  "attention_dropout": 0.1,
+  "classifier_dropout": 0.2,
+  "epochs": 3,
+  "max_length": 128,
+  "per_device_batch": 16,
+  "precision": "bf16",
+  "checkpoint_steps": 50
+}

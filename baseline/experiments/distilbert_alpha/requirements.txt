@@ -1,0 +1,7 @@
+# Install into an isolated --system-site-packages venv on the mounted drive.
+# Preserve the working TPU torch/torch_xla/libtpu stack; never reinstall it here.
+transformers==4.44.2
+tokenizers==0.19.1
+datasets==2.21.0
+huggingface-hub==0.25.2
+weightwatcher==0.7.7

@@ -1,0 +1,35 @@
+{
+  "checked_utc": "2026-10-19T17:09:14.109782+00:00",
+  "unittest_count": 6,
+  "unittest_passed": true,
+  "resume_equivalence": "Exact CPU tiny-DistilBERT model, optimizer, RNG, train/validation metrics for AdamW, Adam, SGD",
+  "full_model_cpu_check": {
+    "passed": true,
+    "kind": "full pretrained DistilBERT CPU one-update engineering check",
+    "parameters": 66955010,
+    "examples": 2,
+    "sequence_length": 128,
+    "optimizer": "adamw",
+    "precision": "bf16",
+    "finite_loss_and_gradients": true,
+    "elapsed_seconds": 4.433756806000019,
+    "test_accessed": false,
+    "tpu_executed": false
+  },
+  "prepared_imdb": {
+    "training_examples": 22500,
+    "validation_examples": 2500,
+    "test_accessed": false
+  },
+  "synthetic_spectral_check": {
+    "snapshots": 2,
+    "eligible_matrices_per_snapshot": 13,
+    "valid_fits_per_snapshot": [
+      13,
+      13
+    ],
+    "weightwatcher": "0.7.7"
+  },
+  "tpu_launch_status": "Not launched from this session: Cloud console unavailable and no authenticated gcloud connection. Use Cloud Shell launcher.",
+  "tpu_bitwise_resume_validated": false
+}
