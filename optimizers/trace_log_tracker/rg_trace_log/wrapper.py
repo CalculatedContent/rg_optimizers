@@ -87,6 +87,8 @@ class TraceLogRGWrapper:
         self.supports: dict[str, int] = {}
         self.global_step = 0
         self._last_step_stats: list[dict[str, Any]] = []
+        # First *successful* correction per parameter (dose not null); not first schedule-due step.
+        self._applied_parameters: set[str] = set()
 
     @property
     def param_groups(self) -> list[MutableMapping[str, Any]]:
@@ -129,6 +131,43 @@ class TraceLogRGWrapper:
     def get_supports(self) -> dict[str, int]:
         return dict(self.supports)
 
+
+    def _first_due_step(self) -> int:
+        """First global_step index at which a correction is schedule-due."""
+        warmup = int(self.config.warmup_steps)
+        every = int(self.config.apply_every_steps)
+        step = warmup + 1
+        while step % every != 0:
+            step += 1
+        return int(step)
+
+    def _provenance_fields(
+        self,
+        *,
+        global_step: int,
+        dose_value: Optional[float],
+        parameter: str = "",
+    ) -> dict[str, Any]:
+        """Logging-only fields (local_delta #34 grammar + F1 scheduled≠applied).
+
+        ``is_first_apply`` is true only on the first successful correction for
+        that parameter (``dose_value`` not null). Schedule-due steps with null
+        dose are never first-apply. ``is_first_due`` marks the first
+        schedule-due step for clock analysis (may be true with null dose).
+        """
+        applied = dose_value is not None
+        is_first_apply = bool(applied and parameter not in self._applied_parameters)
+        if applied and parameter:
+            self._applied_parameters.add(parameter)
+        return {
+            "actuator_id": "trace_log_tracker",
+            "ecs_backend": "midpoint_pl_detx",
+            "dose_definition": "correction_frobenius_over_base_step_delta_frobenius",
+            "dose_value": None if dose_value is None else float(dose_value),
+            "is_first_apply": is_first_apply,
+            "is_first_due": int(global_step) == self._first_due_step(),
+        }
+
     def pop_step_stats(self) -> list[dict[str, Any]]:
         stats = self._last_step_stats
         self._last_step_stats = []
@@ -154,11 +193,13 @@ class TraceLogRGWrapper:
                     eps=self.config.eps,
                 )
             except (RuntimeError, ValueError) as exc:
+                step_idx = self.global_step + 1
                 self._last_step_stats.append({
-                    "global_step": self.global_step + 1,
+                    "global_step": step_idx,
                     "parameter": name,
                     "status": "geometry_failed",
                     "reason": str(exc),
+                    **self._provenance_fields(global_step=step_idx, dose_value=None, parameter=name),
                 })
                 continue
             prepared[name] = (before, geometry)
@@ -190,6 +231,7 @@ class TraceLogRGWrapper:
                     eps=self.config.eps,
                 )
                 parameter.copy_(before + result.corrected_delta)
+                dose = float(result.correction_ratio) if result.applied else None
                 self._last_step_stats.append({
                     "global_step": self.global_step,
                     "parameter": name,
@@ -209,6 +251,11 @@ class TraceLogRGWrapper:
                     "gradient_radial_inner_product": geometry.radial_inner_product,
                     "smallest_retained_singular_value": geometry.smallest_retained_singular_value,
                     "largest_retained_singular_value": geometry.largest_retained_singular_value,
+                    **self._provenance_fields(
+                        global_step=self.global_step,
+                        dose_value=dose,
+                        parameter=name,
+                    ),
                 })
         return loss
 
@@ -217,6 +264,7 @@ class TraceLogRGWrapper:
             "base_optimizer": self.base_optimizer.state_dict(),
             "supports": dict(self.supports),
             "global_step": int(self.global_step),
+            "applied_parameters": sorted(self._applied_parameters),
             "config": asdict(self.config),
         }
 
@@ -224,3 +272,11 @@ class TraceLogRGWrapper:
         self.base_optimizer.load_state_dict(state_dict["base_optimizer"])
         self.set_supports(state_dict.get("supports", {}))
         self.global_step = int(state_dict.get("global_step", 0))
+        applied = state_dict.get("applied_parameters", state_dict.get("has_applied_correction"))
+        if isinstance(applied, (list, set, tuple)):
+            self._applied_parameters = set(str(x) for x in applied)
+        elif applied:
+            # legacy bool: mark all current supports as already applied
+            self._applied_parameters = set(self.supports)
+        else:
+            self._applied_parameters = set()
