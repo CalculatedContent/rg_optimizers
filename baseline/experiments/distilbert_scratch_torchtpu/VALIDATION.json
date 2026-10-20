@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-20",
+  "status": "CPU engineering validated; real TPU qualification pending",
+  "base_commit": "afd96a379f4b22c9199f58ca1442a89c5e087700",
+  "source_sha256": "b9f365baab28af883cbc0953eab41f697275aa4e3b928e1c5470f0391160f99a",
+  "suite": {
+    "tests_run": 7,
+    "passed": 6,
+    "skipped": 1,
+    "seconds": 53.117
+  },
+  "passed": [
+    "full 66,985,530 parameter architecture and 36 encoder matrices",
+    "eight-way exact sample coverage including padded remainder",
+    "eight-shard weighted gradients agree with serial masked-token mean",
+    "fixed evaluation masking excludes special tokens and padding targets",
+    "incomplete spectral fits produce null aggregate",
+    "four-update tiny AdamW training equals two updates plus restart exactly: parameters, optimizer state, evaluation metrics; checkpoint corruption refused"
+  ],
+  "spectral_smoke": {
+    "weightwatcher": "0.7.7",
+    "synthetic_matrix_shape": [
+      128,
+      128
+    ],
+    "fit_and_joined_json_and_csv": "passed",
+    "scientific_result": false
+  },
+  "distributed_cpu_integration": {
+    "attempted": true,
+    "passed": false,
+    "blocker": "Gloo TCP interface initialization: Operation not permitted in this execution environment",
+    "rerun": "RG_RUN_DISTRIBUTED_TESTS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python -m unittest test_experiment -v"
+  },
+  "native_tpu": {
+    "launched": false,
+    "completed_model": false,
+    "alpha_results": null,
+    "blocker": "No authenticated Google Cloud CLI in this session; Cloud Console browser returned Site Unavailable"
+  },
+  "engineering_packages": {
+    "torch": "2.14.1",
+    "transformers": "4.57.1",
+    "numpy": "2.3.5",
+    "datasets": "4.2.0",
+    "weightwatcher": "0.7.7"
+  },
+  "upstream": {
+    "repository": "https://github.com/google-pytorch/torch_tpu",
+    "inspected_main_commit": "905a0dfde04a01df8ee2c100ffd656694f38df84",
+    "wheel": "torch_tpu-0.2.0-cp312-cp312-manylinux_2_31_x86_64.whl",
+    "wheel_sha256": "cf725f2c38a5287f15095c2bb19dcb5900e445f6abe3ab622aa51c0f3f20bc0f",
+    "wheel_requires_python": ">=3.12",
+    "wheel_requires_torch": ">=2.11.0,<=2.15.0",
+    "release_source_api_verified": [
+      "set_tpu_launch_env(nnodes=1)",
+      "TORCH_TPU_SLICEBUILDER_ADDRESSES detection",
+      "get_rng_state",
+      "set_rng_state",
+      "tpu_dist"
+    ]
+  },
+  "pending": [
+    "all-eight-device native TorchTPU collective probe",
+    "real full-model compiled forward/backward and optimizer steps",
+    "checkpoint/restart on actual TPU",
+    "WikiText-103 download/tokenization on target VM",
+    "throughput, convergence, and spectral results"
+  ]
+}
