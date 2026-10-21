@@ -35,7 +35,7 @@ def launch(a):
         raise RuntimeError('This launcher requires a single-host slice with cores <= local WORLD_SIZE <= 8')
     env = os.environ.copy()
     env['SHORT_GPT_DEVICE'] = 'tpu'
-    command = [sys.executable, '-m', 'torch.distributed.run', '--standalone',
+    command = [sys.executable, '-m', 'torch.distributed.run', '--rdzv-backend=c10d','--rdzv-endpoint=127.0.0.1:0','--local-addr=127.0.0.1',
                f'--nproc_per_node={world}', '--max_restarts=0', str(Path(__file__).resolve()),
                '--worker', '--cores', str(a.cores), '--output', str(a.output.resolve()),
                '--data', str(a.data.resolve())]
@@ -44,25 +44,28 @@ def launch(a):
     return subprocess.call(command, env=env)
 
 
-def work(a):
+def work(a, backend="tpu_dist"):
     from datetime import timedelta
     import math
     import signal
     import time
     import unittest
     import torch
-    import torch_tpu  # noqa: F401
+    if backend == 'tpu_dist':
+        import torch_tpu  # noqa: F401
+    elif backend != 'gloo':
+        raise ValueError('Only tpu_dist or the CPU integration-test backend gloo is supported')
     import torch.distributed as dist
     import comparison as c
     import runtime
-    runtime.DEVICE = 'tpu'
+    runtime.DEVICE = 'tpu' if backend == 'tpu_dist' else 'cpu'
     root, data = a.output.resolve(), a.data.resolve()
     root.mkdir(parents=True, exist_ok=True)
     held = []
     if int(os.environ['RANK']) == 0:
         held = [c.lock(root/'batch.lock'), c.lock(root.parent/'short_gpt_training.lock')]
     # Official TorchTPU order: topology environment -> process group -> local device.
-    dist.init_process_group('tpu_dist', timeout=timedelta(hours=24))
+    dist.init_process_group(backend, timeout=timedelta(hours=24))
     rank, world = dist.get_rank(), dist.get_world_size()
     if not a.cores <= world <= 8:
         raise RuntimeError('Invalid worker/core count')
@@ -73,7 +76,7 @@ def work(a):
     try:
         if rank == 0:
             c.write(root/'parallel_launch.json', dict(cores=a.cores,processes=world,utc=c.utc(),
-                    mode='independent trials, one per active TPU device',preflight=a.preflight,
+                    mode='independent trials, one per active device',backend=backend,preflight=a.preflight,
                     topology=os.environ.get('TORCH_TPU_TOPOLOGY')))
         dist.barrier()
         if a.preflight:

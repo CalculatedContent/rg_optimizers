@@ -123,3 +123,19 @@ Calibration screening completes before finalist selection, all finalist training
 There can be eight concurrent screening or confirmation trials, but only four finalist calibration trials exist. Idle devices are expected at stage boundaries. Per-trial timing remains synchronized; final `launch_wall_seconds` measures this invocation, not prior interrupted sessions. Progress is recorded in `rankN_status.json` and per-trial `progress.json`; preflight writes `preflight_rankN.json` for each active rank.
 
 CPU tests cover assignment of each job exactly once for every concurrency from one through eight, plus optimizer resume and backend checks. Actual multi-device TPU execution remains unverified until the Builders VM preflight succeeds. Source: https://github.com/google-pytorch/torch_tpu/blob/main/docs/distributed_support.md
+
+## Audit and regression tests
+
+Run from the repository root:
+
+```bash
+python short_test_portable/test_portable.py --device cpu
+python short_test_portable/test_audit.py
+python short_test_portable/test_distributed.py
+```
+
+The last command runs two CPU/Gloo processes through shortened calibration, selection and confirmation using synthetic data, then reruns to verify completed-job skipping. It uses real model updates/checkpoints/evaluation; alpha fitting is explicitly stubbed. It does not validate TPU kernels. If your development sandbox prohibits Gloo sockets, use `test_distributed.py --simulate` to exercise the same two-process workflow with file-based test barriers; this tests coordination logic, not actual distributed communication.
+
+Verified 2026-10-21: 12 unit checks passed (5 portable + 7 audit), plus the two-process workflow and resume check with simulated barriers. Real Gloo communication was blocked by the execution environment (`Operation not permitted`). CUDA/MPS hardware was absent and TorchTPU was not installed. No accelerator or eight-device hardware pass is claimed.
+
+The audit fixed final checkpoint persistence when a target falls between checkpoint intervals, explicit lock cleanup, and JSON tuple/list normalization so unchanged frozen recipes survive resume. Scientific settings are unchanged. All fixes are in the portable runner; the original frozen experiment source remains intact. Because source hashes are guarded, begin a new portable output directory when updating from an earlier revision.
