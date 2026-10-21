@@ -100,10 +100,10 @@ def setup(seed, recipe):
     groups=[dict(params=[p for p in params if p.ndim>=2],weight_decay=recipe['weight_decay']),
             dict(params=[p for p in params if p.ndim<2],weight_decay=0.)]
     if recipe['optimizer']=='AdamW':
-        optimizer=torch.optim.AdamW(groups,lr=recipe['peak_lr'],betas=tuple(recipe['betas']),eps=1e-8,fused=False)
+        optimizer=torch.optim.AdamW(groups,lr=recipe['peak_lr'],betas=tuple(recipe['betas']),eps=1e-8,fused=False,foreach=False)
     else:
         optimizer=torch.optim.SGD(groups,lr=recipe['peak_lr'],momentum=recipe['momentum'],
-                                  dampening=0.,nesterov=False)
+                                  dampening=0.,nesterov=False,foreach=False)
     return model,optimizer,torch.Generator().manual_seed(seed+1)
 
 def lr_at(step, recipe, design):
@@ -118,7 +118,7 @@ def update(model,opt,rng,data,step,recipe,design):
     x,y=base.batch(data,rng); _,loss=model(x.to(runtime.DEVICE),y.to(runtime.DEVICE))
     if not torch.isfinite(loss):raise FloatingPointError('Nonfinite training loss')
     opt.zero_grad(set_to_none=True);loss.backward()
-    norm=torch.nn.utils.clip_grad_norm_(model.parameters(),design['grad_clip'])
+    norm=torch.nn.utils.clip_grad_norm_(model.parameters(),design['grad_clip'],foreach=False)
     if not torch.isfinite(norm):raise FloatingPointError('Nonfinite raw gradient norm')
     opt.step();return loss.item(),float(norm)
 
@@ -310,7 +310,7 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('command',choices=['prepare','run','worker','summarize','package'])
     p.add_argument('--output',type=Path,required=True);p.add_argument('--data',type=Path)
     p.add_argument('--legacy',type=Path);p.add_argument('--job',type=Path);p.add_argument('--target',type=int)
-    p.add_argument('--device', choices=['cpu','tpu'], default=os.environ.get('SHORT_GPT_DEVICE','cpu'))
+    p.add_argument('--device', choices=['cpu','mps','cuda','tpu'], default=os.environ.get('SHORT_GPT_DEVICE','cpu'))
     a=p.parse_args();runtime.DEVICE=a.device;os.environ['SHORT_GPT_DEVICE']=a.device;runtime.initialize()
     root=a.output.resolve();data=a.data.resolve() if a.data else None
     if a.command=='prepare':print(json.dumps(prepare(root,data)))

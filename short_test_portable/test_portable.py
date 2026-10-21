@@ -1,5 +1,9 @@
 """Run on the intended host before launching the full comparison."""
-import copy
+import argparse
+import json
+import os
+import time
+from unittest.mock import patch
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +17,17 @@ class PortableTests(unittest.TestCase):
     def setUpClass(cls):
         runtime.initialize()
         torch.set_num_threads(1)
+
+    def test_unavailable_accelerators_fail_without_fallback(self):
+        for name, available in [('cuda', 'torch.cuda.is_available'), ('mps', 'torch.backends.mps.is_available')]:
+            with self.subTest(device=name), patch.object(runtime, 'DEVICE', name), patch(available, return_value=False):
+                with self.assertRaises(RuntimeError): runtime.initialize()
+
+    def test_timing_dispatch(self):
+        for name, api in [('cuda', 'torch.cuda.synchronize'), ('mps', 'torch.mps.synchronize')]:
+            with self.subTest(device=name), patch.object(runtime, 'DEVICE', name), patch(api) as sync:
+                runtime.synchronize()
+                sync.assert_called_once_with()
 
     def test_memory_admission_without_linux_cgroups(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -52,4 +67,16 @@ class PortableTests(unittest.TestCase):
                 self.assertTrue(torch.equal(before,rng2.get_state()))
                 self.assertTrue(resumed.training)
 
-if __name__=='__main__':unittest.main()
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--device', choices=['cpu','mps','cuda','tpu'], default=os.environ.get('SHORT_GPT_DEVICE','cpu'))
+    args=parser.parse_args()
+    runtime.DEVICE=args.device
+    os.environ['SHORT_GPT_DEVICE']=args.device
+    runtime.initialize()
+    print(json.dumps(runtime.environment()), flush=True)
+    start=time.perf_counter()
+    result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(PortableTests))
+    runtime.synchronize()
+    print(json.dumps(dict(device=args.device,preflight_seconds=time.perf_counter()-start,passed=result.wasSuccessful())),flush=True)
+    raise SystemExit(0 if result.wasSuccessful() else 1)

@@ -1,4 +1,4 @@
-"""Explicit CPU / Google TorchTPU backend; CPU initialization and sampling."""
+"""Explicit CPU / Apple MPS / CUDA / Google TorchTPU backend; CPU initialization and sampling."""
 import os
 import platform
 import importlib.metadata
@@ -8,8 +8,20 @@ import torch
 DEVICE = os.environ.get('SHORT_GPT_DEVICE', 'cpu')
 
 def initialize():
-    if DEVICE not in ('cpu', 'tpu'):
-        raise ValueError('Device must be cpu or tpu')
+    if DEVICE not in ('cpu', 'mps', 'cuda', 'tpu'):
+        raise ValueError('Device must be cpu, mps, cuda or tpu')
+    if DEVICE == 'mps':
+        if not torch.backends.mps.is_available():
+            raise RuntimeError('MPS requested but unavailable; use --device cpu on this Mac')
+        if os.environ.get('PYTORCH_ENABLE_MPS_FALLBACK') == '1':
+            raise RuntimeError('Unset PYTORCH_ENABLE_MPS_FALLBACK; silent CPU fallback would invalidate backend timing')
+    if DEVICE == 'cuda':
+        if not torch.cuda.is_available():
+            raise RuntimeError('CUDA requested but unavailable; install a CUDA-enabled PyTorch wheel and NVIDIA driver')
+        torch.cuda.set_device(0)
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+        torch.backends.cudnn.benchmark = False
     if DEVICE == 'tpu':
         try:
             import torch_tpu  # noqa: F401; registers native TPU backend
@@ -22,7 +34,11 @@ def initialize():
     return torch.device(DEVICE)
 
 def synchronize():
-    if DEVICE == 'tpu':
+    if DEVICE == 'cuda':
+        torch.cuda.synchronize()
+    elif DEVICE == 'mps':
+        torch.mps.synchronize()
+    elif DEVICE == 'tpu':
         torch.accelerator.synchronize()
 
 def cpu_tree(value):
@@ -41,6 +57,10 @@ def environment():
                   python=platform.python_version(), torch=torch.__version__,
                   precision='float32 tensors; backend-dependent kernels',
                   stochastic_operations='CPU initialization and minibatches; dropout must remain zero')
+    if DEVICE == 'cuda':
+        result.update(cuda=torch.version.cuda, gpu=torch.cuda.get_device_name(0), tf32=False)
+    elif DEVICE == 'mps':
+        result['macos'] = platform.mac_ver()[0]
     if DEVICE == 'tpu':
         result['torch_tpu'] = importlib.metadata.version('torch_tpu')
     return result
