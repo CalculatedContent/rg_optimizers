@@ -179,3 +179,7 @@ output archives are not committed to this source repository.
 - [nanoGPT character recipe](https://github.com/karpathy/nanoGPT/blob/master/config/train_shakespeare_char.py): peak LR 0.001, beta2 0.99, warmup 100, and a one-tenth floor motivate the search. Architecture and batch differ from ours.
 - [Srećković, Geiping, Orvieto (2025), Is your batch size the problem?](https://arxiv.org/abs/2506.12543): small-batch SGD, momentum tuning including 0.98, separate LR sweeps, and clipping motivate optimizer-specific calibration. Large-model optima are not assumed optimal here.
 - [PyTorch SGD](https://docs.pytorch.org/docs/2.14/generated/torch.optim.SGD.html): standard unnormalized buffer `v = momentum*v + gradient`, then `parameter -= lr*v`; no custom LR rescaling.
+
+## Mac CPU and Google TPU portability
+
+See [the portable runner](../short_test_portable/README.md) for CPU setup on macOS/Linux and an experimental Google TorchTPU path with hardware preflight tests. Use a separate output directory; the frozen runner above remains the source for the ongoing original comparison.
