@@ -1,0 +1,8 @@
+{
+  "best.pt_training_updates_seconds_from_initialization": 1817.2094695779087,
+  "last.pt_training_updates_seconds_from_initialization": 1817.2094695779087,
+  "active_training_and_monitoring_seconds_until_best_checkpoint": 1930.5561611230005,
+  "active_training_and_monitoring_seconds_until_stop_decision": 1930.605184498003,
+  "combined_process_seconds_including_all_evaluations_and_setup": 1988.4477497120024,
+  "scope": "Measured active execution; excludes user/conversation pause between pilot and continuation, downloading, coding, audit and packaging. Best-checkpoint monitoring time uses its evaluation timestamp, before that checkpoint write. No runtime extrapolation."
+}
