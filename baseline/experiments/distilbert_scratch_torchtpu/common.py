@@ -22,12 +22,13 @@ class Config:
     weight_decay: float = 0.01
     beta1: float = 0.9
     beta2: float = 0.999
-    eps: float = 1e-8
+    eps: float = 1e-6
     momentum: float = 0.9
     grad_clip: float = 1.0
     dropout: float = 0.1
     attention_dropout: float = 0.1
     mask_probability: float = 0.15
+    evaluation_mask_probability: float = 0.15
     precision: str = 'bf16'
     compile: bool = True
     checkpoint_steps: int = 100
@@ -51,7 +52,7 @@ class Config:
         if not all(0 <= x < 1 for x in (self.beta1, self.beta2, self.momentum,
                                       self.dropout, self.attention_dropout)):
             raise ValueError('Invalid probabilities/momenta')
-        if not 0 < self.mask_probability < 1 or self.precision not in ('bf16', 'fp32'):
+        if not all(0 < p < 1 for p in (self.mask_probability, self.evaluation_mask_probability)) or self.precision not in ('bf16', 'fp32'):
             raise ValueError('Invalid masking/precision')
         return self
 
@@ -128,10 +129,11 @@ def batch_indices(order, batch_index, rank, world, local_batch):
     return order[positions % len(order)], valid
 
 
-def masked_batch(tokens, indices, valid, meta, c, salt, step=0):
+def masked_batch(tokens, indices, valid, meta, c, salt, step=0, *, evaluation=False):
     ids = np.array(tokens[indices], dtype=np.int64, copy=True)
     labels = np.full(ids.shape, -100, dtype=np.int64)
     special = np.isin(ids, meta['special_ids'])
+    probability = c.evaluation_mask_probability if evaluation else c.mask_probability
     for row, (idx, good) in enumerate(zip(indices, valid)):
         if not good:
             continue
@@ -139,7 +141,7 @@ def masked_batch(tokens, indices, valid, meta, c, salt, step=0):
         eligible = np.flatnonzero(~special[row])
         if not len(eligible):
             raise ValueError('Prepared sequence has no maskable tokens')
-        chosen = eligible[g.random(len(eligible)) < c.mask_probability]
+        chosen = eligible[g.random(len(eligible)) < probability]
         if not len(chosen):
             chosen = g.choice(eligible, 1)  # documented nonempty-target safeguard
         labels[row, chosen] = ids[row, chosen]

@@ -2,12 +2,12 @@
   "date": "2026-10-20",
   "status": "CPU engineering validated; real TPU qualification pending",
   "base_commit": "afd96a379f4b22c9199f58ca1442a89c5e087700",
-  "source_sha256": "b9f365baab28af883cbc0953eab41f697275aa4e3b928e1c5470f0391160f99a",
+  "source_sha256": "0bc2b349c13104f487d35ebce98d23affbcef961d19d39b838ed9d9186743d5b",
   "suite": {
-    "tests_run": 7,
-    "passed": 6,
+    "tests_run": 12,
+    "passed": 11,
     "skipped": 1,
-    "seconds": 53.117
+    "seconds": 42.75
   },
   "passed": [
     "full 66,985,530 parameter architecture and 36 encoder matrices",
@@ -15,7 +15,14 @@
     "eight-shard weighted gradients agree with serial masked-token mean",
     "fixed evaluation masking excludes special tokens and padding targets",
     "incomplete spectral fits produce null aggregate",
-    "four-update tiny AdamW training equals two updates plus restart exactly: parameters, optimizer state, evaluation metrics; checkpoint corruption refused"
+    "four-update tiny AdamW training equals two updates plus restart exactly: parameters, optimizer state, evaluation metrics; checkpoint corruption refused",
+    "training mask-rate changes leave fixed evaluation inputs and labels bitwise identical",
+    "best full model weights survive later validation regression; test improvements cannot replace them; hash and retained weights verified",
+    "AdamW decay excludes LayerNorm and biases and applies once to tied embedding/output weights",
+    "compiled aot_eager CPU BF16 loss, counts and gradients agree with eager execution",
+    "six calibration configurations differ only in LR and warmup",
+    "Cloud Shell and supervisor CLI expose mutually exclusive config selection and exact resume",
+    "complete real WikiText-103 preparation; all packed rows checked for boundaries, vocabulary bounds, maskable content and exact manifest hashes"
   ],
   "spectral_smoke": {
     "weightwatcher": "0.7.7",
@@ -64,7 +71,53 @@
     "all-eight-device native TorchTPU collective probe",
     "real full-model compiled forward/backward and optimizer steps",
     "checkpoint/restart on actual TPU",
-    "WikiText-103 download/tokenization on target VM",
-    "throughput, convergence, and spectral results"
-  ]
+    "throughput, convergence, and spectral results",
+    "reproduce verified real-data preparation on target TPU VM"
+  ],
+  "audit_base_commit": "896fa646b94872f8cf45b092127c822fc2880c2e",
+  "audit_changes": [
+    "Adam epsilon aligned with BERT implementation: 1e-6",
+    "fixed evaluation mask rate independent of training mask rate",
+    "full model retained by validation loss independently of rolling resume checkpoints",
+    "selectable committed configurations; preparation follows configured length",
+    "WikiText dataset revision pinned for repeatable comparisons",
+    "experiment labeled BERT-6 MLM from scratch to distinguish architecture from distillation"
+  ],
+  "real_corpus_preparation": {
+    "passed": true,
+    "hardware": "CPU data preparation only; no model training",
+    "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "tokenizer_revision": "12040accade4e8a0f71eabdb258fecc2e7e948be",
+    "sequence_length": 128,
+    "vocab_size": 30522,
+    "splits": {
+      "train": {
+        "rows": 913341,
+        "text_tokens": 113916064,
+        "dropped_remainder": 113,
+        "file": "train.bin",
+        "sha256": "3d58a53d18e302cfb924a56b632a728164e1dd8d54763c8fc23e0ee3cbf2a408",
+        "all_rows_structure_and_vocabulary": "passed"
+      },
+      "validation": {
+        "rows": 1913,
+        "text_tokens": 238656,
+        "dropped_remainder": 79,
+        "file": "validation.bin",
+        "sha256": "a2cc68a858d7ed17db0ea93a0f30020395826ae4fb551a642d39ceaba8393ef5",
+        "all_rows_structure_and_vocabulary": "passed"
+      },
+      "test": {
+        "rows": 2191,
+        "text_tokens": 273178,
+        "dropped_remainder": 3,
+        "file": "test.bin",
+        "sha256": "ddf490b3d50331584b329b0bfa6b40ce290cec5a8ab222f42f4bb8cc75805bc1",
+        "all_rows_structure_and_vocabulary": "passed"
+      }
+    },
+    "steps_per_corpus_pass": 3568,
+    "pilot_full_corpus_passes": 2.802749465971636,
+    "pilot_real_sequence_positions": 327662848
+  }
 }

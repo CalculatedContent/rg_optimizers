@@ -11,10 +11,11 @@ import tempfile
 import unittest
 import numpy as np
 import torch
-from common import Config, atomic_json, batch_indices, masked_batch, build_model, encoder_matrices
+from common import (Config, atomic_json, batch_indices, masked_batch, build_model,
+                    encoder_matrices, file_hash, make_optimizer, read_config)
 from prepare import synthetic
 from spectra import summarize
-from train import LossModel
+from train import LossModel, preserve_best_validation
 
 HERE = Path(__file__).parent
 
@@ -75,6 +76,91 @@ class ProtocolTests(unittest.TestCase):
         rows = [dict(valid=True, alpha=1.7, D=.04), dict(valid=False)]
         self.assertIsNone(summarize(rows, 2)['mean_alpha'])
         self.assertFalse(summarize(rows, 2)['all_fits_valid'])
+
+    def test_training_mask_rate_does_not_change_evaluation(self):
+        with tempfile.TemporaryDirectory() as d:
+            meta = synthetic(d)
+            tokens = np.memmap(Path(d) / 'train.bin', dtype=np.int32, shape=(19, 16))
+            c = self.config()
+            indices, valid = np.arange(19), np.ones(19, dtype=bool)
+            higher = replace(c, mask_probability=.30)
+            for salt in (991, 992, 993):
+                low = masked_batch(tokens, indices, valid, meta, c, salt, evaluation=True)
+                high = masked_batch(tokens, indices, valid, meta, higher, salt, evaluation=True)
+                for a, b in zip(low, high):
+                    torch.testing.assert_close(a, b, rtol=0, atol=0)
+            low = masked_batch(tokens, indices, valid, meta, c, 901)[1]
+            high = masked_batch(tokens, indices, valid, meta, higher, 901)[1]
+            self.assertGreater((high != -100).sum(), (low != -100).sum())
+
+    def test_best_weights_follow_validation_only_and_survive_later_regression(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            model = build_model(self.config(), 128)
+            metrics = dict(validation=dict(mlm_loss=3.0), test=dict(mlm_loss=4.0))
+            preserve_best_validation(root, 1, model, metrics, {'run': 'test'})
+            first = json.loads((root / 'best_validation.json').read_text())
+            with torch.no_grad():
+                model.distilbert.transformer.layer[0].attention.q_lin.weight.add_(.1)
+            metrics['validation']['mlm_loss'], metrics['test']['mlm_loss'] = 3.1, 1.0
+            preserve_best_validation(root, 2, model, metrics, {'run': 'test'})
+            self.assertEqual(first, json.loads((root / 'best_validation.json').read_text()))
+            metrics['validation']['mlm_loss'], metrics['test']['mlm_loss'] = 2.9, 5.0
+            preserve_best_validation(root, 3, model, metrics, {'run': 'test'})
+            best = json.loads((root / 'best_validation.json').read_text())
+            self.assertEqual(best['step'], 3)
+            self.assertEqual(file_hash(root / best['path']), best['sha256'])
+            saved = torch.load(root / best['path'], weights_only=False)
+            for name, tensor in model.state_dict().items():
+                torch.testing.assert_close(saved['model'][name], tensor, rtol=0, atol=0)
+            self.assertEqual(len(list((root / 'best_validation').glob('*.pt'))), 1)
+            preserve_best_validation(root, 4, model, metrics, {'run': 'test'})
+            self.assertEqual(best, json.loads((root / 'best_validation.json').read_text()))
+
+    def test_adamw_decay_preserves_norm_bias_and_does_not_duplicate_tied_weights(self):
+        c = self.config()
+        model = build_model(c, 128)
+        opt = make_optimizer(model, c, torch.device('cpu'))
+        parameters = [p for g in opt.param_groups for p in g['params']]
+        self.assertEqual(len(parameters), len({id(p) for p in parameters}))
+        with torch.no_grad():
+            for p in parameters:
+                p.fill_(1.)
+                p.grad = torch.zeros_like(p)
+        opt.step()
+        block = model.distilbert.transformer.layer[0]
+        self.assertTrue(torch.equal(block.sa_layer_norm.weight, torch.ones_like(block.sa_layer_norm.weight)))
+        self.assertTrue(torch.equal(block.attention.q_lin.bias, torch.ones_like(block.attention.q_lin.bias)))
+        for p in (block.attention.q_lin.weight, model.vocab_projector.weight):
+            torch.testing.assert_close(p, torch.full_like(p, 1 - c.lr * c.weight_decay), rtol=0, atol=0)
+
+    def test_compiled_bf16_loss_and_gradients_match_eager(self):
+        c = self.config(dropout=0, attention_dropout=0)
+        torch.manual_seed(42)
+        eager = LossModel(build_model(c, 128))
+        compiled = torch.compile(copy.deepcopy(eager), backend='aot_eager', fullgraph=True, dynamic=False)
+        ids = torch.randint(5, 128, (4, 16))
+        labels = ids.clone()
+        labels[:, :8], labels[-1] = -100, -100
+        outputs = []
+        for net in (eager, compiled):
+            with torch.autocast('cpu', dtype=torch.bfloat16):
+                out = net(ids, labels)
+            (out[0] / out[2]).backward()
+            outputs.append(out)
+        for a, b in zip(*outputs):
+            torch.testing.assert_close(a, b, rtol=0, atol=0)
+        for a, b in zip(eager.parameters(), compiled.parameters()):
+            torch.testing.assert_close(a.grad, b.grad, rtol=1e-5, atol=1e-6)
+
+    def test_pilot_grid_changes_only_lr_and_warmup(self):
+        baseline = read_config(HERE / 'configs/initial.json')
+        configs = [baseline] + [read_config(p) for p in sorted((HERE / 'configs').glob('pilot_*.json'))]
+        self.assertEqual(len(configs), 6)
+        self.assertEqual({(c.lr, c.warmup_steps) for c in configs},
+                         {(lr, warmup) for lr in (1e-4, 3e-4, 5e-4) for warmup in (300, 1000)})
+        for c in configs:
+            self.assertEqual(replace(c, lr=baseline.lr, warmup_steps=baseline.warmup_steps), baseline)
 
     def test_full_architecture_and_random_init(self):
         torch.manual_seed(401)

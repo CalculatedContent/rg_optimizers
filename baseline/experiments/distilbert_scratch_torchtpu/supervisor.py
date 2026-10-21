@@ -59,12 +59,16 @@ def main(a):
         frozen = subprocess.check_output([python, '-m', 'pip', 'freeze'], text=True)
         (root / 'requirements.lock.txt').write_text(frozen)
         config = root / 'config.json'
-        config.write_text((here / 'configs/initial.json').read_text())
+        requested = (here / (a.config or 'configs/initial.json')).resolve()
+        if not requested.is_relative_to(here) or requested.suffix != '.json':
+            raise ValueError('Config must be a JSON file inside this experiment folder')
+        config.write_text(requested.read_text())
         data = root / 'data'
         output = root / 'initial'
     run([python, here / 'launch.py', '--probe-only', '--output', root / 'probe'], training_deadline)
     if not a.resume_run:
-        run([python, here / 'prepare.py', '--output', data], training_deadline)
+        length = json.loads(config.read_text()).get('sequence_length', 128)
+        run([python, here / 'prepare.py', '--output', data, '--length', str(length)], training_deadline)
         write(root / 'data_path.json', dict(path=str(data)))
     if training_deadline - time.time() < 900:
         raise RuntimeError('Less than 15 minutes remain after setup; data saved, training not started')
@@ -111,7 +115,9 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', required=True)
     p.add_argument('--deadline', type=float, required=True)
-    p.add_argument('--resume-run')
+    mode = p.add_mutually_exclusive_group()
+    mode.add_argument('--resume-run')
+    mode.add_argument('--config', help='JSON path relative to this experiment folder; default configs/initial.json')
     args = p.parse_args()
     try:
         main(args)

@@ -164,7 +164,7 @@ def evaluate(net, arrays, meta, c, rt):
             batches = math.ceil(len(order) / (rt.world * c.per_device_batch))
             for j in range(batches):
                 idx, valid = batch_indices(order, j, rt.rank, rt.world, c.per_device_batch)
-                ids, labels = masked_batch(arrays[name], idx, valid, meta, c, salt)
+                ids, labels = masked_batch(arrays[name], idx, valid, meta, c, salt, evaluation=True)
                 with torch.autocast(rt.device.type, dtype=torch.bfloat16,
                                     enabled=c.precision == 'bf16'):
                     loss_sum, correct, count = net(ids.to(rt.device), labels.to(rt.device))
@@ -179,9 +179,38 @@ def evaluate(net, arrays, meta, c, rt):
     return results
 
 
-def measure(root, step, net, model, arrays, meta, c, rt):
+def preserve_best_validation(root, step, model, results, identity):
+    """Retain full weights selected only by the fixed validation MLM loss."""
+    root = Path(root)
+    pointer = root / 'best_validation.json'
+    loss = results['validation']['mlm_loss']
+    if not math.isfinite(loss):
+        raise ValueError('Best-checkpoint selection requires finite validation loss')
+    if pointer.exists() and loss >= json.loads(pointer.read_text())['validation_mlm_loss']:
+        return
+    folder = root / 'best_validation'
+    folder.mkdir(exist_ok=True)
+    target = folder / f'step_{step:08d}.pt'
+    partial = target.with_suffix('.partial')
+    save_torch(partial, dict(step=step, identity=identity,
+               model=cpu_tree(model.state_dict()), model_config=model.config.to_dict(),
+               validation_mlm_loss=loss))
+    partial.replace(target)
+    sync_dir(folder)
+    atomic_json(pointer, dict(step=step, validation_mlm_loss=loss,
+                path=str(target.relative_to(root)), sha256=file_hash(target),
+                criterion='minimum fixed-mask validation MLM loss; first checkpoint wins ties',
+                test_used_for_selection=False, alpha_used_for_selection=False,
+                purpose='full model weights for evaluation; use checkpoints/ for exact training resume'))
+    for old in folder.glob('step_*.pt'):
+        if old != target:
+            old.unlink()
+
+
+def measure(root, step, net, model, arrays, meta, c, rt, identity):
     results = evaluate(net, arrays, meta, c, rt)
     if rt.rank == 0:
+        preserve_best_validation(root, step, model, results, identity)
         snapshots = root / 'spectral_snapshots'
         snapshots.mkdir(exist_ok=True)
         path = snapshots / f'step_{step:08d}.pt'
@@ -194,7 +223,8 @@ def measure(root, step, net, model, arrays, meta, c, rt):
             step=step, **results, synthetic=c.synthetic,
             validation_train_loss_gap=results['validation']['mlm_loss'] - results['train']['mlm_loss'],
             snapshot=str(path.relative_to(root)), sha256=file_hash(path), expected_layers=expected,
-            test_used_for_selection=False, metric='masked-token accuracy, not downstream classification'))
+            test_used_for_selection=False, evaluation_mask_probability=c.evaluation_mask_probability,
+            metric='masked-token accuracy, not downstream classification'))
     rt.barrier()
 
 
@@ -246,10 +276,12 @@ def train(a, rt):
     step = restore(root, model, opt, rt, identity) if a.resume else 0
     if rt.rank == 0:
         atomic_json(root / 'runtime.json', dict(world=rt.world, backend=rt.backend, resumed_step=step,
+                    experiment='BERT-6 MLM from scratch', architecture='DistilBertForMaskedLM',
+                    distillation=False,
                     parameters=sum(p.numel() for p in model.parameters()), pretrained_weights=False,
                     global_batch=c.per_device_batch * rt.world, packages=packages, config=asdict(c)))
     if step == 0:
-        measure(root, step, net, model, arrays, meta, c, rt)
+        measure(root, step, net, model, arrays, meta, c, rt, identity)
         checkpoint(root, step, model, opt, rt, identity)
     batches = math.ceil(len(arrays['train']) / (rt.world * c.per_device_batch))
     epoch, order = None, None
@@ -296,14 +328,14 @@ def train(a, rt):
             if step <= 3 or step % 10 == 0:
                 print(json.dumps(status), flush=True)
         if step % c.measure_steps == 0:
-            measure(root, step, net, model, arrays, meta, c, rt)
+            measure(root, step, net, model, arrays, meta, c, rt, identity)
             last_measured = step
         if step % c.checkpoint_steps == 0:
             checkpoint(root, step, model, opt, rt, identity)
     # Commit training state before potentially expensive final diagnostics.
     checkpoint(root, step, model, opt, rt, identity)
     if last_measured != step and not rt.stop(a.deadline):
-        measure(root, step, net, model, arrays, meta, c, rt)
+        measure(root, step, net, model, arrays, meta, c, rt, identity)
     if rt.rank == 0:
         atomic_json(root / 'status.json', dict(step=step, target_steps=c.steps,
                     state='completed' if step == c.steps else 'paused', checkpoint_saved=True))

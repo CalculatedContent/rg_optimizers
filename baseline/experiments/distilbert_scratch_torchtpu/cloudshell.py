@@ -141,10 +141,15 @@ def start_remote(a):
             original = json.loads((resume.parent / 'launch.json').read_text())
             if original['commit'] != a.commit:
                 raise RuntimeError('Resume with the original source commit')
+        else:
+            config = (repo / FOLDER / (a.config or 'configs/initial.json')).resolve()
+            if not config.is_relative_to((repo / FOLDER).resolve()) or config.suffix != '.json' or not config.is_file():
+                raise ValueError('Config must be a committed JSON file inside this experiment folder')
         bounded_deadline(checked, a.hours)  # Recheck freshness without extending the original deadline.
         unit = 'rg-distilbert-torchtpu-' + stamp + '.service'
         record = {'root': str(root), 'unit': unit, 'commit': a.commit, 'lease': checked,
                   'deadline_unix': deadline, 'maximum_hours': a.hours, 'resume_run': a.resume_run,
+                  'config': a.config or ('original run config' if a.resume_run else 'configs/initial.json'),
                   'backend': 'native TorchTPU', 'pretrained_weights': False,
                   'automatic_restart': False, 'experiment_count': 1,
                   'storage': str(MOUNT), 'test_accessed_at_launch': False,
@@ -163,6 +168,8 @@ def start_remote(a):
         command += [str(python), '-u', str(repo / FOLDER / 'supervisor.py'), '--root', str(root), '--deadline', str(deadline)]
         if a.resume_run:
             command += ['--resume-run', a.resume_run]
+        elif a.config:
+            command += ['--config', a.config]
         run(command)
         write(LATEST, record)
         print(json.dumps(record, indent=2))
@@ -185,7 +192,9 @@ def main():
     p.add_argument('--node', help='Existing node; defaults to discovering the sole eligible v5e-8 in --zone')
     p.add_argument('--zone', default='us-west4-a')
     p.add_argument('--hours', type=float, default=5.5)
-    p.add_argument('--resume-run')
+    mode = p.add_mutually_exclusive_group()
+    mode.add_argument('--resume-run')
+    mode.add_argument('--config', help='Committed JSON path relative to this experiment folder')
     p.add_argument('--commit')
     p.add_argument('--remote', action='store_true', help=argparse.SUPPRESS)
     p.add_argument('--lease', help=argparse.SUPPRESS)
@@ -194,6 +203,12 @@ def main():
         return start_remote(a) if a.action == 'start' else status_remote()
     here = Path(__file__).resolve()
     repo = here.parents[3]
+    if a.action == 'start' and a.config:
+        config = (here.parent / a.config).resolve()
+        if not config.is_relative_to(here.parent) or config.suffix != '.json' or not config.is_file():
+            raise ValueError('Config must be a committed JSON file inside this experiment folder')
+        run(['git', '-C', str(repo), 'ls-files', '--error-unmatch', str(config.relative_to(repo))], capture_output=True)
+        a.config = str(config.relative_to(here.parent))
     if not a.node:
         a.node = discover_node(a.zone)
     command = ['sudo', 'python3', '-c', here.read_text(), a.action, '--remote', '--hours', str(a.hours)]
@@ -208,6 +223,8 @@ def main():
         command += ['--commit', head, '--lease', json.dumps(lease)]
         if a.resume_run:
             command += ['--resume-run', a.resume_run]
+        elif a.config:
+            command += ['--config', a.config]
     run(['gcloud', 'compute', 'tpus', 'tpu-vm', 'ssh', a.node, '--project=' + PROJECT,
          '--zone=' + a.zone, '--worker=0', '--command=' + shlex.join(command)])
 
