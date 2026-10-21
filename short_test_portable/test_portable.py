@@ -23,6 +23,15 @@ class PortableTests(unittest.TestCase):
             with self.subTest(device=name), patch.object(runtime, 'DEVICE', name), patch(available, return_value=False):
                 with self.assertRaises(RuntimeError): runtime.initialize()
 
+    def test_parallel_assignment(self):
+        from tpu_parallel import assigned
+        jobs=list(range(12))
+        for cores in range(1,9):
+            parts=[assigned(jobs,rank,cores) for rank in range(8)]
+            self.assertEqual(sorted(x for part in parts for x in part),jobs)
+            self.assertTrue(all(not part for part in parts[cores:]))
+        with self.assertRaises(ValueError):assigned(jobs,0,9)
+
     def test_timing_dispatch(self):
         for name, api in [('cuda', 'torch.cuda.synchronize'), ('mps', 'torch.mps.synchronize')]:
             with self.subTest(device=name), patch.object(runtime, 'DEVICE', name), patch(api) as sync:

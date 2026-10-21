@@ -11,7 +11,7 @@ Choose the backend explicitly for both `prepare` and `run`:
 | NVIDIA GPU on Linux / WSL2 | `--device cuda` |
 | Google TPU VM, using Google TorchTPU | `--device tpu` |
 
-No automatic backend selection is used. Every worker inherits the selected backend. One visible accelerator is used; this is not an eight-device distributed runner. Use `CUDA_VISIBLE_DEVICES` to select the NVIDIA GPU before starting. Native Windows is not supported because the experiment uses POSIX file locks; use WSL2.
+No automatic backend selection is used. Every worker inherits the selected backend. The ordinary `comparison.py` command uses one accelerator. For up to eight TPU devices, use `tpu_parallel.py` below. Use `CUDA_VISIBLE_DEVICES` to select the NVIDIA GPU before starting. Native Windows is not supported because the experiment uses POSIX file locks; use WSL2.
 
 **CPU:** regular PyTorch on macOS or Linux. Use `cpu` for the Mac CPU or `mps` for its supported GPU. Intel Macs need a PyTorch/Python combination with available macOS x86_64 wheels; Python 3.11 and the requirements below allow pip to choose an older compatible PyTorch. We do not promise identical floating-point results across PyTorch versions or CPU architectures.
 
@@ -101,4 +101,25 @@ Public API reference: https://github.com/google-pytorch/torch_tpu/blob/main/docs
 
 On your allocated TPU VM, use the TPU environment above and run the preflight before spending credits on calibration. It prints the actual backend, versions, pass/fail status, and elapsed test time; any failure exits nonzero. It exercises both AdamW and momentum SGD including a saved optimizer-state resume. Save the terminal log with your experiment records. No TPU has been provisioned or charged by this repository update.
 
-After preflight succeeds, use the `prepare` and `run --device tpu` commands above. This executes the bounded calibration first, then five paired seeds for each optimizer. It uses one TPU device; allocating an eight-core slice does not make this script use all eight. Measure this small model's performance before choosing a larger allocation. Do not compare preflight seconds to full 20,000-update training time.
+After preflight succeeds, use the `prepare` and `run --device tpu` commands above. This executes the bounded calibration first, then five paired seeds for each optimizer. The ordinary command uses one TPU device; use the parallel launcher below for an eight-device slice. Measure this small model's performance before choosing a larger allocation. Do not compare preflight seconds to full 20,000-update training time.
+
+## Up to eight TPU devices / cores
+
+The parallel launcher runs **independent trials on up to eight TPU devices on one host**. It preserves batch size 12 per trial and all scientific settings; it does not split a single model across eight devices. Google exposes different core/chip/device counts across TPU generations: `--cores` means active PyTorch TPU devices, not a guaranteed chip count.
+
+From the repository root on the allocated TPU VM:
+
+```bash
+# First exercise all eight active devices, including optimizer resume.
+python short_test_portable/tpu_parallel.py --cores 8 --preflight --output runs/gpt_tpu8 --data data/tinyshakespeare/input.txt
+# Only proceed when preflight exits successfully.
+python short_test_portable/tpu_parallel.py --cores 8 --output runs/gpt_tpu8 --data data/tinyshakespeare/input.txt
+```
+
+Use `--cores 1` through `--cores 8` to cap simultaneous trials, up to the allocated device count. The launcher uses Google's `torch.tpu.distributed.set_tpu_launch_env()` topology helper and starts one process per device with `torchrun`, initializing `tpu_dist` before device access. On an eight-device slice, `--cores 4` still initializes all eight processes as required by the slice topology, but only four perform trials. This does not reduce the cost of the allocated slice. Multi-host slices are outside this launcher's supported scope.
+
+Calibration screening completes before finalist selection, all finalist training completes before recipes are frozen, and confirmation starts only afterward. Only rank zero writes shared selection and final summary files; each trial retains its own model/optimizer/RNG checkpoint and lock. Completed jobs are skipped on resume. A numerical failure remains explicit; an infrastructure error makes the launcher exit nonzero and does not count as completion. Re-run the same command to resume saved work. A `PAUSE` file in the output directory requests a checkpointed stop; remove it before resuming.
+
+There can be eight concurrent screening or confirmation trials, but only four finalist calibration trials exist. Idle devices are expected at stage boundaries. Per-trial timing remains synchronized; final `launch_wall_seconds` measures this invocation, not prior interrupted sessions. Progress is recorded in `rankN_status.json` and per-trial `progress.json`; preflight writes `preflight_rankN.json` for each active rank.
+
+CPU tests cover assignment of each job exactly once for every concurrency from one through eight, plus optimizer resume and backend checks. Actual multi-device TPU execution remains unverified until the Builders VM preflight succeeds. Source: https://github.com/google-pytorch/torch_tpu/blob/main/docs/distributed_support.md

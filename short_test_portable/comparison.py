@@ -125,7 +125,7 @@ def update(model,opt,rng,data,step,recipe,design):
 def worker(root,data_path,job_path,target):
     d=verify(root);job=read(job_path);recipe=job['recipe'];seed=job['seed'];out=job_path.parent
     run_lock=lock(out/'run.lock')
-    torch.set_num_threads(1);torch.set_num_interop_threads(1)
+    torch.set_num_threads(1)
     data=base.load_data(data_path)
     # Calibration can access only these arrays, never the test partition.
     if job['phase']=='calibration':data.pop('test')

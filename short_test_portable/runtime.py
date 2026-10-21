@@ -30,7 +30,9 @@ def initialize():
         accelerator = torch.accelerator.current_accelerator()
         if accelerator is None or accelerator.type != 'tpu' or not torch.accelerator.is_available():
             raise RuntimeError('TPU requested but no Google TPU is available; refusing CPU fallback')
-        torch.accelerator.set_device_index(0)
+        # Distributed TorchTPU binds this process to its own local device.
+        if int(os.environ.get('WORLD_SIZE', '1')) == 1:
+            torch.accelerator.set_device_index(0)
     return torch.device(DEVICE)
 
 def synchronize():
