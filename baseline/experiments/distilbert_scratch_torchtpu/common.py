@@ -38,6 +38,14 @@ class Config:
     synthetic: bool = False
 
     def validate(self):
+        sizes = (self.steps, self.warmup_steps, self.per_device_batch, self.sequence_length,
+                 self.checkpoint_steps, self.measure_steps, self.train_eval_sequences)
+        if not all(type(x) is int for x in (*sizes, self.seed, self.data_seed)):
+            raise ValueError('Sizes and seeds must be integers')
+        if not all(0 <= x < 2**32 for x in (self.seed, self.data_seed)):
+            raise ValueError('Seeds must be unsigned 32-bit integers')
+        if type(self.compile) is not bool or type(self.synthetic) is not bool:
+            raise ValueError('compile and synthetic must be booleans')
         if self.optimizer not in ('adamw', 'adam', 'sgd'):
             raise ValueError('Unknown optimizer')
         if not 0 <= self.warmup_steps < self.steps:
@@ -47,7 +55,8 @@ class Config:
             raise ValueError('Positive sizes required')
         if not 8 <= self.sequence_length <= 512:
             raise ValueError('Sequence length must be 8..512')
-        if not (self.lr > 0 and self.weight_decay >= 0 and self.grad_clip > 0 and self.eps > 0):
+        if not all(math.isfinite(x) for x in (self.lr, self.weight_decay, self.grad_clip, self.eps)) or not (
+                self.lr > 0 and self.weight_decay >= 0 and self.grad_clip > 0 and self.eps > 0):
             raise ValueError('Invalid optimizer settings')
         if not all(0 <= x < 1 for x in (self.beta1, self.beta2, self.momentum,
                                       self.dropout, self.attention_dropout)):

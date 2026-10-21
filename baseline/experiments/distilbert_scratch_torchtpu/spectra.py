@@ -92,14 +92,21 @@ def export(root):
             temp.replace(path)
 
 
+def watch(root, deadline=float('inf'), watching=True):
+    while time.time() < deadline:
+        # Observe the completion marker BEFORE scanning. If training finishes
+        # during this scan, another scan must consume its final measurement.
+        done = (Path(root) / 'TRAINING_DONE.json').exists()
+        analyze(root)
+        if not watching or done:
+            break
+        time.sleep(min(15, max(0, deadline - time.time())))
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', required=True)
     p.add_argument('--watch', action='store_true')
     p.add_argument('--deadline', type=float, default=float('inf'))
     args = p.parse_args()
-    while time.time() < args.deadline:
-        analyze(args.root)
-        if not args.watch or (Path(args.root) / 'TRAINING_DONE.json').exists():
-            break
-        time.sleep(15)
+    watch(args.root, args.deadline, args.watch)

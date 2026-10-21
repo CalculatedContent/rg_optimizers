@@ -66,7 +66,10 @@ class Runtime:
     def rng(self):
         state = dict(torch=torch.get_rng_state(), python=random.getstate(), numpy=np.random.get_state())
         if self.backend == 'tpu':
-            state['tpu'] = torch.tpu.get_rng_state().cpu()
+            # TorchTPU 0.2 makes the legacy getter internal on torch >=2.13.
+            api = getattr(torch.accelerator, 'random', None)
+            getter = getattr(api, 'get_rng_state', None)
+            state['tpu'] = (getter() if getter is not None else torch.tpu.get_rng_state()).cpu()
         return state
 
     def restore_rng(self, state):
@@ -89,10 +92,17 @@ def probe(rt, output):
     expected = 128 * rt.world * (rt.world + 1) / 2
     if value != expected:
         raise RuntimeError(f'Collective probe failed: {value} != {expected}')
+    state = rt.rng()
+    sample = torch.rand(16, device=rt.device).cpu()
+    rt.restore_rng(state)
+    replay = torch.rand(16, device=rt.device).cpu()
+    rt.restore_rng(state)
+    if not torch.equal(sample, replay):
+        raise RuntimeError('RNG checkpoint/restore probe failed')
     root = Path(output)
     root.mkdir(parents=True, exist_ok=True)
     atomic_json(root / f'rank_{rt.rank}.json', dict(rank=rt.rank, world=rt.world,
-                backend=rt.backend, device=str(rt.device), collective_value=value,
+                backend=rt.backend, device=str(rt.device), collective_value=value, rng_roundtrip=True,
                 torch=torch.__version__, torch_tpu=importlib.metadata.version('torch_tpu') if rt.backend == 'tpu' else None))
     rt.barrier()
     if rt.rank == 0:
@@ -117,16 +127,25 @@ def checkpoint(root, step, model, opt, rt, identity):
     rt.barrier()
     if rt.rank == 0:
         atomic_json(partial / 'manifest.json', {p.name: file_hash(p) for p in partial.glob('*.pt')})
-        # A generation is immutable. Re-saving the same cursor leaves it intact.
-        if target.exists():
+        pointer = root / 'latest_checkpoint.json'
+        published = json.loads(pointer.read_text())['path'] if pointer.exists() else None
+        # Reuse only a published generation. A crash between rename and pointer
+        # publication can leave an orphan from a different replay of this step.
+        if target.exists() and published == str(target.relative_to(root)):
             shutil.rmtree(partial)
         else:
+            if target.exists():
+                shutil.rmtree(target)
             partial.rename(target)
         sync_dir(checkpoints)
         atomic_json(root / 'latest_checkpoint.json', dict(path=str(target.relative_to(root)), step=step))
-        for old in sorted(checkpoints.glob('step_*'))[:-2]:
-            if old.is_dir() and not old.name.endswith('.partial'):
-                shutil.rmtree(old)
+        # Future generations left by an interrupted replay were never published
+        # on this trajectory; they must not displace either retained checkpoint.
+        committed = sorted((p for p in checkpoints.glob('step_*')
+                            if p.is_dir() and p.name[5:].isdigit() and int(p.name[5:]) <= step),
+                           key=lambda p: int(p.name[5:]))
+        for old in committed[:-2]:
+            shutil.rmtree(old)
     rt.barrier()
 
 
@@ -281,8 +300,12 @@ def train(a, rt):
                     parameters=sum(p.numel() for p in model.parameters()), pretrained_weights=False,
                     global_batch=c.per_device_batch * rt.world, packages=packages, config=asdict(c)))
     if step == 0:
-        measure(root, step, net, model, arrays, meta, c, rt, identity)
         checkpoint(root, step, model, opt, rt, identity)
+    # A crash after committing a measurement cursor must not skip its diagnostics
+    # on resume. Publish diagnostics only after the corresponding state is saved.
+    if (step == 0 or step % c.measure_steps == 0) and not (
+            root / 'measurements' / f'step_{step:08d}.json').exists():
+        measure(root, step, net, model, arrays, meta, c, rt, identity)
     batches = math.ceil(len(arrays['train']) / (rt.world * c.per_device_batch))
     epoch, order = None, None
     start, start_step = time.monotonic(), step
@@ -327,11 +350,11 @@ def train(a, rt):
             atomic_json(root / 'status.json', status)
             if step <= 3 or step % 10 == 0:
                 print(json.dumps(status), flush=True)
+        if step % c.checkpoint_steps == 0 or step % c.measure_steps == 0:
+            checkpoint(root, step, model, opt, rt, identity)
         if step % c.measure_steps == 0:
             measure(root, step, net, model, arrays, meta, c, rt, identity)
             last_measured = step
-        if step % c.checkpoint_steps == 0:
-            checkpoint(root, step, model, opt, rt, identity)
     # Commit training state before potentially expensive final diagnostics.
     checkpoint(root, step, model, opt, rt, identity)
     if last_measured != step and not rt.stop(a.deadline):

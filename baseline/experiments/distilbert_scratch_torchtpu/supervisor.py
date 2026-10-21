@@ -16,6 +16,22 @@ def write(path, value):
     temp.replace(path)
 
 
+def terminate(proc, grace=20):
+    """Reap the owned process group, including children that ignore SIGTERM."""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(proc.pid, sig)
+        except ProcessLookupError:
+            pass
+        if sig == signal.SIGTERM:
+            try:
+                proc.wait(timeout=grace)
+            except subprocess.TimeoutExpired:
+                pass
+        else:
+            proc.wait()
+
+
 def run(command, deadline, env=None):
     if deadline <= time.time():
         raise RuntimeError('Budget exhausted before next phase')
@@ -23,14 +39,10 @@ def run(command, deadline, env=None):
     try:
         code = proc.wait(timeout=max(1, deadline - time.time()))
     except subprocess.TimeoutExpired:
-        os.killpg(proc.pid, signal.SIGTERM)
-        try:
-            proc.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
-            proc.wait()
+        terminate(proc)
         raise RuntimeError('Phase exceeded its bounded deadline')
     if code:
+        terminate(proc)
         raise RuntimeError(f'Phase failed ({code}): {command}')
 
 
@@ -96,19 +108,17 @@ def main(a):
             try:
                 analyst.wait(timeout=max(1, a.deadline - time.time() - 60))
             except subprocess.TimeoutExpired:
-                os.killpg(analyst.pid, signal.SIGTERM)
-                analyst.wait(timeout=20)
+                terminate(analyst)
             result = json.loads((output / 'RESULT.json').read_text())
             result['spectra_exit_code'] = analyst.returncode
             result['spectra_complete'] = (analyst.returncode == 0 and
-                len(list((output / 'measurements').glob('step_*.json'))) ==
-                len(list((output / 'spectra').glob('step_*.json'))))
+                {p.name for p in (output / 'measurements').glob('step_*.json')} ==
+                {p.name for p in (output / 'spectra').glob('step_*.json')})
             result['output'] = str(output)
             write(root / 'RESULT.json', result)
         finally:
             if analyst.poll() is None:
-                os.killpg(analyst.pid, signal.SIGTERM)
-                analyst.wait(timeout=20)
+                terminate(analyst)
 
 
 if __name__ == '__main__':

@@ -23,6 +23,30 @@ validation-based calibration and optimizer comparisons.
 | Spectra | Exactly 36 encoder matrices; missing/failed fits cannot silently change the primary aggregate. No alpha-dependent updates or model selection. |
 | Hardware | Native `torch_tpu==0.2.0`, `device='tpu'`, `tpu_dist`, compiler backend `tpu`. Actual v5e execution is still pending. |
 
+## Second complete code review, 2026-10-21
+
+The review covered every Python module, configuration, dependency declaration
+and runbook in this experiment folder. It found additional failures that the
+original numerical checks did not exercise:
+
+| Finding | Correction |
+|---|---|
+| Native RNG API | The released 0.2.0 wheel marks `torch.tpu.get_rng_state` internal on PyTorch >=2.13, with a strict runtime error for user code. Use the supported accelerator getter when available. Add a real RNG replay check to every rank's TPU probe. The setter remains the wheel's public experimental API. |
+| Diagnostics ahead of resume state | Scheduled evaluation could publish spectra/best weights before committing the matching training checkpoint. Commit state first, including when measurement/checkpoint intervals differ; recover an interrupted scheduled measurement on resume. |
+| Unpublished checkpoint reuse | A crash after directory rename but before pointer publication could leave a checkpoint from an earlier replay. Replace that orphan when the cursor is replayed; retain only published state at an already committed cursor. |
+| Checkpoint retention | Partial directories and unpublished generations ahead of the current cursor could displace a valid checkpoint. Filter them before numerically selecting the last two committed checkpoints. |
+| Final spectral scan | Training could publish its final snapshot between the worker's scan and completion check. Read the completion marker before scanning, ensuring a final scan observes all published measurements. |
+| Process cleanup | Analyst timeout handling could itself time out without killing/reaping the process group. Escalate from SIGTERM to SIGKILL, including leftover children after a failed phase. |
+| Status near lease expiry | Status discovery applied the 30-minute launch gate, hiding a still-running job near expiry. Apply lease eligibility only to new launches; keep the launch guard unchanged. |
+| Invalid configurations | Reject nonfinite optimizer scalars, fractional sizes, invalid seeds, and non-boolean mode flags before training. |
+
+Regression coverage now includes exact restart for AdamW, Adam and SGD, compiled
+BF16 restart with dropout, simulated interrupted measurement publication,
+unpublished checkpoint replacement, final-scan races and forced process cleanup.
+API-selection tests use mocks and do not substitute for the real TPU probe.
+No full-corpus repacking was needed: the preparation code and pinned data are
+unchanged from the verified corpus check.
+
 ## What the papers support
 
 1. **Sanh et al., DistilBERT (2019).** The original student inherited alternating

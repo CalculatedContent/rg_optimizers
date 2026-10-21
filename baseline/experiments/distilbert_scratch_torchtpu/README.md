@@ -32,7 +32,7 @@ run does not establish optimizer bias or overfitting.
 | Token budget | 327,662,848 real sequence positions at the verified pinned corpus; about 2.803 corpus passes |
 | Precision | BF16 autocast; FP32 parameters and optimizer moments; TPU matmul precision `medium` |
 | Regularization | Hidden and attention dropout .1; gradient norm clipping 1.0 after DDP reduction |
-| Checkpoints | Every 100 updates and cooperative exit; retain two committed generations |
+| Checkpoints | Every 100 updates, before measurements, and cooperative exit; retain two committed generations |
 | Best model | Independently retain full weights with minimum fixed-mask validation loss; ties retain the earlier checkpoint |
 | Measurements | Initialization, update 2 preflight, every 500 updates, and final cursor if budget permits |
 | First launch budget | 5.5 hours including setup; capped by checked existing lease; resumable if incomplete |
@@ -84,7 +84,7 @@ TorchTPU supplies the required Torch/libtpu stack; the old XLA venv is not inher
 
 The job performs:
 
-1. All-eight-rank native TPU matmul and all-reduce probe.
+1. All-eight-rank native TPU matmul, all-reduce, and RNG save/restore probe.
 2. Real WikiText-103 token preparation with immutable hashes.
 3. Initialization evaluation, two real full-model training updates, and checkpoint.
 4. Process exit and resume from update 2, continuing the same model to its fixed horizon.
@@ -132,6 +132,11 @@ hash. The LR horizon stays fixed across pauses. Interrupted writes remain
 uncommitted; the most recent complete checkpoint is the resume point. A hard kill
 can lose work since the last 100-update checkpoint. Exact restart is tested on
 CPU; TPU determinism and kernel coverage require the live hardware run.
+Measurements are published only after their training checkpoint is committed.
+If a process exits between those operations, resume fills the missing scheduled
+measurement before advancing. Unpublished checkpoint directories from a prior
+interrupted replay are replaced; partial and future unpublished directories do
+not affect retention of the last two committed checkpoints.
 
 `best_validation.json` identifies the separately retained full model weights and
 their SHA256. Its selection criterion is validation MLM loss only, independent of
@@ -221,7 +226,10 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python -m unittest test_experiment -v
 
 Checks cover the full architecture/random initialization path, eight-way exact
 sample coverage, fixed masking, invalid-fit handling, tiny-model interrupted
-versus uninterrupted AdamW states/metrics, corruption rejection, and in-process eight-shard gradients versus a serial masked-token mean. An
+versus uninterrupted AdamW/Adam/SGD states and metrics, compiled BF16 restart,
+corruption rejection, and in-process eight-shard gradients versus a serial
+masked-token mean. Fault checks cover checkpoint/measurement publication,
+final spectral-worker scans, and termination of a process that ignores SIGTERM. An
 additional opt-in two-process Gloo integration check compares actual DDP against
 serial updates, including an uneven final batch; run it with
 `RG_RUN_DISTRIBUTED_TESTS=1` on a host that permits Gloo sockets. See `VALIDATION.json` for actual results and limitations.
@@ -239,6 +247,10 @@ The released 0.2.0 wheel was also inspected directly: its metadata requires
 Python >=3.12 (stricter than the current main README), torch >=2.11.0 and <=2.15.0,
 and libtpu >=0.0.50. Its Python launch helper sets topology and device addresses;
 the launcher derives the eight-device count from those addresses before torchrun.
+On PyTorch 2.13+, TorchTPU restricts direct `torch.tpu.get_rng_state()` calls to
+framework code. The runner uses `torch.accelerator.random.get_rng_state()` when
+available, retaining the legacy fallback for older supported PyTorch versions.
+The eight-rank probe checks actual RNG replay before preparing the corpus.
 
 The inspected TorchTPU main commit was
 `905a0dfde04a01df8ee2c100ffd656694f38df84`; installation pins the public 0.2.0 wheel.

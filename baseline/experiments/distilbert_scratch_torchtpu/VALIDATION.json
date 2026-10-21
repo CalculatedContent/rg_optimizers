@@ -1,13 +1,15 @@
 {
-  "date": "2026-10-20",
+  "date": "2026-10-21",
   "status": "CPU engineering validated; real TPU qualification pending",
   "base_commit": "afd96a379f4b22c9199f58ca1442a89c5e087700",
-  "source_sha256": "0bc2b349c13104f487d35ebce98d23affbcef961d19d39b838ed9d9186743d5b",
+  "source_sha256": "8e8909b3fe98e521ec361aa73b546c4d2b3cd1de1bb129d098d52c17be592beb",
   "suite": {
-    "tests_run": 12,
-    "passed": 11,
+    "tests_run": 20,
+    "passed": 19,
     "skipped": 1,
-    "seconds": 42.75
+    "seconds": 234.851,
+    "source_sha256": "e46da64d3f9a79f3bf65ffb550fc68d88636548adc2e1bfe4e3a767c385d7082",
+    "note": "Complete suite before the final retention-filter extension; focused checkpoint tests rerun on final source below."
   },
   "passed": [
     "full 66,985,530 parameter architecture and 36 encoder matrices",
@@ -15,14 +17,22 @@
     "eight-shard weighted gradients agree with serial masked-token mean",
     "fixed evaluation masking excludes special tokens and padding targets",
     "incomplete spectral fits produce null aggregate",
-    "four-update tiny AdamW training equals two updates plus restart exactly: parameters, optimizer state, evaluation metrics; checkpoint corruption refused",
+    "four-update tiny AdamW, Adam and SGD training each equal two updates plus restart exactly: parameters, optimizer state, evaluation metrics; checkpoint corruption refused",
     "training mask-rate changes leave fixed evaluation inputs and labels bitwise identical",
     "best full model weights survive later validation regression; test improvements cannot replace them; hash and retained weights verified",
     "AdamW decay excludes LayerNorm and biases and applies once to tied embedding/output weights",
     "compiled aot_eager CPU BF16 loss, counts and gradients agree with eager execution",
     "six calibration configurations differ only in LR and warmup",
     "Cloud Shell and supervisor CLI expose mutually exclusive config selection and exact resume",
-    "complete real WikiText-103 preparation; all packed rows checked for boundaries, vocabulary bounds, maskable content and exact manifest hashes"
+    "complete real WikiText-103 preparation; all packed rows checked for boundaries, vocabulary bounds, maskable content and exact manifest hashes",
+    "compiled aot_eager BF16 AdamW training with dropout resumes bitwise exactly on CPU",
+    "RNG API selection uses the supported accelerator getter and handles older releases without it; mocked API contract test only",
+    "diagnostics follow a committed checkpoint and missing scheduled measurements recover after injected interruption",
+    "orphan checkpoint replacement and two-generation retention ignore partial and future unpublished directories",
+    "spectral worker consumes a measurement published concurrently with its completion marker",
+    "owned subprocess that ignores SIGTERM is killed and reaped",
+    "status discovery works near expiry while new launches still require an eligible lease",
+    "nonfinite optimizer scalars, fractional sizes, invalid seeds and nonboolean flags are rejected"
   ],
   "spectral_smoke": {
     "weightwatcher": "0.7.7",
@@ -64,11 +74,12 @@
       "TORCH_TPU_SLICEBUILDER_ADDRESSES detection",
       "get_rng_state",
       "set_rng_state",
-      "tpu_dist"
+      "tpu_dist",
+      "get_rng_state is strict-internal on torch >=2.13; replacement is torch.accelerator.random.get_rng_state"
     ]
   },
   "pending": [
-    "all-eight-device native TorchTPU collective probe",
+    "all-eight-device native TorchTPU collective and RNG checkpoint/restore probe",
     "real full-model compiled forward/backward and optimizer steps",
     "checkpoint/restart on actual TPU",
     "throughput, convergence, and spectral results",
@@ -118,6 +129,28 @@
     },
     "steps_per_corpus_pass": 3568,
     "pilot_full_corpus_passes": 2.802749465971636,
-    "pilot_real_sequence_positions": 327662848
-  }
+    "pilot_real_sequence_positions": 327662848,
+    "validated_date": "2026-10-20"
+  },
+  "final_retention_regression": {
+    "tests_run": 2,
+    "passed": 2,
+    "seconds": 4.492,
+    "source_sha256": "8e8909b3fe98e521ec361aa73b546c4d2b3cd1de1bb129d098d52c17be592beb",
+    "checks": [
+      "unpublished current/future generations and partial directories preserve two committed checkpoints",
+      "measurement follows committed state and interrupted scheduled measurement recovers"
+    ]
+  },
+  "second_audit_base_commit": "c2511497856c7367d4e2f4c3100963d77fd67f3d",
+  "second_audit_scope": "All Python modules, configurations, requirements and documentation in this experiment folder",
+  "second_audit_changes": [
+    "native TPU RNG getter compatible with strict TorchTPU 0.2.0 API; real RNG replay added to each rank probe",
+    "checkpoint publication precedes diagnostics; interrupted measurements recover on resume",
+    "unpublished replay checkpoints replaced; partial and future generations excluded from retention",
+    "final spectral scan race fixed; completeness compares matching step filenames",
+    "bounded process-group cleanup escalates to SIGKILL and reaps owned processes",
+    "read-only status discovery no longer applies the launch lease-time threshold",
+    "configuration validation rejects nonfinite values and invalid types/seeds"
+  ]
 }

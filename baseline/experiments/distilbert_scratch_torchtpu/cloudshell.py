@@ -54,7 +54,7 @@ def bounded_deadline(checked, hours):
     return deadline
 
 
-def discover_node(zone):
+def discover_node(zone, require_lease=True):
     specs = json.loads(run(['gcloud', 'compute', 'tpus', 'tpu-vm', 'list', '--project=' + PROJECT,
                            '--zone=' + zone, '--format=json'], capture_output=True).stdout)
     eligible = []
@@ -64,8 +64,9 @@ def discover_node(zone):
             continue
         node = spec['name'].rsplit('/', 1)[-1]
         try:
-            checked = checked_lease(node, zone)
-            bounded_deadline(checked, 5.5)
+            if require_lease:
+                checked = checked_lease(node, zone)
+                bounded_deadline(checked, 5.5)
             eligible.append(node)
         except Exception as exc:
             reasons.append(node + ': ' + str(exc))
@@ -210,7 +211,7 @@ def main():
         run(['git', '-C', str(repo), 'ls-files', '--error-unmatch', str(config.relative_to(repo))], capture_output=True)
         a.config = str(config.relative_to(here.parent))
     if not a.node:
-        a.node = discover_node(a.zone)
+        a.node = discover_node(a.zone, require_lease=a.action == 'start')
     command = ['sudo', 'python3', '-c', here.read_text(), a.action, '--remote', '--hours', str(a.hours)]
     if a.action == 'start':
         if run(['git', '-C', str(repo), 'status', '--porcelain'], capture_output=True).stdout.strip():
