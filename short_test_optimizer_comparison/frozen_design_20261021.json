@@ -1,0 +1,198 @@
+{
+  "schema": 1,
+  "study": "five paired seeds, AdamW versus momentum SGD",
+  "calibration_seed": 2027,
+  "confirmation_seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "candidates": [
+    {
+      "id": "adamw_lr0.0003_wd0",
+      "optimizer": "AdamW",
+      "peak_lr": 0.0003,
+      "weight_decay": 0.0,
+      "betas": [
+        0.9,
+        0.99
+      ]
+    },
+    {
+      "id": "sgdm_lr0.01_m0.9",
+      "optimizer": "SGDM",
+      "peak_lr": 0.01,
+      "weight_decay": 0.0,
+      "momentum": 0.9,
+      "nesterov": false,
+      "dampening": 0.0
+    },
+    {
+      "id": "adamw_lr0.0003_wd0.1",
+      "optimizer": "AdamW",
+      "peak_lr": 0.0003,
+      "weight_decay": 0.1,
+      "betas": [
+        0.9,
+        0.99
+      ]
+    },
+    {
+      "id": "sgdm_lr0.01_m0.98",
+      "optimizer": "SGDM",
+      "peak_lr": 0.01,
+      "weight_decay": 0.0,
+      "momentum": 0.98,
+      "nesterov": false,
+      "dampening": 0.0
+    },
+    {
+      "id": "adamw_lr0.001_wd0",
+      "optimizer": "AdamW",
+      "peak_lr": 0.001,
+      "weight_decay": 0.0,
+      "betas": [
+        0.9,
+        0.99
+      ]
+    },
+    {
+      "id": "sgdm_lr0.03_m0.9",
+      "optimizer": "SGDM",
+      "peak_lr": 0.03,
+      "weight_decay": 0.0,
+      "momentum": 0.9,
+      "nesterov": false,
+      "dampening": 0.0
+    },
+    {
+      "id": "adamw_lr0.001_wd0.1",
+      "optimizer": "AdamW",
+      "peak_lr": 0.001,
+      "weight_decay": 0.1,
+      "betas": [
+        0.9,
+        0.99
+      ]
+    },
+    {
+      "id": "sgdm_lr0.03_m0.98",
+      "optimizer": "SGDM",
+      "peak_lr": 0.03,
+      "weight_decay": 0.0,
+      "momentum": 0.98,
+      "nesterov": false,
+      "dampening": 0.0
+    },
+    {
+      "id": "adamw_lr0.003_wd0",
+      "optimizer": "AdamW",
+      "peak_lr": 0.003,
+      "weight_decay": 0.0,
+      "betas": [
+        0.9,
+        0.99
+      ]
+    },
+    {
+      "id": "sgdm_lr0.1_m0.9",
+      "optimizer": "SGDM",
+      "peak_lr": 0.1,
+      "weight_decay": 0.0,
+      "momentum": 0.9,
+      "nesterov": false,
+      "dampening": 0.0
+    },
+    {
+      "id": "adamw_lr0.003_wd0.1",
+      "optimizer": "AdamW",
+      "peak_lr": 0.003,
+      "weight_decay": 0.1,
+      "betas": [
+        0.9,
+        0.99
+      ]
+    },
+    {
+      "id": "sgdm_lr0.1_m0.98",
+      "optimizer": "SGDM",
+      "peak_lr": 0.1,
+      "weight_decay": 0.0,
+      "momentum": 0.98,
+      "nesterov": false,
+      "dampening": 0.0
+    }
+  ],
+  "screen_steps": 4000,
+  "finalists_per_optimizer": 2,
+  "max_steps": 20000,
+  "warmup_steps": 100,
+  "cosine_end": 17000,
+  "floor_fraction": 0.1,
+  "eval_every": 500,
+  "checkpoint_every": 250,
+  "architecture": {
+    "n_layer": 4,
+    "n_head": 4,
+    "n_embd": 128,
+    "block_size": 64,
+    "vocab_size": 65,
+    "dropout": 0.0,
+    "bias": false
+  },
+  "batch_size": 12,
+  "threads": 1,
+  "precision": "float32 CPU",
+  "grad_clip": 1.0,
+  "split": "Fixed contiguous 90/5/5, same TinyShakespeare corpus as prior pilot",
+  "input_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "source_sha256": {
+    "comparison": {
+      "comparison.py": "5a39aa5ced7c9019376f477b16c80c6b3784606a1a717c1300f7c597820ac005",
+      "test_contract.py": "99e7a4c62ba5eb0f8b6f3979cff775170016647445fac4ee8f7511dfaaacbb62"
+    },
+    "baseline": {
+      "common.py": "4bfa41f7a098a202744b7982b8586473d5fcfd4b80077095c490a4a7c3809954",
+      "download_data.py": "0f5e73b2900327bb46b0b0a15eae7edbb3b1a04513278e0cca5dd40d3258b716",
+      "historical/check_alpha.py": "806632373235b7db8c358f7dcc3e37cd4d0527c2a1357e5b9be326b5a9fd4c58",
+      "historical/continue_to_plateau.py": "58ddff113362915bf3a7b8bdda0928919c4692822c52706e89313eeabc937b53",
+      "historical/run_pilot.py": "ba4437605435581ef909c0470e189b4dbf2cce576ae89fc68d361c338ec87cc0",
+      "package_run.py": "334b6b4f0c1bdc181f3cfffcf298cd1ae7006782ead9ae34e9a525ace79c5e02",
+      "run_seeds.py": "7d504486010eb3717c8e3bcc19ef32d9155bd099699006aa514ef69e92ed7e92",
+      "summarize.py": "91318b3c4422e0ec070f14355956f541e77b2868a5da736130dddcb69cf2a2e7",
+      "test_contract.py": "11dca365c0b03b54614e52743b96091c87c6d9191bbe610866289af9baeb9da9",
+      "train.py": "2531934478c0561d2047d9c0e1680c305f9a8adaea51c8f5570e4299d771de59",
+      "vendor/model.py": "7c01703240dbec5d554527dc666e35b3df8391d0b117fddc07afcf325a21d11c"
+    }
+  },
+  "versions": {
+    "torch": "2.14.1",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "weightwatcher": "0.7.7",
+    "powerlaw": "2.0.0"
+  },
+  "ranking": "Lowest full validation cross entropy from step500; endpoint validation breaks ties, then candidate id. At4000 select top2 per optimizer; extend these unchanged to20000; select one recipe per optimizer before confirmation.",
+  "selection_limit": "Bounded single-seed successive-halving calibration, not a proven global optimum. Slow starters can be missed. Confirmation seeds are fresh and paired.",
+  "stopping": "All final runs receive20000 updates; cosine reaches floor at17000 then3000 at floor. A cap does not prove convergence; validation and sampled training plateau diagnostics reported separately.",
+  "test_policy": "No calibration test access or alpha computation. Freeze optimizer recipes before all confirmation test evaluation. Evaluate full train/validation/test at endpoint and best-validation checkpoint only. Same test text was previously exposed in the discovery pilot; no test-guided retuning.",
+  "alpha_policy": "Raw WW0.7.7 defaults, all18 unique matrices, packed QKV; tied token/output matrix counted once. Mean requires all18 successful fits. Alpha never selects a recipe.",
+  "timing": "Record optimizer update time, accumulated training plus validation time, and final evaluation time; interruptions excluded.",
+  "inference": "Compare separately optimized recipes; regularization may differ, so differences do not identify a pure causal optimizer effect.",
+  "references": [
+    {
+      "url": "https://github.com/karpathy/nanoGPT/blob/master/config/train_shakespeare_char.py",
+      "use": "Adam peak1e-3, beta2.99, warmup100, floorone-tenth are starting points; architecture differs."
+    },
+    {
+      "url": "https://arxiv.org/abs/2506.12543",
+      "use": "Small batches, momentum.9/.98, raw-gradient norm clipping1, separate LR grids; published large-model settings are not optima for this804096-parameter model."
+    },
+    {
+      "url": "https://docs.pytorch.org/docs/2.14/generated/torch.optim.SGD.html",
+      "use": "Standard PyTorch unnormalized momentum buffer; no Nesterov or custom rescaling."
+    }
+  ]
+}

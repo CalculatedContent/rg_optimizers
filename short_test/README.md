@@ -1,8 +1,13 @@
 # Short character GPT test
 
-Reproduce the small AdamW character-language-model pilot and run ten fresh
-random seeds. This is a seed replication, not an optimizer comparison or a
-hyperparameter sweep. The original MNIST/FashionMNIST studies are separate.
+Reproduce the original AdamW character-language-model pilot. This directory
+also retains the historical ten-AdamW-seed runner and the common implementation.
+
+**Current experiment:** [five AdamW versus five momentum-SGD models](../short_test_optimizer_comparison/README.md).
+That study supersedes the unfinished ten-AdamW replication below. Use its
+calibration and confirmation commands for the current comparison. The original
+pilot and partial replication remain separate measurements. The
+MNIST/FashionMNIST studies are separate as well.
 
 ## Measured pilot
 
@@ -21,7 +26,10 @@ nanoGPT commit `3adf61e154c3fe3fca428ad6bc3818b27a3b8291`; its MIT license is
 included. Model SHA256:
 `7c01703240dbec5d554527dc666e35b3df8391d0b117fddc07afcf325a21d11c`.
 
-## Run ten fresh seeds
+## Historical ten-AdamW seed runner (superseded)
+
+These commands reproduce the earlier request, not the current five-versus-five
+comparison. Do not start this batch alongside the replacement study.
 
 From this directory, in the recorded Python 3.12 environment:
 
