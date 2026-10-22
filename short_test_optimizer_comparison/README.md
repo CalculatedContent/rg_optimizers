@@ -174,6 +174,94 @@ state; source is recovered from the pinned repository commit. Restore matching
 jobs by checkpoint step and never overwrite newer progress. Weights, data, and
 output archives are not committed to this source repository.
 
+## Standalone paired layer analysis
+
+The existing `paired_statistics.json` covers mean alpha, losses, and timing.
+To compare **below-two named matrices** in saved confirmations, run this separate
+post-processor from the repository root:
+
+```bash
+python short_test_optimizer_comparison/postprocess/layer_alpha.py \
+  --study "$GPT_STUDY" \
+  --output "$GPT_STUDY/layer_analysis"
+```
+
+It reads `confirmation/*/result.json` from one original or portable study.
+It does not train, load `.pt` files, rerun WeightWatcher, or change input files.
+Only Python and SciPy are needed (`python -m pip install scipy==1.17.0` in a
+separate analysis environment if needed). The command and its tests live below
+`postprocess/`, outside the frozen runners' Python hash sets; adding this command
+does not invalidate an existing run's source manifest.
+
+| Output | Contents |
+| --- | --- |
+| `report.md` | Separate endpoint and validation-selected tables, coverage audit, model metrics, named-matrix differences, and paired intervals |
+| `layer_comparison.json` | Full report, individual matrix validity, input SHA256 hashes, exclusions, and exact seed lists for every statistic |
+| `models.csv` | Each optimizer/seed/checkpoint's spectral summaries and train/validation/test performance |
+| `paired_layers.csv` | One row per seed pair, checkpoint and unique matrix; both alphas, below-two flags, fit status, steps, and held-out performance |
+| `paired_statistics.csv` | Model and named-matrix AdamW-minus-SGDM differences with seed-paired 95% intervals |
+
+The following quantities are distinct:
+
+| Field | Definition |
+| --- | --- |
+| `mean_alpha`, `mean_alpha_below_two` | Arithmetic mean and its strict `< 2` flag; require all 18 unique fits to succeed |
+| `any_layer_below_two` | True if at least one valid fit is below two; false only if all 18 are valid and none is below; otherwise null/unknown |
+| `any_valid_layer_below_two` | Observed valid-fit flag; null when no fits are valid |
+| `valid_below_two_count` | Number of valid unique fits with alpha strictly below two |
+| `valid_below_two_fraction` | That count divided by `valid_fit_count`; null when the denominator is zero |
+| `mean_valid_alpha` | Descriptive mean over successful fits, explicitly separate from the full-model mean |
+
+Validity matches `short_test/common.py`: exactly one fit, `status == "success"`,
+and finite numeric alpha (booleans are rejected). Token embeddings and their
+`lm_head.weight` alias count once; QKV stays packed. Agreeing duplicate rows are
+collapsed. Conflicting duplicates/aliases, failed or multiple fits, missing
+matrices, and nonfinite alphas are exposed, never imputed as above two. Saved
+aggregate summaries are checked against named fits rather than trusted in place
+of them. Count/fraction comparisons can have different valid-fit denominators;
+inspect coverage. A zero-valid-fit model is excluded from count inference too.
+
+Seeds come from `design.json`, then `recipes.json`, or the explicitly reported
+frozen default 1340–1344. Use `--seeds 1340 1341 ...` only to specify a different
+planned seed set. Duplicate optimizer/seed files are excluded rather than chosen
+arbitrarily. Mixed design hashes, missing provenance, calibration results,
+unplanned seeds, and differing recipes within an optimizer are excluded and
+audited. If present, frozen design/recipe records are checked against results.
+Without these records, the report checks result-to-result consistency, but
+cannot independently verify the frozen design or selected recipe. Pending jobs,
+numerical failures and missing checkpoint types remain explicit. Missing one
+checkpoint type never substitutes the other or discards a usable counterpart.
+
+Each interval uses **one AdamW-minus-SGDM difference per independent seed pair**.
+No interval treats 18 matrices or two checkpoint types as independent replicas.
+Per-metric valid seed lists and counts are reported; fewer than two usable pairs
+produce no interval. Student-t intervals describe seed variability conditional
+on the corpus and selected recipes. At five seeds they are descriptive and
+fragile; binary/count intervals are approximate and may extend outside their
+natural bounds. They are not adjusted for multiple matrix comparisons and do
+not establish equivalence when all observed differences are zero.
+
+Held-out loss, perplexity and next-character accuracy accompany each model and
+paired matrix. Named-layer summaries retain the precise available seed subset
+for held-out differences. There is **no test-performance filter** and no new
+checkpoint selection. These tables allow inspecting below-two fits alongside
+performance without defining an unsupported cutoff for "strong" performance.
+The original discovery-pilot test exposure and calibrated-recipe limitations
+still apply. No optimizer outcome is implied by the synthetic regression tests.
+
+By default partial studies produce reports. Add `--require-complete` to write the
+same audit and exit with status 1 when results, checkpoints, fits or performance
+are missing/invalid (status 0 for complete; status 2 for command/input errors).
+Reusing an output directory replaces only the five report files; the study root
+and `confirmation/` are prohibited as report destinations.
+
+Run the synthetic regression suite without loading training libraries or data:
+
+```bash
+python -m unittest discover \
+  -s short_test_optimizer_comparison/postprocess -p 'test_*.py' -v
+```
+
 ## Primary references checked October 21, 2026
 
 - [nanoGPT character recipe](https://github.com/karpathy/nanoGPT/blob/master/config/train_shakespeare_char.py): peak LR 0.001, beta2 0.99, warmup 100, and a one-tenth floor motivate the search. Architecture and batch differ from ours.
