@@ -1,0 +1,5 @@
+# Keep this stack separate from every existing PyTorch/XLA environment.
+torch_tpu==0.2.0
+transformers==4.57.1
+datasets==4.2.0
+weightwatcher==0.7.7
