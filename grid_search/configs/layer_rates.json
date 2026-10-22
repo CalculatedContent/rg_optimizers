@@ -1,0 +1,8 @@
+{
+  "bias": [true, false],
+  "dropout": [0.0],
+  "fc1_weight_decay": [0.0],
+  "lr1_factor": [0.5, 1.0, 2.0],
+  "lr2_factor": [0.5, 1.0, 2.0],
+  "lr3_factor": [0.5, 1.0, 2.0]
+}
