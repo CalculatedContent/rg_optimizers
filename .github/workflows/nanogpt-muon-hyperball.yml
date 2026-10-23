@@ -1,0 +1,44 @@
+name: nanoGPT Muon-HyperBall baseline
+
+on:
+  pull_request:
+    paths:
+      - 'baseline/nanogpt_muon_hyperball/**'
+      - '.github/workflows/nanogpt-muon-hyperball.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'baseline/nanogpt_muon_hyperball/**'
+      - '.github/workflows/nanogpt-muon-hyperball.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: baseline/nanogpt_muon_hyperball/pyproject.toml
+      - name: Install baseline
+        working-directory: baseline/nanogpt_muon_hyperball
+        run: python -m pip install -e '.[dev]'
+      - name: Run tests
+        working-directory: baseline/nanogpt_muon_hyperball
+        run: python -m pytest -q tests
+      - name: Validate notebooks
+        working-directory: baseline/nanogpt_muon_hyperball
+        run: |
+          python - <<'PY'
+          import ast
+          import json
+          from pathlib import Path
+
+          for path in Path('notebooks').glob('*.ipynb'):
+              notebook = json.loads(path.read_text(encoding='utf-8'))
+              for index, cell in enumerate(notebook['cells']):
+                  if cell.get('cell_type') == 'code':
+                      ast.parse(''.join(cell.get('source', [])), filename=f'{path}:cell{index}')
+              print('validated', path)
+          PY

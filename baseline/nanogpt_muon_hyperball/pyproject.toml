@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rg-nanogpt-muon-hyperball"
+version = "0.1.0"
+description = "Matched long-Muon and Muon-HyperBall one-head nanoGPT baselines"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.2",
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "matplotlib>=3.7",
+  "pyyaml>=6.0",
+  "datasets>=2.19",
+  "tiktoken>=0.7",
+  "sacrebleu>=2.4",
+  "weightwatcher==0.7.7",
+  "jupyter>=1.0",
+  "ipykernel>=6.29",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "nbformat>=5.10"]
+
+[project.scripts]
+rg-hyperball-prepare = "rg_nanogpt_muon_hyperball.data:main"
+rg-hyperball-train = "rg_nanogpt_muon_hyperball.training:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
