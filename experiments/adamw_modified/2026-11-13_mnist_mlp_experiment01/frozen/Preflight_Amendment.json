@@ -1,0 +1,6 @@
+{
+  "before_training": true,
+  "reason": "Float32 norm accumulation on large vectors introduced relative errors about 6.6e-5 and cosine errors 2.3e-4 in synthetic checks. Use float64 accumulation for Frobenius norms and verification cosines. Update equations and all scientific settings unchanged.",
+  "old_source_sha256": "dc6bc6e05feed1d181ad7f8b3f950652037c01aa2e8bd466945a49b8b78b9c11",
+  "new_source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8"
+}

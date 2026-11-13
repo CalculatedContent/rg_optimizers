@@ -1,0 +1,958 @@
+{
+  "as_of": "2026-11-13",
+  "planned": 135,
+  "completed_and_verified": 14,
+  "unstarted": 121,
+  "active_training": false,
+  "completed_seeds": [
+    31001
+  ],
+  "full_five_seed_comparison_complete": false,
+  "runs": [
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "completed_verified"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 256,
+      "arm": "sgdm",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "adamw",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "magnitude_graft",
+      "status": "unstarted"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2.0,
+      "batch_size": 512,
+      "arm": "sgdm",
+      "status": "unstarted"
+    }
+  ]
+}
