@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "completed": 135,
+  "expected": 135,
+  "trajectory_rows": 1755,
+  "layer_rows": 5265,
+  "checkpoint_count": 675,
+  "matched_initializations": true,
+  "matched_per_epoch_example_order": true,
+  "max_saved_logit_cross_entropy_difference": 1.9115160387883634e-07,
+  "all_saved_logit_accuracy_counts_match": true,
+  "max_recorded_graft_magnitude_relative_error": 1.1920928955078125e-07,
+  "recorded_graft_magnitudes_checked": 369137,
+  "minimum_adam_sgdm_direction_cosine": 0.0,
+  "median_adam_sgdm_direction_cosine": 0.7788030803203583,
+  "final_hidden_supported": 268,
+  "final_hidden_total": 270,
+  "next_experiment_started": false,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8"
+}

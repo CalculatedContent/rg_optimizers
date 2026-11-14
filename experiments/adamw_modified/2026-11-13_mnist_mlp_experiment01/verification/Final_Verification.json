@@ -1,0 +1,3243 @@
+{
+  "passed": true,
+  "completed_runs": 135,
+  "all_final_model_hashes_match": true,
+  "all_135_initial_checkpoint_hashes_match_preflight_and_paired_runs": true,
+  "checkpoints_hashed": 675,
+  "checkpoint_total_bytes": 1731519493,
+  "restored_spectrum_checks": [
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": false,
+      "max_raw_spectrum_absolute_error": 1.1368683772161603e-13,
+      "historical_cross_runtime": true,
+      "raw_spectrum_tolerance": {
+        "rtol": 1e-12,
+        "atol": 1e-12
+      }
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": false,
+      "max_raw_spectrum_absolute_error": 4.263256414560601e-14,
+      "historical_cross_runtime": true,
+      "raw_spectrum_tolerance": {
+        "rtol": 1e-12,
+        "atol": 1e-12
+      }
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "max_alpha_difference": 0.0,
+      "raw_spectra_identical": true,
+      "max_raw_spectrum_absolute_error": 0.0,
+      "historical_cross_runtime": false,
+      "raw_spectrum_tolerance": "exact"
+    }
+  ],
+  "exact_current_runtime_replay_checks": [
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "from_epoch": 30,
+      "through_batch": 10,
+      "three_sampled_losses_and_update_statistics_match_exactly": true
+    }
+  ],
+  "historical_runtime_replay_audit": {
+    "passed": true,
+    "checks": [
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 128,
+          "arm": "adamw"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 2.3283064365386963e-10,
+        "max_update_stat_relative_error": 1.4582803942175815e-07,
+        "loss_abs_error": 0.0
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 128,
+          "arm": "magnitude_graft"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 1.1920928955078125e-07,
+        "max_update_stat_relative_error": 8.139736564771738e-07,
+        "loss_abs_error": 0.0
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 128,
+          "arm": "sgdm"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 3.91155481338501e-08,
+        "max_update_stat_relative_error": 6.986198968661483e-06,
+        "loss_abs_error": 1.8553691916167736e-09
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 1.0,
+          "batch_size": 128,
+          "arm": "adamw"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 1.4901161193847656e-08,
+        "max_update_stat_relative_error": 1.1194017588422867e-06,
+        "loss_abs_error": 0.0
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 1.0,
+          "batch_size": 128,
+          "arm": "magnitude_graft"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 4.246830940246582e-07,
+        "max_update_stat_relative_error": 5.968469849904068e-06,
+        "loss_abs_error": 5.180481821298599e-09
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 1.0,
+          "batch_size": 128,
+          "arm": "sgdm"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 1.1920928955078125e-07,
+        "max_update_stat_relative_error": 6.044569545338163e-06,
+        "loss_abs_error": 1.30385160446167e-08
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 256,
+          "arm": "adamw"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 1.4901161193847656e-08,
+        "max_update_stat_relative_error": 3.924084239770309e-07,
+        "loss_abs_error": 0.0
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 256,
+          "arm": "magnitude_graft"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 3.91155481338501e-08,
+        "max_update_stat_relative_error": 2.531377049308503e-06,
+        "loss_abs_error": 0.0
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 256,
+          "arm": "sgdm"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 8.195638656616211e-08,
+        "max_update_stat_relative_error": 3.3375772545696236e-06,
+        "loss_abs_error": 9.313225746154785e-10
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 1.0,
+          "batch_size": 256,
+          "arm": "adamw"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 1.4901161193847656e-08,
+        "max_update_stat_relative_error": 3.7929140717096743e-07,
+        "loss_abs_error": 1.862645149230957e-09
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 1.0,
+          "batch_size": 256,
+          "arm": "magnitude_graft"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 4.76837158203125e-07,
+        "max_update_stat_relative_error": 2.459003326293896e-06,
+        "loss_abs_error": 4.656612873077393e-10
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 512,
+          "arm": "adamw"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 2.9802322387695312e-08,
+        "max_update_stat_relative_error": 1.4659572400432808e-07,
+        "loss_abs_error": 9.313225746154785e-10
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 512,
+          "arm": "magnitude_graft"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 2.384185791015625e-07,
+        "max_update_stat_relative_error": 4.5777511559208506e-07,
+        "loss_abs_error": 1.1641532182693481e-09
+      },
+      {
+        "spec": {
+          "seed": 31001,
+          "multiplier": 0.5,
+          "batch_size": 512,
+          "arm": "sgdm"
+        },
+        "final_hash_match": true,
+        "alpha_error": 0.0,
+        "first_update_replay_exact": false,
+        "max_update_stat_abs_error": 4.0978193283081055e-07,
+        "max_update_stat_relative_error": 6.1515261222666595e-06,
+        "loss_abs_error": 3.14321368932724e-09
+      }
+    ],
+    "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+    "versions_match": true,
+    "all_five_initializations_match": true,
+    "all_data_hashes_match": true,
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "replay_tolerance": {
+      "loss_abs": 1e-07,
+      "statistics_rtol": 1e-05,
+      "statistics_atol": 1e-09
+    },
+    "numerical_note": "Before new training, cross-environment replay showed <=4.77e-7 absolute statistic differences, <=6.99e-6 relative differences and <=1.31e-8 loss differences. Model hashes and initializations match. Tolerance applies to validation only; frozen training code is unchanged."
+  },
+  "graft_direction_magnitude_moment_bias_checks": [
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.000255975174856739,
+          "native_adam_magnitude": 0.008853694492144295,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.000255975174856739,
+          "applied_magnitude_rule_absolute_error": 6.971940711385238e-12,
+          "intended_update_magnitude_relative_error": 2.7236784605477737e-08,
+          "intended_update_direction_cosine_error": 1.609823385706477e-14,
+          "actual_delta_magnitude_relative_error": 3.5861178617757616e-06,
+          "actual_delta_direction_cosine_error": 9.89578638477262e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002927751645464059,
+          "native_adam_magnitude": 0.006379054005639324,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002927751645464059,
+          "applied_magnitude_rule_absolute_error": 3.160520835928521e-12,
+          "intended_update_magnitude_relative_error": 1.0795044191880265e-08,
+          "intended_update_direction_cosine_error": 1.4654943925052066e-14,
+          "actual_delta_magnitude_relative_error": 2.019255698648692e-06,
+          "actual_delta_direction_cosine_error": 1.2472341002212062e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00029822511791301507,
+          "native_adam_magnitude": 0.0011874441548347622,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00029822511791301507,
+          "applied_magnitude_rule_absolute_error": 9.504419441145467e-12,
+          "intended_update_magnitude_relative_error": 3.1869949568275047e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 4.391988273433345e-05,
+          "actual_delta_direction_cosine_error": 2.1806439577387593e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0008936832871196278,
+          "native_adam_magnitude": 0.006562958160524989,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0008936832871196278,
+          "applied_magnitude_rule_absolute_error": 5.390088007005411e-12,
+          "intended_update_magnitude_relative_error": 6.031317889565457e-09,
+          "intended_update_direction_cosine_error": 1.8762769116165146e-14,
+          "actual_delta_magnitude_relative_error": 2.4308607745604505e-06,
+          "actual_delta_direction_cosine_error": 5.492623000868946e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0009701663374429183,
+          "native_adam_magnitude": 0.004882402497759288,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0009701663374429183,
+          "applied_magnitude_rule_absolute_error": 2.3850138769314355e-11,
+          "intended_update_magnitude_relative_error": 2.4583556301749354e-08,
+          "intended_update_direction_cosine_error": 1.554312234475219e-14,
+          "actual_delta_magnitude_relative_error": 1.2525704160548656e-06,
+          "actual_delta_direction_cosine_error": 8.09401811130428e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0009921195972811504,
+          "native_adam_magnitude": 0.0008289686358011864,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0009921195972811504,
+          "applied_magnitude_rule_absolute_error": 4.1299951306084104e-11,
+          "intended_update_magnitude_relative_error": 4.162799660534233e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 3.8442573022656745e-06,
+          "actual_delta_direction_cosine_error": 1.9097623782382556e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0022282614935141697,
+          "native_adam_magnitude": 0.007375928034130089,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0022282614935141697,
+          "applied_magnitude_rule_absolute_error": 1.1410913880460782e-11,
+          "intended_update_magnitude_relative_error": 5.120994073237739e-09,
+          "intended_update_direction_cosine_error": 2.4091839634365897e-14,
+          "actual_delta_magnitude_relative_error": 2.551847662068951e-07,
+          "actual_delta_direction_cosine_error": 7.770340371138218e-09
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00243895673694754,
+          "native_adam_magnitude": 0.004918545850067152,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00243895673694754,
+          "applied_magnitude_rule_absolute_error": 7.304229833818288e-11,
+          "intended_update_magnitude_relative_error": 2.9948173052574134e-08,
+          "intended_update_direction_cosine_error": 1.9317880628477724e-14,
+          "actual_delta_magnitude_relative_error": 2.188829442140161e-07,
+          "actual_delta_direction_cosine_error": 1.1666939858656633e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0025225559189017447,
+          "native_adam_magnitude": 0.0007467607102086811,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0025225559189017447,
+          "applied_magnitude_rule_absolute_error": 8.631261937813717e-12,
+          "intended_update_magnitude_relative_error": 3.421633532063595e-09,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 5.27794651739022e-06,
+          "actual_delta_direction_cosine_error": 2.507100782533911e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.025135521306093467,
+          "native_adam_magnitude": 0.04513604680700434,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.025135521306093467,
+          "applied_magnitude_rule_absolute_error": 9.438394579786014e-10,
+          "intended_update_magnitude_relative_error": 3.755002520033912e-08,
+          "intended_update_direction_cosine_error": 2.6645352591003757e-15,
+          "actual_delta_magnitude_relative_error": 1.5552522270034785e-08,
+          "actual_delta_direction_cosine_error": 2.9260305289824373e-10
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.03773209477406955,
+          "native_adam_magnitude": 0.03922592185013981,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.03773209477406955,
+          "applied_magnitude_rule_absolute_error": 3.860680317102627e-10,
+          "intended_update_magnitude_relative_error": 1.0231820835038263e-08,
+          "intended_update_direction_cosine_error": 2.6645352591003757e-15,
+          "actual_delta_magnitude_relative_error": 3.566814921196482e-08,
+          "actual_delta_direction_cosine_error": 2.470800231080261e-10
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.03679438541086096,
+          "native_adam_magnitude": 0.007699474488851995,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.03679438541086096,
+          "applied_magnitude_rule_absolute_error": 7.106651100929895e-10,
+          "intended_update_magnitude_relative_error": 1.9314498778122413e-08,
+          "intended_update_direction_cosine_error": 5.551115123125783e-16,
+          "actual_delta_magnitude_relative_error": 3.8551740044745486e-07,
+          "actual_delta_direction_cosine_error": 2.852537095421326e-10
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00044873227581978864,
+          "native_adam_magnitude": 0.0036304448285356117,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00044873227581978864,
+          "applied_magnitude_rule_absolute_error": 4.888299183838929e-12,
+          "intended_update_magnitude_relative_error": 1.0893576041226538e-08,
+          "intended_update_direction_cosine_error": 1.587618925213974e-14,
+          "actual_delta_magnitude_relative_error": 6.942035952750558e-07,
+          "actual_delta_direction_cosine_error": 3.3601456839171817e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005239541731633027,
+          "native_adam_magnitude": 0.0027304977041287316,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005239541731633027,
+          "applied_magnitude_rule_absolute_error": 1.7404430219074285e-11,
+          "intended_update_magnitude_relative_error": 3.321746655515767e-08,
+          "intended_update_direction_cosine_error": 1.5210055437364645e-14,
+          "actual_delta_magnitude_relative_error": 3.336441204870866e-06,
+          "actual_delta_direction_cosine_error": 3.897822724585609e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0004804429124352351,
+          "native_adam_magnitude": 0.00044015213213846377,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0004804429124352351,
+          "applied_magnitude_rule_absolute_error": 2.3132822697322086e-12,
+          "intended_update_magnitude_relative_error": 4.814895149252152e-09,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 2.169382845518264e-05,
+          "actual_delta_direction_cosine_error": 9.151021614917099e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0012266150092179293,
+          "native_adam_magnitude": 0.005170870445337863,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0012266150092179293,
+          "applied_magnitude_rule_absolute_error": 2.408599535097533e-11,
+          "intended_update_magnitude_relative_error": 1.9636149151125437e-08,
+          "intended_update_direction_cosine_error": 2.2648549702353193e-14,
+          "actual_delta_magnitude_relative_error": 2.0843556280958353e-07,
+          "actual_delta_direction_cosine_error": 3.1159458679930196e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.001258188451976365,
+          "native_adam_magnitude": 0.0037055521577184125,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.001258188451976365,
+          "applied_magnitude_rule_absolute_error": 4.707824928507076e-11,
+          "intended_update_magnitude_relative_error": 3.741748644259246e-08,
+          "intended_update_direction_cosine_error": 1.942890293094024e-14,
+          "actual_delta_magnitude_relative_error": 2.1492971418179962e-06,
+          "actual_delta_direction_cosine_error": 4.903541750422846e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.001300122965620643,
+          "native_adam_magnitude": 0.000536678347797329,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.001300122965620643,
+          "applied_magnitude_rule_absolute_error": 1.4420281375243649e-11,
+          "intended_update_magnitude_relative_error": 1.109147496070051e-08,
+          "intended_update_direction_cosine_error": 1.1102230246251565e-16,
+          "actual_delta_magnitude_relative_error": 4.268154497388821e-06,
+          "actual_delta_direction_cosine_error": 1.0057563626375554e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0947666735611801,
+          "native_adam_magnitude": 0.08292516772821504,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0947666735611801,
+          "applied_magnitude_rule_absolute_error": 1.672935817653709e-09,
+          "intended_update_magnitude_relative_error": 1.7653208228551875e-08,
+          "intended_update_direction_cosine_error": 8.881784197001252e-16,
+          "actual_delta_magnitude_relative_error": 1.1785561415678103e-09,
+          "actual_delta_direction_cosine_error": 1.105618929742036e-10
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.1724028889654252,
+          "native_adam_magnitude": 0.019864496355734614,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.1724028889654252,
+          "applied_magnitude_rule_absolute_error": 6.301156318944123e-09,
+          "intended_update_magnitude_relative_error": 3.6549018145315415e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 6.028103305411037e-08,
+          "actual_delta_direction_cosine_error": 2.8542390673180762e-11
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.17721453306783352,
+          "native_adam_magnitude": 0.0050257336878515016,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.17721453306783352,
+          "applied_magnitude_rule_absolute_error": 2.328850057242704e-09,
+          "intended_update_magnitude_relative_error": 1.3141416843609477e-08,
+          "intended_update_direction_cosine_error": 3.3306690738754696e-16,
+          "actual_delta_magnitude_relative_error": 1.083739447071963e-07,
+          "actual_delta_direction_cosine_error": 1.1423639811880548e-11
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0007997125733307431,
+          "native_adam_magnitude": 0.0031794796221402202,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0007997125733307431,
+          "applied_magnitude_rule_absolute_error": 1.97310578249274e-11,
+          "intended_update_magnitude_relative_error": 2.46726867825231e-08,
+          "intended_update_direction_cosine_error": 6.5503158452884236e-15,
+          "actual_delta_magnitude_relative_error": 4.6484257731904677e-07,
+          "actual_delta_direction_cosine_error": 3.0016875762761686e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0012276129148513766,
+          "native_adam_magnitude": 0.0023573196530754723,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0012276129148513766,
+          "applied_magnitude_rule_absolute_error": 3.964330860112275e-11,
+          "intended_update_magnitude_relative_error": 3.2293003826566746e-08,
+          "intended_update_direction_cosine_error": 6.328271240363392e-15,
+          "actual_delta_magnitude_relative_error": 3.873635801010522e-07,
+          "actual_delta_direction_cosine_error": 2.1968653196591248e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0016158684536737157,
+          "native_adam_magnitude": 0.00040071509036109735,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0016158684536737157,
+          "applied_magnitude_rule_absolute_error": 4.738340600961288e-11,
+          "intended_update_magnitude_relative_error": 2.9323801609137945e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 2.6544192815780576e-05,
+          "actual_delta_direction_cosine_error": 1.305354152547622e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00040728423186815266,
+          "native_adam_magnitude": 0.0020478327420527438,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00040728423186815266,
+          "applied_magnitude_rule_absolute_error": 7.524695493435485e-12,
+          "intended_update_magnitude_relative_error": 1.8475292851150016e-08,
+          "intended_update_direction_cosine_error": 1.965094753586527e-14,
+          "actual_delta_magnitude_relative_error": 1.3830468390541029e-06,
+          "actual_delta_direction_cosine_error": 4.5202250664733157e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005211383952158021,
+          "native_adam_magnitude": 0.0013367134272609822,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005211383952158021,
+          "applied_magnitude_rule_absolute_error": 2.7855098869850048e-12,
+          "intended_update_magnitude_relative_error": 5.345048292859644e-09,
+          "intended_update_direction_cosine_error": 1.687538997430238e-14,
+          "actual_delta_magnitude_relative_error": 1.9832351556559047e-06,
+          "actual_delta_direction_cosine_error": 3.9246750971333455e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0006562250206666342,
+          "native_adam_magnitude": 0.0002200131940527619,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0006562250206666342,
+          "applied_magnitude_rule_absolute_error": 1.783481077665544e-11,
+          "intended_update_magnitude_relative_error": 2.7177889050378212e-08,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 2.248649914093903e-05,
+          "actual_delta_direction_cosine_error": 4.890456331008153e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002786860714816612,
+          "native_adam_magnitude": 0.012668770225197136,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002786860714816612,
+          "applied_magnitude_rule_absolute_error": 5.519340464266859e-12,
+          "intended_update_magnitude_relative_error": 1.9804866635553253e-08,
+          "intended_update_direction_cosine_error": 1.8540724511240114e-14,
+          "actual_delta_magnitude_relative_error": 1.3310655533338434e-06,
+          "actual_delta_direction_cosine_error": 7.73758652483636e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00031768725208438433,
+          "native_adam_magnitude": 0.010567520136117538,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00031768725208438433,
+          "applied_magnitude_rule_absolute_error": 7.207539795030249e-12,
+          "intended_update_magnitude_relative_error": 2.2687532297283042e-08,
+          "intended_update_direction_cosine_error": 1.865174681370263e-14,
+          "actual_delta_magnitude_relative_error": 9.651762140627795e-06,
+          "actual_delta_direction_cosine_error": 9.81586607773366e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003394212433348252,
+          "native_adam_magnitude": 0.0021148621034004643,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003394212433348252,
+          "applied_magnitude_rule_absolute_error": 1.5174791978544988e-11,
+          "intended_update_magnitude_relative_error": 4.4707843982472184e-08,
+          "intended_update_direction_cosine_error": 1.1102230246251565e-16,
+          "actual_delta_magnitude_relative_error": 4.723148456187154e-05,
+          "actual_delta_direction_cosine_error": 1.7822337631256957e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0007879937137775849,
+          "native_adam_magnitude": 0.006359152223463081,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0007879937137775849,
+          "applied_magnitude_rule_absolute_error": 1.8194417977443478e-11,
+          "intended_update_magnitude_relative_error": 2.308954716312428e-08,
+          "intended_update_direction_cosine_error": 2.453592884421596e-14,
+          "actual_delta_magnitude_relative_error": 1.023277876099904e-06,
+          "actual_delta_direction_cosine_error": 6.837861199482376e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0008125845235347133,
+          "native_adam_magnitude": 0.0050721176683559185,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0008125845235347133,
+          "applied_magnitude_rule_absolute_error": 1.657289453241284e-11,
+          "intended_update_magnitude_relative_error": 2.0395287014807195e-08,
+          "intended_update_direction_cosine_error": 1.7208456881689926e-14,
+          "actual_delta_magnitude_relative_error": 5.857161101685548e-07,
+          "actual_delta_direction_cosine_error": 1.1275575340086164e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.001016618486381281,
+          "native_adam_magnitude": 0.0009596546005946722,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.001016618486381281,
+          "applied_magnitude_rule_absolute_error": 2.1650348614593584e-11,
+          "intended_update_magnitude_relative_error": 2.129643406068027e-08,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 2.0709339312308117e-06,
+          "actual_delta_direction_cosine_error": 1.6921755507937064e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0018921058780088007,
+          "native_adam_magnitude": 0.006330045443041957,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0018921058780088007,
+          "applied_magnitude_rule_absolute_error": 3.151607512290322e-11,
+          "intended_update_magnitude_relative_error": 1.6656612977783425e-08,
+          "intended_update_direction_cosine_error": 2.3869795029440866e-14,
+          "actual_delta_magnitude_relative_error": 3.835633136661798e-07,
+          "actual_delta_direction_cosine_error": 1.050640219268928e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0019976264883075786,
+          "native_adam_magnitude": 0.004515775493310724,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0019976264883075786,
+          "applied_magnitude_rule_absolute_error": 1.3438936595500106e-11,
+          "intended_update_magnitude_relative_error": 6.727452150911972e-09,
+          "intended_update_direction_cosine_error": 1.6764367671839864e-14,
+          "actual_delta_magnitude_relative_error": 2.0194752514690606e-07,
+          "actual_delta_direction_cosine_error": 1.6915612799373037e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00267709143999498,
+          "native_adam_magnitude": 0.0008110157623349039,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00267709143999498,
+          "applied_magnitude_rule_absolute_error": 5.199978598754984e-11,
+          "intended_update_magnitude_relative_error": 1.9423985753164175e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 6.724328838969562e-06,
+          "actual_delta_direction_cosine_error": 2.247812491695811e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.030168742575399518,
+          "native_adam_magnitude": 0.06691911230646277,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.030168742575399515,
+          "applied_magnitude_rule_absolute_error": 7.739378617144244e-10,
+          "intended_update_magnitude_relative_error": 2.5653633217714855e-08,
+          "intended_update_direction_cosine_error": 8.659739592076221e-15,
+          "actual_delta_magnitude_relative_error": 6.953637909923316e-08,
+          "actual_delta_direction_cosine_error": 1.9967638653639597e-10
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.05622330542320695,
+          "native_adam_magnitude": 0.04270533725936854,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.05622330542320695,
+          "applied_magnitude_rule_absolute_error": 3.1240696835022064e-10,
+          "intended_update_magnitude_relative_error": 5.556538673623379e-09,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 7.016106029489322e-08,
+          "actual_delta_direction_cosine_error": 1.1361567242573756e-10
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.05250846921115513,
+          "native_adam_magnitude": 0.011850695844379179,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.05250846921115514,
+          "applied_magnitude_rule_absolute_error": 4.782979221018557e-10,
+          "intended_update_magnitude_relative_error": 9.108967358173459e-09,
+          "intended_update_direction_cosine_error": 3.3306690738754696e-16,
+          "actual_delta_magnitude_relative_error": 2.628426937212325e-07,
+          "actual_delta_direction_cosine_error": 1.3663037368161213e-10
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003040835484238471,
+          "native_adam_magnitude": 0.0026731830350679403,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003040835484238471,
+          "applied_magnitude_rule_absolute_error": 6.62170204735954e-12,
+          "intended_update_magnitude_relative_error": 2.1775929948120165e-08,
+          "intended_update_direction_cosine_error": 2.353672812205332e-14,
+          "actual_delta_magnitude_relative_error": 5.5092754650543085e-06,
+          "actual_delta_direction_cosine_error": 7.074311330068639e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003401538025751854,
+          "native_adam_magnitude": 0.002115726156685836,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003401538025751854,
+          "applied_magnitude_rule_absolute_error": 1.7244047444305022e-12,
+          "intended_update_magnitude_relative_error": 5.06948549805486e-09,
+          "intended_update_direction_cosine_error": 1.8207657603852567e-14,
+          "actual_delta_magnitude_relative_error": 5.063191217402618e-07,
+          "actual_delta_direction_cosine_error": 8.745148672995029e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003439066547467307,
+          "native_adam_magnitude": 0.00034396658804326764,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003439066547467307,
+          "applied_magnitude_rule_absolute_error": 4.730564518665853e-12,
+          "intended_update_magnitude_relative_error": 1.3755373506896262e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 2.8597090969029182e-05,
+          "actual_delta_direction_cosine_error": 1.6854721689441021e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 1.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00112571806432084,
+          "native_adam_magnitude": 0.004833508435268435,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00112571806432084,
+          "applied_magnitude_rule_absolute_error": 3.035501103948457e-11,
+          "intended_update_magnitude_relative_error": 2.6965020771818615e-08,
+          "intended_update_direction_cosine_error": 2.4313884239290928e-14,
+          "actual_delta_magnitude_relative_error": 1.4195184194765176e-07,
+          "actual_delta_direction_cosine_error": 3.589627683986407e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0011181040255326092,
+          "native_adam_magnitude": 0.0035894387115651535,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0011181040255326092,
+          "applied_magnitude_rule_absolute_error": 2.509892597576946e-11,
+          "intended_update_magnitude_relative_error": 2.2447755654297907e-08,
+          "intended_update_direction_cosine_error": 1.354472090042691e-14,
+          "actual_delta_magnitude_relative_error": 5.339039710339222e-08,
+          "actual_delta_direction_cosine_error": 6.061002044699393e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0013580477400630874,
+          "native_adam_magnitude": 0.000497156279946782,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0013580477400630874,
+          "applied_magnitude_rule_absolute_error": 2.3210279401567058e-11,
+          "intended_update_magnitude_relative_error": 1.7090915571671417e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 3.5570714238541967e-06,
+          "actual_delta_direction_cosine_error": 9.36992566868966e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.17906424326410805,
+          "native_adam_magnitude": 0.10868440569920038,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.17906424326410805,
+          "applied_magnitude_rule_absolute_error": 4.6754275728755346e-09,
+          "intended_update_magnitude_relative_error": 2.6110336115436894e-08,
+          "intended_update_direction_cosine_error": 1.5543122344752192e-15,
+          "actual_delta_magnitude_relative_error": 2.063580040179147e-08,
+          "actual_delta_direction_cosine_error": 3.3801850207737516e-11
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.2677078485810527,
+          "native_adam_magnitude": 0.034752511791208474,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.2677078485810527,
+          "applied_magnitude_rule_absolute_error": 2.576077240412644e-09,
+          "intended_update_magnitude_relative_error": 9.622718399882046e-09,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 2.281153155259119e-09,
+          "actual_delta_direction_cosine_error": 1.3762879724765753e-11
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.41857418945176017,
+          "native_adam_magnitude": 0.012410396002341496,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.41857418945176017,
+          "applied_magnitude_rule_absolute_error": 5.147479664735499e-09,
+          "intended_update_magnitude_relative_error": 1.2297651785786456e-08,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 9.150217739062327e-08,
+          "actual_delta_direction_cosine_error": 2.510214258677479e-12
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 2.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.015579201929991083,
+          "native_adam_magnitude": 0.04485228057718057,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.015579201929991085,
+          "applied_magnitude_rule_absolute_error": 1.347003220769638e-10,
+          "intended_update_magnitude_relative_error": 8.64616311879729e-09,
+          "intended_update_direction_cosine_error": 2.7755575615628914e-15,
+          "actual_delta_magnitude_relative_error": 2.1069912881088726e-07,
+          "actual_delta_direction_cosine_error": 8.168198339930655e-10
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.02541608693032378,
+          "native_adam_magnitude": 0.02876085038604005,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.02541608693032378,
+          "applied_magnitude_rule_absolute_error": 3.85077646852805e-10,
+          "intended_update_magnitude_relative_error": 1.5150941612418478e-08,
+          "intended_update_direction_cosine_error": 4.551914400963142e-15,
+          "actual_delta_magnitude_relative_error": 1.609350763764894e-08,
+          "actual_delta_direction_cosine_error": 5.580784723235865e-10
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.022948865192986997,
+          "native_adam_magnitude": 0.006675195649600254,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.022948865192986997,
+          "applied_magnitude_rule_absolute_error": 4.8216513073851e-10,
+          "intended_update_magnitude_relative_error": 2.101041274293891e-08,
+          "intended_update_direction_cosine_error": 5.551115123125783e-16,
+          "actual_delta_magnitude_relative_error": 9.375806800937525e-07,
+          "actual_delta_direction_cosine_error": 6.736976532195627e-10
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 2.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.000473630767178241,
+          "native_adam_magnitude": 0.0019728571093497725,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.000473630767178241,
+          "applied_magnitude_rule_absolute_error": 7.33063392974187e-12,
+          "intended_update_magnitude_relative_error": 1.5477529036189708e-08,
+          "intended_update_direction_cosine_error": 1.8207657603852567e-14,
+          "actual_delta_magnitude_relative_error": 4.7367514433016566e-07,
+          "actual_delta_direction_cosine_error": 3.4489222366929084e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005211203648742698,
+          "native_adam_magnitude": 0.001321533345267501,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005211203648742698,
+          "applied_magnitude_rule_absolute_error": 9.48350133232051e-12,
+          "intended_update_magnitude_relative_error": 1.8198293427751366e-08,
+          "intended_update_direction_cosine_error": 1.63202784619898e-14,
+          "actual_delta_magnitude_relative_error": 2.5893776234298116e-08,
+          "actual_delta_direction_cosine_error": 4.063221813455087e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005869596940434367,
+          "native_adam_magnitude": 0.00019156872772101187,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005869596940434367,
+          "applied_magnitude_rule_absolute_error": 1.6185191424947232e-11,
+          "intended_update_magnitude_relative_error": 2.7574621475068284e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 1.9651935729170233e-05,
+          "actual_delta_direction_cosine_error": 5.797526344553106e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00020994617068898814,
+          "native_adam_magnitude": 0.00787262388836627,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00020994617068898814,
+          "applied_magnitude_rule_absolute_error": 2.9534142330107233e-12,
+          "intended_update_magnitude_relative_error": 1.406748317833717e-08,
+          "intended_update_direction_cosine_error": 1.2656542480726785e-14,
+          "actual_delta_magnitude_relative_error": 5.965959006815069e-07,
+          "actual_delta_direction_cosine_error": 1.3766387796376733e-06
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002401181332383171,
+          "native_adam_magnitude": 0.006882906156060026,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002401181332383171,
+          "applied_magnitude_rule_absolute_error": 2.57514577153492e-13,
+          "intended_update_magnitude_relative_error": 1.0724495735914275e-09,
+          "intended_update_direction_cosine_error": 1.4210854715202004e-14,
+          "actual_delta_magnitude_relative_error": 7.238573795587122e-06,
+          "actual_delta_direction_cosine_error": 1.7707728471316742e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002572051294389662,
+          "native_adam_magnitude": 0.0012246772164977834,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002572051294389662,
+          "applied_magnitude_rule_absolute_error": 8.767487061876744e-13,
+          "intended_update_magnitude_relative_error": 3.4087528355541963e-09,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 6.123098319854581e-05,
+          "actual_delta_direction_cosine_error": 3.116162422545088e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0006793323154792829,
+          "native_adam_magnitude": 0.00549316935335655,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0006793323154792829,
+          "applied_magnitude_rule_absolute_error": 1.8725877727783502e-11,
+          "intended_update_magnitude_relative_error": 2.756512140766887e-08,
+          "intended_update_direction_cosine_error": 2.3314683517128287e-14,
+          "actual_delta_magnitude_relative_error": 4.2351636664328396e-07,
+          "actual_delta_direction_cosine_error": 9.439822301615663e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0006667002592875347,
+          "native_adam_magnitude": 0.0038134787837581967,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0006667002592875347,
+          "applied_magnitude_rule_absolute_error": 2.570241545638008e-11,
+          "intended_update_magnitude_relative_error": 3.8551680514586906e-08,
+          "intended_update_direction_cosine_error": 1.9206858326015208e-14,
+          "actual_delta_magnitude_relative_error": 3.7560922838686395e-06,
+          "actual_delta_direction_cosine_error": 1.678851049291552e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0007611751535450062,
+          "native_adam_magnitude": 0.0006435528957757459,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0007611751535450062,
+          "applied_magnitude_rule_absolute_error": 8.96313503018914e-12,
+          "intended_update_magnitude_relative_error": 1.177539099561642e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 2.180650971506104e-05,
+          "actual_delta_direction_cosine_error": 3.0659844341140996e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.002264562881049889,
+          "native_adam_magnitude": 0.007459254873823495,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.002264562881049889,
+          "applied_magnitude_rule_absolute_error": 8.432792441767645e-11,
+          "intended_update_magnitude_relative_error": 3.723805819255688e-08,
+          "intended_update_direction_cosine_error": 2.2648549702353193e-14,
+          "actual_delta_magnitude_relative_error": 5.3402914423905656e-08,
+          "actual_delta_direction_cosine_error": 7.518955458252208e-09
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0019627332875809516,
+          "native_adam_magnitude": 0.004355264441925452,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0019627332875809516,
+          "applied_magnitude_rule_absolute_error": 2.0152590100158685e-11,
+          "intended_update_magnitude_relative_error": 1.0267615202508296e-08,
+          "intended_update_direction_cosine_error": 1.765254609153999e-14,
+          "actual_delta_magnitude_relative_error": 7.490846167801379e-07,
+          "actual_delta_direction_cosine_error": 1.805605887028605e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0019740415299509756,
+          "native_adam_magnitude": 0.000611915243670468,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0019740415299509756,
+          "applied_magnitude_rule_absolute_error": 7.292654327639703e-12,
+          "intended_update_magnitude_relative_error": 3.6942759962244054e-09,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 1.1544622477321909e-05,
+          "actual_delta_direction_cosine_error": 4.491983207621786e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.013102570480601013,
+          "native_adam_magnitude": 0.03645456169141917,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.013102570480601013,
+          "applied_magnitude_rule_absolute_error": 1.583768793195217e-10,
+          "intended_update_magnitude_relative_error": 1.2087466361165866e-08,
+          "intended_update_direction_cosine_error": 8.881784197001252e-15,
+          "actual_delta_magnitude_relative_error": 1.342031314965908e-07,
+          "actual_delta_direction_cosine_error": 9.569338654813464e-10
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.020991093009554977,
+          "native_adam_magnitude": 0.03301107173919096,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.020991093009554977,
+          "applied_magnitude_rule_absolute_error": 8.464346029635195e-10,
+          "intended_update_magnitude_relative_error": 4.0323512529027994e-08,
+          "intended_update_direction_cosine_error": 8.881784197001252e-16,
+          "actual_delta_magnitude_relative_error": 1.8468693152584592e-07,
+          "actual_delta_direction_cosine_error": 7.330986928621996e-10
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.02285747122464231,
+          "native_adam_magnitude": 0.00657398904676083,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.02285747122464231,
+          "applied_magnitude_rule_absolute_error": 2.5725287178257616e-10,
+          "intended_update_magnitude_relative_error": 1.1254651433034724e-08,
+          "intended_update_direction_cosine_error": 3.3306690738754696e-16,
+          "actual_delta_magnitude_relative_error": 3.8928979839703004e-07,
+          "actual_delta_direction_cosine_error": 6.602157709423295e-10
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002702296859046076,
+          "native_adam_magnitude": 0.0019229049522898854,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002702296859046076,
+          "applied_magnitude_rule_absolute_error": 3.686261040337924e-12,
+          "intended_update_magnitude_relative_error": 1.3641214269277668e-08,
+          "intended_update_direction_cosine_error": 1.4432899320127035e-14,
+          "actual_delta_magnitude_relative_error": 2.196812243004942e-06,
+          "actual_delta_direction_cosine_error": 9.848242932264384e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003207616786918338,
+          "native_adam_magnitude": 0.001561724096006046,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003207616786918338,
+          "applied_magnitude_rule_absolute_error": 5.42555627161545e-12,
+          "intended_update_magnitude_relative_error": 1.6914602385398325e-08,
+          "intended_update_direction_cosine_error": 1.5210055437364645e-14,
+          "actual_delta_magnitude_relative_error": 7.55971233001862e-06,
+          "actual_delta_direction_cosine_error": 1.0744715320809561e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003323881423690481,
+          "native_adam_magnitude": 0.0002813539010308377,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003323881423690481,
+          "applied_magnitude_rule_absolute_error": 1.4475809819499558e-11,
+          "intended_update_magnitude_relative_error": 4.355092131369531e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 1.6524456068256477e-05,
+          "actual_delta_direction_cosine_error": 1.809710008848775e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0011774147547056562,
+          "native_adam_magnitude": 0.005163604893920979,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0011774147547056562,
+          "applied_magnitude_rule_absolute_error": 3.805763061463796e-11,
+          "intended_update_magnitude_relative_error": 3.232304535139008e-08,
+          "intended_update_direction_cosine_error": 2.7755575615628914e-14,
+          "actual_delta_magnitude_relative_error": 7.996906745688648e-07,
+          "actual_delta_direction_cosine_error": 3.350740807039898e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0011579476171111598,
+          "native_adam_magnitude": 0.003240647957460553,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0011579476171111598,
+          "applied_magnitude_rule_absolute_error": 2.6609333876950747e-11,
+          "intended_update_magnitude_relative_error": 2.2979738889539192e-08,
+          "intended_update_direction_cosine_error": 1.787459069646502e-14,
+          "actual_delta_magnitude_relative_error": 1.9066393404099102e-06,
+          "actual_delta_direction_cosine_error": 5.784979817402558e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0014361627780577304,
+          "native_adam_magnitude": 0.0005171802618334433,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0014361627780577304,
+          "applied_magnitude_rule_absolute_error": 5.081793037590987e-11,
+          "intended_update_magnitude_relative_error": 3.5384519980752316e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 7.426760815998357e-06,
+          "actual_delta_direction_cosine_error": 8.678688590002537e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.13678842166652366,
+          "native_adam_magnitude": 0.08995525462898656,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.13678842166652366,
+          "applied_magnitude_rule_absolute_error": 1.4180152330123263e-09,
+          "intended_update_magnitude_relative_error": 1.0366485891921684e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 1.0290993546213656e-07,
+          "actual_delta_direction_cosine_error": 6.283384923477797e-11
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.22751535330662637,
+          "native_adam_magnitude": 0.017108670219678147,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.22751535330662637,
+          "applied_magnitude_rule_absolute_error": 7.2430523245792244e-09,
+          "intended_update_magnitude_relative_error": 3.18354440587143e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 1.9432631281901536e-08,
+          "actual_delta_direction_cosine_error": 1.6072032593683616e-11
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.24482649808525256,
+          "native_adam_magnitude": 0.00446809035407769,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.24482649808525256,
+          "applied_magnitude_rule_absolute_error": 2.4671336640302854e-09,
+          "intended_update_magnitude_relative_error": 1.0077069623193324e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 1.2244001901251522e-07,
+          "actual_delta_direction_cosine_error": 4.057643110400022e-12
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005801779972304976,
+          "native_adam_magnitude": 0.0017829073470423864,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005801779972304976,
+          "applied_magnitude_rule_absolute_error": 2.3126795725865457e-11,
+          "intended_update_magnitude_relative_error": 3.986155250323975e-08,
+          "intended_update_direction_cosine_error": 3.1086244689504383e-15,
+          "actual_delta_magnitude_relative_error": 9.102334661559297e-07,
+          "actual_delta_direction_cosine_error": 5.46397104783658e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0008044109790278131,
+          "native_adam_magnitude": 0.0014447430884729478,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0008044109790278131,
+          "applied_magnitude_rule_absolute_error": 2.6430327110943397e-11,
+          "intended_update_magnitude_relative_error": 3.285674576858355e-08,
+          "intended_update_direction_cosine_error": 6.217248937900877e-15,
+          "actual_delta_magnitude_relative_error": 2.91881760683399e-06,
+          "actual_delta_direction_cosine_error": 5.224632159128717e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0009358821897005481,
+          "native_adam_magnitude": 0.0002719379263976054,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0009358821897005481,
+          "applied_magnitude_rule_absolute_error": 1.5095298166838134e-11,
+          "intended_update_magnitude_relative_error": 1.6129485524984943e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 4.905057943149771e-05,
+          "actual_delta_direction_cosine_error": 3.823414913561862e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0004911025475687195,
+          "native_adam_magnitude": 0.002500607169122439,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0004911025475687195,
+          "applied_magnitude_rule_absolute_error": 9.631942053840714e-12,
+          "intended_update_magnitude_relative_error": 1.9612893753517824e-08,
+          "intended_update_direction_cosine_error": 1.7763568394002505e-14,
+          "actual_delta_magnitude_relative_error": 8.467968931613612e-07,
+          "actual_delta_direction_cosine_error": 3.132929100591042e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005293138099477417,
+          "native_adam_magnitude": 0.001462250648246041,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005293138099477417,
+          "applied_magnitude_rule_absolute_error": 9.605520697418546e-12,
+          "intended_update_magnitude_relative_error": 1.81471190296989e-08,
+          "intended_update_direction_cosine_error": 1.4765966227514582e-14,
+          "actual_delta_magnitude_relative_error": 3.976270931405068e-07,
+          "actual_delta_direction_cosine_error": 3.908075839609282e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005494527373612324,
+          "native_adam_magnitude": 0.00020928798045318221,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005494527373612324,
+          "applied_magnitude_rule_absolute_error": 1.4327760657593946e-11,
+          "intended_update_magnitude_relative_error": 2.6076420578391435e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 3.9344919513517596e-06,
+          "actual_delta_direction_cosine_error": 7.413581524229329e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00011926027759374894,
+          "native_adam_magnitude": 0.0035225710115307203,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00011926027759374894,
+          "applied_magnitude_rule_absolute_error": 5.799841279441852e-12,
+          "intended_update_magnitude_relative_error": 4.863179425829145e-08,
+          "intended_update_direction_cosine_error": 1.2989609388114332e-14,
+          "actual_delta_magnitude_relative_error": 8.04862692505015e-06,
+          "actual_delta_direction_cosine_error": 4.6041147541142635e-06
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0001361598607822441,
+          "native_adam_magnitude": 0.002549852266291149,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0001361598607822441,
+          "applied_magnitude_rule_absolute_error": 4.27642532388299e-12,
+          "intended_update_magnitude_relative_error": 3.140738613627292e-08,
+          "intended_update_direction_cosine_error": 1.687538997430238e-14,
+          "actual_delta_magnitude_relative_error": 9.529839415156616e-06,
+          "actual_delta_direction_cosine_error": 5.884612424678082e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00012738782885133876,
+          "native_adam_magnitude": 0.0004827696805254816,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00012738782885133876,
+          "applied_magnitude_rule_absolute_error": 2.814110056093e-12,
+          "intended_update_magnitude_relative_error": 2.2090886453440817e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 1.8649539360593437e-05,
+          "actual_delta_direction_cosine_error": 1.5395095853354412e-05
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0006722774775821502,
+          "native_adam_magnitude": 0.005105228012737485,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0006722774775821502,
+          "applied_magnitude_rule_absolute_error": 3.653372309536662e-12,
+          "intended_update_magnitude_relative_error": 5.43432210342587e-09,
+          "intended_update_direction_cosine_error": 2.7755575615628914e-14,
+          "actual_delta_magnitude_relative_error": 1.3684761213106356e-06,
+          "actual_delta_direction_cosine_error": 9.431956138339359e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0006409011865800251,
+          "native_adam_magnitude": 0.003402168850755962,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0006409011865800251,
+          "applied_magnitude_rule_absolute_error": 4.017315993753989e-14,
+          "intended_update_magnitude_relative_error": 6.268230379191664e-11,
+          "intended_update_direction_cosine_error": 1.8984813721090177e-14,
+          "actual_delta_magnitude_relative_error": 2.339405075102441e-06,
+          "actual_delta_direction_cosine_error": 1.8529300138681037e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0007967596692750357,
+          "native_adam_magnitude": 0.000630908008441347,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0007967596692750359,
+          "applied_magnitude_rule_absolute_error": 1.3634875129994728e-11,
+          "intended_update_magnitude_relative_error": 1.711290809058852e-08,
+          "intended_update_direction_cosine_error": 1.3322676295501878e-15,
+          "actual_delta_magnitude_relative_error": 2.6658054020467503e-05,
+          "actual_delta_direction_cosine_error": 2.767914966117502e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0021066728068324936,
+          "native_adam_magnitude": 0.006465719751512051,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0021066728068324936,
+          "applied_magnitude_rule_absolute_error": 5.6149718121595305e-11,
+          "intended_update_magnitude_relative_error": 2.6653269480370056e-08,
+          "intended_update_direction_cosine_error": 2.353672812205332e-14,
+          "actual_delta_magnitude_relative_error": 1.7491980541795016e-07,
+          "actual_delta_direction_cosine_error": 8.596741318811496e-09
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0021090433798498383,
+          "native_adam_magnitude": 0.004257445422703864,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0021090433798498383,
+          "applied_magnitude_rule_absolute_error": 2.9290790279357104e-11,
+          "intended_update_magnitude_relative_error": 1.388818771097533e-08,
+          "intended_update_direction_cosine_error": 1.9095836023552692e-14,
+          "actual_delta_magnitude_relative_error": 6.213580880931602e-07,
+          "actual_delta_direction_cosine_error": 1.572426577833852e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0024363077204208306,
+          "native_adam_magnitude": 0.0006927126870379135,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0024363077204208306,
+          "applied_magnitude_rule_absolute_error": 7.138356615879471e-11,
+          "intended_update_magnitude_relative_error": 2.929989739719474e-08,
+          "intended_update_direction_cosine_error": 8.881784197001252e-16,
+          "actual_delta_magnitude_relative_error": 2.637912582481583e-06,
+          "actual_delta_direction_cosine_error": 2.6274936337777888e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 1.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00024779869092959037,
+          "native_adam_magnitude": 0.001688864514198937,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00024779869092959037,
+          "applied_magnitude_rule_absolute_error": 3.714110941542559e-12,
+          "intended_update_magnitude_relative_error": 1.4988420282691095e-08,
+          "intended_update_direction_cosine_error": 8.881784197001252e-16,
+          "actual_delta_magnitude_relative_error": 1.0096516551705292e-06,
+          "actual_delta_direction_cosine_error": 2.5221464682312345e-06
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00039191607784551407,
+          "native_adam_magnitude": 0.0012382069072018101,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00039191607784551407,
+          "applied_magnitude_rule_absolute_error": 1.5358339057990056e-12,
+          "intended_update_magnitude_relative_error": 3.9187826317288454e-09,
+          "intended_update_direction_cosine_error": 3.219646771412954e-15,
+          "actual_delta_magnitude_relative_error": 1.5932088983650061e-06,
+          "actual_delta_direction_cosine_error": 2.0321781318832777e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00037276115572237303,
+          "native_adam_magnitude": 0.00024949698760635985,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00037276115572237303,
+          "applied_magnitude_rule_absolute_error": 1.1130059005513837e-12,
+          "intended_update_magnitude_relative_error": 2.9858420180772782e-09,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 2.3856384905318606e-05,
+          "actual_delta_direction_cosine_error": 2.714437121187352e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00021322849232263485,
+          "native_adam_magnitude": 0.0014848267711534875,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00021322849232263482,
+          "applied_magnitude_rule_absolute_error": 2.658544228945764e-12,
+          "intended_update_magnitude_relative_error": 1.2468053256498024e-08,
+          "intended_update_direction_cosine_error": 2.1538326677728037e-14,
+          "actual_delta_magnitude_relative_error": 5.873253772215037e-07,
+          "actual_delta_direction_cosine_error": 1.5447735460805134e-06
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00025483275153965,
+          "native_adam_magnitude": 0.0011728297960137844,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00025483275153965,
+          "applied_magnitude_rule_absolute_error": 4.076654487074338e-12,
+          "intended_update_magnitude_relative_error": 1.599737253776823e-08,
+          "intended_update_direction_cosine_error": 1.7541523789077473e-14,
+          "actual_delta_magnitude_relative_error": 7.445108177517312e-06,
+          "actual_delta_direction_cosine_error": 1.689484974698452e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002932769569526141,
+          "native_adam_magnitude": 0.00023127053901371937,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002932769569526141,
+          "applied_magnitude_rule_absolute_error": 3.6322757410341133e-12,
+          "intended_update_magnitude_relative_error": 1.2385138470349943e-08,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 5.423316403996292e-05,
+          "actual_delta_direction_cosine_error": 2.6176894981633225e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 1.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.001083955757998775,
+          "native_adam_magnitude": 0.004226861980408547,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.001083955757998775,
+          "applied_magnitude_rule_absolute_error": 5.923440687602421e-11,
+          "intended_update_magnitude_relative_error": 5.464651708919632e-08,
+          "intended_update_direction_cosine_error": 2.864375403532904e-14,
+          "actual_delta_magnitude_relative_error": 8.616043301046261e-08,
+          "actual_delta_direction_cosine_error": 3.930723202483222e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0011127604170957741,
+          "native_adam_magnitude": 0.0028677243827895005,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0011127604170957741,
+          "applied_magnitude_rule_absolute_error": 4.605927618472894e-12,
+          "intended_update_magnitude_relative_error": 4.139190767915579e-09,
+          "intended_update_direction_cosine_error": 2.042810365310288e-14,
+          "actual_delta_magnitude_relative_error": 8.07887876486113e-07,
+          "actual_delta_direction_cosine_error": 6.300654287194618e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0015046470931254527,
+          "native_adam_magnitude": 0.0005255928014563209,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0015046470931254527,
+          "applied_magnitude_rule_absolute_error": 7.492646260376379e-12,
+          "intended_update_magnitude_relative_error": 4.979670231719524e-09,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 1.2152350207683682e-05,
+          "actual_delta_direction_cosine_error": 7.5565541379774e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": false,
+          "sgdm_target_magnitude": 1.6952872316153374e-42,
+          "native_adam_magnitude": 0.0,
+          "frozen_denominator_floor_active": true,
+          "expected_applied_magnitude_including_floor": 0.0,
+          "applied_magnitude_rule_absolute_error": 0.0,
+          "intended_update_magnitude_relative_error": 1.0,
+          "intended_update_direction_cosine_error": null,
+          "actual_delta_magnitude_relative_error": 1.0,
+          "actual_delta_direction_cosine_error": null
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": false,
+          "sgdm_target_magnitude": 5.1105162218516233e-42,
+          "native_adam_magnitude": 0.0,
+          "frozen_denominator_floor_active": true,
+          "expected_applied_magnitude_including_floor": 0.0,
+          "applied_magnitude_rule_absolute_error": 0.0,
+          "intended_update_magnitude_relative_error": 1.0,
+          "intended_update_direction_cosine_error": null,
+          "actual_delta_magnitude_relative_error": 1.0,
+          "actual_delta_direction_cosine_error": null
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": false,
+          "sgdm_target_magnitude": 4.043180460398169e-42,
+          "native_adam_magnitude": 0.0,
+          "frozen_denominator_floor_active": true,
+          "expected_applied_magnitude_including_floor": 0.0,
+          "applied_magnitude_rule_absolute_error": 0.0,
+          "intended_update_magnitude_relative_error": 1.0,
+          "intended_update_direction_cosine_error": null,
+          "actual_delta_magnitude_relative_error": 1.0,
+          "actual_delta_direction_cosine_error": null
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 2.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.03734737302099175,
+          "native_adam_magnitude": 0.09640463932709532,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.03734737302099175,
+          "applied_magnitude_rule_absolute_error": 1.3162334416838561e-10,
+          "intended_update_magnitude_relative_error": 3.5242999629758742e-09,
+          "intended_update_direction_cosine_error": 5.10702591327572e-15,
+          "actual_delta_magnitude_relative_error": 4.1380854298722625e-09,
+          "actual_delta_direction_cosine_error": 1.3909906559916863e-10
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.05201501872424245,
+          "native_adam_magnitude": 0.05980563194438936,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.05201501872424245,
+          "applied_magnitude_rule_absolute_error": 6.540889843642539e-10,
+          "intended_update_magnitude_relative_error": 1.2575002372727795e-08,
+          "intended_update_direction_cosine_error": 3.3306690738754696e-16,
+          "actual_delta_magnitude_relative_error": 3.832891892763257e-08,
+          "actual_delta_direction_cosine_error": 1.2554179917856345e-10
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.07441783654440008,
+          "native_adam_magnitude": 0.012916314777948645,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.07441783654440008,
+          "applied_magnitude_rule_absolute_error": 2.770833368304082e-09,
+          "intended_update_magnitude_relative_error": 3.7233457650387436e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 1.8499869036681105e-07,
+          "actual_delta_direction_cosine_error": 6.189271317680323e-11
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 2.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00038409460080648684,
+          "native_adam_magnitude": 0.0013920167952519314,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00038409460080648684,
+          "applied_magnitude_rule_absolute_error": 1.2974817617875112e-11,
+          "intended_update_magnitude_relative_error": 3.378026547373736e-08,
+          "intended_update_direction_cosine_error": 2.0650148258027912e-14,
+          "actual_delta_magnitude_relative_error": 3.254826116516618e-06,
+          "actual_delta_direction_cosine_error": 5.80822866247388e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00042899106928249406,
+          "native_adam_magnitude": 0.0009854719091928756,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00042899106928249406,
+          "applied_magnitude_rule_absolute_error": 1.210376200308505e-13,
+          "intended_update_magnitude_relative_error": 2.821448630285772e-10,
+          "intended_update_direction_cosine_error": 1.532107773982716e-14,
+          "actual_delta_magnitude_relative_error": 1.0562286338888782e-06,
+          "actual_delta_direction_cosine_error": 6.677725176151839e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0004547399155678647,
+          "native_adam_magnitude": 0.00014430889400673025,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0004547399155678647,
+          "applied_magnitude_rule_absolute_error": 1.685666439332073e-11,
+          "intended_update_magnitude_relative_error": 3.706880313814054e-08,
+          "intended_update_direction_cosine_error": 6.661338147750939e-16,
+          "actual_delta_magnitude_relative_error": 7.0643140815951355e-06,
+          "actual_delta_direction_cosine_error": 1.1173391754049078e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00017208269328217757,
+          "native_adam_magnitude": 0.008905661284750213,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00017208269328217757,
+          "applied_magnitude_rule_absolute_error": 4.1093336687007126e-12,
+          "intended_update_magnitude_relative_error": 2.387999387121198e-08,
+          "intended_update_direction_cosine_error": 1.7985612998927536e-14,
+          "actual_delta_magnitude_relative_error": 7.068522025921453e-06,
+          "actual_delta_direction_cosine_error": 2.054866211631534e-06
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00021217010374856215,
+          "native_adam_magnitude": 0.007289684870486688,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00021217010374856215,
+          "applied_magnitude_rule_absolute_error": 4.79041258700727e-12,
+          "intended_update_magnitude_relative_error": 2.2578169556197736e-08,
+          "intended_update_direction_cosine_error": 1.4765966227514582e-14,
+          "actual_delta_magnitude_relative_error": 1.3167043446560278e-05,
+          "actual_delta_direction_cosine_error": 2.2138056451348476e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002750413172490168,
+          "native_adam_magnitude": 0.0014524771703307937,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002750413172490168,
+          "applied_magnitude_rule_absolute_error": 9.259235630824925e-12,
+          "intended_update_magnitude_relative_error": 3.366488976475068e-08,
+          "intended_update_direction_cosine_error": 5.551115123125783e-16,
+          "actual_delta_magnitude_relative_error": 4.081176411285803e-05,
+          "actual_delta_direction_cosine_error": 2.975995745613247e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005898688938453991,
+          "native_adam_magnitude": 0.004805903337682389,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005898688938453991,
+          "applied_magnitude_rule_absolute_error": 1.445592842479193e-11,
+          "intended_update_magnitude_relative_error": 2.4507019413810838e-08,
+          "intended_update_direction_cosine_error": 2.3647750424515834e-14,
+          "actual_delta_magnitude_relative_error": 1.4280530504784394e-06,
+          "actual_delta_direction_cosine_error": 1.249935281943948e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0006180610825355827,
+          "native_adam_magnitude": 0.0033208912762524895,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0006180610825355827,
+          "applied_magnitude_rule_absolute_error": 4.60485989617343e-12,
+          "intended_update_magnitude_relative_error": 7.450493111349488e-09,
+          "intended_update_direction_cosine_error": 1.7541523789077473e-14,
+          "actual_delta_magnitude_relative_error": 2.51892494085304e-06,
+          "actual_delta_direction_cosine_error": 1.9998576883395458e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0007061918334943368,
+          "native_adam_magnitude": 0.0005530107596649243,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0007061918334943368,
+          "applied_magnitude_rule_absolute_error": 2.165607938201669e-11,
+          "intended_update_magnitude_relative_error": 3.066600084977722e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 1.398415962095001e-05,
+          "actual_delta_direction_cosine_error": 3.628751111817152e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0016959872462309243,
+          "native_adam_magnitude": 0.006020241660837535,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0016959872462309243,
+          "applied_magnitude_rule_absolute_error": 3.5727656727199686e-11,
+          "intended_update_magnitude_relative_error": 2.1065993727198418e-08,
+          "intended_update_direction_cosine_error": 2.786659791809143e-14,
+          "actual_delta_magnitude_relative_error": 1.7446607492033195e-09,
+          "actual_delta_direction_cosine_error": 1.3309271573724857e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0016286245273898438,
+          "native_adam_magnitude": 0.003560183638786016,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0016286245273898438,
+          "applied_magnitude_rule_absolute_error": 5.19971947443576e-11,
+          "intended_update_magnitude_relative_error": 3.19270611059963e-08,
+          "intended_update_direction_cosine_error": 2.0317081350640365e-14,
+          "actual_delta_magnitude_relative_error": 7.177258256607644e-07,
+          "actual_delta_direction_cosine_error": 2.6184946655405383e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.001887987589163326,
+          "native_adam_magnitude": 0.0005309973024881609,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.001887987589163326,
+          "applied_magnitude_rule_absolute_error": 4.900789084445745e-11,
+          "intended_update_magnitude_relative_error": 2.5957739957505055e-08,
+          "intended_update_direction_cosine_error": 8.881784197001252e-16,
+          "actual_delta_magnitude_relative_error": 7.86188778023611e-06,
+          "actual_delta_direction_cosine_error": 4.4491753392605915e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 1.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00020218476170432331,
+          "native_adam_magnitude": 0.0019501907003941265,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00020218476170432331,
+          "applied_magnitude_rule_absolute_error": 3.921236626418592e-12,
+          "intended_update_magnitude_relative_error": 1.939432325848145e-08,
+          "intended_update_direction_cosine_error": 3.1086244689504383e-15,
+          "actual_delta_magnitude_relative_error": 2.016937104598604e-05,
+          "actual_delta_direction_cosine_error": 3.768527693126522e-06
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0002721628569130949,
+          "native_adam_magnitude": 0.001158821609043768,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0002721628569130949,
+          "applied_magnitude_rule_absolute_error": 7.123046022374652e-12,
+          "intended_update_magnitude_relative_error": 2.61719990124476e-08,
+          "intended_update_direction_cosine_error": 4.9960036108132044e-15,
+          "actual_delta_magnitude_relative_error": 5.04607681695024e-06,
+          "actual_delta_direction_cosine_error": 4.0347200973567254e-06
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.000279040323489399,
+          "native_adam_magnitude": 0.0002356438399360151,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.000279040323489399,
+          "applied_magnitude_rule_absolute_error": 5.384010511727544e-12,
+          "intended_update_magnitude_relative_error": 1.9294740027930857e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 1.3919793848460316e-05,
+          "actual_delta_direction_cosine_error": 4.467615151049209e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 1.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00028242700120891884,
+          "native_adam_magnitude": 0.002349915547140071,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00028242700120891884,
+          "applied_magnitude_rule_absolute_error": 3.6269761066048956e-12,
+          "intended_update_magnitude_relative_error": 1.2842171992488716e-08,
+          "intended_update_direction_cosine_error": 1.63202784619898e-14,
+          "actual_delta_magnitude_relative_error": 2.138591039146931e-06,
+          "actual_delta_direction_cosine_error": 8.601815900677323e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003543425508856952,
+          "native_adam_magnitude": 0.0018344243720507783,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003543425508856952,
+          "applied_magnitude_rule_absolute_error": 4.747062552074022e-12,
+          "intended_update_magnitude_relative_error": 1.3396817655220161e-08,
+          "intended_update_direction_cosine_error": 1.2101430968414206e-14,
+          "actual_delta_magnitude_relative_error": 2.29255626393865e-06,
+          "actual_delta_direction_cosine_error": 8.695766501309876e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0003550447279148383,
+          "native_adam_magnitude": 0.00028190312280406224,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0003550447279148383,
+          "applied_magnitude_rule_absolute_error": 2.6089211628728404e-12,
+          "intended_update_magnitude_relative_error": 7.348147867958232e-09,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 6.988794586204605e-05,
+          "actual_delta_direction_cosine_error": 1.7862081825859022e-06
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 1.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0009818746700151137,
+          "native_adam_magnitude": 0.003830244532167388,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0009818746700151137,
+          "applied_magnitude_rule_absolute_error": 4.694377699065999e-12,
+          "intended_update_magnitude_relative_error": 4.781035567447134e-09,
+          "intended_update_direction_cosine_error": 2.120525977034049e-14,
+          "actual_delta_magnitude_relative_error": 1.3650327579384225e-07,
+          "actual_delta_direction_cosine_error": 4.9116954614625286e-08
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.001025475943245457,
+          "native_adam_magnitude": 0.002600413608622196,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.001025475943245457,
+          "applied_magnitude_rule_absolute_error": 1.0791710190402592e-11,
+          "intended_update_magnitude_relative_error": 1.0523611315704784e-08,
+          "intended_update_direction_cosine_error": 1.942890293094024e-14,
+          "actual_delta_magnitude_relative_error": 8.535979507673375e-07,
+          "actual_delta_direction_cosine_error": 7.505935661900054e-08
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0014120287683495045,
+          "native_adam_magnitude": 0.0004316525194919814,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0014120287683495045,
+          "applied_magnitude_rule_absolute_error": 3.024451782768223e-11,
+          "intended_update_magnitude_relative_error": 2.1419193751981425e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 8.35164940693467e-06,
+          "actual_delta_direction_cosine_error": 9.253083321780764e-08
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 1.566342853123698e-29,
+          "native_adam_magnitude": 8.207750586685912e-29,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 1.566342853123698e-29,
+          "applied_magnitude_rule_absolute_error": 1.8194296149652177e-37,
+          "intended_update_magnitude_relative_error": 1.1615781336793418e-08,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 1.0,
+          "actual_delta_direction_cosine_error": null
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 5.15672286810568e-29,
+          "native_adam_magnitude": 7.04698189608518e-30,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 5.15672286810568e-29,
+          "applied_magnitude_rule_absolute_error": 4.2335032600713546e-37,
+          "intended_update_magnitude_relative_error": 8.20967760439828e-09,
+          "intended_update_direction_cosine_error": 4.440892098500626e-16,
+          "actual_delta_magnitude_relative_error": 1.0,
+          "actual_delta_direction_cosine_error": null
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 7.688411702105895e-30,
+          "native_adam_magnitude": 2.4903381496605434e-31,
+          "frozen_denominator_floor_active": true,
+          "expected_applied_magnitude_including_floor": 1.914674497205086e-30,
+          "applied_magnitude_rule_absolute_error": 4.1753252294293343e-38,
+          "intended_update_magnitude_relative_error": 0.7509661796032724,
+          "intended_update_direction_cosine_error": 0.0,
+          "actual_delta_magnitude_relative_error": 1.0,
+          "actual_delta_direction_cosine_error": null
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.012015028782737032,
+          "native_adam_magnitude": 0.024159454823163555,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.012015028782737034,
+          "applied_magnitude_rule_absolute_error": 1.5747248470476816e-10,
+          "intended_update_magnitude_relative_error": 1.3106292939824016e-08,
+          "intended_update_direction_cosine_error": 1.5543122344752192e-15,
+          "actual_delta_magnitude_relative_error": 8.010902485811044e-08,
+          "actual_delta_direction_cosine_error": 1.3614094296343637e-09
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.014180410233894533,
+          "native_adam_magnitude": 0.01793971421870841,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.014180410233894531,
+          "applied_magnitude_rule_absolute_error": 1.1658803436565002e-10,
+          "intended_update_magnitude_relative_error": 8.221767267002633e-09,
+          "intended_update_direction_cosine_error": 4.6629367034256575e-15,
+          "actual_delta_magnitude_relative_error": 1.9411051233042542e-07,
+          "actual_delta_direction_cosine_error": 1.7632206805728856e-09
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.011550571146638853,
+          "native_adam_magnitude": 0.0028157532468669148,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.011550571146638853,
+          "applied_magnitude_rule_absolute_error": 1.59604362712229e-10,
+          "intended_update_magnitude_relative_error": 1.3817876287625097e-08,
+          "intended_update_direction_cosine_error": 2.220446049250313e-16,
+          "actual_delta_magnitude_relative_error": 3.2594925170048583e-07,
+          "actual_delta_direction_cosine_error": 2.5923627688939632e-09
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "from_epoch": 30,
+      "epoch": 31,
+      "batch": 0,
+      "layers": [
+        {
+          "layer": "fc1",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00037860941665612894,
+          "native_adam_magnitude": 0.0014429260839512064,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00037860941665612894,
+          "applied_magnitude_rule_absolute_error": 1.5977493254219072e-11,
+          "intended_update_magnitude_relative_error": 4.220046456726578e-08,
+          "intended_update_direction_cosine_error": 2.1094237467877974e-14,
+          "actual_delta_magnitude_relative_error": 1.9026022890500371e-06,
+          "actual_delta_direction_cosine_error": 5.389078273632109e-07
+        },
+        {
+          "layer": "fc2",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.00045532750764078385,
+          "native_adam_magnitude": 0.0010370631859475121,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.00045532750764078385,
+          "applied_magnitude_rule_absolute_error": 1.3112771177041516e-11,
+          "intended_update_magnitude_relative_error": 2.879854821280503e-08,
+          "intended_update_direction_cosine_error": 1.432187701766452e-14,
+          "actual_delta_magnitude_relative_error": 5.964813732828311e-06,
+          "actual_delta_direction_cosine_error": 5.331586933055021e-07
+        },
+        {
+          "layer": "fc3",
+          "moments_equal_native_adam": true,
+          "bias_equal_native_adam": true,
+          "matrix_reconstruction_exact": true,
+          "direction_defined_for_nonzero_update": true,
+          "sgdm_target_magnitude": 0.0005743754493715882,
+          "native_adam_magnitude": 0.00017397680959112502,
+          "frozen_denominator_floor_active": false,
+          "expected_applied_magnitude_including_floor": 0.0005743754493715882,
+          "applied_magnitude_rule_absolute_error": 1.9578334179565227e-12,
+          "intended_update_magnitude_relative_error": 3.4086300448876727e-09,
+          "intended_update_direction_cosine_error": 5.551115123125783e-16,
+          "actual_delta_magnitude_relative_error": 2.8981772848046816e-05,
+          "actual_delta_direction_cosine_error": 6.435915076430376e-07
+        }
+      ],
+      "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+    }
+  ],
+  "analysis_audit": {
+    "passed": true,
+    "completed": 135,
+    "expected": 135,
+    "trajectory_rows": 1755,
+    "layer_rows": 5265,
+    "checkpoint_count": 675,
+    "matched_initializations": true,
+    "matched_per_epoch_example_order": true,
+    "max_saved_logit_cross_entropy_difference": 1.9115160387883634e-07,
+    "all_saved_logit_accuracy_counts_match": true,
+    "max_recorded_graft_magnitude_relative_error": 1.1920928955078125e-07,
+    "recorded_graft_magnitudes_checked": 369137,
+    "minimum_adam_sgdm_direction_cosine": 0.0,
+    "median_adam_sgdm_direction_cosine": 0.7788030803203583,
+    "final_hidden_supported": 268,
+    "final_hidden_total": 270,
+    "next_experiment_started": false,
+    "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8"
+  },
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "training_wall_seconds": 4827.792535543442,
+  "verification_seconds": 6.020331144332886,
+  "verification_policy": "Historical 14 runs: pretraining first-step tolerance documented in restoration audit; cross-runtime raw spectra use rtol=atol=1e-12 (observed max abs difference 2.274e-13 across 42 historical spectra). Current-runtime selected runs: exact raw spectra and exact eleven-step replay. All 135 initial and final hashes and all 675 checkpoint hashes checked. All 45 grafts checked against native Adam moments and biases with identical gradients; direction is undefined for zero updates. Existing denominator-floor cases are checked against the exact clamped rule and are not labeled SGDM-magnitude equality.",
+  "next_experiment_started": false,
+  "stop_for_user_review": true,
+  "denominator_floor_layer_checks": 4
+}

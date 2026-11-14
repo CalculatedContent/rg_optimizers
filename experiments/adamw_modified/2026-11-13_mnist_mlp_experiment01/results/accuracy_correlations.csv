@@ -1,0 +1,16 @@
+arm,spectral_metric,n_settings_times_seeds,independent_seeds,pearson_r,spearman_rho,interpretation
+adamw,alpha_fc1,45,5,0.14733915256812674,0.15455086334639756,descriptive within arm; settings share seeds; no independent-run p-value
+adamw,alpha_fc2,45,5,0.3333562486838432,-0.09233507869863669,descriptive within arm; settings share seeds; no independent-run p-value
+adamw,mean_alpha,45,5,0.36185486135277717,0.3193172421805101,descriptive within arm; settings share seeds; no independent-run p-value
+adamw,alpha_variance,45,5,0.3901100078034308,0.3836420364773477,descriptive within arm; settings share seeds; no independent-run p-value
+adamw,mean_abs_alpha_minus_2,45,5,-0.3697276473163377,-0.32393070078786523,descriptive within arm; settings share seeds; no independent-run p-value
+magnitude_graft,alpha_fc1,45,5,-0.17779473134520546,-0.6494777371370047,descriptive within arm; settings share seeds; no independent-run p-value
+magnitude_graft,alpha_fc2,45,5,0.7228535141524679,0.22473551915553988,descriptive within arm; settings share seeds; no independent-run p-value
+magnitude_graft,mean_alpha,45,5,0.06605032004065448,-0.5581459607196272,descriptive within arm; settings share seeds; no independent-run p-value
+magnitude_graft,alpha_variance,45,5,-0.5220620719480561,-0.5162058814406004,descriptive within arm; settings share seeds; no independent-run p-value
+magnitude_graft,mean_abs_alpha_minus_2,45,5,-0.5085609732713924,-0.5979758473305269,descriptive within arm; settings share seeds; no independent-run p-value
+sgdm,alpha_fc1,45,5,-0.36105453208188204,-0.43266972119397396,descriptive within arm; settings share seeds; no independent-run p-value
+sgdm,alpha_fc2,45,5,-0.673862913434941,-0.3658007839449739,descriptive within arm; settings share seeds; no independent-run p-value
+sgdm,mean_alpha,45,5,-0.5382030886678287,-0.4843052023241189,descriptive within arm; settings share seeds; no independent-run p-value
+sgdm,alpha_variance,45,5,-0.7037502064372131,-0.7519128427150876,descriptive within arm; settings share seeds; no independent-run p-value
+sgdm,mean_abs_alpha_minus_2,45,5,-0.7371530570111802,-0.734964798461643,descriptive within arm; settings share seeds; no independent-run p-value

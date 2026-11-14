@@ -1,0 +1,232 @@
+{
+  "selection_rule": "Descriptive inspection of every final run with test accuracy below 50%; all remain in all primary estimates.",
+  "training_performed": false,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "runs": [
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "test_accuracy_pct": 11.35,
+      "prediction_counts": [
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_per_class_logit_range_across_test_examples": 0.0,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 60,
+          "mean_fraction_of_units_active": 0.133737109375,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 256,
+          "mean_fraction_of_units_active": 0.0,
+          "fraction_test_examples_with_zero_hidden_vector": 1.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "final_alpha": {
+        "fc1": 2.0411901233431795,
+        "fc2": 1.9129461230588802,
+        "fc3": 2.0166079999354656
+      }
+    },
+    {
+      "spec": {
+        "seed": 31002,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "test_accuracy_pct": 11.35,
+      "prediction_counts": [
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_per_class_logit_range_across_test_examples": 0.0,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 136,
+          "mean_fraction_of_units_active": 0.20633046875,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 256,
+          "mean_fraction_of_units_active": 0.0,
+          "fraction_test_examples_with_zero_hidden_vector": 1.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "final_alpha": {
+        "fc1": 1.9291250162433273,
+        "fc2": 1.5003936985843638,
+        "fc3": 1.230715228994626
+      }
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "test_accuracy_pct": 11.35,
+      "prediction_counts": [
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_per_class_logit_range_across_test_examples": 0.0,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 117,
+          "mean_fraction_of_units_active": 0.165160546875,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 256,
+          "mean_fraction_of_units_active": 0.0,
+          "fraction_test_examples_with_zero_hidden_vector": 1.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "final_alpha": {
+        "fc1": 2.533002284350722,
+        "fc2": 1.5078103142468076,
+        "fc3": 1.5510606423138653
+      }
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "test_accuracy_pct": 11.35,
+      "prediction_counts": [
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_per_class_logit_range_across_test_examples": 0.0,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 77,
+          "mean_fraction_of_units_active": 0.093900390625,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 256,
+          "mean_fraction_of_units_active": 0.0,
+          "fraction_test_examples_with_zero_hidden_vector": 1.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "final_alpha": {
+        "fc1": 3.2772560331617573,
+        "fc2": 1.7578736906796322,
+        "fc3": 2.0314514445262652
+      }
+    },
+    {
+      "spec": {
+        "seed": 31005,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "test_accuracy_pct": 11.35,
+      "prediction_counts": [
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_per_class_logit_range_across_test_examples": 0.0,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 63,
+          "mean_fraction_of_units_active": 0.092482421875,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 256,
+          "mean_fraction_of_units_active": 0.0,
+          "fraction_test_examples_with_zero_hidden_vector": 1.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "final_alpha": {
+        "fc1": 1.795192378729612,
+        "fc2": 1.898487113624041,
+        "fc3": 1.6782236378245412
+      }
+    }
+  ]
+}

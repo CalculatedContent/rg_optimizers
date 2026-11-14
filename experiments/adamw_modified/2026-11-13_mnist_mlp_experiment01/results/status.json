@@ -1,958 +1,1248 @@
 {
-  "as_of": "2026-11-13",
+  "status": "complete_and_verified",
   "planned": 135,
-  "completed_and_verified": 14,
-  "unstarted": 121,
-  "active_training": false,
-  "completed_seeds": [
-    31001
+  "completed": 135,
+  "seeds": [
+    31001,
+    31002,
+    31003,
+    31004,
+    31005
   ],
-  "full_five_seed_comparison_complete": false,
+  "batch_sizes": [
+    128,
+    256,
+    512
+  ],
+  "lr_multipliers": [
+    0.5,
+    1,
+    2
+  ],
+  "arms": [
+    "adamw",
+    "magnitude_graft",
+    "sgdm"
+  ],
+  "epoch": 120,
+  "training_active": false,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "next_experiment_started": false,
   "runs": [
     {
+      "run_id": "b128_lr0.5/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "completed_verified"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/adamw/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/magnitude_graft/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/sgdm/seed_31001",
       "seed": 31001,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/adamw/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/magnitude_graft/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/sgdm/seed_31002",
       "seed": 31002,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/adamw/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/magnitude_graft/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/sgdm/seed_31003",
       "seed": 31003,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/adamw/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/magnitude_graft/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/sgdm/seed_31004",
       "seed": 31004,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr0.5/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr0.5/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr0.5/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 0.5,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr1/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr1/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr1/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 1.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b128_lr2/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 128,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b256_lr2/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 256,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/adamw/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "adamw",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/magnitude_graft/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "magnitude_graft",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     },
     {
+      "run_id": "b512_lr2/sgdm/seed_31005",
       "seed": 31005,
       "multiplier": 2.0,
       "batch_size": 512,
       "arm": "sgdm",
-      "status": "unstarted"
+      "status": "complete",
+      "last_epoch": 120
     }
   ]
 }
