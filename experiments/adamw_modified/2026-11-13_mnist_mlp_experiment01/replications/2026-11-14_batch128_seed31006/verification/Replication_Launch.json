@@ -1,0 +1,30 @@
+{
+  "utc": "2026-11-14T11:57:35.747944+00:00",
+  "planned": 3,
+  "specifications": [
+    {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm"
+    }
+  ],
+  "initial_hash": "8bdc9b6665406840eda261bb533707b96852b7ef4bafcdaba7ab351dfffcbd6f",
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "data_hashes_match": true,
+  "versions_match": true,
+  "deadline_epoch_seconds": 1794659255.7479155,
+  "workers": 3
+}

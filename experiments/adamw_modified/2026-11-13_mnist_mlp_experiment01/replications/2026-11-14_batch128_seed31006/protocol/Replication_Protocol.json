@@ -1,0 +1,68 @@
+{
+  "name": "Experiment 01 replication: batch128 LR x2, fresh paired seed31006",
+  "created_utc": "2026-11-14T11:57:29.089052+00:00",
+  "parent_experiment": "2026-11-13_mnist_mlp_experiment01",
+  "parent_commit": "b1d5c7fdf61639ca65d4856d9c49e681d3bacc58",
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "dataset": "MNIST",
+  "architecture": [
+    784,
+    256,
+    256,
+    10
+  ],
+  "seed": 31006,
+  "seed_changes": "Initialization and per-epoch example permutations both use the new seed. Both are shared across the three arms.",
+  "specifications": [
+    {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "sgdm"
+    }
+  ],
+  "epochs": 120,
+  "maximum_training_seconds": 1800,
+  "workers": 3,
+  "analysis": "Single new paired seed; report endpoints and contrast against the original five paired seeds at this exact setting. No confidence interval from the single fresh seed. Do not pool into the original frozen primary analysis.",
+  "graft": "Only matrix magnitude changes: D_graft=norm(-eta_S*m/(1-beta1))*D_Adam/norm(D_Adam); native AdamW bias updates; target history belongs to this same graft run.",
+  "decay": "Every parameter multiplied by (1-1e-5*schedule)^(actual_batch_size/256) each step. Equal cumulative decay per epoch across batch sizes, common across arms and rate multipliers. At B256 equivalent to original AdamW peak LR .001 and WD .01. Effective WD is adjusted when LR changes to isolate update changes.",
+  "adam_layer_rates": [
+    0.001,
+    0.001,
+    0.001
+  ],
+  "sgdm_magnitude_layer_rates": [
+    0.04,
+    0.2,
+    0.8
+  ],
+  "schedule": "5 epoch linear warmup; cosine to 10% peak at epoch 120",
+  "data_hashes": {
+    "t10k-images-idx3-ubyte.gz": "8d422c7b0a1c1c79245a5bcf07fe86e33eeafee792b84584aec276f5a2dbc4e6",
+    "t10k-labels-idx1-ubyte.gz": "f7ae60f92e00ec6debd23a6088c31dbd2371eca3ffa0defaefb259924204aec6",
+    "train-images-idx3-ubyte.gz": "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609",
+    "train-labels-idx1-ubyte.gz": "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c",
+    "split.npz": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543"
+  },
+  "versions": {
+    "python": "3.12.14",
+    "torch": "2.15.0+cpu",
+    "numpy": "2.3.5",
+    "weightwatcher": "0.7.7"
+  },
+  "other_settings_changed": false,
+  "scope": "Only batch128 LR multiplier2, three arms. No replacement of original outcomes and no further experiment."
+}

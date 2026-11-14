@@ -1,0 +1,77 @@
+[
+  {
+    "path": "runs/b128_lr2/adamw/seed_31006/checkpoints/epoch_000.pt",
+    "sha256": "fe8e90472f13c51dd90ec3c6942bb24e41ffbe5d93cb324a865561afc8d4ff5b",
+    "bytes": 1087723
+  },
+  {
+    "path": "runs/b128_lr2/adamw/seed_31006/checkpoints/epoch_030.pt",
+    "sha256": "95de0246749e6aeb9030a3808680b4ac9f64bb4c0a73216c27031cd77555251d",
+    "bytes": 3267606
+  },
+  {
+    "path": "runs/b128_lr2/adamw/seed_31006/checkpoints/epoch_060.pt",
+    "sha256": "17f7118f3ae363b7c8c607910f110e02e307dd449e9cbb1c2986da734bb67f6f",
+    "bytes": 3288022
+  },
+  {
+    "path": "runs/b128_lr2/adamw/seed_31006/checkpoints/epoch_090.pt",
+    "sha256": "9fe0a795869fb47053c398c2c15ec116852fe6bc14ed684c84618f3aa285016d",
+    "bytes": 3308374
+  },
+  {
+    "path": "runs/b128_lr2/adamw/seed_31006/checkpoints/epoch_120.pt",
+    "sha256": "7e55c9e503ec4f0e5e1c3848244aa1f7dfbc217518f29bf60e87a51e38d64aab",
+    "bytes": 3328790
+  },
+  {
+    "path": "runs/b128_lr2/magnitude_graft/seed_31006/checkpoints/epoch_000.pt",
+    "sha256": "c8314ef3ceec80912ee241ce6acb6aa499a96460c2b84ee1989482a3e22c0c87",
+    "bytes": 1087723
+  },
+  {
+    "path": "runs/b128_lr2/magnitude_graft/seed_31006/checkpoints/epoch_030.pt",
+    "sha256": "518d405a0d54a54af7169922da46248a9814f97ca874dd462c9bc1f1dac1fa17",
+    "bytes": 3267606
+  },
+  {
+    "path": "runs/b128_lr2/magnitude_graft/seed_31006/checkpoints/epoch_060.pt",
+    "sha256": "0cce9ef3a0a56845f0694e8a2a4c1e978cb41b8f4cfa79040f9d999dc476de2e",
+    "bytes": 3288022
+  },
+  {
+    "path": "runs/b128_lr2/magnitude_graft/seed_31006/checkpoints/epoch_090.pt",
+    "sha256": "bcf05932a5007aac19022325f5b7eb56343505b008ac0c4e81e25038bfe4f38d",
+    "bytes": 3308438
+  },
+  {
+    "path": "runs/b128_lr2/magnitude_graft/seed_31006/checkpoints/epoch_120.pt",
+    "sha256": "024728d962acb6b50c73a3dd209003e9b7e70fcb73442ca74d064ed26bd4a3b3",
+    "bytes": 3328854
+  },
+  {
+    "path": "runs/b128_lr2/sgdm/seed_31006/checkpoints/epoch_000.pt",
+    "sha256": "4996dd94e570092e2793e258f9932ad651f9b9c277e25172c015bb63d3b15709",
+    "bytes": 1087659
+  },
+  {
+    "path": "runs/b128_lr2/sgdm/seed_31006/checkpoints/epoch_030.pt",
+    "sha256": "7fe6f431131a834af3a1f280c6cf9e68bd27f5a5fbc9d6fe3022cc403aac4577",
+    "bytes": 2182818
+  },
+  {
+    "path": "runs/b128_lr2/sgdm/seed_31006/checkpoints/epoch_060.pt",
+    "sha256": "a3c40502418b5e68e327e19f364dce90a73d34252a711c82edd78b95c52e2f2f",
+    "bytes": 2199074
+  },
+  {
+    "path": "runs/b128_lr2/sgdm/seed_31006/checkpoints/epoch_090.pt",
+    "sha256": "7bab3ee53f7b812aa17f32d1ac1497931b36ba5e37d22edef46d4c759b8aa999",
+    "bytes": 2215266
+  },
+  {
+    "path": "runs/b128_lr2/sgdm/seed_31006/checkpoints/epoch_120.pt",
+    "sha256": "f439d1d2b77560a7b778e378fa452d03e094217ef4bcef1c694ee90442dfe9fe",
+    "bytes": 2231522
+  }
+]

@@ -1,0 +1,316 @@
+{
+  "passed": true,
+  "completed_runs": 3,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "data_hashes_match": true,
+  "common_initialization": true,
+  "common_minibatches": true,
+  "checkpoints_hashed": 15,
+  "checkpoint_checks": [
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "initial_and_final_hashes_match": true,
+      "alpha_max_abs_error": 0.0,
+      "spectra_identical": true,
+      "eleven_step_replay_exact": true,
+      "saved_accuracy_matches": true,
+      "saved_cross_entropy_abs_error": 2.0600338102028104e-10
+    },
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "initial_and_final_hashes_match": true,
+      "alpha_max_abs_error": 0.0,
+      "spectra_identical": true,
+      "eleven_step_replay_exact": true,
+      "saved_accuracy_matches": true,
+      "saved_cross_entropy_abs_error": 8.096252157585582e-08
+    },
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "initial_and_final_hashes_match": true,
+      "alpha_max_abs_error": 0.0,
+      "spectra_identical": true,
+      "eleven_step_replay_exact": true,
+      "saved_accuracy_matches": true,
+      "saved_cross_entropy_abs_error": 2.1558326790405147e-09
+    }
+  ],
+  "graft_check": {
+    "spec": {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    "from_epoch": 30,
+    "epoch": 31,
+    "batch": 0,
+    "layers": [
+      {
+        "layer": "fc1",
+        "moments_equal_native_adam": true,
+        "bias_equal_native_adam": true,
+        "matrix_reconstruction_exact": true,
+        "direction_defined_for_nonzero_update": false,
+        "sgdm_target_magnitude": 1.6924149327485765e-42,
+        "native_adam_magnitude": 0.0,
+        "frozen_denominator_floor_active": true,
+        "expected_applied_magnitude_including_floor": 0.0,
+        "applied_magnitude_rule_absolute_error": 0.0,
+        "intended_update_magnitude_relative_error": 1.0,
+        "intended_update_direction_cosine_error": null,
+        "actual_delta_magnitude_relative_error": 1.0,
+        "actual_delta_direction_cosine_error": null
+      },
+      {
+        "layer": "fc2",
+        "moments_equal_native_adam": true,
+        "bias_equal_native_adam": true,
+        "matrix_reconstruction_exact": true,
+        "direction_defined_for_nonzero_update": false,
+        "sgdm_target_magnitude": 5.1102208167833373e-42,
+        "native_adam_magnitude": 0.0,
+        "frozen_denominator_floor_active": true,
+        "expected_applied_magnitude_including_floor": 0.0,
+        "applied_magnitude_rule_absolute_error": 0.0,
+        "intended_update_magnitude_relative_error": 1.0,
+        "intended_update_direction_cosine_error": null,
+        "actual_delta_magnitude_relative_error": 1.0,
+        "actual_delta_direction_cosine_error": null
+      },
+      {
+        "layer": "fc3",
+        "moments_equal_native_adam": true,
+        "bias_equal_native_adam": true,
+        "matrix_reconstruction_exact": true,
+        "direction_defined_for_nonzero_update": false,
+        "sgdm_target_magnitude": 4.043526050366781e-42,
+        "native_adam_magnitude": 0.0,
+        "frozen_denominator_floor_active": true,
+        "expected_applied_magnitude_including_floor": 0.0,
+        "applied_magnitude_rule_absolute_error": 0.0,
+        "intended_update_magnitude_relative_error": 1.0,
+        "intended_update_direction_cosine_error": null,
+        "actual_delta_magnitude_relative_error": 1.0,
+        "actual_delta_direction_cosine_error": null
+      }
+    ],
+    "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+  },
+  "nonzero_initial_step_graft_check": {
+    "spec": {
+      "seed": 31006,
+      "multiplier": 2.0,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    "from_epoch": 0,
+    "epoch": 1,
+    "batch": 0,
+    "layers": [
+      {
+        "layer": "fc1",
+        "moments_equal_native_adam": true,
+        "bias_equal_native_adam": true,
+        "matrix_reconstruction_exact": true,
+        "direction_defined_for_nonzero_update": true,
+        "sgdm_target_magnitude": 0.003066548430442835,
+        "native_adam_magnitude": 0.14051279933009642,
+        "frozen_denominator_floor_active": false,
+        "expected_applied_magnitude_including_floor": 0.003066548430442835,
+        "applied_magnitude_rule_absolute_error": 7.956575242412667e-11,
+        "intended_update_magnitude_relative_error": 2.594635439834292e-08,
+        "intended_update_direction_cosine_error": 4.141131881851834e-14,
+        "actual_delta_magnitude_relative_error": 3.469076617412803e-06,
+        "actual_delta_direction_cosine_error": 2.1125580174086167e-09
+      },
+      {
+        "layer": "fc2",
+        "moments_equal_native_adam": true,
+        "bias_equal_native_adam": true,
+        "matrix_reconstruction_exact": true,
+        "direction_defined_for_nonzero_update": true,
+        "sgdm_target_magnitude": 0.0083102998622207,
+        "native_adam_magnitude": 0.09789501068292268,
+        "frozen_denominator_floor_active": false,
+        "expected_applied_magnitude_including_floor": 0.0083102998622207,
+        "applied_magnitude_rule_absolute_error": 3.526636847134279e-10,
+        "intended_update_magnitude_relative_error": 4.2436938629819565e-08,
+        "intended_update_direction_cosine_error": 2.5979218776228663e-14,
+        "actual_delta_magnitude_relative_error": 3.4138472733147296e-06,
+        "actual_delta_direction_cosine_error": 2.8834212795203484e-10
+      },
+      {
+        "layer": "fc3",
+        "moments_equal_native_adam": true,
+        "bias_equal_native_adam": true,
+        "matrix_reconstruction_exact": true,
+        "direction_defined_for_nonzero_update": true,
+        "sgdm_target_magnitude": 0.03300749891365278,
+        "native_adam_magnitude": 0.019835658119143586,
+        "frozen_denominator_floor_active": false,
+        "expected_applied_magnitude_including_floor": 0.03300749891365278,
+        "applied_magnitude_rule_absolute_error": 7.319406886141522e-10,
+        "intended_update_magnitude_relative_error": 2.2174981850753284e-08,
+        "intended_update_direction_cosine_error": 1.9984014443252818e-15,
+        "actual_delta_magnitude_relative_error": 3.476799359525273e-08,
+        "actual_delta_direction_cosine_error": 7.990275108227252e-13
+      }
+    ],
+    "target_history": "this checkpoint and this run gradient, not the separate SGDM trajectory"
+  },
+  "recorded_nondegenerate_magnitudes_checked": 3722,
+  "max_recorded_magnitude_relative_error": 1.1920928955078125e-07,
+  "activity_checks": [
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "test_accuracy_pct": 98.52,
+      "prediction_counts": [
+        980,
+        1134,
+        1034,
+        1009,
+        978,
+        894,
+        959,
+        1025,
+        971,
+        1016
+      ],
+      "max_per_class_logit_range_across_test_examples": 256.5340576171875,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 5,
+          "mean_fraction_of_units_active": 0.17890546875,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 9,
+          "mean_fraction_of_units_active": 0.25392578125,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 2.100835274632118e-07,
+        "fc2": 1.3117811192842055e-07,
+        "fc3": 2.196543960053532e-07
+      },
+      "final_alpha": {
+        "fc1": 1.9142839399940645,
+        "fc2": 2.021710547345844,
+        "fc3": 3.7334512805729134
+      }
+    },
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "test_accuracy_pct": 11.35,
+      "prediction_counts": [
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_per_class_logit_range_across_test_examples": 0.0,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 123,
+          "mean_fraction_of_units_active": 0.138336328125,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 256,
+          "mean_fraction_of_units_active": 0.0,
+          "fraction_test_examples_with_zero_hidden_vector": 1.0
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "final_alpha": {
+        "fc1": 2.2618342098908943,
+        "fc2": 1.4448835306080934,
+        "fc3": 1.4120465477324315
+      }
+    },
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "test_accuracy_pct": 98.00999999999999,
+      "prediction_counts": [
+        984,
+        1133,
+        1024,
+        1017,
+        973,
+        905,
+        953,
+        1027,
+        988,
+        996
+      ],
+      "max_per_class_logit_range_across_test_examples": 798.174560546875,
+      "max_restored_logit_abs_error": 0.0,
+      "hidden_test_activity": {
+        "fc1": {
+          "units_never_positive_on_test": 5,
+          "mean_fraction_of_units_active": 0.08284453125,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0
+        },
+        "fc2": {
+          "units_never_positive_on_test": 4,
+          "mean_fraction_of_units_active": 0.044781640625,
+          "fraction_test_examples_with_zero_hidden_vector": 0.0012
+        }
+      },
+      "final_epoch_recorded_gradient_norm_max": {
+        "fc1": 0.016544951125979424,
+        "fc2": 0.0071795666590332985,
+        "fc3": 0.020018892362713814
+      },
+      "final_alpha": {
+        "fc1": 1.6868283044586803,
+        "fc2": 2.165832745782425,
+        "fc3": 2.5333156423296623
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "planned": 3,
+  "completed": 3,
+  "results": [
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120
+    },
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120
+    },
+    {
+      "spec": {
+        "seed": 31006,
+        "multiplier": 2.0,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120
+    }
+  ],
+  "failures": [],
+  "wall_seconds": 261.1242210865021,
+  "training_active": false,
+  "original_experiment_unchanged": true,
+  "next_experiment_started": false,
+  "finished_utc": "2026-11-14T12:01:56.891311+00:00"
+}

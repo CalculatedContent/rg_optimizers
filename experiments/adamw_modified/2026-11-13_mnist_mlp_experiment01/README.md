@@ -54,3 +54,8 @@ Seven current-runtime runs replay eleven minibatches exactly from epoch 30. The 
 Training source SHA256: `1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8`. The source and protocol remain frozen. This continuation reused 14 completed runs and trained the remaining 121; cumulative recorded training wall time, including prior segments, was 80.5 minutes. The interrupted earlier attempts and the runtime restoration are documented in the execution records. [Reanalysis instructions](execution/README.md).
 
 This pass establishes setting-dependent effects of the magnitude intervention. It does not by itself establish an RG Jacobian condition. Stop for review before any further experiment.
+
+## Fresh-seed replication: batch 128, LR ×2
+
+The separately authorized [seed-31006 replication](replications/2026-11-14_batch128_seed31006/README.md) completed all three paired 120-epoch runs. Test accuracy was AdamW **98.52%**, magnitude graft **11.35%**, and SGDM **98.01%**. The graft again has zero FC2 activations on every test image and predicts digit 1 throughout. Collapse has therefore occurred in all six tested seeds at this setting; the lower-rate batch-128 settings did not collapse. The original 135-run tables and five-seed intervals above remain unchanged. Replication plots, endpoints, saved checkpoints and verification are linked in its separate folder.
+
