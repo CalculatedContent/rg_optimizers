@@ -1,6 +1,8 @@
 # Experiment03: small GPT, AdamW magnitude graft and SGDM
 
-**Setup and numerical preflight passed. The first three training runs are a gated pilot; confirmatory results are not yet available.**
+**ON HOLD at Charles's request: finish Fashion-MNIST first. Run43705017007 was cancelled, the45-run expansion did not proceed, and this launch workflow is disabled.**
+
+The two pilot control jobs completed; the graft pilot was cancelled. Preserve all pilot artifacts; these are not confirmatory results. Do not restart GPT before reviewing the completed Fashion-MNIST pass.
 
 This is a separate Tiny Shakespeare experiment. It does not overwrite MNIST or Fashion-MNIST.
 

@@ -1,5 +1,5 @@
 {
-  "status": "interrupted",
+  "status": "recovery_running",
   "dataset": "Fashion-MNIST",
   "planned_runs": 120,
   "execution_complete_runs": 56,
@@ -27,7 +27,11 @@
   "interrupted_started_runs": 6,
   "not_started_runs": 58,
   "observed_utc": "2026-11-15T10:32:22Z",
-  "training_restarted": false,
+  "training_restarted": true,
   "classification_note": "Execution completion is not a verified model-quality classification. Full five-seed verification and final comparisons were not completed.",
-  "evidence": "Register/log stopped updating around10:22UTC; session70476 inaccessible; no Completion.json or Final_Save.json."
+  "evidence": "Register/log stopped updating around10:22UTC; session70476 inaccessible; no Completion.json or Final_Save.json.",
+  "recovery_run_id": 43706454292,
+  "recovery_url": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/43706454292",
+  "restart_policy": "Preserve56 finished runs; resume6 checkpoints; begin58 unstarted. No completed run repeated.",
+  "gpt_on_hold": true
 }

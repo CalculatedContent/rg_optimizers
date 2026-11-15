@@ -12,3 +12,4 @@
 | Subsequent days | Further experiments | Awaiting review of Experiment 02; no additional run started. |
 | 2026-11-15 | Fashion-MNIST runtime interruption | Last update around10:22UTC; 56 completed endpoints, 6 partial runs, 58 unstarted. Two complete seed archives plus available third-seed states saved. No restart; no completed five-seed result claimed. |
 | 2026-11-15 | GPT Experiment03 pilot launch | Three cases launched in GitHub Actions run43705017007; numerical preflight passed. Fixed45-run expansion requires all pilot verification/learning/throughput checks; separate96-hour budget. |
+| 2026-11-15 | Fashion-MNIST recovery prioritized | At Charles's explicit request, cancelled/disabled GPT and launched recovery43706454292. Preserve56 endpoints, resume6 checkpoint states and run58 unstarted configurations; unchanged source/settings. Final verification pending. |

@@ -1,8 +1,12 @@
-# Experiment02: Fashion-MNIST — interrupted
+# Experiment02: Fashion-MNIST — recovery running
 
-**56/120 runs reached their training endpoint; 6 started runs were interrupted and 58 were not started. This is not a completed or fully verified experiment.**
+**Authorized recovery is running: preserve56 completed runs, resume6 saved states and complete58 unstarted runs. Final120-run verification remains pending.**
 
-The last supervisor update was approximately2026-11-15 10:22UTC. Its execution session subsequently became inaccessible. No completion or final verification summary was produced. Training has not been restarted or extended.
+[Live recovery](https://github.com/CalculatedContent/rg_optimizers/actions/runs/43706454292) · [Recovery protocol](recovery/README.md)
+
+Charles explicitly requested this continuation before GPT on15Nov2026. GPT is cancelled/on hold. The recovery source and optimization settings are unchanged.
+
+The last supervisor update was approximately2026-11-15 10:22UTC. Its execution session subsequently became inaccessible. No completion or final verification summary was produced. The original execution was interrupted; the separately documented authorized recovery now continues from saved states.
 
 Two complete seed blocks (31001 and31002) and all available seed31003 checkpoints/logs have been preserved. Execution completion does not mean every model has passed the final functional/spectral audit. No five-seed effect, confidence interval, or theoretical conclusion is claimed from this partial pass.
 
