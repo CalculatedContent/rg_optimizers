@@ -1,0 +1,765 @@
+{
+  "experiment": "Experiment02_clean_fixed_endpoint",
+  "dataset": "Fashion-MNIST",
+  "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "specifications": [
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    }
+  ],
+  "criterion": "Fixed epoch20; no endpoint selection by validation, test, alpha or observed results",
+  "validation_frequency_epochs": 1,
+  "weightwatcher_frequency_epochs": 1,
+  "schedule": "Five-epoch warmup; cosine over remaining15epochs to0.1peak; same across arms",
+  "learning_rates": "Unchanged SGDM targets[.04,.2,.8] and Adam[.001,.001,.001] times originalmultipliers; momentum.9; unchanged decay",
+  "new_training_hours": 4,
+  "total_budget_hours": 5,
+  "independent_seeds": [
+    31001,
+    31002,
+    31003,
+    31004,
+    31005
+  ],
+  "same_initialization_and_minibatches_as_parent": true,
+  "original_results_preserved": true,
+  "raw_validation_losses_retained": true,
+  "reason": "User requested rerun after observing late validation loss deterioration. No fitting arithmetic error found in independent audit.",
+  "fixed_epochs": 20,
+  "pilot_seed": 31999,
+  "pilot_setting": {
+    "batch_size": 256,
+    "multiplier": 1
+  },
+  "pilot_excluded": true,
+  "endpoint_rule": "Always epoch20 for every confirmatory run; no validation/test/alpha selection",
+  "learning_rates_unchanged": true,
+  "training_hours": 4,
+  "total_hours": 5,
+  "pilot_gate": {
+    "validation_accuracy_min": 0.8,
+    "initial_to_final_loss_drop_min": 0.1,
+    "final_minus_best_validation_max": 0.05,
+    "alpha_used": false,
+    "test_used": false
+  },
+  "functional_quality": "validation accuracy>=80% and nonconstant predictions, independent of spectral alignment; failures retained",
+  "previous_test_data_observed": true
+}

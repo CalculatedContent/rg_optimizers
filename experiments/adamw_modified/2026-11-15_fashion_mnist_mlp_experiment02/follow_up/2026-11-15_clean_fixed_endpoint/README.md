@@ -1,0 +1,11 @@
+# Clean fixed-endpoint Fashion-MNIST restart
+
+Requested after concerns about rising validation loss and endpoint selection. All previous runs remain archived separately. This pass always evaluates epoch20, for every optimizer and setting. There is no early stopping and no best-checkpoint selection.
+
+Architecture: Fashion-MNIST784→256→256→10 ReLU MLP. Same original split, paired initialization/minibatches, eight settings and five seeds31001–31005. Native AdamW, exact magnitude-only graft, SGDM. Adam directions, moments and bias updates are retained in the graft; only each matrix update magnitude is supplied by SGDM history on that same trajectory. Frozen original optimizer kernel remains unchanged.
+
+Schedule: five-epoch warmup, then cosine anneal to10%peak over the remaining15epochs. Original peak layer rates, momentum and common decay remain unchanged. Every run starts from initialization. Independent pilot seed31999, batch256 LR×1, three arms; excluded from inference. Before any confirmation starts, pilots must pass numerical replay and optimizer checks, validation accuracy>=80%, initial-to-final validation loss decrease>=0.1nat, and final loss within0.05nat of their minimum. Alpha and test results do not gate expansion. Failure stops expansion; no automatic tuning or endpoint substitution.
+
+Primary endpoints fixed before the pilot: per-layer alpha, |alpha−2|, hidden-layer alpha variance, final test accuracy/loss. Actual train/validation loss and WeightWatcher fits recorded every epoch. Five seed-level paired95%t intervals; settings averaged within seed. All failures and unsupported fits retained. FC3 has10eigenvalues and its exponent is unsupported/exploratory. The test dataset has been inspected in earlier work, so this is not a previously unseen test set.
+
+Four-hour training cutoff including remote pilot; five-hour workflow cap. GPT stays on hold. Source and protocol hashes are checked before training. Epoch0,1,20 checkpoints include optimizer/RNG state; epoch1 replays exactly into epoch2; final spectra/validation are reproduced. Separate independent SGDM buffers and a reference Adam optimizer verify nonzero graft magnitudes, directions, Adam moments and biases.
