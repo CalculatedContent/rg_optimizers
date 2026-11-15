@@ -10,5 +10,5 @@
 | 2026-11-15 | Experiment 02 Fashion-MNIST setup | Created a sibling folder and 120-run plan using the same MLP, exact graft and eight shared settings. Added run matrix, reference source, setup/data validator and separate follow-up space. No data staged or training launched; Experiment 01 unchanged. |
 | 2026-11-15 | Experiment 02 execution | Explicitly authorized and started at 09:57:34 UTC. Fashion-MNIST checksums and preflight passed; one fixed 120-run pass with incremental checkpoint preservation and automatic verification. Final results pending. |
 | Subsequent days | Further experiments | Awaiting review of Experiment 02; no additional run started. |
-
-
+| 2026-11-15 | Fashion-MNIST runtime interruption | Last update around10:22UTC; 56 completed endpoints, 6 partial runs, 58 unstarted. Two complete seed archives plus available third-seed states saved. No restart; no completed five-seed result claimed. |
+| 2026-11-15 | GPT Experiment03 pilot launch | Three cases launched in GitHub Actions run43705017007; numerical preflight passed. Fixed45-run expansion requires all pilot verification/learning/throughput checks; separate96-hour budget. |

@@ -1,180 +1,33 @@
 {
+  "status": "interrupted",
   "dataset": "Fashion-MNIST",
-  "planned": 120,
-  "returned": 15,
-  "completed": 15,
-  "results": [
+  "planned_runs": 120,
+  "execution_complete_runs": 56,
+  "started_run_directories": 62,
+  "full_pass_verification_complete": false,
+  "completion_summary_exists": false,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "archives": [
     {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 256,
-        "arm": "sgdm"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 141.48425197601318
+      "label": "Seed_31001_Saved.json",
+      "library_file_id": "libfile_fde3_f-c1192c9d03188191be4423be59c573b4_3360a23133288191af30e7bb737808b0",
+      "sha256": "941b862ad9b83847d0d3f532b8f2828074ded1cd829186d87b3e23e1393ea1d3"
     },
     {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 256,
-        "arm": "adamw"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 158.23231482505798
+      "label": "Seed_31002_Saved.json",
+      "library_file_id": "libfile_fde3_f-a64da1ba59088191b1848f9bc22cca02_3360a23133288191af30e7bb737808b0",
+      "sha256": "322dcff39156a01d6dd01adf06514faf049e5b96ef6cbb28ac375c0174fd9bd6"
     },
     {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 128,
-        "arm": "sgdm"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 167.52446699142456
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 256,
-        "arm": "magnitude_graft"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 188.542138338089
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 128,
-        "arm": "adamw"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 203.29678010940552
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 128,
-        "arm": "magnitude_graft"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 267.51105880737305
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 512,
-        "arm": "adamw"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 136.78717947006226
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 512,
-        "arm": "sgdm"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 126.91643524169922
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 0.5,
-        "batch_size": 512,
-        "arm": "magnitude_graft"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 151.1839005947113
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 1,
-        "batch_size": 128,
-        "arm": "adamw"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 203.50374007225037
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 1,
-        "batch_size": 128,
-        "arm": "sgdm"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 164.05099320411682
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 1,
-        "batch_size": 256,
-        "arm": "adamw"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 157.30897068977356
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 1,
-        "batch_size": 256,
-        "arm": "sgdm"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 139.30018854141235
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 1,
-        "batch_size": 128,
-        "arm": "magnitude_graft"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 264.1825842857361
-    },
-    {
-      "spec": {
-        "seed": 31001,
-        "multiplier": 1,
-        "batch_size": 256,
-        "arm": "magnitude_graft"
-      },
-      "status": "complete",
-      "last_epoch": 120,
-      "seconds": 193.32347798347473
+      "label": "Available seed31003 states and logs",
+      "library_file_id": "libfile_fde3_f-5182c0c78fb8819184f10df53cee3d64_3360a23133288191af30e7bb737808b0",
+      "sha256": "86fbc29cd4df2d24b21a9d853d7352eb209c9178adc4c562d1b3e19f33a5140c"
     }
   ],
-  "errors": [],
-  "saved_seed_ids": [],
-  "save_blocked": false,
-  "elapsed_seconds": 508.5935387611389,
-  "training_active": true,
-  "deadline_epoch_seconds": 1794752733.3738203,
-  "snapshot_note": "Launch snapshot; completion and verification will be published after the pass. This file is not a live process monitor."
+  "interrupted_started_runs": 6,
+  "not_started_runs": 58,
+  "observed_utc": "2026-11-15T10:32:22Z",
+  "training_restarted": false,
+  "classification_note": "Execution completion is not a verified model-quality classification. Full five-seed verification and final comparisons were not completed.",
+  "evidence": "Register/log stopped updating around10:22UTC; session70476 inaccessible; no Completion.json or Final_Save.json."
 }

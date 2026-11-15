@@ -7,7 +7,8 @@ This campaign studies a **magnitude-only** modification: retain Adam's adaptive 
 | Folder | Dataset / model | Status |
 |---|---|---|
 | [2026-11-13_mnist_mlp_experiment01](2026-11-13_mnist_mlp_experiment01/) | MNIST, 784→256→256→10 ReLU MLP | 135 original runs + 3 replication runs verified; 132 usable models and 6 failed models; explicit model labels, paired-effect plots, and separate hyperparameter-failure report |
-| [2026-11-15_fashion_mnist_mlp_experiment02](2026-11-15_fashion_mnist_mlp_experiment02/) | Fashion-MNIST, 784→256→256→10 ReLU MLP | Running: 120 planned runs; exact graft and controls; final verification pending |
+| [2026-11-15_fashion_mnist_mlp_experiment02](2026-11-15_fashion_mnist_mlp_experiment02/) | Fashion-MNIST, 784→256→256→10 ReLU MLP | Interrupted: 56/120 reached training endpoint; 6 partial and 58 unstarted; available checkpoints preserved; full verification incomplete |
+| [2026-11-15_tiny_shakespeare_gpt_experiment03](2026-11-15_tiny_shakespeare_gpt_experiment03/) | Tiny Shakespeare, two-block GPT | Three-arm pilot running on GitHub Actions; 45-run comparison gated on pilot verification and throughput; maximum96hours |
 
 ## Organization for the coming days
 

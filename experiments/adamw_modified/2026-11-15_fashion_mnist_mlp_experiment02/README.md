@@ -1,19 +1,15 @@
-# Experiment 02: Fashion-MNIST magnitude-only graft
+# Experiment02: Fashion-MNIST — interrupted
 
-**Running since 2026-11-15 09:57:34 UTC. Final results are not yet available.**
+**56/120 runs reached their training endpoint; 6 started runs were interrupted and 58 were not started. This is not a completed or fully verified experiment.**
 
-This is the authorized Fashion-MNIST replication of the MNIST experiment in the sibling folder. ReLU MLP 784→256→256→10; 120 epochs; five paired seeds 31001–31005; eight settings; 120 runs. Native AdamW and SGDM are the controls. The magnitude-only graft retains Adam direction, moments, bias correction and bias updates, replacing only each matrix update's Frobenius magnitude with the SGDM target from that run's own gradient history.
+The last supervisor update was approximately2026-11-15 10:22UTC. Its execution session subsequently became inaccessible. No completion or final verification summary was produced. Training has not been restarted or extended.
 
-The planned settings are batch 128 at LR ×0.5/×1 and batches 256/512 at LR ×0.5/×1/×2. The earlier MNIST failure setting, batch128/LR×2, was excluded prospectively for all arms. No other settings, datasets or architectures are authorized in this pass.
+Two complete seed blocks (31001 and31002) and all available seed31003 checkpoints/logs have been preserved. Execution completion does not mean every model has passed the final functional/spectral audit. No five-seed effect, confidence interval, or theoretical conclusion is claimed from this partial pass.
 
-Training cutoff: 14:25:33 UTC. Total experiment deadline: 14:55:33 UTC. Six workers execute one fixed pass. Completed seed blocks are preserved incrementally. No duplicate or follow-up run is active.
+[Actual status](results/STATUS.json) · [Preserved checkpoints/data](ARTIFACTS.md) · [Frozen protocol](verification/Protocol.json) · [Preflight](verification/Preflight_Audit.json) · [Historical setup plan](protocol/Protocol_Plan.json)
 
-[Execution protocol](verification/Protocol.json) · [Launch record](verification/Launch.json) · [Preflight checks](verification/Preflight_Audit.json) · [Data provenance](verification/Data_Provenance.json) · [Saved artifacts](ARTIFACTS.md) · [Historical setup plan](protocol/Protocol_Plan.json)
+The frozen design was Fashion-MNIST, ReLU MLP784→256→256→10,120epochs, seeds31001–31005, eight settings and three arms: native AdamW, exact magnitude-only graft and SGDM. The graft retains Adam direction/moments/bias updates and changes only matrix magnitude using momentum from its own gradient history. Batch128/LR×2 was excluded prospectively for all arms based on the prior MNIST failure.
 
-The training kernel remains byte-identical to MNIST (SHA256 `1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8`). The separate adapter selects Fashion-MNIST data and the approved 120-run matrix and enforces the deadline. [Metadata clarification](verification/Execution_Metadata_Clarification.json) distinguishes historical setup-only fields from live execution records.
+The original kernel SHA256 remains `1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8`. Preflight and initial saved AdamW/graft smoke checks passed, but these do not replace full-pass verification. No failures or incomplete runs are hidden. The MNIST sibling is unchanged.
 
-Independent PyTorch update checks, shared initialization and minibatch checks, and preflight checkpoint replay passed. One finished AdamW and one finished graft also passed restored-logit, spectral and eleven-step replay checks. This is partial verification, not a final result.
-
-The final report will retain all outcomes, flag collapsed/nonfinite/unfinished models, and report alpha movement, distance to2 and test accuracy separately. Five seeds—not eight settings—are the independent replicates. Hidden FC1/FC2 measurements are primary; the ten-eigenvalue output layer is exploratory. No alpha-targeting fit or post-hoc test-selected checkpoint is used.
-
-Results, plots, checkpoint links and verification will appear in this folder. The complete MNIST sibling remains unchanged.
+The separately authorized [GPT Experiment03](../2026-11-15_tiny_shakespeare_gpt_experiment03/) uses GitHub-hosted execution with a gated three-arm pilot. It does not resume or replace these Fashion-MNIST observations.
