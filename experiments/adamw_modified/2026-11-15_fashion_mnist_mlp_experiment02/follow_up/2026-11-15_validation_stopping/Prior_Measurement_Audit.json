@@ -1,0 +1,8 @@
+{
+  "prior_balanced_endpoints_checked": 48,
+  "independent_PL_MLE_checks": 1248,
+  "max_alpha_error": 4.440892098500626e-14,
+  "max_test_cross_entropy_error": 5.8366306010526614e-08,
+  "passed": true,
+  "interpretation": "Reported spectral fits and cross-entropy values reproduce independently. Rising validation loss remains an overfitting signal; no fit arithmetic error was found."
+}

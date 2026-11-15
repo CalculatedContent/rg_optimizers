@@ -1,0 +1,5 @@
+# Fashion-MNIST validation-stopped rerun
+
+Authorized after rising late validation loss was observed. This separate pass preserves all original results. Same 120 specifications, five paired seeds and exact magnitude-only graft; learning rates are unchanged to isolate stopping/selection. Validation cross-entropy selects the checkpoint, never alpha or test accuracy. Patience 10 epochs, minimum 10, maximum 120. Raw losses are retained and may increase; no monotonicity is fabricated. Output-layer alpha has only 10 eigenvalues and remains unsupported. Independent MLE arithmetic checks cover the hidden layers.
+
+Three central cases gate expansion to the remaining 117 and count once in the 120. Four-hour training cutoff, five-hour total workflow limit. GPT remains on hold. Original recovery is stopped with its available states preserved before this pass starts. All failures and all fit-support flags remain in the report. Overall paired intervals use five seed-level differences, averaging the eight settings within seed.
