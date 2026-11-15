@@ -43,6 +43,12 @@ Five-seed mean test accuracy; settings are retained regardless of treatment bene
 | 512 | 1 | 98.032% | 98.176% | 98.246% |
 | 512 | 2 | 98.232% | 98.330% | 98.464% |
 
+## Central-setting and stable-setting effects
+
+![Paired alpha alignment and accuracy](plots/Paired_Alignment_And_Accuracy.png)
+
+The central setting is prespecified. The eight-setting subset is post hoc. [Model status and concise summary](MODEL_STATUS.md) separates usable classifiers from failed hyperparameter settings; [plot data](results/status_review_paired_effects.csv) reproduce the saved paired intervals.
+
 ## Interpretation and preserved evidence
 
 The prespecified central setting remains batch256/LR×1, with its original five-seed estimates. Stable training does not establish optimal tuning: AdamW shows increasing late validation cross-entropy despite strong accuracy. Future rate selection should use validation behavior, with α retained as an outcome.

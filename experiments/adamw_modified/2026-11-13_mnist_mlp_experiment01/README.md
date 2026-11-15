@@ -4,6 +4,16 @@
 
 The graft keeps Adam's adaptive update direction, moments, bias correction and bias updates. Only matrix-update magnitudes are replaced with SGDM target magnitudes computed along the graft's own gradient history. MNIST; ReLU MLP 784→256→256→10; 120 epochs; WeightWatcher 0.7.7 default fits.
 
+## Model status at a glance
+
+**132 usable classifiers; six failed models.** The failures are the graft at batch 128/LR ×2, including the fresh-seed repeat. `USABLE` means a trained classifier with no observed collapse; it does not mean optimally tuned or α-aligned. A run marked `complete` in an execution log can still have a `FAILED` model outcome.
+
+The main comparison uses 120 usable models at eight shared settings. The other 12 usable models are successful controls at the failed setting, preserved outside that matched subset.
+
+[Model-by-model status and concise summary](MODEL_STATUS.md) · [All 138 model labels](results/model_status.csv) · [Setting-level labels](results/model_setting_status.csv)
+
+![Model status by setting](plots/Model_Status_By_Setting.png)
+
 ## Stable-setting results
 
 Across the eight shared stable settings, graft minus AdamW gives:

@@ -19,3 +19,7 @@ Batch128 at LR×0.5 and ×1 worked for all original seeds and all arms. Native A
 - All settings that trained successfully remain in the stable subset, including settings where α is farther from2 or the graft does not improve accuracy.
 
 [Failure rows](results/hyperparameter_failures.csv) · [All run dispositions](results/run_disposition.csv) · [Original failure diagnostics](verification/Low_Accuracy_Diagnostics.json) · [Fresh-seed diagnostics](replications/2026-11-14_batch128_seed31006/verification/Replication_Verification.json) · [Original full-grid results](FULL_GRID_RESULTS.md)
+
+## Explicit model labels
+
+[Model status](MODEL_STATUS.md) and [the model register](results/model_status.csv) mark these six outcomes `FAILED`. The 12 successful controls at this setting remain `USABLE`; their exclusion from the shared stable subset is a comparison-design decision, not a failure label. `Complete` in historical execution logs means training reached its endpoint, not that the resulting classifier is usable.

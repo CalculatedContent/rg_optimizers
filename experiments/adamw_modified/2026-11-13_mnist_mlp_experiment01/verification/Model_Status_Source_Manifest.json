@@ -1,0 +1,74 @@
+{
+  "source_commit": "3fe506d7173d880b2c8514c6573f13bcfffc93b3",
+  "source_tree": "101781d90963d6962082e0d3283c7ee4d8c61680",
+  "original_verification_review": {
+    "passed": true,
+    "completed_runs": 135,
+    "checkpoints_hashed": 675,
+    "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+    "all_final_model_hashes_match": true,
+    "all_135_initial_checkpoint_hashes_match_preflight_and_paired_runs": true
+  },
+  "files": [
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/README.md",
+      "git_blob_sha": "d7735e2b50f8e6fb222d8344e0c2eaca21117927"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/RESULTS.md",
+      "git_blob_sha": "077a2988d37dd5ea947a3664f402ded27a8957da"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/HYPERPARAMETER_FAILURES.md",
+      "git_blob_sha": "67178370d4e19761d481400d6cebe8080e790a24"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/run_disposition.csv",
+      "git_blob_sha": "dc3110900c57c99ee61957a14e024d2a272b3a19"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/endpoints.csv",
+      "git_blob_sha": "d911607330b512a87ed816a1692c975fc1406d47"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/stable_summary.csv",
+      "git_blob_sha": "e43913ce8631a3c6a32c9a80f6428fd1193e2dc7"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/stable_paired_effects.csv",
+      "git_blob_sha": "85dcee066ec9df8be5ed1d8a13fe3d69a920e8de"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/paired_summaries.csv",
+      "git_blob_sha": "b15d438b94bc64e877ecb1f148f538610e50a7c7"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/frozen/Protocol.json",
+      "git_blob_sha": "6c31156e3856be858a6f12d6ef7f15605349814c"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/verification/Low_Accuracy_Diagnostics.json",
+      "git_blob_sha": "5da6f6b0e7084645a3d92858aec8fdce48941dd7"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/replications/2026-11-14_batch128_seed31006/results/Endpoints.csv",
+      "git_blob_sha": "29676fe192503f366d699948107729c3ea2593e3"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/replications/2026-11-14_batch128_seed31006/verification/Replication_Verification.json",
+      "git_blob_sha": "b651d928e97716607ff18470853d426b1d794a52"
+    },
+    {
+      "path": "experiments/adamw_modified/README.md",
+      "git_blob_sha": "3a1ad734b3a1ae6dba5e07182e874ad59f6c197a"
+    },
+    {
+      "path": "experiments/adamw_modified/CAMPAIGN_LOG.md",
+      "git_blob_sha": "e523922570ea5e59dcdeeed2e2a12a327b9d46b3"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/verification/Final_Verification.json",
+      "git_blob_sha": "87a2cf70e0a532859d641a998ee0b1fae49eb2d9"
+    }
+  ]
+}

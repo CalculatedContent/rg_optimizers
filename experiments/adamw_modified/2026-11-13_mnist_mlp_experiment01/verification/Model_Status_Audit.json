@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "total_runs": 138,
+  "usable_models": 132,
+  "failed_models": 6,
+  "stable_comparison_runs": 120,
+  "usable_controls_outside_stable_subset": 12,
+  "original_seeds": [
+    31001,
+    31002,
+    31003,
+    31004,
+    31005
+  ],
+  "replication_seed": 31006,
+  "classification_uses_alpha": false,
+  "all_failures_match_saved_checkpoint_diagnostics": true,
+  "all_endpoint_metrics_match_original_sources": true,
+  "paired_intervals_reproduce_saved_results": true,
+  "existing_verification_reviewed": true,
+  "checkpoint_replay_performed_this_review": false,
+  "training_performed": false,
+  "input_sha256": {
+    "results/endpoints.csv": "fd384a7edd5fa8a9b935960f6c8eac7c104aed91a3ffc234650a13524bbdd5a3",
+    "results/run_disposition.csv": "3b028f8c42f723e6ad70ebe5841a000da0461c969de2c57f1ba54255aabe9bf6",
+    "results/stable_paired_effects.csv": "2b22a6f44823667f213cbbca1a56b665a4b84d53d97c44488b35c60b8e37f743",
+    "results/stable_summary.csv": "ff08c20f3978cf50d1384f3e0e59d94c06b56a0d407fabc9cf91ee15058c1d9d",
+    "results/paired_summaries.csv": "2e9cd85de4cce55dbced54ca2fb9daabcaafae51ed449987cd40351a7e0ef0c7",
+    "verification/Low_Accuracy_Diagnostics.json": "a04fb68a6420756a903d2938448348bb99579c7568578299c0fec2c3ca108227",
+    "replications/2026-11-14_batch128_seed31006/results/Endpoints.csv": "ee57f00ee256b7ef84dfe2afbf2be1c7adeabbc3ae26f9b97af4579c72d19630",
+    "replications/2026-11-14_batch128_seed31006/verification/Replication_Verification.json": "c71c91b6710d437d58cf5001090d57a77448a723874dedd53d62c12d8b16de19",
+    "verification/Final_Verification.json": "2d00024a6a25486133d44435a16e3810c9e66259538b71baa8d1aa37dbd1e2f4",
+    "frozen/Protocol.json": "7921523c9262830fd778e9553d7558ee9db767d0045ad03396e91cfbd6870fda"
+  }
+}
