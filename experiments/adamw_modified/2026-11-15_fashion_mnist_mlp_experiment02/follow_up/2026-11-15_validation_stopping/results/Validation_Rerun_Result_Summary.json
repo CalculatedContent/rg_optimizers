@@ -1,0 +1,11 @@
+{
+  "dataset": "Fashion-MNIST",
+  "protocol": "separate validation-stopped rerun",
+  "planned": 120,
+  "completed_verified": 52,
+  "complete": false,
+  "five_seeds_not_eight_independent_settings": true,
+  "original120epoch_results_preserved": true,
+  "gpt_on_hold": true,
+  "paired_effects": []
+}
