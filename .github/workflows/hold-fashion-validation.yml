@@ -1,0 +1,27 @@
+name: Hold superseded Fashion validation run
+on:
+  push:
+    branches: [main]
+    paths: [experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint/Hold_Request.json]
+permissions:
+  actions: write
+  contents: read
+jobs:
+  hold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Stop superseded run and retain preservation steps
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=$(gh api repos/CalculatedContent/rg_optimizers/actions/runs/43709429553 --jq .status)
+          if [ "$status" != completed ]; then
+            gh api --method POST repos/CalculatedContent/rg_optimizers/actions/runs/43709429553/cancel
+          fi
+          for i in $(seq 1 70); do
+            status=$(gh api repos/CalculatedContent/rg_optimizers/actions/runs/43709429553 --jq .status)
+            if [ "$status" = completed ]; then exit 0; fi
+            sleep 15
+          done
+          exit 1
