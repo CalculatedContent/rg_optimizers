@@ -1,0 +1,136 @@
+{
+  "publication": "completed Fashion-MNIST fixed-endpoint results and descriptive MNIST comparison",
+  "source_commit": "3f122d1df1de462f73d276aa16eedef17ba244de",
+  "successful_run": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/43711325491",
+  "training_source_folder": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint",
+  "publication_folder": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean",
+  "training_changed": false,
+  "earlier_experiments_unchanged": true,
+  "republished_exact_blobs": [
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/original_plots/All_Settings_Validation_Loss.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f997bdc9e5aa8d077e38aa8b4a4811b5fc9d3a31"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/original_plots/Final_Alpha_Accuracy.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "990b8a23df0d06de184a4ce0fc716beedba87745"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/original_plots/Raw_Validation_Loss.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0b85d0aafc6a7e223023c8c12845aca3581697f"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/Clean_Restart_Result_Summary.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b99db1ad4f101b0548c234c9fee58b7a0645fff"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/Verification.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "435b2070ab01076e50f9234c8b5ff7c3d1db63ab"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/endpoints.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60ccd6f6824aceb66472ed48fcc7ab2ac8c30253"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/layer_measurements.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2a1cf24705045d70537192cd4d92939a7533338"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/model_status.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60ccd6f6824aceb66472ed48fcc7ab2ac8c30253"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/paired_effects.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4051ad4b76d5329f13d8baa0f1c5a7d940f686c2"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/raw_loss_trajectories.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1839a1408fceb3c5555fc77de864ce5429ec4ca"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/results/seed_summaries.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53241ed58fa352d6b39ad0799a8cd4fe5161ff7d"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/inputs/mnist/endpoints.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d911607330b512a87ed816a1692c975fc1406d47"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/inputs/mnist/model_status.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0bb67b4e6c8dd014962b733b3f78a5a0ee42ce3"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/inputs/mnist/stable_paired_effects.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85dcee066ec9df8be5ed1d8a13fe3d69a920e8de"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02_clean/frozen/Protocol.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fba0fe92e87374795623fc3ea2d3e636907bcd0b"
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/endpoints.csv",
+      "git_blob_sha": "d911607330b512a87ed816a1692c975fc1406d47"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/model_status.csv",
+      "git_blob_sha": "f0bb67b4e6c8dd014962b733b3f78a5a0ee42ce3"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/stable_paired_effects.csv",
+      "git_blob_sha": "85dcee066ec9df8be5ed1d8a13fe3d69a920e8de"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint/Protocol.json",
+      "git_blob_sha": "fba0fe92e87374795623fc3ea2d3e636907bcd0b"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint/report.py",
+      "git_blob_sha": "a01518e459a0a43f3bdb875852be18cbd41cbae1"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint/results/Verification.json",
+      "git_blob_sha": "435b2070ab01076e50f9234c8b5ff7c3d1db63ab"
+    },
+    {
+      "path": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint/run.py",
+      "git_blob_sha": "527977e2c9112821a6da0c1317a7b81125f5df13"
+    }
+  ],
+  "analysis": "analysis/compare.py",
+  "notes": [
+    "Cross-dataset comparison is descriptive: MNIST endpoint120 and Fashion endpoint20, with different cosine schedule horizons.",
+    "No legacy run was retrained or deleted. No individual seed was filtered within the common eight settings."
+  ]
+}

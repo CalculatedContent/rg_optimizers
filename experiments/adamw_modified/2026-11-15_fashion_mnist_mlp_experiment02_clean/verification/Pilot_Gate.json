@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "spec": {
+        "seed": 31999,
+        "batch_size": 256,
+        "multiplier": 1,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "final_validation_loss": 0.27074140930175783,
+      "minimum_validation_loss": 0.2699229919433594,
+      "final_minus_minimum": 0.0008184173583984378,
+      "final_validation_accuracy": 0.9012,
+      "test_not_evaluated": true
+    },
+    {
+      "spec": {
+        "seed": 31999,
+        "batch_size": 256,
+        "multiplier": 1,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "final_validation_loss": 0.2954306213378906,
+      "minimum_validation_loss": 0.2890377990722656,
+      "final_minus_minimum": 0.006392822265624987,
+      "final_validation_accuracy": 0.9074,
+      "test_not_evaluated": true
+    },
+    {
+      "spec": {
+        "seed": 31999,
+        "batch_size": 256,
+        "multiplier": 1,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "final_validation_loss": 0.27550455322265627,
+      "minimum_validation_loss": 0.27515328369140624,
+      "final_minus_minimum": 0.00035126953125003135,
+      "final_validation_accuracy": 0.9018,
+      "test_not_evaluated": true
+    }
+  ],
+  "alpha_not_a_gate": true,
+  "pilot_excluded_from_inference": true,
+  "no_endpoint_selection": true
+}

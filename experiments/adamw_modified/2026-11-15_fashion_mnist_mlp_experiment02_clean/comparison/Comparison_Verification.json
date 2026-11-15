@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "mnist_original_runs": 135,
+  "mnist_shared_grid_runs": 120,
+  "fashion_shared_grid_runs": 120,
+  "independent_seeds_per_dataset": 5,
+  "maximum_difference_from_published_intervals": 1.0325074129013956e-14,
+  "cross_dataset_causal_claim": false,
+  "endpoint_selection": false
+}
