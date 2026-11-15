@@ -1,0 +1,97 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "restored_epoch": 112,
+      "checkpoint_hash_matches": true,
+      "initialization_hash_matches": true,
+      "loss_difference": 1.862645149230957e-09,
+      "statistics_exact": false,
+      "first_update_model_hash_exact": false,
+      "tolerance_check_passed": true
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "restored_epoch": 75,
+      "checkpoint_hash_matches": true,
+      "initialization_hash_matches": true,
+      "loss_difference": 1.0710209608078003e-08,
+      "statistics_exact": false,
+      "first_update_model_hash_exact": false,
+      "tolerance_check_passed": true
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "restored_epoch": 41,
+      "checkpoint_hash_matches": true,
+      "initialization_hash_matches": true,
+      "loss_difference": 1.4901161193847656e-08,
+      "statistics_exact": false,
+      "first_update_model_hash_exact": false,
+      "tolerance_check_passed": true
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "restored_epoch": 57,
+      "checkpoint_hash_matches": true,
+      "initialization_hash_matches": true,
+      "loss_difference": 0.0,
+      "statistics_exact": false,
+      "first_update_model_hash_exact": false,
+      "tolerance_check_passed": true
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "restored_epoch": 25,
+      "checkpoint_hash_matches": true,
+      "initialization_hash_matches": true,
+      "loss_difference": 0.0,
+      "statistics_exact": false,
+      "first_update_model_hash_exact": false,
+      "tolerance_check_passed": true
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "restored_epoch": 9,
+      "checkpoint_hash_matches": true,
+      "initialization_hash_matches": true,
+      "loss_difference": 0.0,
+      "statistics_exact": false,
+      "first_update_model_hash_exact": false,
+      "tolerance_check_passed": true
+    }
+  ],
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "training_parameters_changed": false
+}

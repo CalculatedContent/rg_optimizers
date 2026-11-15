@@ -1,0 +1,319 @@
+{
+  "prior_complete_preserved": 56,
+  "pending_returned": 28,
+  "pending_completed": 28,
+  "total_complete": 84,
+  "results": [
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 138.35342931747437
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 220.49850344657898
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 205.66217184066772
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 143.41232895851135
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 111.61234426498413
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 559.6653347015381
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 142.6345980167389
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 355.61803340911865
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 99.95884799957275
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 1,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 189.17491626739502
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 248.1610860824585
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 158.37574934959412
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 171.6972737312317
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 419.3189322948456
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 195.64461994171143
+    },
+    {
+      "spec": {
+        "seed": 31003,
+        "multiplier": 2,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 148.07701182365417
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 217.83935594558716
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 182.58363795280457
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 142.2927851676941
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 98.27607774734497
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 308.8146011829376
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 99.54489874839783
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 550.994157075882
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 87.00329923629761
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 177.7175304889679
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 308.54110503196716
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 293.44729137420654
+    },
+    {
+      "spec": {
+        "seed": 31004,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 200.70991969108582
+    }
+  ],
+  "errors": [],
+  "training_active": true,
+  "elapsed_seconds": 2146.9251296520233
+}
