@@ -1,0 +1,168 @@
+name: GPT Experiment03 - magnitude-only graft
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Launch_Request.json'
+permissions:
+  contents: read
+concurrency:
+  group: gpt-experiment03
+  cancel-in-progress: false
+env:
+  OMP_NUM_THREADS: '1'
+  OPENBLAS_NUM_THREADS: '1'
+  MKL_NUM_THREADS: '1'
+  PYTHONUNBUFFERED: '1'
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        arm: [adamw, magnitude_graft, sgdm]
+    defaults:
+      run:
+        working-directory: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install pinned CPU dependencies
+        run: |
+          python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements.txt
+      - name: Verify data and run pilot
+        run: |
+          python prepare.py
+          python job.py pilot ${{ matrix.arm }} 41000 1
+      - name: Preserve pilot evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pilot-${{ matrix.arm }}
+          retention-days: 90
+          compression-level: 1
+          path: |
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/runs/
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Preflight.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Data_Audit.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Job.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Failure.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Protocol.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Provenance.json
+  gate:
+    needs: pilot
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      passed: ${{ steps.gate.outputs.passed }}
+      deadline: ${{ steps.gate.outputs.deadline }}
+    defaults:
+      run:
+        working-directory: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: pilot-*
+          path: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/incoming
+      - name: Check all three pilot cases
+        id: gate
+        run: python gate.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: pilot-gate
+          path: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Pilot_Gate.json
+          retention-days: 90
+  full:
+    needs: gate
+    if: needs.gate.outputs.passed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        arm: [adamw, magnitude_graft, sgdm]
+        seed: [41001, 41002, 41003, 41004, 41005]
+        multiplier: [0.5, 1, 2]
+    env:
+      CAMPAIGN_DEADLINE: ${{ needs.gate.outputs.deadline }}
+    defaults:
+      run:
+        working-directory: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install pinned CPU dependencies
+        run: |
+          python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements.txt
+      - name: Run one fixed comparison
+        run: |
+          python prepare.py
+          python job.py confirmatory ${{ matrix.arm }} ${{ matrix.seed }} ${{ matrix.multiplier }}
+      - name: Preserve states and failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-${{ matrix.seed }}-lr${{ matrix.multiplier }}-${{ matrix.arm }}
+          retention-days: 90
+          compression-level: 1
+          path: |
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/runs/
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Data_Audit.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Job.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Failure.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Protocol.json
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/Provenance.json
+  report:
+    needs: [pilot, gate, full]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/incoming
+      - name: Analyze all outcomes
+        run: |
+          python -m pip install numpy==2.3.5 scipy==1.17.0 pandas==2.2.3 matplotlib==3.10.8
+          python report.py
+          if [ -f incoming/pilot-gate/Pilot_Gate.json ]; then cp incoming/pilot-gate/Pilot_Gate.json results/Pilot_Gate.json; fi
+      - name: Save report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: experiment03-results
+          retention-days: 90
+          path: |
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/results/
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/plots/
+            experiments/adamw_modified/2026-11-15_tiny_shakespeare_gpt_experiment03/RESULTS.md
+      - name: Check in results and plots only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add results plots RESULTS.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Report GPT experiment03 outcomes, failures and spectral measurements'
+          git pull --rebase origin main
+          git push origin HEAD:main
+
