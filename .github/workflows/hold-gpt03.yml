@@ -1,0 +1,24 @@
+name: Hold GPT for Fashion-MNIST recovery
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/hold-gpt03.yml']
+permissions:
+  contents: read
+  actions: write
+jobs:
+  hold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Stop current GPT expansion and disable new launches
+        shell: bash
+        run: |
+          status=$(gh api repos/CalculatedContent/rg_optimizers/actions/runs/43705017007 --jq .status)
+          if [ "$status" != "completed" ]; then
+            gh api --method POST repos/CalculatedContent/rg_optimizers/actions/runs/43705017007/cancel
+          fi
+          gh api --method PUT repos/CalculatedContent/rg_optimizers/actions/workflows/gpt-experiment03.yml/disable
+          gh api repos/CalculatedContent/rg_optimizers/actions/runs/43705017007 --jq '{status: .status, conclusion: .conclusion}'
