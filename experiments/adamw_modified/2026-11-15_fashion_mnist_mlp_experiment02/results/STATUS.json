@@ -1,0 +1,19 @@
+{
+  "experiment": "Experiment02",
+  "dataset": "Fashion-MNIST",
+  "status": "planned_not_started",
+  "planned_runs": 120,
+  "completed_runs": 0,
+  "usable_models": null,
+  "failed_models": null,
+  "model_quality_assessed": false,
+  "training_active": false,
+  "training_launched": false,
+  "data_staged": false,
+  "data_validated": false,
+  "runtime_preflight_complete": false,
+  "training_adapter_prepared": false,
+  "protocol_frozen_for_execution": false,
+  "parent_experiment_unchanged": true,
+  "next_experiment_started": false
+}

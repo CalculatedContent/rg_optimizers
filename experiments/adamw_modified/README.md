@@ -7,6 +7,7 @@ This campaign studies a **magnitude-only** modification: retain Adam's adaptive 
 | Folder | Dataset / model | Status |
 |---|---|---|
 | [2026-11-13_mnist_mlp_experiment01](2026-11-13_mnist_mlp_experiment01/) | MNIST, 784→256→256→10 ReLU MLP | 135 original runs + 3 replication runs verified; 132 usable models and 6 failed models; explicit model labels, paired-effect plots, and separate hyperparameter-failure report |
+| [2026-11-15_fashion_mnist_mlp_experiment02](2026-11-15_fashion_mnist_mlp_experiment02/) | Fashion-MNIST, 784→256→256→10 ReLU MLP | Plan prepared: 120 runs; zero trained; separate data/results/checkpoints/follow-up folders |
 
 ## Organization for the coming days
 

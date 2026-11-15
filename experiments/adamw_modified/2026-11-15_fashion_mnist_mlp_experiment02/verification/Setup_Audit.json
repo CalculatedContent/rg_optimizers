@@ -1,0 +1,23 @@
+{
+  "setup_valid": true,
+  "experiment": "Experiment02",
+  "dataset": "Fashion-MNIST",
+  "planned_runs": 120,
+  "paired_seeds": 5,
+  "settings": 8,
+  "arms": 3,
+  "architecture": [
+    784,
+    256,
+    256,
+    10
+  ],
+  "optimizer_reference_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "reference_and_parent_settings_match": true,
+  "run_matrix_matches_plan": true,
+  "data_checked": false,
+  "training_performed": false,
+  "runtime_preflight_performed": false,
+  "execution_adapter_ready": false,
+  "setup_only": true
+}

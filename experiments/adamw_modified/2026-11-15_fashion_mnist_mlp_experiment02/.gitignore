@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data/*.gz
+data/split.npz
+runs/
+checkpoints/**/*.pt
+*.zip
+*.part
