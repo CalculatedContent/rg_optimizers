@@ -1,0 +1,15 @@
+{
+  "experiment": "Experiment02",
+  "dataset": "Fashion-MNIST",
+  "utc": "2026-11-15T09:57:34.845555+00:00",
+  "start_epoch_seconds": 1794736654.8454738,
+  "training_deadline_epoch_seconds": 1794752733.3738203,
+  "total_deadline_epoch_seconds": 1794754533.3738203,
+  "workers": 6,
+  "planned_runs": 120,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "adapter_sha256": "ba5fb74f68927f0d2e1576119898f6fc9cefd4113c888e679a526636b6c6d490",
+  "training_active": true,
+  "next_experiment_started": false,
+  "pid": 5
+}

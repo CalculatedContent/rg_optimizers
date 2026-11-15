@@ -1,5 +1,5 @@
-# Artifact status
+# Saved Fashion-MNIST artifacts
 
-This experiment is planned, not running. There are no Fashion-MNIST results, plots, model checkpoints or archive file IDs to link yet.
+[Source, frozen configuration and verified data](https://chatgpt.com/library?file_id=libfile_fde3_f-7c448e49b67c81919d260cb8e5a939c2_3360a23133288191af30e7bb737808b0&account_id=personal)
 
-The plan and reference source are checked into this folder. Data checksums are recorded in `protocol/Protocol_Plan.json`; data files still need to be staged. After execution, list each saved archive with its exact returned file ID or repository location, SHA256, size, run/checkpoint coverage and restore instructions. Do not copy artifact links from Experiment 01 and label them as Fashion-MNIST results.
+Archive SHA256: `7c57c8465120ef8bba9cbad375168177f7a20768bc115a9c401e4afd4cbf0d51`. Checkpoint seed blocks and the final verified results will be added as they finish.

@@ -1,0 +1,110 @@
+{
+  "passed": true,
+  "reference_update_checks": [
+    {
+      "dtype": "torch.float64",
+      "arm": "adamw",
+      "max_reference_parameter_error": 0.0,
+      "max_graft_norm_relative_error": 0.0,
+      "max_graft_direction_cosine_error": 0.0,
+      "sgdm_identity_graft_max_error": 0.0
+    },
+    {
+      "dtype": "torch.float64",
+      "arm": "magnitude_graft",
+      "max_reference_parameter_error": 1.0658141036401503e-14,
+      "max_graft_norm_relative_error": 2.886579864025407e-15,
+      "max_graft_direction_cosine_error": 2.4424906541753444e-15,
+      "sgdm_identity_graft_max_error": 0.0
+    },
+    {
+      "dtype": "torch.float64",
+      "arm": "sgdm",
+      "max_reference_parameter_error": 0.0,
+      "max_graft_norm_relative_error": 0.0,
+      "max_graft_direction_cosine_error": 0.0,
+      "sgdm_identity_graft_max_error": 8.881784197001252e-16
+    },
+    {
+      "dtype": "torch.float32",
+      "arm": "adamw",
+      "max_reference_parameter_error": 0.0,
+      "max_graft_norm_relative_error": 0.0,
+      "max_graft_direction_cosine_error": 0.0,
+      "sgdm_identity_graft_max_error": 0.0
+    },
+    {
+      "dtype": "torch.float32",
+      "arm": "magnitude_graft",
+      "max_reference_parameter_error": 1.9073486328125e-06,
+      "max_graft_norm_relative_error": 9.1948667790831e-08,
+      "max_graft_direction_cosine_error": 8.149037000748649e-14,
+      "sgdm_identity_graft_max_error": 0.0
+    },
+    {
+      "dtype": "torch.float32",
+      "arm": "sgdm",
+      "max_reference_parameter_error": 0.0,
+      "max_graft_norm_relative_error": 0.0,
+      "max_graft_direction_cosine_error": 0.0,
+      "sgdm_identity_graft_max_error": 4.76837158203125e-07
+    }
+  ],
+  "resume_replay": [
+    {
+      "arm": "adamw",
+      "20_step_replay_identical": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "20_step_replay_identical": true
+    },
+    {
+      "arm": "sgdm",
+      "20_step_replay_identical": true
+    }
+  ],
+  "seconds_per_step": [
+    {
+      "arm": "adamw",
+      "batch": 256,
+      "seconds_per_step": 0.004295076599919412
+    },
+    {
+      "arm": "magnitude_graft",
+      "batch": 256,
+      "seconds_per_step": 0.005187921299875597
+    },
+    {
+      "arm": "sgdm",
+      "batch": 256,
+      "seconds_per_step": 0.003924653499962005
+    }
+  ],
+  "radial_scaling_max_alpha_error": 1.4057622088614607e-07,
+  "initial_hashes": {
+    "31001": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c",
+    "31002": "42c78184c9341e9456db1f0505b97a35fc0950751b8fbe03c2819943112a49c7",
+    "31003": "6cd31e687ffa6ec11ffc4c4fe93831337df12803d94fb44c694c6d5440795332",
+    "31004": "120031fbc44a3083c213b66e7a4c8cf536a4fb36776e6f423ff45be5a10d0a45",
+    "31005": "edff4405191dbd1c2a542a8ccfef194a02217ebc4f296266d8eb15cf6655d45e"
+  },
+  "same_decay_per_epoch_log_factors": {
+    "128": -0.0015039115137020144,
+    "256": -0.001503911513691945,
+    "512": -0.0015039115136891354
+  },
+  "data_split_disjoint": true,
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "dataset": "Fashion-MNIST",
+  "data_identity_verified": true,
+  "split_hash": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543",
+  "adapter_sha256": "ba5fb74f68927f0d2e1576119898f6fc9cefd4113c888e679a526636b6c6d490",
+  "actual_versions": {
+    "python": "3.12.14",
+    "torch": "2.15.0+cpu",
+    "numpy": "2.3.5",
+    "weightwatcher": "0.7.7"
+  },
+  "preflight_is_not_a_confirmatory_run": true
+}

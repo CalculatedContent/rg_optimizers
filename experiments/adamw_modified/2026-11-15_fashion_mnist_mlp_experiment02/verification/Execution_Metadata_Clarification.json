@@ -1,0 +1,9 @@
+{
+  "purpose": "Clarify historical setup-only metadata without changing the frozen training protocol or source.",
+  "planning_fields": "Protocol.json retains the nested execution block copied from Protocol_Plan.json. Its setup-only false/null fields describe the earlier planning stage, not the live pass.",
+  "authoritative_execution_records": ["Launch.json", "Run_Register.json", "Completion.json"],
+  "training_authorization": "User explicitly requested setup, execution, verification, model-status analysis and results check-in on 2026-11-15.",
+  "execution_adapter": "adapter.py, SHA256 ba5fb74f68927f0d2e1576119898f6fc9cefd4113c888e679a526636b6c6d490",
+  "source_and_hyperparameters_changed": false,
+  "detached_start_attempt": "The detached subprocess ended before Launch.json or any run files existed. The subsequent persistent tool session launched the single actual pass; Detached_Launch_Attempt.json records this."
+}

@@ -1,0 +1,991 @@
+{
+  "experiment": "Experiment02",
+  "name": "Fashion-MNIST transfer of the magnitude-only AdamW graft",
+  "status": "frozen_for_execution",
+  "created_date": "2026-11-15",
+  "dataset": "Fashion-MNIST",
+  "experiment_directory": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02",
+  "parent_experiment": "2026-11-13_mnist_mlp_experiment01",
+  "parent_commit": "134a63e8bac7038e354c0595dafd3e164f994bd4",
+  "parent_training_source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "scope": "Same architecture, optimization rule, schedule, paired seeds and eight common working settings as the cleaned MNIST comparison; replace the dataset. No training is launched by this setup.",
+  "architecture": [
+    784,
+    256,
+    256,
+    10
+  ],
+  "activation": "ReLU",
+  "epochs": 120,
+  "seeds": [
+    31001,
+    31002,
+    31003,
+    31004,
+    31005
+  ],
+  "arms": [
+    "adamw",
+    "magnitude_graft",
+    "sgdm"
+  ],
+  "adam_layer_rates": [
+    0.001,
+    0.001,
+    0.001
+  ],
+  "sgdm_magnitude_layer_rates": [
+    0.04,
+    0.2,
+    0.8
+  ],
+  "momentum": 0.9,
+  "beta2": 0.999,
+  "epsilon": 1e-08,
+  "graft": "Only matrix magnitude changes: D_graft=norm(-eta_S*m/(1-beta1))*D_Adam/norm(D_Adam); native AdamW bias updates; target history belongs to this same graft run.",
+  "graft_norm_denominator_floor": 1e-30,
+  "sgdm": "SGD momentum .9, no Nesterov or dampening, layer rates [.04,.2,.8] times multiplier; same decay as all other arms.",
+  "decay": "Every parameter multiplied by (1-1e-5*schedule)^(actual_batch_size/256) each step. Equal cumulative decay per epoch across batch sizes, common across arms and rate multipliers. At B256 equivalent to original AdamW peak LR .001 and WD .01. Effective WD is adjusted when LR changes to isolate update changes.",
+  "warmup_epochs": 5,
+  "schedule": "5 epoch linear warmup; cosine to 10% peak at epoch 120",
+  "initialization": "PyTorch Linear reset_parameters; same seed/state across all arms and settings.",
+  "paired_order": "SeedSequence([seed,epoch,711]) permutation; same examples and order per epoch; batch sizes only change grouping.",
+  "batch_sizes": [
+    128,
+    256,
+    512
+  ],
+  "lr_multipliers": [
+    0.5,
+    1,
+    2
+  ],
+  "included_settings": [
+    {
+      "batch_size": 128,
+      "lr_multipliers": [
+        0.5,
+        1
+      ]
+    },
+    {
+      "batch_size": 256,
+      "lr_multipliers": [
+        0.5,
+        1,
+        2
+      ]
+    },
+    {
+      "batch_size": 512,
+      "lr_multipliers": [
+        0.5,
+        1,
+        2
+      ]
+    }
+  ],
+  "excluded_settings": [
+    {
+      "batch_size": 128,
+      "multiplier": 2,
+      "arms": [
+        "adamw",
+        "magnitude_graft",
+        "sgdm"
+      ],
+      "reason": "Exclude for all three arms to preserve the shared eight-setting comparison; the graft collapsed in all six MNIST seeds at this setting. This is not a measured Fashion-MNIST failure.",
+      "run_if_requested_separately_only": true
+    }
+  ],
+  "planned_runs": 120,
+  "specifications": [
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    }
+  ],
+  "data": {
+    "training_examples": 55000,
+    "validation_examples": 5000,
+    "test_examples": 10000,
+    "pixel_preprocessing": "float32 pixels /255; flatten to 784; no augmentation",
+    "files": [
+      {
+        "name": "train-images-idx3-ubyte.gz",
+        "md5": "8d4fb7e6c68d591d4c3dfef9ec88bf0d",
+        "count": 60000,
+        "kind": "images",
+        "official_url": "http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz",
+        "repository_path": "https://github.com/zalandoresearch/fashion-mnist/blob/master/data/fashion/train-images-idx3-ubyte.gz"
+      },
+      {
+        "name": "train-labels-idx1-ubyte.gz",
+        "md5": "25c81989df183df01b3e8a0aad5dffbe",
+        "count": 60000,
+        "kind": "labels",
+        "official_url": "http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz",
+        "repository_path": "https://github.com/zalandoresearch/fashion-mnist/blob/master/data/fashion/train-labels-idx1-ubyte.gz"
+      },
+      {
+        "name": "t10k-images-idx3-ubyte.gz",
+        "md5": "bef4ecab320f06d8554ea6380940ec79",
+        "count": 10000,
+        "kind": "images",
+        "official_url": "http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz",
+        "repository_path": "https://github.com/zalandoresearch/fashion-mnist/blob/master/data/fashion/t10k-images-idx3-ubyte.gz"
+      },
+      {
+        "name": "t10k-labels-idx1-ubyte.gz",
+        "md5": "bb300cfdad3c16e7a12a480ee83cd310",
+        "count": 10000,
+        "kind": "labels",
+        "official_url": "http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz",
+        "repository_path": "https://github.com/zalandoresearch/fashion-mnist/blob/master/data/fashion/t10k-labels-idx1-ubyte.gz"
+      }
+    ],
+    "source": "https://github.com/zalandoresearch/fashion-mnist",
+    "split": {
+      "policy": "Reuse the original Experiment01 split.npz indices byte-for-byte; apply to Fashion-MNIST's 60000 training examples. No new split selection.",
+      "filename": "split.npz",
+      "sha256": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543",
+      "retrieve_from": "../2026-11-13_mnist_mlp_experiment01/ARTIFACTS.md"
+    },
+    "class_names": [
+      "T-shirt/top",
+      "Trouser",
+      "Pullover",
+      "Dress",
+      "Coat",
+      "Sandal",
+      "Shirt",
+      "Sneaker",
+      "Bag",
+      "Ankle boot"
+    ]
+  },
+  "primary_comparison": {
+    "batch_size": 256,
+    "multiplier": 1,
+    "description": "Prespecified central setting carried over from MNIST; not claimed optimal for Fashion-MNIST."
+  },
+  "primary_endpoint": "Fixed epoch120, every setting; no alpha targeting, no best-checkpoint or test-based selection.",
+  "primary_outcomes": [
+    "FC1 alpha",
+    "FC2 alpha",
+    "mean(abs(hidden_alpha-2))",
+    "test accuracy",
+    "test cross entropy"
+  ],
+  "secondary_outcomes": [
+    "equal-layer mean alpha",
+    "hidden alpha population variance",
+    "fraction hidden alpha<2",
+    "fixed-rank alpha at 20% and 50%",
+    "head alpha exploratory only"
+  ],
+  "analysis": "Retain all 120 planned outcomes, including failures. Setting-specific paired differences use five seeds. Across settings first average all eight differences within each seed, then use five seed averages with descriptive 95% Student t intervals. Label any later stable-only subset post hoc and exclude affected settings consistently across arms. Separate upward alpha movement, distance to2 and accuracy; no alpha-targeted fitting or tuning based on test accuracy.",
+  "spectra": "WeightWatcher default tail selection, no alpha-targeted cutoff; save raw squared singular values and WW fit fields. Head has only10 eigenvalues and excluded from primary hidden means. Support sensitivity: >=50 eigenvalues, >=20 tail eigenvalues, KS<=.2.",
+  "monitors": [
+    0,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+    100,
+    110,
+    120
+  ],
+  "checkpoints": [
+    0,
+    30,
+    60,
+    90,
+    120
+  ],
+  "test_evaluation_epochs": [
+    0,
+    30,
+    60,
+    90,
+    120
+  ],
+  "stat_logging": "First two and each tenth batch of every epoch; save gradients/momentum/update norms and directional/radial summaries for all matrices.",
+  "model_status_policy": {
+    "complete": "Training reached the endpoint; does not establish model usability.",
+    "usable": "Finite trained classifier with no observed collapse; no requirement that alpha be close to2.",
+    "failed": "Record nonfinite training or diagnostic-confirmed collapse; retain raw data and label the hyperparameter setting and optimizer.",
+    "pending": "No trained model or quality claim before execution and verification.",
+    "head_alpha": "Exploratory only: ten eigenvalues."
+  },
+  "budget": {
+    "maximum_training_seconds": 16200,
+    "total_intended_seconds": 18000,
+    "one_experiment_at_a_time": true,
+    "extend_automatically": false,
+    "note": "Carry over the 4.5h training cutoff within a 5h total cap. No new timing estimate or launch has been performed; runtime preflight is pending."
+  },
+  "reference_versions": {
+    "python": "3.12.14",
+    "torch": "2.15.0+cpu",
+    "numpy": "2.3.5",
+    "weightwatcher": "0.7.7"
+  },
+  "execution": {
+    "training_authorized_by_this_setup": false,
+    "training_active": false,
+    "training_entrypoint": null,
+    "note": "This folder contains the plan, exact optimizer reference and a data/configuration validator. An isolated Fashion-MNIST execution adapter, data staging, runtime preflight and final protocol freeze must be completed before training; the parent MNIST script must not be executed directly."
+  },
+  "pre_execution_checks": [
+    "Fashion-MNIST compressed-file MD5 checks, IDX headers and image/label counts; compute and freeze SHA256s",
+    "Recover and verify byte-identical parent split.npz and validate disjoint train/validation indices",
+    "Record actual runtime versions and source hashes; match or explicitly document deviations from reference runtime",
+    "Confirm common initialization and permutations for all paired arms",
+    "Confirm nonzero graft direction/magnitude, native Adam moments/bias updates, exact denominator-floor handling and checkpoint replay",
+    "Check runtime/stability on validation data with separately logged preflight; do not silently retune or add runs",
+    "Create exclusive launch lock, isolated output paths, a hard deadline and checkpoint-preservation/finalization workflow",
+    "Freeze execution adapter and prepared-data manifest before running; never overwrite Experiment01"
+  ],
+  "source_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "adapter_sha256": "ba5fb74f68927f0d2e1576119898f6fc9cefd4113c888e679a526636b6c6d490",
+  "data_hashes": {
+    "split.npz": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543",
+    "t10k-images-idx3-ubyte.gz": "346e55b948d973a97e58d2351dde16a484bd415d4595297633bb08f03db6a073",
+    "t10k-labels-idx1-ubyte.gz": "67da17c76eaffca5446c3361aaab5c3cd6d1c2608764d35dfb1850b086bf8dd5",
+    "train-images-idx3-ubyte.gz": "3aede38d61863908ad78613f6a32ed271626dd12800ba2636569512369268a84",
+    "train-labels-idx1-ubyte.gz": "a04f17134ac03560a47e3764e11b92fc97de4d1bfaf8ba1a3aa29af54cc90845"
+  },
+  "versions": {
+    "python": "3.12.14",
+    "torch": "2.15.0+cpu",
+    "numpy": "2.3.5",
+    "weightwatcher": "0.7.7"
+  },
+  "maximum_training_seconds": 16200,
+  "total_intended_seconds": 18000,
+  "authorization": "User requested setup, execution, verification, model-status analysis, plots and check-in on 2026-11-15.",
+  "model_failure_rule": "Nonfinite training is a failure. For completed runs, verify collapse from saved model activations, constant predictions and gradients. Low accuracy or alpha far from2 alone is a review flag, not an automatic collapse label.",
+  "inference": "All 120 planned outcomes retained; five paired seeds. A later stable-only sensitivity subset must be labeled post hoc and exclude settings symmetrically across arms."
+}

@@ -1,19 +1,180 @@
 {
-  "experiment": "Experiment02",
   "dataset": "Fashion-MNIST",
-  "status": "planned_not_started",
-  "planned_runs": 120,
-  "completed_runs": 0,
-  "usable_models": null,
-  "failed_models": null,
-  "model_quality_assessed": false,
-  "training_active": false,
-  "training_launched": false,
-  "data_staged": false,
-  "data_validated": false,
-  "runtime_preflight_complete": false,
-  "training_adapter_prepared": false,
-  "protocol_frozen_for_execution": false,
-  "parent_experiment_unchanged": true,
-  "next_experiment_started": false
+  "planned": 120,
+  "returned": 15,
+  "completed": 15,
+  "results": [
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 141.48425197601318
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 158.23231482505798
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 167.52446699142456
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 188.542138338089
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 203.29678010940552
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 267.51105880737305
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 136.78717947006226
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 126.91643524169922
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 151.1839005947113
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 203.50374007225037
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 164.05099320411682
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 157.30897068977356
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 139.30018854141235
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 264.1825842857361
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "status": "complete",
+      "last_epoch": 120,
+      "seconds": 193.32347798347473
+    }
+  ],
+  "errors": [],
+  "saved_seed_ids": [],
+  "save_blocked": false,
+  "elapsed_seconds": 508.5935387611389,
+  "training_active": true,
+  "deadline_epoch_seconds": 1794752733.3738203,
+  "snapshot_note": "Launch snapshot; completion and verification will be published after the pass. This file is not a live process monitor."
 }
