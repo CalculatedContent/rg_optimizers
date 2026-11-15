@@ -1,0 +1,40 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "arm": "adamw",
+      "passed": true,
+      "initial_validation_loss": 4.261164004986103,
+      "final_validation_loss": 1.6716959590068778,
+      "validation_loss_drop": 2.589468045979225,
+      "seconds": 418.1573226451874,
+      "initial_hash": "8ab99406b025b4609779623f4437892330da97eee7c8215242c1bfdc0d5a85b8",
+      "data_hashes": {
+        "train": "d9137ecdf0ac81366bc96e3372eabdd6a93e7989799a57149ff218d2a5e8b363",
+        "validation": "be5e8bbdbc3dc021111dee97e3afb7d83a8e540bd3028719cb3ae579eefdcb6c",
+        "test": "d37d30cc0c8327c270d493299c3dca54135f6d5f1c9ef60cda78076e311204b1"
+      }
+    },
+    {
+      "arm": "sgdm",
+      "passed": true,
+      "initial_validation_loss": 4.261163987467401,
+      "final_validation_loss": 1.9830748038505441,
+      "validation_loss_drop": 2.278089183616857,
+      "seconds": 554.5769414901733,
+      "initial_hash": "8ab99406b025b4609779623f4437892330da97eee7c8215242c1bfdc0d5a85b8",
+      "data_hashes": {
+        "train": "d9137ecdf0ac81366bc96e3372eabdd6a93e7989799a57149ff218d2a5e8b363",
+        "validation": "be5e8bbdbc3dc021111dee97e3afb7d83a8e540bd3028719cb3ae579eefdcb6c",
+        "test": "d37d30cc0c8327c270d493299c3dca54135f6d5f1c9ef60cda78076e311204b1"
+      }
+    }
+  ],
+  "errors": [
+    "magnitude_graft: missing or ambiguous completed pilot"
+  ],
+  "projected_grid_hours": 28.884215702613194,
+  "campaign_deadline": 1795084730.6409378,
+  "alpha_used_as_gate": false,
+  "pilot_excluded_from_confirmatory_analysis": true
+}
