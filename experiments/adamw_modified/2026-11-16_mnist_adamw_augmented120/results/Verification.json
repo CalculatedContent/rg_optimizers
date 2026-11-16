@@ -1,0 +1,22 @@
+{
+  "planned": 2,
+  "completed": 2,
+  "independent_seeds": 2,
+  "fixed_epoch120": true,
+  "initialization_reproducible": true,
+  "deterministic_minibatch_order": true,
+  "equal_lr_and_step_accounting": true,
+  "exact_replay": true,
+  "restored_spectra_and_validation": true,
+  "checkpoint_hashes": true,
+  "native_adamw_statistics": true,
+  "every_epoch_records": true,
+  "every_minibatch_statistics": true,
+  "every_epoch_test_metrics": true,
+  "missing_runs": [],
+  "alpha_not_a_gate": true,
+  "remote_preflight": true,
+  "independent_native_contract": true,
+  "recorded_nonzero_native_matrix_checks": 154800,
+  "passed": true
+}
