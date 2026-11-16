@@ -1,0 +1,53 @@
+{
+  "paired_initialization_and_minibatches": true,
+  "passed": true,
+  "checks": [
+    {
+      "spec": {
+        "seed": 32999,
+        "batch_size": 256,
+        "multiplier": 1,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "final_validation_loss": 0.2504585968017578,
+      "minimum_validation_loss": 0.2408198944091797,
+      "final_minus_minimum": 0.009638702392578108,
+      "final_validation_accuracy": 0.9188000000000001,
+      "test_not_evaluated": true
+    },
+    {
+      "spec": {
+        "seed": 32999,
+        "batch_size": 256,
+        "multiplier": 1,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "final_validation_loss": 0.3064541442871094,
+      "minimum_validation_loss": 0.2642958190917969,
+      "final_minus_minimum": 0.042158325195312485,
+      "final_validation_accuracy": 0.9122,
+      "test_not_evaluated": true
+    },
+    {
+      "spec": {
+        "seed": 32999,
+        "batch_size": 256,
+        "multiplier": 1,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "final_validation_loss": 0.2716366882324219,
+      "minimum_validation_loss": 0.2598514373779297,
+      "final_minus_minimum": 0.011785250854492169,
+      "final_validation_accuracy": 0.9154,
+      "test_not_evaluated": true
+    }
+  ],
+  "alpha_not_a_gate": true,
+  "pilot_excluded_from_inference": true,
+  "no_endpoint_selection": true,
+  "estimated_remaining_seconds": 2726.478456258774,
+  "throughput_passed": true
+}

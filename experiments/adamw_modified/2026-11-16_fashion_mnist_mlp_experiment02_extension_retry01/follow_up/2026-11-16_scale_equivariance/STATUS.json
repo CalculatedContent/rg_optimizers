@@ -1,17 +1,11 @@
 {
-  "stage": "pilot_and_confirmatory_training_step_in_progress",
-  "observed_utc": "2026-11-16T09:27:44Z",
+  "stage": "training_complete_verified_publication_recovery",
   "run_id": 43839661129,
-  "run_url": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/43839661129",
-  "launch_commit": "fe1bf0efe15fb8aefb8a62dd6392f994d1cb6d31",
-  "remote_frozen_source_checks": "passed",
-  "remote_preflight": "passed",
-  "preflight_artifact_id": 14211903216,
-  "planned_pilot": 3,
-  "planned_confirmatory": 15,
-  "confirmed_completed_count": null,
-  "counts_note": "Live endpoint counts are not yet exposed in completed artifacts; do not infer completion from job status",
-  "workflow_deadline_utc": "2026-11-16T14:25:51Z",
-  "scale_scope": "conditional optimizer coordinate covariance; graft matrices SGDM rate exponent, native Adam biases separate exponent",
-  "training_source_frozen": true
+  "completed": 15,
+  "planned": 15,
+  "epoch": 120,
+  "training_success": true,
+  "workflow_failure": "publication only: unstaged changes blocked rebase",
+  "durable_archive_pending": true,
+  "no_training_rerun": true
 }

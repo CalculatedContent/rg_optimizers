@@ -1,0 +1,188 @@
+{
+  "planned": 15,
+  "completed": 15,
+  "all_fixed_endpoints_verified": true,
+  "pairing": [
+    {
+      "seed": 32001,
+      "all_arms_present": true,
+      "paired": true
+    },
+    {
+      "seed": 32002,
+      "all_arms_present": true,
+      "paired": true
+    },
+    {
+      "seed": 32003,
+      "all_arms_present": true,
+      "paired": true
+    },
+    {
+      "seed": 32004,
+      "all_arms_present": true,
+      "paired": true
+    },
+    {
+      "seed": 32005,
+      "all_arms_present": true,
+      "paired": true
+    }
+  ],
+  "checks": [
+    {
+      "spec": {
+        "seed": 32001,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32001,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32001,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32002,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32002,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32002,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32003,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32003,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32003,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32004,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32004,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32004,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32005,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "adamw"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32005,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "magnitude_graft"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    },
+    {
+      "spec": {
+        "seed": 32005,
+        "batch_size": 256,
+        "multiplier": 1.0,
+        "arm": "sgdm"
+      },
+      "passed": true,
+      "saved_checkpoint_count": 5
+    }
+  ],
+  "five_independent_seeds": true,
+  "failures_retained": true,
+  "FC3_small_sample_uncertainty": true,
+  "passed": true
+}

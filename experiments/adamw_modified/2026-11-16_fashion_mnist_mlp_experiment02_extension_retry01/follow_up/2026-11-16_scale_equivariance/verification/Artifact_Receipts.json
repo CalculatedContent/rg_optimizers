@@ -1,0 +1,19 @@
+{
+  "run_id": 43839661129,
+  "artifacts": [
+    {
+      "id": 14215455127,
+      "name": "Fashion-Scale-Checkpoints",
+      "sha256": "660c200f51ad5fc758ceece5f62d0152fc2686c3b7aa7287b19c5547681003b4"
+    },
+    {
+      "id": 14213544476,
+      "name": "Fashion-Scale-Audit",
+      "sha256": "9d88c7b5ebb2efcc6fbb7ceea1a37ea7bc5670cc42ccc1ccbbdd9bd7efcfd7b7"
+    }
+  ],
+  "download_hashes_verified": true,
+  "retained_until": "2027-02-14",
+  "durable_library_save": "blocked: current upload helper failed at prepare_uploads; no successful receipt or library file ID returned",
+  "publication_failure": "workflow git pull --rebase failed because of unstaged generated audit files; recovered artifact results published separately without training rerun"
+}

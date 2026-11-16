@@ -46,3 +46,7 @@ Run one experiment at a time with a 3–5 hour budget, preserve checkpoints, ver
 [New experiment folder](2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/) · [Running workflow](https://github.com/CalculatedContent/rg_optimizers/actions/runs/43839661129).
 
 Launched16 November2026: three pilot arms, followed conditionally by fifteen fresh paired-seed runs. Same dense MLP and exact magnitude-only kernel; fixed120 epochs and matched mild translations. Remote source/numerical preflight passed; training step is active. All three alpha estimates are retained, including the audited small-N FC3 estimate and native counterpart. The scale claim is conditional coordinate covariance with distinct matrix/bias rate transformations; full RG invariance is unproved. No historical results are overwritten.
+
+### Completed scale-audited Fashion follow-up (16 November 2026)
+
+[Results and plots](2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/RESULTS.md): 15/15 fixed-120 endpoints verified; all five paired seeds retained. Graft minus AdamW accuracy −0.344 pp [−0.561,−0.127], CE +0.06115 [0.05681,0.06550], hidden distance +0.59458 [0.39875,0.79042]. Publication recovered from saved artifacts without rerunning training. Extra durable backup pending after upload preparation failed; GitHub checkpoint/audit artifacts preserved for 90 days. GPT remains held.
