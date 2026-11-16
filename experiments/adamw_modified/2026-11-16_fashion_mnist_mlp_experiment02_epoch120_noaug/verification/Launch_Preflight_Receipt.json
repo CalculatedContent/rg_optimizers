@@ -1,0 +1,35 @@
+{
+  "run_id": 43861743291,
+  "job_id": 133280017490,
+  "launch_commit": "da3e871798c9574d7228a39aac1d808862c76bf1",
+  "preflight_artifact_id": 14224885067,
+  "preflight_artifact_sha256": "be3d4f15de11daa7a333304729baa31e2c4e77e50ebf630d1c59c25989893b35",
+  "parent_count": 120,
+  "parent_verification_passed": true,
+  "current_runtime_exact_count": 120,
+  "cross_runtime_exact_count": 0,
+  "maximum_replay_loss_error": 2.9802322387695312e-08,
+  "maximum_statistics_bound_fraction": 0.020226192913350406,
+  "negative_controls_rejected": 9,
+  "negative_controls_passed": true,
+  "resumed_graft_contract_passed": true,
+  "resumed_nonzero_matrix_checks": 15,
+  "preflight_ready": {
+    "passed": true,
+    "runner_sha256": "16c70c28809457e1ab3b5887ec00bffd6651168509fd5c08a5cbc29ac39c3c6d",
+    "protocol_sha256": "f94412a45f69c10dc3f8b09fb69385d49def0760507c766ce076ab382ca169a5",
+    "all120_verified": true,
+    "parent_validation_sha256": "c33bb4d578ccea3a587fab386913d5cff9009ed052df9ed2d1ffb4677d2e2c45"
+  },
+  "restored_seed_archives": 5,
+  "launch": {
+    "started_epoch_seconds": 1794830164.5565603,
+    "deadline_epoch_seconds": 1794844564.5565603,
+    "planned": 120,
+    "resume_epoch": 60,
+    "fixed_final_epoch": 120,
+    "workers": 3
+  },
+  "stage_when_observed": "continuation training step in_progress; endpoints not yet reported",
+  "local_archive_path": "/workspace/scratch/fbe73031cef9/fashion_to120/Fashion-NoAug120-Preflight.zip"
+}
