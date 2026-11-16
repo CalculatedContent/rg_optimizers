@@ -1,0 +1,128 @@
+{
+  "training_run": 43864280628,
+  "training_verified_complete": true,
+  "completed_endpoints": 4,
+  "archive_only_run": 43878167416,
+  "archive_only_commit": "336ebe63409817773a2420a16e7c89c68cde6081",
+  "archive_job_success": true,
+  "no_training_rerun": true,
+  "original_archive_hashes_verified_remotely": true,
+  "reconstruction_manifest": {
+    "source_run": 43864280628,
+    "no_training": true,
+    "records": [
+      {
+        "seed": 33001,
+        "original_artifact_id": 14226930099,
+        "original_bytes": 876712398,
+        "original_sha256": "673aa3cf6ea358c7cfa43122a15274d2e85e0145dbee4b5c7a5d43188c6cfaa4",
+        "parts": [
+          {
+            "file": "Fashion_AdamW_Paired120_Seed_33001.artifact.zip.part01",
+            "bytes": 471859200,
+            "sha256": "5f93b235e5b0cca29816295de070de6c23321cd33e9c8653c5dc531e841eba59"
+          },
+          {
+            "file": "Fashion_AdamW_Paired120_Seed_33001.artifact.zip.part02",
+            "bytes": 404853198,
+            "sha256": "d5f8e77437344a4f2aa2799a67d3c5ecbf26eb7699a378540f55bf92a7b41017"
+          }
+        ]
+      },
+      {
+        "seed": 33002,
+        "original_artifact_id": 14226668097,
+        "original_bytes": 879658821,
+        "original_sha256": "a7921742285578eb73cba9887e0f2f0b150e0b6d304337a223448a955c630515",
+        "parts": [
+          {
+            "file": "Fashion_AdamW_Paired120_Seed_33002.artifact.zip.part01",
+            "bytes": 471859200,
+            "sha256": "93d846dedf04dec406ffa8475ce3e8b16a434924037e85454a9cc0616678b611"
+          },
+          {
+            "file": "Fashion_AdamW_Paired120_Seed_33002.artifact.zip.part02",
+            "bytes": 407799621,
+            "sha256": "49bc1206ccdd9671f79e27f44b2448217c62f51b99d6371b579f43dfb982a7d2"
+          }
+        ]
+      }
+    ],
+    "instructions": "Concatenate each seed's parts in listed order to reconstruct the exact original GitHub artifact ZIP; verify original SHA256, then unzip the artifact to obtain the inner seed ZIP and its metadata."
+  },
+  "chunk_artifacts": [
+    {
+      "id": 14231850787,
+      "name": "Fashion-Paired120-Backup-33001-Part02",
+      "bytes": 404853420,
+      "sha256": "b609629b2dd00f1b3060b9864ca8f52a0b17482a65d730619fdd2702b8ddc4d8",
+      "expires_at": "2027-02-14T13:41:15Z",
+      "download_hash_verified": true
+    },
+    {
+      "id": 14231845100,
+      "name": "Fashion-Paired120-Backup-Manifest",
+      "bytes": 830,
+      "sha256": "59c9d8240590812ababb14a74f2c523283a13d7b3b7bbbeea6bd0bd72a5b4bc5",
+      "expires_at": "2027-02-14T13:41:15Z",
+      "download_hash_verified": true
+    },
+    {
+      "id": 14231272079,
+      "name": "Fashion-Paired120-Backup-33002-Part01",
+      "bytes": 471859422,
+      "sha256": "a25350a82b8fd633825a823e0ffc89cefb4449092866a470622994bc4bfc947c",
+      "expires_at": "2027-02-14T13:41:15Z",
+      "download_hash_verified": false
+    },
+    {
+      "id": 14231187309,
+      "name": "Fashion-Paired120-Backup-33002-Part02",
+      "bytes": 407799843,
+      "sha256": "ae11ce8e988de5bf126a7f4995e441cba67e1d39420be8c6abea1be870823e39",
+      "expires_at": "2027-02-14T13:41:15Z",
+      "download_hash_verified": true
+    },
+    {
+      "id": 14230868194,
+      "name": "Fashion-Paired120-Backup-33001-Part01",
+      "bytes": 471859422,
+      "sha256": "35dbd6501dac1e5ed9f7080e3c86b2b948362c3719e77191741adce148a6b43b",
+      "expires_at": "2027-02-14T13:41:15Z",
+      "download_hash_verified": false
+    }
+  ],
+  "additional_small_artifacts": [
+    {
+      "id": 14226328692,
+      "name": "Fashion-AdamW-Paired120-Audit",
+      "sha256": "2d02e1434bb3fb7af590d232feedae029340cf16ce049bdf5e5d612bd1650d50",
+      "download_hash_verified": true
+    },
+    {
+      "id": 14226156408,
+      "name": "Fashion-AdamW-Paired120-Preflight",
+      "sha256": "b193832cc0ba3f6696210df690d204a892fee7c708cc7281d8c8ad9a59863c12",
+      "download_hash_verified": true
+    }
+  ],
+  "durable_backup": {
+    "status": "BLOCKED",
+    "library_file_ids": [],
+    "error": "Current refreshed library_upload helper exited1: library upload failed: prepare_uploads failed. No write receipt returned; reconciliation search found no matching files. No retry or substitute upload attempted.",
+    "files_attempted": [
+      "Fashion_AdamW_Paired120_Audit.zip",
+      "Fashion_AdamW_Paired120_Preflight.zip",
+      "Reconstruction_Manifest.json",
+      "Fashion_AdamW_Paired120_Seed_33001.artifact.zip.part02",
+      "Fashion_AdamW_Paired120_Seed_33002.artifact.zip.part02"
+    ],
+    "remaining_downloads": [
+      14230868194,
+      14231272079
+    ],
+    "download_errors": "Both450MiB part01 artifact downloads timed out twice. Part02 downloads and hashes verified.",
+    "all_original_and_chunk_artifacts_preserved_on_github": true
+  },
+  "monitor_status": "Paused after definitive backup-blocker report; separate MNIST monitor unaffected."
+}

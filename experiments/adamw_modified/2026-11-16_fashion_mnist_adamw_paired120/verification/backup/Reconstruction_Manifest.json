@@ -1,0 +1,43 @@
+{
+  "source_run": 43864280628,
+  "no_training": true,
+  "records": [
+    {
+      "seed": 33001,
+      "original_artifact_id": 14226930099,
+      "original_bytes": 876712398,
+      "original_sha256": "673aa3cf6ea358c7cfa43122a15274d2e85e0145dbee4b5c7a5d43188c6cfaa4",
+      "parts": [
+        {
+          "file": "Fashion_AdamW_Paired120_Seed_33001.artifact.zip.part01",
+          "bytes": 471859200,
+          "sha256": "5f93b235e5b0cca29816295de070de6c23321cd33e9c8653c5dc531e841eba59"
+        },
+        {
+          "file": "Fashion_AdamW_Paired120_Seed_33001.artifact.zip.part02",
+          "bytes": 404853198,
+          "sha256": "d5f8e77437344a4f2aa2799a67d3c5ecbf26eb7699a378540f55bf92a7b41017"
+        }
+      ]
+    },
+    {
+      "seed": 33002,
+      "original_artifact_id": 14226668097,
+      "original_bytes": 879658821,
+      "original_sha256": "a7921742285578eb73cba9887e0f2f0b150e0b6d304337a223448a955c630515",
+      "parts": [
+        {
+          "file": "Fashion_AdamW_Paired120_Seed_33002.artifact.zip.part01",
+          "bytes": 471859200,
+          "sha256": "93d846dedf04dec406ffa8475ce3e8b16a434924037e85454a9cc0616678b611"
+        },
+        {
+          "file": "Fashion_AdamW_Paired120_Seed_33002.artifact.zip.part02",
+          "bytes": 407799621,
+          "sha256": "49bc1206ccdd9671f79e27f44b2448217c62f51b99d6371b579f43dfb982a7d2"
+        }
+      ]
+    }
+  ],
+  "instructions": "Concatenate each seed's parts in listed order to reconstruct the exact original GitHub artifact ZIP; verify original SHA256, then unzip the artifact to obtain the inner seed ZIP and its metadata."
+}
