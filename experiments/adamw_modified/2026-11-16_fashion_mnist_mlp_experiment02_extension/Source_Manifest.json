@@ -1,0 +1,22 @@
+{
+  "files": {
+    "Launch_Request.json": "39741d5f29344c453d364d9b02d03d1d7452237c25ba12d3429c3ecd06a87129",
+    "Protocol.json": "0aadbc00a5ae3e32f10df9701e83ad831a51264b99c52e35529b81aeb66fca7f",
+    "README.md": "527a8d8e05578ee5ea2d6e9bb74a9e9a7ea9ee137ad26ac2b793533e48029a73",
+    "archive.py": "61a91b727021d70819016b31fea2307a04d7bc8cc2fb2ad86b59288f9531e674",
+    "report.py": "917c74d5ac6c2f9142e984921c971239237876a2e2609d5f361bca2c162915b3",
+    "restore.py": "379cf99c214d269d8eb0c1b43b599e73b7058fd1cc828fff89eed92147d787b4",
+    "run.py": "715097d5b98580987344b15f8b37c8c48b5bc0bf034e13d2eccff588ceff126f",
+    "verify_setup.py": "db3469d5b2fc96982075abfda5d41adde0c77baf9ec08777eb1ee2050824f5e8"
+  },
+  "workflow_sha256": "029ce09476497b22cc28d8bc26c54727d2ac8c43968d4132f906e700d0dd8715",
+  "local_checks": {
+    "unique120_specifications": true,
+    "fixed_schedule_continuity": true,
+    "syntax": true,
+    "synthetic_full_and_partial_reports": true,
+    "five_seed_interval_checked_independently": true,
+    "failures_retained": true,
+    "numerical_runtime_checks": "Pending GitHub preflight; no local PyTorch installed."
+  }
+}
