@@ -32,6 +32,6 @@ Five seeds are the independent replicates; report paired seed-level 95% interval
 
 ## Existing evidence
 
-- [General comparison](../../../../comparisons/README.md)
+- [General comparison](../../../comparisons/README.md)
 - Parent run 43793781330 completed successfully; no continuation of that completed run is authorized by this plan.
 - Previous published analysis commit: 97f4cfc8a3738d045e3485437ff98e5c8cd1a770.
