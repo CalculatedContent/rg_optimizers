@@ -1,0 +1,180 @@
+{
+  "planned": 120,
+  "completed": 0,
+  "paired_initialization": true,
+  "paired_minibatches": true,
+  "fixed_epoch60": true,
+  "restored_replay": true,
+  "source_checkpoint_match": true,
+  "graft_nonzero_records": 0,
+  "maximum_graft_norm_relative_error": 0.0,
+  "parent_validation": {
+    "passed": false,
+    "count": 0
+  },
+  "continuation_gate": {
+    "passed": false
+  },
+  "optimizer_contract": {
+    "passed": true,
+    "nonzero_checks": 15,
+    "independent_sgdm_buffer": true,
+    "same_trajectory_gradients": true,
+    "records": [
+      {
+        "step": 0,
+        "layer": "fc1",
+        "actual_update_norm": 0.006083322975153332,
+        "target_sgdm_norm": 0.006083324550652458,
+        "relative_norm_error": 2.589865316648954e-07,
+        "graft_adam_cosine": 0.9999999991683528,
+        "independent_momentum_relative_error": 2.823501535544574e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 0,
+        "layer": "fc2",
+        "actual_update_norm": 0.016657458171894703,
+        "target_sgdm_norm": 0.016657441256169084,
+        "relative_norm_error": 1.0155056444638433e-06,
+        "graft_adam_cosine": 0.9999999999234764,
+        "independent_momentum_relative_error": 2.5996919666366913e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 0,
+        "layer": "fc3",
+        "actual_update_norm": 0.0624052697793669,
+        "target_sgdm_norm": 0.06240527065937598,
+        "relative_norm_error": 1.4101518619469289e-08,
+        "graft_adam_cosine": 0.9999999999983343,
+        "independent_momentum_relative_error": 2.5264676000750545e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 1,
+        "layer": "fc1",
+        "actual_update_norm": 0.010859243560970924,
+        "target_sgdm_norm": 0.010859244495524847,
+        "relative_norm_error": 8.606067614103097e-08,
+        "graft_adam_cosine": 0.9999999997607564,
+        "independent_momentum_relative_error": 5.413652391041189e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 1,
+        "layer": "fc2",
+        "actual_update_norm": 0.029112748540252496,
+        "target_sgdm_norm": 0.02911274812245105,
+        "relative_norm_error": 1.435115115633323e-08,
+        "graft_adam_cosine": 0.9999999999744325,
+        "independent_momentum_relative_error": 5.394572343976591e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 1,
+        "layer": "fc3",
+        "actual_update_norm": 0.10201810184049345,
+        "target_sgdm_norm": 0.10201809704812054,
+        "relative_norm_error": 4.697571376333087e-08,
+        "graft_adam_cosine": 0.9999999999980601,
+        "independent_momentum_relative_error": 5.437935190737778e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 2,
+        "layer": "fc1",
+        "actual_update_norm": 0.01483603357137385,
+        "target_sgdm_norm": 0.014836033009586667,
+        "relative_norm_error": 3.7866401569885966e-08,
+        "graft_adam_cosine": 0.9999999998713442,
+        "independent_momentum_relative_error": 6.338760060315872e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 2,
+        "layer": "fc2",
+        "actual_update_norm": 0.039958264361434105,
+        "target_sgdm_norm": 0.03995826396867801,
+        "relative_norm_error": 9.829158154062156e-09,
+        "graft_adam_cosine": 0.9999999999849887,
+        "independent_momentum_relative_error": 6.289344834903629e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 2,
+        "layer": "fc3",
+        "actual_update_norm": 0.14036150201180564,
+        "target_sgdm_norm": 0.14036149387756422,
+        "relative_norm_error": 5.795208646297567e-08,
+        "graft_adam_cosine": 0.9999999999977417,
+        "independent_momentum_relative_error": 6.415192261335061e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 3,
+        "layer": "fc1",
+        "actual_update_norm": 0.018758597438467053,
+        "target_sgdm_norm": 0.01875859725039031,
+        "relative_norm_error": 1.0026162344800582e-08,
+        "graft_adam_cosine": 0.999999999918363,
+        "independent_momentum_relative_error": 7.072001402321433e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 3,
+        "layer": "fc2",
+        "actual_update_norm": 0.05049266176049176,
+        "target_sgdm_norm": 0.050492661617565174,
+        "relative_norm_error": 2.8306408328404586e-09,
+        "graft_adam_cosine": 0.9999999999894469,
+        "independent_momentum_relative_error": 7.238075405575042e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 3,
+        "layer": "fc3",
+        "actual_update_norm": 0.17687495642943069,
+        "target_sgdm_norm": 0.17687494303574786,
+        "relative_norm_error": 7.572402616062845e-08,
+        "graft_adam_cosine": 0.9999999999976095,
+        "independent_momentum_relative_error": 6.952365735360974e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 4,
+        "layer": "fc1",
+        "actual_update_norm": 0.021900033331659994,
+        "target_sgdm_norm": 0.02190003309185709,
+        "relative_norm_error": 1.094988766325855e-08,
+        "graft_adam_cosine": 0.9999999999399228,
+        "independent_momentum_relative_error": 8.029935988901595e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 4,
+        "layer": "fc2",
+        "actual_update_norm": 0.05871588362699523,
+        "target_sgdm_norm": 0.058715881486481436,
+        "relative_norm_error": 3.6455448437777704e-08,
+        "graft_adam_cosine": 0.9999999999913907,
+        "independent_momentum_relative_error": 8.073373840144927e-08,
+        "bias_exact": true
+      },
+      {
+        "step": 4,
+        "layer": "fc3",
+        "actual_update_norm": 0.19958687562273322,
+        "target_sgdm_norm": 0.1995868676983995,
+        "relative_norm_error": 3.9703683007985546e-08,
+        "graft_adam_cosine": 0.9999999999970051,
+        "independent_momentum_relative_error": 8.478750465115531e-08,
+        "bias_exact": true
+      }
+    ]
+  },
+  "resumed_optimizer_contract": {
+    "passed": false
+  },
+  "passed": false
+}

@@ -1,0 +1,16 @@
+{
+  "dataset": "Fashion-MNIST",
+  "planned": 120,
+  "completed": 0,
+  "complete": false,
+  "verification_passed": false,
+  "parent_epoch": 20,
+  "fixed_final_epoch": 60,
+  "independent_seeds": 5,
+  "exploratory_extension": true,
+  "paired_effects": [],
+  "within_arm_changes": [],
+  "effect_changes": [],
+  "failures_retained": true,
+  "gpt_on_hold": true
+}
