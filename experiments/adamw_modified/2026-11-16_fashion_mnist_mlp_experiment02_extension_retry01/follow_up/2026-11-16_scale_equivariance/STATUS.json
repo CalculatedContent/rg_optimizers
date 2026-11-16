@@ -1,10 +1,17 @@
 {
-  "stage": "ready_for_launch",
-  "training_started": false,
+  "stage": "pilot_and_confirmatory_training_step_in_progress",
+  "observed_utc": "2026-11-16T09:27:44Z",
+  "run_id": 43839661129,
+  "run_url": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/43839661129",
+  "launch_commit": "fe1bf0efe15fb8aefb8a62dd6392f994d1cb6d31",
+  "remote_frozen_source_checks": "passed",
+  "remote_preflight": "passed",
+  "preflight_artifact_id": 14211903216,
   "planned_pilot": 3,
   "planned_confirmatory": 15,
-  "completed_confirmatory": 0,
-  "local_development_smoke_passed": true,
-  "scope": "conditional matrix scale covariance, not full RG or loss invariance",
-  "all_layer_alpha": true
+  "confirmed_completed_count": null,
+  "counts_note": "Live endpoint counts are not yet exposed in completed artifacts; do not infer completion from job status",
+  "workflow_deadline_utc": "2026-11-16T14:25:51Z",
+  "scale_scope": "conditional optimizer coordinate covariance; graft matrices SGDM rate exponent, native Adam biases separate exponent",
+  "training_source_frozen": true
 }

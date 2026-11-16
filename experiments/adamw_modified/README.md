@@ -40,3 +40,9 @@ Run one experiment at a time with a 3–5 hour budget, preserve checkpoints, ver
 [Experiment 01 model status and concise results](2026-11-13_mnist_mlp_experiment01/MODEL_STATUS.md) include the complete 138-model register, setting-level status plot and paired α-alignment/accuracy plot.
 
 [MNIST versus completed Fashion-MNIST analysis](2026-11-15_fashion_mnist_mlp_experiment02_clean/COMPARISON.md) uses the eight common settings and five independent seeds. MNIST used 120 epochs; Fashion used 20 epochs. The dataset and schedule changes are explicitly separated from within-experiment optimizer effects.
+
+## Active scale-audited Fashion follow-up
+
+[New experiment folder](2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/) · [Running workflow](https://github.com/CalculatedContent/rg_optimizers/actions/runs/43839661129).
+
+Launched16 November2026: three pilot arms, followed conditionally by fifteen fresh paired-seed runs. Same dense MLP and exact magnitude-only kernel; fixed120 epochs and matched mild translations. Remote source/numerical preflight passed; training step is active. All three alpha estimates are retained, including the audited small-N FC3 estimate and native counterpart. The scale claim is conditional coordinate covariance with distinct matrix/bias rate transformations; full RG invariance is unproved. No historical results are overwritten.
