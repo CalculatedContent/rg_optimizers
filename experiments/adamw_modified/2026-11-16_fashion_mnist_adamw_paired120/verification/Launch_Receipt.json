@@ -1,0 +1,37 @@
+{
+  "run_id": 43864280628,
+  "run_url": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/43864280628",
+  "launch_commit": "1876eba9c8b02b661d4d5e660bfe80b3b4e0627c",
+  "created_utc": "2026-11-16T12:11:17Z",
+  "observed_status": "pending",
+  "waiting_behind_run": 43861743291,
+  "concurrency_group": "fashion-noaug120-20261116",
+  "planned_runs": 4,
+  "seeds": [
+    33001,
+    33002
+  ],
+  "augmentation": [
+    false,
+    true
+  ],
+  "fixed_epochs": 120,
+  "per_trajectory_epochs_recorded": 121,
+  "planned_epoch_records": 484,
+  "native_adamw_only": true,
+  "numerical_preflight": "pending, not yet executed",
+  "setup_checks": "source/schedule and synthetic postprocessing integration checks passed",
+  "source_hashes": {
+    "kernel": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+    "runner": "325b1dd4144ef4881557ba533567b944a640fd96ebd5b7821e0efb6619b35a64",
+    "protocol": "3f6ba50c8be07e791979c4b4db1fa1f546a65773c0a33f7c7514743bffaa4a54",
+    "report": "32c4a4cd58d6cfc6bfe22730977c3af7b8025ba02bb346e7e6627771cb3740f3"
+  },
+  "training_budget_seconds_after_preflight_start": 14400,
+  "job_budget_seconds": 18000,
+  "monitor_enabled": true,
+  "monitor_id": "Automation_5b3dc868c2808191ab39d5b4aece80c2",
+  "first_check_local": "2026-11-16T20:15:00+07:00",
+  "period": "hourly, pause after final verification or material failure",
+  "historical_experiments_unchanged": true
+}
