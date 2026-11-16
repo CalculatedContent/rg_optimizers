@@ -1,0 +1,88 @@
+{
+  "run_id": 43872338938,
+  "job_id": 133316465590,
+  "url": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/43872338938",
+  "launch_commit": "fffbf2427d81ed4fb22426677033f74f8618c976",
+  "observed_utc": "2026-11-16T13:07:24.750068+00:00",
+  "status": "Remote preflight verified; main training step in progress. Final outcome not yet claimed.",
+  "planned_runs": 2,
+  "independent_seeds": [
+    33001,
+    33002
+  ],
+  "augmentation_only": true,
+  "native_adamw_only": true,
+  "fixed_endpoint": 120,
+  "preflight": {
+    "passed": true,
+    "smoke_runs": 1,
+    "excluded_seed": 33998,
+    "reproducible_initialization_and_order": true,
+    "augmentation_deterministic_and_nontrivial": true,
+    "exact_replays": 1,
+    "wrong_controls_rejected": 3,
+    "native_nonzero_parameter_checks": 30,
+    "estimated_training_seconds": 869.8401260375977,
+    "remaining_budget_seconds": 14393.310873508453,
+    "alpha_or_accuracy_not_a_gate": true
+  },
+  "data_audit": {
+    "passed": true,
+    "dataset": "MNIST",
+    "split_sha256": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543",
+    "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+    "data_hashes": {
+      "split.npz": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543",
+      "t10k-images-idx3-ubyte.gz": "8d422c7b0a1c1c79245a5bcf07fe86e33eeafee792b84584aec276f5a2dbc4e6",
+      "train-labels-idx1-ubyte.gz": "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c",
+      "train-images-idx3-ubyte.gz": "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609",
+      "t10k-labels-idx1-ubyte.gz": "f7ae60f92e00ec6debd23a6088c31dbd2371eca3ffa0defaefb259924204aec6"
+    },
+    "original_data_hashes_exact": true
+  },
+  "initialization_audit": {
+    "passed": true,
+    "independent_seeds": 2,
+    "initial_hashes": {
+      "33001": "69a2ce8ffbbdca1e656d88c334911093e706b99d33c40f5532d72af69d902385",
+      "33002": "078bc6c296103b4f74ecf5fe7357bd508f6f45636280c21a6c7a52b872fdedc9"
+    }
+  },
+  "native_optimizer_contract": {
+    "passed": true,
+    "nonzero_parameter_checks": 30,
+    "reference": "Separate torch.optim.AdamW path with explicit historical sample-normalized decay; no graft"
+  },
+  "estimator_audit": {
+    "passed": true,
+    "controls": 100,
+    "maximum_error": 4.973799150320701e-14,
+    "source_sha256": "5d36c6aab9cdf41b4432d395c50eba34cce57e0b0cc0f83d20284f8679a5e43e",
+    "alpha_prior": false,
+    "fc3_remains_exploratory": true
+  },
+  "source_freeze": {
+    "epoch_seconds": 1794834338.791998,
+    "protocol_sha256": "c41915b398c4cad2358734afed49b4e7121e672c64dfd4c2c56d524020dc8708",
+    "runner_sha256": "b87ad8804af6e3d22a22cc5432b16631c8f4a0a400ae98e5f8d3aed3cb5ee4ed",
+    "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+    "fixed_epochs": 120,
+    "planned_runs": 2
+  },
+  "launch": {
+    "started_epoch_seconds": 1794834332.099187,
+    "deadline_epoch_seconds": 1794848732.099187,
+    "planned_runs": 2,
+    "fixed_epochs": 120,
+    "github_run_id": "43872338938"
+  },
+  "preflight_artifact": {
+    "id": 14227328640,
+    "sha256": "d5bda4ab3ed15adf097540e3dae434b7c495de16b97aa877de71869d7e777e95",
+    "bytes": 13617798,
+    "download_hash_verified": true,
+    "github_retention_days": 90,
+    "durable_backup_pending": true
+  }
+}
+
