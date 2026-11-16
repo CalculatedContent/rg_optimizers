@@ -9,7 +9,7 @@ This campaign studies a **magnitude-only** modification: retain Adam's adaptive 
 | [2026-11-13_mnist_mlp_experiment01](2026-11-13_mnist_mlp_experiment01/) | MNIST, 784→256→256→10 ReLU MLP | 135 original runs + 3 replication runs verified; 132 usable models and 6 failed models; explicit model labels, paired-effect plots, and separate hyperparameter-failure report |
 | [2026-11-15_fashion_mnist_mlp_experiment02](2026-11-15_fashion_mnist_mlp_experiment02/) | Fashion-MNIST, 784→256→256→10 ReLU MLP | Historical interrupted/superseded passes; recovery stopped and available outcomes preserved. Completed clean pass is in the parallel folder below. |
 | [2026-11-15_fashion_mnist_mlp_experiment02_clean](2026-11-15_fashion_mnist_mlp_experiment02_clean/) | Fashion-MNIST, 784→256→256→10 ReLU MLP | Complete: 120/120 fixed-epoch-20 runs, five paired seeds; verified results, checkpoint links and comparison with MNIST. No new training. |
-| [2026-11-16_fashion_mnist_mlp_experiment02_extension](2026-11-16_fashion_mnist_mlp_experiment02_extension/) | Fashion-MNIST, same 120 MLP models | Authorized epoch20-to60 continuation, fixed future endpoint and preserved optimizer histories; numerical gate precedes expansion. |
+| [2026-11-16_fashion_mnist_mlp_experiment02_extension](2026-11-16_fashion_mnist_mlp_experiment02_extension/) | Fashion-MNIST, same 120 MLP models | Failed before continuation: 0/120 extended; parent replay loss equality failed. Parent checkpoints preserved; no rerun. |
 | [2026-11-15_tiny_shakespeare_gpt_experiment03](2026-11-15_tiny_shakespeare_gpt_experiment03/) | Tiny Shakespeare, two-block GPT | On hold: finish Fashion-MNIST first; pilot controls preserved, graft cancelled,45-run expansion cancelled |
 
 ## Organization for the coming days

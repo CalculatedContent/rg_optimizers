@@ -1,0 +1,23 @@
+{
+  "run_id": 43782434892,
+  "status": "FAILED_PREFLIGHT",
+  "completed_continuations": 0,
+  "training_started": false,
+  "library_file_id": "libfile_fde3_f-9f7b812a5fc48191b8df22a0297a4a5f_3360a23133288191af30e7bb737808b0",
+  "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-9f7b812a5fc48191b8df22a0297a4a5f_3360a23133288191af30e7bb737808b0&account_id=personal",
+  "file_name": "Fashion_Extension_20261116_Failure_Evidence.zip",
+  "artifacts": [
+    {
+      "id": 14188604728,
+      "name": "Fashion-Extension-Audit",
+      "sha256": "abe9a2884a70732d4eed0366bce6244a0a078227a00cbfe2e2b8b59ef15be701"
+    },
+    {
+      "id": 14189155772,
+      "name": "Fashion-Extension-Seed31001",
+      "sha256": "9d87b5cd3f5651c690002876737164aec6561a981005fb0c354a9bb9d5643c39",
+      "contains_new_training_checkpoints": false
+    }
+  ],
+  "parent_checkpoints_unchanged": true
+}
