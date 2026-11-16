@@ -1,0 +1,69 @@
+name: Stop superseded Fashion continuation for paired120
+on:
+  push:
+    branches: [main]
+    paths: [experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/verification/User_Switch_Request.json]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: fashion-switch-43861743291-to-43864280628
+  cancel-in-progress: false
+jobs:
+  cancel_only_superseded_run:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Cancel exact old run and wait for preservation and queued replacement
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import json, os, time, urllib.request
+          from pathlib import Path
+          repo = "CalculatedContent/rg_optimizers"
+          old, new = 43861743291, 43864280628
+          old_sha = "da3e871798c9574d7228a39aac1d808862c76bf1"
+          new_sha = "1876eba9c8b02b661d4d5e660bfe80b3b4e0627c"
+          receipt = {"user_requested_switch": True, "old_run": old, "new_run": new, "no_training_launched": True}
+          def api(path, method="GET"):
+              req = urllib.request.Request("https://api.github.com/repos/"+repo+path, method=method,
+                  data=b"{}" if method=="POST" else None,
+                  headers={"Authorization": "Bearer "+os.environ["GH_TOKEN"], "Accept": "application/vnd.github+json"})
+              with urllib.request.urlopen(req, timeout=45) as r:
+                  data=r.read()
+                  return r.status, json.loads(data) if data else {}
+          def save():
+              Path("Run_Switch_Receipt.json").write_text(json.dumps(receipt, indent=2)+"\n")
+          _, before = api("/actions/runs/"+str(old))
+          _, target = api("/actions/runs/"+str(new))
+          assert before["head_sha"]==old_sha and target["head_sha"]==new_sha
+          receipt["old_before"]={k:before.get(k) for k in ["status","conclusion","updated_at"]}
+          receipt["new_before"]={k:target.get(k) for k in ["status","conclusion","updated_at"]}
+          save()
+          if before["status"]!="completed":
+              code, result=api("/actions/runs/"+str(old)+"/cancel","POST")
+              receipt["cancel_http_status"]=code
+              receipt["cancel_result"]=result
+              save()
+          deadline=time.time()+600
+          while time.time()<deadline:
+              _, before=api("/actions/runs/"+str(old))
+              _, target=api("/actions/runs/"+str(new))
+              receipt["old_after"]={k:before.get(k) for k in ["status","conclusion","updated_at"]}
+              receipt["new_after"]={k:target.get(k) for k in ["status","conclusion","updated_at"]}
+              receipt["observed_epoch_seconds"]=time.time()
+              save()
+              print("Old:",before["status"],before.get("conclusion"),"; paired120:",target["status"],target.get("conclusion"),flush=True)
+              if before["status"]=="completed" and target["status"] in ["in_progress","completed"]:
+                  break
+              time.sleep(15)
+          assert before["status"]=="completed", "Old cancellation/preservation has not finished; do not duplicate or force-cancel automatically"
+          assert target["status"] in ["in_progress","completed"], "Existing replacement has not started; inspect, do not duplicate"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-User-Switch-Receipt
+          path: Run_Switch_Receipt.json
+          retention-days: 90
