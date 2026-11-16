@@ -1,0 +1,122 @@
+{
+  "run_id": 43793781330,
+  "launch_commit": "53cb943b8bc9baff904deb5d43c3554394eda7e9",
+  "publication_commit": "426bfd90f9abe74a03450546d954b4dca8a2e017",
+  "all_six_final_bundles_saved": true,
+  "preflight_previously_saved": {
+    "artifact_id": 14193780637,
+    "library_file_id": "libfile_fde3_f-89b0c551d0c08191b5942e8a40e9fe04_3360a23133288191af30e7bb737808b0",
+    "receipt": "Preflight_Artifact_Receipt.json",
+    "resaved": false
+  },
+  "records": [
+    {
+      "artifact_id": 14195083851,
+      "artifact_name": "Fashion-Retry01-Seed31001",
+      "outer_sha256": "e7ef3e4617a080752be7a925abca7b99058f93e5e61b7416394b688be4d7d9e0",
+      "outer_bytes": 338200581,
+      "file_name": "Fashion_Retry01_Seed31001_Checkpoints.zip",
+      "file_id": "file_000000004a8c81f5b94e220430e9e3f0",
+      "library_file_id": "libfile_fde3_f-71f35b196c4c8191b23139e3def5f936_3360a23133288191af30e7bb737808b0",
+      "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-71f35b196c4c8191b23139e3def5f936_3360a23133288191af30e7bb737808b0&account_id=personal",
+      "saved": true,
+      "local_metadata_applied": true,
+      "seed": 31001,
+      "inner_metadata": {
+        "sha256": "24489a92ce9da52832cd6099391f171abd94cd523f0b1cc6594b24c7de7f77c8",
+        "bytes": 372555097,
+        "seed": 31001,
+        "all_available_outcomes_retained": true
+      }
+    },
+    {
+      "artifact_id": 14195791443,
+      "artifact_name": "Fashion-Retry01-Seed31002",
+      "outer_sha256": "b1e7f2b80d410000ab5f52d74da76aa4fc57db4c6a528773550d66e1af1635aa",
+      "outer_bytes": 338220800,
+      "file_name": "Fashion_Retry01_Seed31002_Checkpoints.zip",
+      "file_id": "file_000000004f1c81f58ca311ff2f34e4e9",
+      "library_file_id": "libfile_fde3_f-b7c893859a548191b9953162a8f57e13_3360a23133288191af30e7bb737808b0",
+      "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-b7c893859a548191b9953162a8f57e13_3360a23133288191af30e7bb737808b0&account_id=personal",
+      "saved": true,
+      "local_metadata_applied": true,
+      "seed": 31002,
+      "inner_metadata": {
+        "sha256": "848bacbd29ecb793c77f9a61cbcd4e02dd0b796507bd01572c178b33e389e366",
+        "bytes": 372557901,
+        "seed": 31002,
+        "all_available_outcomes_retained": true
+      }
+    },
+    {
+      "artifact_id": 14196100644,
+      "artifact_name": "Fashion-Retry01-Seed31003",
+      "outer_sha256": "57071cda7564635332d673afc9c61c5d09312d52d0084f92bdd0288ca0a617d4",
+      "outer_bytes": 337292238,
+      "file_name": "Fashion-Retry01-Seed31003.zip",
+      "file_id": "file_000000009dec81f5aac9877884cad64c",
+      "library_file_id": "libfile_fde3_f-3d596fa40b7881918626af67c05b3f8c_3360a23133288191af30e7bb737808b0",
+      "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-3d596fa40b7881918626af67c05b3f8c_3360a23133288191af30e7bb737808b0&account_id=personal",
+      "saved": true,
+      "local_metadata_applied": true,
+      "seed": 31003,
+      "inner_metadata": {
+        "sha256": "9c959a09d3a7c8b2a3e49c583b6aae4f96c2ba91fd8da55924b9069f441608b0",
+        "bytes": 372561842,
+        "seed": 31003,
+        "all_available_outcomes_retained": true
+      }
+    },
+    {
+      "artifact_id": 14195467307,
+      "artifact_name": "Fashion-Retry01-Seed31004",
+      "outer_sha256": "887b8455dcd7e39124137c877417d1e34e42187fb7ecacbe4620eee80aeeaac4",
+      "outer_bytes": 338624069,
+      "file_name": "Fashion-Retry01-Seed31004.zip",
+      "file_id": "file_00000000cfbc81f5959d882b8648d310",
+      "library_file_id": "libfile_fde3_f-fa2bcf4407b881918676fea91e5dbfda_3360a23133288191af30e7bb737808b0",
+      "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-fa2bcf4407b881918676fea91e5dbfda_3360a23133288191af30e7bb737808b0&account_id=personal",
+      "saved": true,
+      "local_metadata_applied": true,
+      "seed": 31004,
+      "inner_metadata": {
+        "sha256": "f4900840c98ffc0b0327991b2762077289548456ac29315f4841316e13d5c477",
+        "bytes": 372556224,
+        "seed": 31004,
+        "all_available_outcomes_retained": true
+      }
+    },
+    {
+      "artifact_id": 14195877188,
+      "artifact_name": "Fashion-Retry01-Seed31005",
+      "outer_sha256": "ecf05fa83e4b6c5e59b8fde71b4bcb526d04fbd4d02c6a2b0e946cb6d3903864",
+      "outer_bytes": 338478411,
+      "file_name": "Fashion-Retry01-Seed31005.zip",
+      "file_id": "file_00000000dc3081f5ab38082659411d5b",
+      "library_file_id": "libfile_fde3_f-c92e6bdea45c819195c87176b3383813_3360a23133288191af30e7bb737808b0",
+      "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-c92e6bdea45c819195c87176b3383813_3360a23133288191af30e7bb737808b0&account_id=personal",
+      "saved": true,
+      "local_metadata_applied": true,
+      "seed": 31005,
+      "inner_metadata": {
+        "sha256": "384c969d9d2056a19b50274a65b06c0e5e4e67e44a438dde63285e992fc98a86",
+        "bytes": 372565268,
+        "seed": 31005,
+        "all_available_outcomes_retained": true
+      }
+    },
+    {
+      "artifact_id": 14196061260,
+      "artifact_name": "Fashion-Retry01-Audit",
+      "outer_sha256": "b54b759b5bf882e4fc8dd7004d658cce9f86001eecf8db730c6f86977938b028",
+      "outer_bytes": 1396922,
+      "file_name": "Fashion-Retry01-Audit.zip",
+      "file_id": "file_00000000254081f5b9de907d7463bc00",
+      "library_file_id": "libfile_fde3_f-06b44ef50550819194d0ec96a6b5a2ef_3360a23133288191af30e7bb737808b0",
+      "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-06b44ef50550819194d0ec96a6b5a2ef_3360a23133288191af30e7bb737808b0&account_id=personal",
+      "saved": true,
+      "local_metadata_applied": true
+    }
+  ],
+  "transfer_note": "First two transfer attempts for seeds31001/31002 explicitly failed before finalization; no Library identity returned and exact-title search found none. Byte-identical restaged copies then saved successfully. Other four successful saves were not retried."
+}
