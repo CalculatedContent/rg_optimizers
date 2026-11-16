@@ -1,0 +1,119 @@
+{
+  "artifact_id": 14226156408,
+  "artifact_name": "Fashion-AdamW-Paired120-Preflight",
+  "artifact_sha256": "b193832cc0ba3f6696210df690d204a892fee7c708cc7281d8c8ad9a59863c12",
+  "artifact_bytes": 27244519,
+  "download_hash_verified": true,
+  "large_bundle_library_backup": "pending; artifact retained90days",
+  "remote_verification": {
+    "preflight": {
+      "passed": true,
+      "smoke_runs": 2,
+      "excluded_seed": 33998,
+      "paired_initialization_and_order": true,
+      "augmentation_deterministic_and_nontrivial": true,
+      "exact_replays": 2,
+      "wrong_controls_rejected": 6,
+      "native_nonzero_parameter_checks": 30,
+      "estimated_training_seconds": 2013.0477333068848,
+      "remaining_budget_seconds": 14386.704760074615,
+      "alpha_or_accuracy_not_a_gate": true
+    },
+    "native_contract": {
+      "passed": true,
+      "nonzero_parameter_checks": 30,
+      "reference": "Separate torch.optim.AdamW path with explicit historical sample-normalized decay; no graft"
+    },
+    "estimator_audit": {
+      "passed": true,
+      "controls": 100,
+      "maximum_error": 4.973799150320701e-14,
+      "source_sha256": "5d36c6aab9cdf41b4432d395c50eba34cce57e0b0cc0f83d20284f8679a5e43e",
+      "alpha_prior": false,
+      "fc3_remains_exploratory": true
+    },
+    "launch": {
+      "started_epoch_seconds": 1794832046.3870482,
+      "deadline_epoch_seconds": 1794846446.3870482,
+      "planned_runs": 4,
+      "fixed_epochs": 120,
+      "queue_after_run": 43861743291,
+      "github_run_id": "43864280628"
+    },
+    "freeze": {
+      "epoch_seconds": 1794832059.6866033,
+      "protocol_sha256": "3f6ba50c8be07e791979c4b4db1fa1f546a65773c0a33f7c7514743bffaa4a54",
+      "runner_sha256": "325b1dd4144ef4881557ba533567b944a640fd96ebd5b7821e0efb6619b35a64",
+      "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+      "fixed_epochs": 120,
+      "planned_runs": 4
+    },
+    "smoke_replay_checks": [
+      {
+        "passed": true,
+        "replays": [
+          {
+            "origin": 1,
+            "exact_recorded_losses_and_statistics": true,
+            "two_restored_copies_bitwise_model_and_optimizer": true,
+            "negative_controls": [
+              {
+                "kind": "minibatch",
+                "rejected": true
+              },
+              {
+                "kind": "moment",
+                "rejected": true
+              },
+              {
+                "kind": "rate",
+                "rejected": true
+              }
+            ]
+          }
+        ],
+        "restored_validation_and_spectra_exact": true,
+        "maximum_independent_alpha_error": 5.684341886080802e-14,
+        "fixed_endpoint": true,
+        "native_update_only": true,
+        "alpha_selection": false,
+        "validation_selection": false,
+        "test_selection": false
+      },
+      {
+        "passed": true,
+        "replays": [
+          {
+            "origin": 1,
+            "exact_recorded_losses_and_statistics": true,
+            "two_restored_copies_bitwise_model_and_optimizer": true,
+            "negative_controls": [
+              {
+                "kind": "minibatch",
+                "rejected": true
+              },
+              {
+                "kind": "moment",
+                "rejected": true
+              },
+              {
+                "kind": "rate",
+                "rejected": true
+              }
+            ]
+          }
+        ],
+        "restored_validation_and_spectra_exact": true,
+        "maximum_independent_alpha_error": 5.684341886080802e-14,
+        "fixed_endpoint": true,
+        "native_update_only": true,
+        "alpha_selection": false,
+        "validation_selection": false,
+        "test_selection": false
+      }
+    ]
+  },
+  "observed_training_step": "in_progress",
+  "run_id": 43864280628,
+  "job_id": 133296642783
+}
