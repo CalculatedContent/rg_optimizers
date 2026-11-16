@@ -50,3 +50,5 @@ Launched16 November2026: three pilot arms, followed conditionally by fifteen fre
 ### Completed scale-audited Fashion follow-up (16 November 2026)
 
 [Results and plots](2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/RESULTS.md): 15/15 fixed-120 endpoints verified; all five paired seeds retained. Graft minus AdamW accuracy −0.344 pp [−0.561,−0.127], CE +0.06115 [0.05681,0.06550], hidden distance +0.59458 [0.39875,0.79042]. Publication recovered from saved artifacts without rerunning training. Extra durable backup pending after upload preparation failed; GitHub checkpoint/audit artifacts preserved for 90 days. GPT remains held.
+
+Completion note (16 November): training and report publication are finished. A second attempt with refreshed backup helpers failed at upload preparation; no durable backup receipt exists. Verified checkpoint and audit archives remain in GitHub Actions until 14 February 2027. Monitoring is paused; no additional training authorized.

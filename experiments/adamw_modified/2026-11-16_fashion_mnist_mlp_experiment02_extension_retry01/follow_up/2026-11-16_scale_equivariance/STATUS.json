@@ -1,5 +1,5 @@
 {
-  "stage": "training_complete_verified_publication_recovery",
+  "stage": "training_verified_report_published_backup_blocked",
   "run_id": 43839661129,
   "completed": 15,
   "planned": 15,
@@ -7,5 +7,7 @@
   "training_success": true,
   "workflow_failure": "publication only: unstaged changes blocked rebase",
   "durable_archive_pending": true,
-  "no_training_rerun": true
+  "no_training_rerun": true,
+  "monitoring": "paused",
+  "publication_recovered_commit": "c6c39e67792e7387edea8a16a6c82a6e14849741"
 }

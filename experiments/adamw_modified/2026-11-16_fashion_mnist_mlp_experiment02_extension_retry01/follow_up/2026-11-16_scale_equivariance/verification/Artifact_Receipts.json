@@ -15,5 +15,12 @@
   "download_hashes_verified": true,
   "retained_until": "2027-02-14",
   "durable_library_save": "blocked: current upload helper failed at prepare_uploads; no successful receipt or library file ID returned",
-  "publication_failure": "workflow git pull --rebase failed because of unstaged generated audit files; recovered artifact results published separately without training rerun"
+  "publication_failure": "workflow git pull --rebase failed because of unstaged generated audit files; recovered artifact results published separately without training rerun",
+  "backup_retry": {
+    "date": "2026-11-16",
+    "current_helpers_refreshed": true,
+    "result": "prepare_uploads failed again; no successful save receipt; no finalization attempted",
+    "library_search": "No matching checkpoint or audit backup found",
+    "monitoring": "paused after final experiment report and persistent backup blocker"
+  }
 }
