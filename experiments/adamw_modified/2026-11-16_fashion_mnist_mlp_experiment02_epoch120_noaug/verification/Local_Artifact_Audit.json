@@ -1,0 +1,275 @@
+{
+  "passed": true,
+  "artifact_id": 14195083851,
+  "outer_sha256": "e7ef3e4617a080752be7a925abca7b99058f93e5e61b7416394b688be4d7d9e0",
+  "inner_sha256": "24489a92ce9da52832cd6099391f171abd94cd523f0b1cc6594b24c7de7f77c8",
+  "models": 24,
+  "checkpoint_file_hashes": 120,
+  "numerical_replay": "Required remotely before any new training; local environment does not have PyTorch/WeightWatcher",
+  "records": [
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 128,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2,
+        "batch_size": 256,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2,
+        "batch_size": 256,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2,
+        "batch_size": 256,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 0.5,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 1,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2,
+        "batch_size": 512,
+        "arm": "adamw"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2,
+        "batch_size": 512,
+        "arm": "magnitude_graft"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    },
+    {
+      "spec": {
+        "seed": 31001,
+        "multiplier": 2,
+        "batch_size": 512,
+        "arm": "sgdm"
+      },
+      "endpoint_epoch": 60,
+      "checkpoint_hashes_verified": 5,
+      "initial_hash": "c2396a08918d31de7c9a2e66bad537c34e2c24ea011f1270d7be077e3c94195c"
+    }
+  ]
+}

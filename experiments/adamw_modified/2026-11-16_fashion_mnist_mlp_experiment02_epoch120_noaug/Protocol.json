@@ -1,0 +1,868 @@
+{
+  "experiment": "Fashion-MNIST same-state epoch60-to120 without augmentation",
+  "dataset": "Fashion-MNIST",
+  "architecture": [
+    784,
+    256,
+    256,
+    10
+  ],
+  "activation": "ReLU",
+  "parent_run_id": 43793781330,
+  "parent_repository_commit": "4bdcd7e0423e51c6bddbb275afc72d625c42ea64",
+  "parent_execution_folder": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01",
+  "original_fashion_folder": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02",
+  "parent_publication_folder": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01",
+  "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "parent_runner_sha256": "04a90b58dcd3bfd24cb4ecfd5571adb2c43e7a56b0fc09564b032d5d362ef3c6",
+  "parent_protocol_sha256": "943696071145ff4b17806a0716829f234b8b034c3af362a2b652097cc9051262",
+  "split_sha256": "ad533c8cb7a03eeb6c0a69b23e51eb074a273ff42f80bce229aca381f758d543",
+  "specifications": [
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31001,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31002,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31003,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31004,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 0.5,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 128,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 1,
+      "batch_size": 512,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 256,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "adamw"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 31005,
+      "multiplier": 2,
+      "batch_size": 512,
+      "arm": "sgdm"
+    }
+  ],
+  "independent_seeds": [
+    31001,
+    31002,
+    31003,
+    31004,
+    31005
+  ],
+  "start_epoch": 60,
+  "fixed_epochs": 120,
+  "intermediate_checkpoint_epochs": [
+    61,
+    90
+  ],
+  "schedule": "Retain the actual epoch60 terminal factor .01, held constant for epochs61-120. No warmup, reset, retiming of old epochs, or LR tuning.",
+  "adam_layer_peak_rates": [
+    0.001,
+    0.001,
+    0.001
+  ],
+  "sgdm_magnitude_layer_peak_rates": [
+    0.04,
+    0.2,
+    0.8
+  ],
+  "momentum": 0.9,
+  "adam_betas": [
+    0.9,
+    0.999
+  ],
+  "epsilon": 1e-08,
+  "decay": "Unchanged frozen kernel; (1-1e-5*factor)^(actual_batch_size/256), common across arms.",
+  "graft": "Preserve Adam direction, moments, bias correction and bias updates; replace only matrix Frobenius magnitude by SGDM magnitude on its own gradient history. SGDM history equals exp_avg/(1-beta1) from original trajectory; moments are restored, never zeroed.",
+  "initialization": "Resume each exact original epoch60 model, optimizer and torch RNG checkpoint. No reinitialization; retain original initial hashes.",
+  "minibatches": "Unchanged SeedSequence([seed,epoch,711]) permutation for absolute epochs61-120; 55000 training examples each epoch, no drop_last, no augmentation.",
+  "validation_frequency_epochs": 1,
+  "weightwatcher_frequency_epochs": 5,
+  "test_evaluation": "New test evaluation only at fixed epoch120. Saved epoch20/60 test results are baselines; no intermediate test or checkpoint selection.",
+  "endpoint_rule": "All 120 specifications continue to fixed epoch120, without early stopping or alpha/loss-based selection.",
+  "quality": "Retain all outcomes. Functional validation accuracy>=80% and nonconstant predictions is a label, never a training/analysis gate. FC3 only10 eigenvalues is exploratory/unsupported.",
+  "fit_support": "Same WW0.7.7 default tail selection; supported if >=50 eigenvalues, >=20 tail eigenvalues and KS D<=.2. All fits and raw spectra retained.",
+  "preflight": "All120 epoch60 parent checkpoints: exact byte/model/optimizer/RNG and hyperparameter restoration, old epoch21-to22 replay under frozen numeric bounds, exact two-copy current-runtime replay. Nine wrong batch/momentum/LR controls and15 resumed nonzero graft matrix checks. Central three completed continuations count once within120 and gate numerical correctness only.",
+  "restoration_tolerances": {
+    "parent_logit_max_abs": 2e-05,
+    "parent_validation_loss_abs": 2e-06,
+    "parent_raw_spectrum_max_relative": 1e-10,
+    "parent_alpha_max_abs": 1e-08
+  },
+  "analysis": "Five seeds are replicates. Compare epoch60-to120 within each arm and setting; average eight settings within each seed for overall paired95%t intervals. Report optimizer contrasts and changes in effects, alpha and sub2/symmetric metrics, accuracy/CE/calibration, LR/step/sample/decay accounting. All outcomes retained; intervals undefined if required pairs missing.",
+  "previous_results_seen": true,
+  "interpretation": "Exploratory continuation after seeing prior outcomes; not fresh independent confirmation. This tests extra low-rate training within the same unaugmented trajectories. It does not isolate augmentation against the separate120epoch cohort, whose schedule and seeds differ.",
+  "maximum_training_seconds": 14400,
+  "maximum_workflow_seconds": 18000,
+  "workers": 3,
+  "no_new_datasets_or_architectures": true,
+  "gpt_on_hold": true,
+  "parent_artifacts": [
+    {
+      "seed": 31001,
+      "artifact_id": 14195083851,
+      "name": "Fashion-Retry01-Seed31001",
+      "outer_sha256": "e7ef3e4617a080752be7a925abca7b99058f93e5e61b7416394b688be4d7d9e0",
+      "inner_name": "Fashion_Extension_Seed_31001.zip"
+    },
+    {
+      "seed": 31002,
+      "artifact_id": 14195791443,
+      "name": "Fashion-Retry01-Seed31002",
+      "outer_sha256": "b1e7f2b80d410000ab5f52d74da76aa4fc57db4c6a528773550d66e1af1635aa",
+      "inner_name": "Fashion_Extension_Seed_31002.zip"
+    },
+    {
+      "seed": 31003,
+      "artifact_id": 14196100644,
+      "name": "Fashion-Retry01-Seed31003",
+      "outer_sha256": "57071cda7564635332d673afc9c61c5d09312d52d0084f92bdd0288ca0a617d4",
+      "inner_name": "Fashion_Extension_Seed_31003.zip"
+    },
+    {
+      "seed": 31004,
+      "artifact_id": 14195467307,
+      "name": "Fashion-Retry01-Seed31004",
+      "outer_sha256": "887b8455dcd7e39124137c877417d1e34e42187fb7ecacbe4620eee80aeeaac4",
+      "inner_name": "Fashion_Extension_Seed_31004.zip"
+    },
+    {
+      "seed": 31005,
+      "artifact_id": 14195877188,
+      "name": "Fashion-Retry01-Seed31005",
+      "outer_sha256": "ecf05fa83e4b6c5e59b8fde71b4bcb526d04fbd4d02c6a2b0e946cb6d3903864",
+      "inner_name": "Fashion_Extension_Seed_31005.zip"
+    }
+  ],
+  "authorization": "Charles explicitly asked to resume the unaugmented epoch60 experiments to120 and account for learning rate and update counts. Subsequent clarification requested an epoch60 comparison; that descriptive comparison is retained and discloses the schedule mismatch.",
+  "cross_runtime_replay": {
+    "loss_absolute_tolerance": 1e-06,
+    "statistics_relative_tolerance": 1e-05,
+    "statistics_absolute_tolerance": 1e-07,
+    "nan_pattern_exact": true,
+    "current_runtime_two_copy_replay": "Exact loss, statistics, full model and optimizer state required.",
+    "negative_controls": [
+      "wrong minibatch",
+      "zeroed moment history",
+      "10% wrong learning-rate factor"
+    ],
+    "interpretation": "Cross-runtime saved loss/statistics are compared within these predeclared float32 limits; exact-match flags and both values are retained. Byte hashes, restored model/optimizer/RNG state and within-runtime replay remain exact. No tolerance adjustment during this retry.",
+    "rationale": "Preserve the previous verified tolerance bounds; no tolerance relaxation. Exact same-runtime replay remains mandatory."
+  },
+  "parent_launch_commit": "53cb943b8bc9baff904deb5d43c3554394eda7e9",
+  "helper_folder": "experiments/adamw_modified/2026-11-15_fashion_mnist_mlp_experiment02/follow_up/2026-11-15_clean_fixed_endpoint",
+  "helper_runner_sha256": "bee1201d6715ab271a50c4efdc986113477862f9d62061344c6c381eb62c09e5",
+  "helper_protocol_sha256": "e06fd5bd57681b9090baf0e04831b47b13de5acf44be442c816530116d6f2a20",
+  "augmentation": false,
+  "step_accounting": {
+    "train_examples": 55000,
+    "epochs": [
+      20,
+      60,
+      120
+    ],
+    "steps_per_epoch": {
+      "128": 430,
+      "256": 215,
+      "512": 108
+    },
+    "definitions": "Record actual updates, examples, per-layer LR, sum LR, sum squared LR, and common explicit-decay product. Cumulative LR is descriptive, not a substitute for state-dependent effective optimizer steps."
+  }
+}

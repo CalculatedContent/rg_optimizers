@@ -1,0 +1,30 @@
+{
+  "original_sha256": "b2d6b7b3b6ffb71c55100c4b38db67a47def3324c5fd87b2a76df93988d264ed",
+  "augmented_sha256": "2274b47dddd0e3dac6fa9aceb283c4ca692d30457e246bf6f129608180d6b85b",
+  "same_epoch": 60,
+  "same_updates": 12900,
+  "same_training_examples": 3300000,
+  "different_seeds": true,
+  "different_schedules": true,
+  "different_augmentation": true,
+  "paired_comparison": false,
+  "new_test_evaluation": false,
+  "original_adam_lr": 1e-05,
+  "augmented_adam_lr": 0.000580709086014102,
+  "original_sum_adam_lr": 2.785325,
+  "augmented_sum_adam_lr": 10.63679557941914,
+  "cohort_means": {
+    "newer_augmented": {
+      "validation_accuracy": 91.06,
+      "validation_ce": 0.25051875732421874,
+      "alpha_fc1": 1.7849235467416782,
+      "alpha_fc2": 2.042305726415809
+    },
+    "original_unaugmented": {
+      "validation_accuracy": 90.45599999999999,
+      "validation_ce": 0.2825126202392578,
+      "alpha_fc1": 1.7138195395920761,
+      "alpha_fc2": 1.9251096523707805
+    }
+  }
+}

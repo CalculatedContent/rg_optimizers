@@ -1,0 +1,118 @@
+name: Fashion unaugmented epoch60-to120 continuation
+on:
+  push:
+    branches: [main]
+    paths: [experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/Launch_Request.json]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: fashion-noaug120-20261116
+  cancel-in-progress: false
+jobs:
+  continuation:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      EXP: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Verify frozen sources and continuation schedule
+        run: |
+          cd "$EXP"
+          sha256sum -c Source_SHA256.txt
+          python verify_setup.py
+      - name: Restore exact completed epoch60 checkpoints
+        timeout-minutes: 15
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -u "$EXP/restore.py"
+      - name: Install pinned numerical packages
+        timeout-minutes: 15
+        run: |
+          pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy==2.3.5 scipy==1.17.0 pandas==2.2.3 matplotlib==3.10.8 weightwatcher==0.7.7 powerlaw==1.5 mpmath==1.3.0
+      - name: Audit all120 restored states and numerical controls
+        timeout-minutes: 20
+        run: |
+          set -o pipefail
+          python -u "$EXP/run.py" --preflight-only 2>&1 | tee "$EXP/preflight.log"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Preflight
+          path: |
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/*.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/preflight.log
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/restoration
+          retention-days: 90
+      - name: Continue the same120 models to fixed epoch120
+        timeout-minutes: 245
+        run: |
+          set -o pipefail
+          python -u "$EXP/run.py" --continue 2>&1 | tee "$EXP/training.log"
+      - name: Analyze every outcome and paired epoch60-to120 changes
+        if: always()
+        timeout-minutes: 10
+        run: python -u "$EXP/report.py"
+      - name: Preserve all complete or partial states
+        if: always()
+        timeout-minutes: 10
+        run: python -u "$EXP/archive.py"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Seed31001
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/archives/Fashion_NoAug120_Seed_31001.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Seed31002
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/archives/Fashion_NoAug120_Seed_31002.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Seed31003
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/archives/Fashion_NoAug120_Seed_31003.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Seed31004
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/archives/Fashion_NoAug120_Seed_31004.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Seed31005
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/archives/Fashion_NoAug120_Seed_31005.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-NoAug120-Audit
+          path: |
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/*.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/*.log
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/results
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/plots
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_epoch120_noaug/RESULTS.md
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish only new experiment results from a clean checkout
+        if: always()
+        run: python -u "$EXP/publish.py"

@@ -1,0 +1,12 @@
+{
+  "authorized": true,
+  "experiment": "same120_unaugmented_epoch60_to120",
+  "parent_run_id": 43793781330,
+  "fixed_endpoint": 120,
+  "no_augmentation": true,
+  "learning_rate": "hold actual epoch60 factor0.01; no warmup restart",
+  "budget_training_seconds": 14400,
+  "budget_workflow_seconds": 18000,
+  "no_automatic_rerun": true,
+  "gpt_on_hold": true
+}
