@@ -1,0 +1,19 @@
+{
+  "files": {
+    "Launch_Request.json": "904ffd769375ae748c164f31fe11ff49114a32095e4a733fb5860fa946d61d22",
+    "Protocol.json": "943696071145ff4b17806a0716829f234b8b034c3af362a2b652097cc9051262",
+    "README.md": "da08ed7c81543f3c1c4c5bb198dbeccb9f86ae2f412a92e6975aa70fbf47849f",
+    "archive.py": "61a91b727021d70819016b31fea2307a04d7bc8cc2fb2ad86b59288f9531e674",
+    "report.py": "5215fc01b3e670db969f1d8bd903731b46c874260c9c8cf6a739e76d37ad2b8b",
+    "restore.py": "379cf99c214d269d8eb0c1b43b599e73b7058fd1cc828fff89eed92147d787b4",
+    "run.py": "04a90b58dcd3bfd24cb4ecfd5571adb2c43e7a56b0fc09564b032d5d362ef3c6",
+    "verification/Full_Local_Verification.json": "1091771e2e5a94cffcbe2991c03fbb63de2dcea36f975fac4a031682f37aa27c",
+    "verification/Local_Hyperparameter_Audit.json": "89a7649a8488b8d2bd1d0ab03b03281ba28e88a437fbc1f565f2eff81cbfa051",
+    "verification/Local_Replay_Negative_Controls.json": "ffeeec37471715361390625aa29990962be6b8fa7ec55283ed18785e3bb4d4cf",
+    "verification/Retry_Local_Verification.json": "7e5c5c173c12cba7356222bc9bc28999d97f9f546a76dcbe2b1f6cd99f5de6c0",
+    "verify_setup.py": "db3469d5b2fc96982075abfda5d41adde0c77baf9ec08777eb1ee2050824f5e8"
+  },
+  "workflow_sha256": "2f603afbe6aed3f70be3d6c4941d10b98bc7a6aa1ac0a2f335c034c6322a0ac8",
+  "training_function_ast_identical_to_failed_attempt": true,
+  "frozen_kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8"
+}
