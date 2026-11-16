@@ -1,0 +1,20 @@
+{
+  "run_id": 43793781330,
+  "launch_commit": "53cb943b8bc9baff904deb5d43c3554394eda7e9",
+  "artifact_id": 14193780637,
+  "artifact_sha256": "cfd6cb9471ed52861f338d7fb2e1b7e11874313fdf71ca4fbdefedf558071738",
+  "preflight_passed": true,
+  "parent_models_verified": 120,
+  "saved_hyperparameters_verified": 120,
+  "exact_historical_loss_and_statistics_replay": 0,
+  "exact_current_runtime_replay": 120,
+  "maximum_historical_loss_absolute_error": 1.1920928955078125e-7,
+  "maximum_statistics_fraction_of_allowed_error": 0.01999414907216871,
+  "deliberately_incorrect_controls_rejected": 9,
+  "resumed_nonzero_graft_matrix_checks": 15,
+  "parent_validation_sha256": "357ea0bae6f05dd7f135095ac5484e88b6244de7a54f290bad74116239f05320",
+  "interpretation": "Small measured cross-runtime differences are consistent with float32 rounding; exact original-failure cause was not logged. No hyperparameter discrepancy found. This preflight does not establish improved model performance or alpha alignment.",
+  "training_status_at_inspection": "Workflow continuation training step in progress; final results pending.",
+  "library_file_id": "libfile_fde3_f-89b0c551d0c08191b5942e8a40e9fe04_3360a23133288191af30e7bb737808b0",
+  "library_url": "https://chatgpt.com/library?file_id=libfile_fde3_f-89b0c551d0c08191b5942e8a40e9fe04_3360a23133288191af30e7bb737808b0&account_id=personal"
+}
