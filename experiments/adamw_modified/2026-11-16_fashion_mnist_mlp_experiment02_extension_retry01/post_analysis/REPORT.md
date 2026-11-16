@@ -85,3 +85,7 @@ The saved h−1 quantity is a **tail-shape proxy** defined by a fixed-rank mean 
 All intervals use five seeds, not40models as independent replicates. They are exploratory, unadjusted for multiple comparisons, and based on a reused test set. FC3 power-law alpha is unsupported due to10eigenvalues; its Frobenius norm is nevertheless directly measurable.
 
 Reproduction: run `analyze.py --artifacts <directory containing the preserved seed archive folders and audit folder> --output results`, then `report.py`. [Checks](results/Post_Analysis_Checks.json) · [All numerical outputs](results/) · [Original verified report](../FINAL_VERIFIED_REPORT.md).
+
+## Follow-up: importance-weighted spectral rescue
+
+Charles clarified that improvement in layers far from2 should contribute more than small changes near2. The separately labeled [baseline-weighted analysis](weighted_alignment/REPORT.md) uses native AdamW distance as a fixed weight across treatments. It finds weighted FC1 improvement for graft, FC2 worsening and an unresolved combined effect; SGDM improves the combined score. This exploratory addition preserves the original metrics and all outcomes.
