@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "controlled_spectra": 100,
+  "maximum_formula_or_scale_error": 4.973799150320701e-14,
+  "method": "native WWFit.fit_powerlaw_smallN(k_min=8,lambda_prior=0), invoked directly to preserve its J-selected xmin",
+  "formula": "1+(n_tail-1)/sum(log(lambda/xmin))",
+  "alpha_two_prior": false,
+  "native_constructor_differences": 49,
+  "source_sha256": "5d36c6aab9cdf41b4432d395c50eba34cce57e0b0cc0f83d20284f8679a5e43e",
+  "constructor_note": "In pinned 0.7.7 constructor, argmin(Ds) overwrites the small-N method J selection; save both estimates, never alter historical fits.",
+  "uncertainty": "Ten eigenvalues remain a small, correlated sample; the formula correction does not establish an accurate population exponent."
+}

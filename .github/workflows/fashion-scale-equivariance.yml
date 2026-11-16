@@ -1,0 +1,94 @@
+name: Fashion scale-audited magnitude graft
+on:
+  push:
+    branches: [main]
+    paths: [experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/Launch_Request.json]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: fashion-scale-equivariance-20261116
+  cancel-in-progress: false
+jobs:
+  experiment:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      EXP: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Verify frozen source
+        run: |
+          cd "$EXP"
+          sha256sum -c Source_SHA256.txt
+      - name: Install pinned numerical packages
+        timeout-minutes: 15
+        run: |
+          pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy==2.3.5 scipy==1.17.0 pandas==2.2.3 matplotlib==3.10.8 weightwatcher==0.7.7 powerlaw==1.5 mpmath==1.3.0
+      - name: Verify scale covariance, FC3 estimator and exact replay
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          python -u "$EXP/run.py" --smoke 2>&1 | tee "$EXP/preflight.log"
+          python -u "$EXP/verify_setup.py" 2>&1 | tee -a "$EXP/preflight.log"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Fashion-Scale-Preflight
+          retention-days: 90
+          path: |
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/*Audit.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/Optimizer_Contract.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/Replay_Negative_Controls.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/preflight.log
+      - name: Run three pilots then fifteen matched fixed endpoints
+        timeout-minutes: 245
+        run: |
+          set -o pipefail
+          python -u "$EXP/run.py" 2>&1 | tee "$EXP/training.log"
+      - name: Analyze every outcome
+        if: always()
+        timeout-minutes: 10
+        run: python -u "$EXP/report.py"
+      - name: Preserve all model states
+        if: always()
+        timeout-minutes: 10
+        run: python -u "$EXP/archive.py"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-Scale-Checkpoints
+          retention-days: 90
+          if-no-files-found: warn
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/archives
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-Scale-Audit
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/*.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/*.log
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/results
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/plots
+            experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/follow_up/2026-11-16_scale_equivariance/RESULTS.md
+      - name: Publish only this new report
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for path in "$EXP/results" "$EXP/plots" "$EXP/RESULTS.md"; do
+            if [ -e "$path" ]; then git add "$path"; fi
+          done
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Report scale-audited Fashion graft experiment with all outcomes'
+          git pull --rebase origin main
+          git push origin HEAD:main

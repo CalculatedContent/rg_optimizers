@@ -1,0 +1,15 @@
+{
+  "source_sha256": {
+    "run.py": "477e6e6b9a3bad95b61ccd9a7af5d153f3966a91c15eeaebdf6410a05ceeffdd",
+    "audit.py": "afceaaa98afeef08861b6ce18c6e78603d12bb4fd1fdc1069aa8af597d487bf8",
+    "verify_setup.py": "19de04a8befc205f4cd644c43aac172a3cdbafe7cdbe5a3134e4b210d00830c8",
+    "report.py": "04880bee476b5d1a43e6c038433bbd92c5860f63aace6fa79567b0878a7069b6",
+    "archive.py": "44609b7b422180cc15b38a417e15c25fcee7a6531172048055cfc4a5f9259bea",
+    "Protocol.json": "f507f5b5d91922e8c68b779911929da89a91f4017c296e43172d5308cf1ea130",
+    "SCALE_DERIVATION.md": "61b5287165a86d820ba4548aa53c637c396cfe9d331b637b96b47f8914564599",
+    "LITERATURE.md": "3850316f6ff0620acec86d074056ddd648216549e6125c965306ff10f3c7e674"
+  },
+  "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "workflow_sha256": "7369b66b1b2d676c57d1226015e286e818371ce493b5081fc794ba92ec078b55",
+  "training_source_frozen_at_launch": true
+}

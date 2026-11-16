@@ -1,0 +1,157 @@
+{
+  "passed": true,
+  "scope": "optimizer coordinate covariance under explicitly transformed states/rates/epsilon; not proof of loss invariance or RG trace-log",
+  "transformation": {
+    "weights": "c W",
+    "gradient": "g/c",
+    "momentum": "m/c",
+    "second_moment": "v/c^2",
+    "epsilon": "eps/c",
+    "sgdm_target_rate": "c^2 eta_s",
+    "adam_bias_rate": "c eta_b",
+    "decay": "same multiplicative factor"
+  },
+  "nonzero_state_checks": 12,
+  "records": [
+    {
+      "arm": "adamw",
+      "scale": 0.25,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "adamw",
+      "scale": 0.5,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "adamw",
+      "scale": 2.0,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "adamw",
+      "scale": 4.0,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "scale": 0.25,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "scale": 0.5,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "scale": 2.0,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "scale": 4.0,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "sgdm",
+      "scale": 0.25,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "sgdm",
+      "scale": 0.5,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "sgdm",
+      "scale": 2.0,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    },
+    {
+      "arm": "sgdm",
+      "scale": 4.0,
+      "matrix_relative_errors": {
+        "fc1": 0.0,
+        "fc2": 0.0,
+        "fc3": 0.0
+      },
+      "bias_relative_error": 0.0,
+      "passed": true
+    }
+  ],
+  "negative_controls": {
+    "fixed_epsilon_direction_error": 0.13315292085384467,
+    "correct_epsilon_direction_error": 0.0,
+    "adam_under_sgdm_rate_law_relative_error": 3.0,
+    "graft_native_bias_under_sgdm_rate_law_relative_error": 3.0,
+    "meaning": "Graft matrix target follows eta_s -> c^2 eta_s; its untouched Adam bias requires eta_b -> c eta_b. A single common c^2 rate law is NOT a full-optimizer symmetry."
+  },
+  "all_parameters_sgdm_scaling_claim": false
+}

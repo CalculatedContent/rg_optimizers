@@ -1,0 +1,159 @@
+{
+  "dataset": "Fashion-MNIST",
+  "architecture": [
+    784,
+    256,
+    256,
+    10
+  ],
+  "fixed_epochs": 120,
+  "warmup_epochs": 5,
+  "cosine_floor": 0.1,
+  "seeds": [
+    32001,
+    32002,
+    32003,
+    32004,
+    32005
+  ],
+  "pilot_seed": 32999,
+  "smoke_seed": 32998,
+  "kernel_sha256": "1bfd7032e00ad87d729670197925fb40e19bc802a8eb716db2571e56b538d3d8",
+  "augmentation": {
+    "method": "zero_padded_translation",
+    "maximum_pixels": 2,
+    "probability": 0.5,
+    "seed_rule": [
+      "seed",
+      "epoch",
+      "batch_index",
+      991
+    ],
+    "shared_across_arms": true
+  },
+  "test_access": "fixed final only; historical test exposure disclosed",
+  "primary_spectral": "per-layer alpha and mean sub2 deficit; FC3 uses native small-N estimator with support reported",
+  "secondary_spectral": "symmetric distance, native-AdamW baseline-severity weighted rescue; two-hidden and all-three reported separately",
+  "performance": [
+    "test_accuracy",
+    "test_cross_entropy",
+    "ECE15",
+    "Brier"
+  ],
+  "independent_replicates": 5,
+  "selection": "no early stopping, no alpha/test/validation endpoint selection",
+  "rates": {
+    "adam": 0.001,
+    "sgdm_target": [
+      0.04,
+      0.2,
+      0.8
+    ],
+    "momentum": 0.9
+  },
+  "training_cap_seconds": 14400,
+  "workflow_cap_seconds": 18000,
+  "workers": 3,
+  "specifications": [
+    {
+      "seed": 32001,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "adamw"
+    },
+    {
+      "seed": 32001,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 32001,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 32002,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "adamw"
+    },
+    {
+      "seed": 32002,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 32002,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 32003,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "adamw"
+    },
+    {
+      "seed": 32003,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 32003,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 32004,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "adamw"
+    },
+    {
+      "seed": 32004,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 32004,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "sgdm"
+    },
+    {
+      "seed": 32005,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "adamw"
+    },
+    {
+      "seed": 32005,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "magnitude_graft"
+    },
+    {
+      "seed": 32005,
+      "batch_size": 256,
+      "multiplier": 1.0,
+      "arm": "sgdm"
+    }
+  ],
+  "fc3_estimator": {
+    "package": "weightwatcher==0.7.7",
+    "method": "WWFit.fit_powerlaw_smallN called directly; J selection preserved",
+    "k_min": 8,
+    "lambda_prior": 0.0,
+    "native_constructor_alpha_also_saved": true,
+    "source_sha256": "5d36c6aab9cdf41b4432d395c50eba34cce57e0b0cc0f83d20284f8679a5e43e",
+    "uncertainty": "10 correlated eigenvalues; correction is not proof of accurate tail exponent"
+  },
+  "scale_claim": "Matrix target follows SGDM eta -> c^2 eta conditional on g -> g/c and eps -> eps/c. Retained Adam biases require eta_b -> c eta_b. Full MLP loss invariance and RG trace-log are not established."
+}

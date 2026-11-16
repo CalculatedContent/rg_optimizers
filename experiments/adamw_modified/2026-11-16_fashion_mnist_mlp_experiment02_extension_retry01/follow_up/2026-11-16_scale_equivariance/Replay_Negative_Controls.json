@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "rejected": 9,
+  "records": [
+    {
+      "arm": "adamw",
+      "perturbation": "wrong_batch",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "adamw",
+      "perturbation": "zero_moments",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "adamw",
+      "perturbation": "wrong_lr",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "perturbation": "wrong_batch",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "perturbation": "zero_moments",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "magnitude_graft",
+      "perturbation": "wrong_lr",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "sgdm",
+      "perturbation": "wrong_batch",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "sgdm",
+      "perturbation": "zero_moments",
+      "correctly_rejected": true
+    },
+    {
+      "arm": "sgdm",
+      "perturbation": "wrong_lr",
+      "correctly_rejected": true
+    }
+  ],
+  "augmentation_pairing": true,
+  "augmentation_range_and_no_wrap": true
+}

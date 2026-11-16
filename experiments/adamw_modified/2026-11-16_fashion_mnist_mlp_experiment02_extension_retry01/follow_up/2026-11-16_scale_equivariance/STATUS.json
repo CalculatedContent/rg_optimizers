@@ -1,0 +1,10 @@
+{
+  "stage": "ready_for_launch",
+  "training_started": false,
+  "planned_pilot": 3,
+  "planned_confirmatory": 15,
+  "completed_confirmatory": 0,
+  "local_development_smoke_passed": true,
+  "scope": "conditional matrix scale covariance, not full RG or loss invariance",
+  "all_layer_alpha": true
+}
