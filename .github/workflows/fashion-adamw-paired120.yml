@@ -1,0 +1,92 @@
+name: Fashion native AdamW paired120 paired test
+on:
+  push:
+    branches: [main]
+    paths: [experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/Launch_Request.json]
+permissions:
+  contents: write
+  actions: read
+# Same repository-wide group: wait for the authorized continuation, never cancel it.
+concurrency:
+  group: fashion-noaug120-20261116
+  cancel-in-progress: false
+jobs:
+  paired_training:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      EXP: experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Verify the frozen four-run design and sources
+        run: |
+          cd "$EXP"
+          sha256sum -c Source_SHA256.txt
+          python verify_setup.py
+      - name: Install pinned numerical packages
+        timeout-minutes: 15
+        run: |
+          pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy==2.3.5 scipy==1.17.0 pandas==2.2.3 matplotlib==3.10.8 weightwatcher==0.7.7 powerlaw==1.5 mpmath==1.3.0
+      - name: Verify native AdamW, pairing, augmentation and checkpoint replay
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          python -u "$EXP/run.py" --preflight-only 2>&1 | tee "$EXP/preflight.log"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-AdamW-Paired120-Preflight
+          path: |
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/*.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/preflight.log
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/smoke
+          retention-days: 90
+      - name: Train four fixed120-epoch native AdamW trajectories
+        timeout-minutes: 245
+        run: |
+          set -o pipefail
+          python -u "$EXP/run.py" --continue 2>&1 | tee "$EXP/training.log"
+      - name: Analyze every available outcome without endpoint selection
+        if: always()
+        timeout-minutes: 10
+        run: python -u "$EXP/report.py"
+      - name: Preserve all completed and partial states
+        if: always()
+        timeout-minutes: 10
+        run: python -u "$EXP/archive.py"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-AdamW-Paired120-Seed33001
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/archives/Fashion_AdamW_Paired120_Seed_33001.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-AdamW-Paired120-Seed33002
+          path: experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/archives/Fashion_AdamW_Paired120_Seed_33002.zip*
+          retention-days: 90
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Fashion-AdamW-Paired120-Audit
+          path: |
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/*.json
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/*.log
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/results
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/plots
+            experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/RESULTS.md
+          retention-days: 90
+      - name: Publish only this experiment from a fresh main-head lease
+        if: always()
+        run: python -u "$EXP/publish.py"
