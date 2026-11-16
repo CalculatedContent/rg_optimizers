@@ -45,3 +45,9 @@
 Charles corrected the new test to120epochs total and requested all epoch data and plots. Frozen new folder: `2026-11-16_fashion_mnist_adamw_paired120`. Four fresh trajectories, two paired seeds33001/33002 × augmentation off/on, B256, original784→256→256→10ReLU, native AdamW. Common5epoch warmup/cosine0.001→0.0001 by120;25800updates. No graft, tuning, selection or extension. Save121checkpoints per trajectory, every-epoch full train/validation/spectra; every-minibatch update statistics; evaluate121test checkpoints after training. Test was previously seen. FC3ten eigenvalues remains exploratory.
 
 Local source/schedule checks and synthetic postprocessing checks passed (484epoch records,242paired contrasts, failures retained, missing-statistics control rejected). These are setup checks; remote native-optimizer/replay verification is pending. New workflow shares the active continuation's concurrency group and cannot overlap its training. Existing runs and GPT status are unchanged. Source freezes at this launch.
+
+## 2026-11-16 — User-directed switch to paired120
+
+Charles explicitly requested stopping the active continuation and running the queued nativeAdamW paired120 test. Control job43866398182 cancelled ONLY43861743291 (HTTP202); cancellation completed12:26:33UTC. Its analysis, archives, five seed uploads, audit and results publication all succeeded.49/120 endpoints completed; preserve this partial/superseded pass and do not restart it. Exact artifact IDs/digests are recorded in both folders' verification stop/switch receipts.
+
+Existing paired120 run43864280628 entered in_progress at12:26:37UTC; no duplicate training was launched. Its source, two paired seeds, augmentation conditions, fixed120endpoint and every-epoch recording remain frozen. The old monitor is paused; paired120 hourly monitoring remains enabled.

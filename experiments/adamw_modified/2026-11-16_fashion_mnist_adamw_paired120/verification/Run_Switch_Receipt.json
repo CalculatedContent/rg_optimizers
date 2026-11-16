@@ -1,0 +1,98 @@
+{
+  "user_requested_switch": true,
+  "old_run": 43861743291,
+  "new_run": 43864280628,
+  "no_training_launched": true,
+  "old_before": {
+    "status": "in_progress",
+    "conclusion": null,
+    "updated_at": "2026-11-16T11:53:59Z"
+  },
+  "new_before": {
+    "status": "pending",
+    "conclusion": null,
+    "updated_at": "2026-11-16T12:11:18Z"
+  },
+  "cancel_http_status": 202,
+  "cancel_result": {},
+  "old_after": {
+    "status": "completed",
+    "conclusion": "cancelled",
+    "updated_at": "2026-11-16T12:26:33Z"
+  },
+  "new_after": {
+    "status": "in_progress",
+    "conclusion": null,
+    "updated_at": "2026-11-16T12:26:37Z"
+  },
+  "observed_epoch_seconds": 1794832011.650236,
+  "old_completed_endpoints": 49,
+  "old_planned_endpoints": 120,
+  "old_preservation_steps_succeeded": true,
+  "old_results_publish_commit": "30918a2bf354276512324f878abcb393a0944481",
+  "artifact_receipts": [
+    {
+      "id": 14226490740,
+      "name": "Fashion-NoAug120-Seed31001",
+      "size_in_bytes": 342359583,
+      "digest": "sha256:16d606703b0b10a68647233ed30b2bf9d10c0d81c2bb0a727aeea31ce9c2056f",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    },
+    {
+      "id": 14226465739,
+      "name": "Fashion-NoAug120-Seed31004",
+      "size_in_bytes": 206987,
+      "digest": "sha256:02decc155364dffb7eece873d3cc8f33648508b61e643af547a5a6b81c36e27f",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    },
+    {
+      "id": 14226305998,
+      "name": "Fashion-NoAug120-Audit",
+      "size_in_bytes": 662632,
+      "digest": "sha256:50270757c467698f457ce82f7d9e59a7223cef9806aae331114d688c49da7b7c",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    },
+    {
+      "id": 14225272469,
+      "name": "Fashion-NoAug120-Seed31005",
+      "size_in_bytes": 206877,
+      "digest": "sha256:13e7f121a6e3c26e918c5be2c4676628165ad16eed977c7a7152c7bf143306cb",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    },
+    {
+      "id": 14225267601,
+      "name": "Fashion-NoAug120-Seed31002",
+      "size_in_bytes": 342356558,
+      "digest": "sha256:93fe697c4e6560206c8e52a61de8fab9b6982c31ddd55b5929bfbf046abbdc6f",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    },
+    {
+      "id": 14225087647,
+      "name": "Fashion-NoAug120-Seed31003",
+      "size_in_bytes": 46467908,
+      "digest": "sha256:233c07b9e512861b3db0964f225206d497b340c11884aec13fcdc3f792a01fa7",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    },
+    {
+      "id": 14224885067,
+      "name": "Fashion-NoAug120-Preflight",
+      "size_in_bytes": 879163,
+      "digest": "sha256:be3d4f15de11daa7a333304729baa31e2c4e77e50ebf630d1c59c25989893b35",
+      "expired": false,
+      "expires_at": "2027-02-14T11:53:55Z"
+    }
+  ],
+  "switch_control_run": 43866398182,
+  "switch_receipt_artifact_id": 14226296132,
+  "switch_receipt_sha256": "d702a738f7ee25ce4ee804f8ba45f2a2b93e1f6cd75a93b74ceef753fadea24d",
+  "old_monitor_paused": true,
+  "new_monitor_enabled": true,
+  "new_stage_at_last_check": "installing pinned numerical packages; numerical preflight pending",
+  "training_sources_unchanged": true
+}

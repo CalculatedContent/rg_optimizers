@@ -1,5 +1,7 @@
 # Fashion-MNIST fixed continuation: epoch 60 → 120
 
+> **Cancelled at Charles’s request on 16 November 2026.** Training stopped with49/120 fixed endpoints completed. The partial results, unfinished states and all five available seed archives were preserved; this is not a completed120-run pass. The separately authorized nativeAdamW paired120 experiment43864280628 has started. No restart of this continuation is authorized.
+
 Completed: 49/120. Full verification passed: **False**.
 
 Same120 unaugmented trajectories, restored from their exact epoch60 model/optimizer/RNG checkpoints. The continuation holds the actual terminal LR at1% of the original peak for epochs61-120. No warmup restart, augmentation, new seeds or retuning. Every endpoint is fixed before continuation. All outcomes and unsupported fits remain; FC3 is exploratory with10 eigenvalues.

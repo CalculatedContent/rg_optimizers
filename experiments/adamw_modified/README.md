@@ -62,3 +62,5 @@ Continuation status: [run43861743291](https://github.com/CalculatedContent/rg_op
 ### Native AdamW paired120 diagnostic — queued after the active continuation
 
 [Protocol and code](2026-11-16_fashion_mnist_adamw_paired120/README.md): two paired seeds33001/33002 × augmentation off/on; native AdamW only, fixed120epochs, identical LR/update count, every-epoch spectra/checkpoints/train-validation-test curves. The user's latest correction supersedes the unlaunched1000-epoch draft. Shared concurrency queues this pass after run43861743291; no historical experiment is changed. Two seeds are exploratory. All outcomes are retained.
+
+**User-directed priority update,16Nov2026:** the unaugmented continuation43861743291 was cancelled with49/120 endpoints retained. Its partial results and all available states are preserved. [NativeAdamW paired120 run43864280628](https://github.com/CalculatedContent/rg_optimizers/actions/runs/43864280628) has started; its frozen protocol records all epochs0–120. See each folder's verification receipt. No continuation restart is authorized.
