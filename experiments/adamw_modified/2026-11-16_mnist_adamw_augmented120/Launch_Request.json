@@ -1,0 +1,11 @@
+{
+  "user_request": "Repeat the augmented nativeAdamW experiment on OCR/digitMNIST; track all epochs and whether the sub2 tendency fades",
+  "planned_runs": 2,
+  "seeds": [
+    33001,
+    33002
+  ],
+  "augmentation": true,
+  "fixed_epochs": 120,
+  "do_not_duplicate": true
+}

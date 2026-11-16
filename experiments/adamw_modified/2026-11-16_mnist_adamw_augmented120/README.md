@@ -1,0 +1,17 @@
+# Augmented digit MNIST: native AdamW through epoch 120
+
+Charles requested a replication of the augmented Fashion-MNIST AdamW trajectory on OCR/digit MNIST, to see whether the early sub-2 spectral tendency fades with continued training.
+
+Two independent seeds (33001, 33002), native AdamW only, augmentation ON only. MLP 784→256→256→10 with ReLU, batch 256, original 55,000/5,000/10,000 split and pixels/255. The original MNIST image/label hashes and original training kernel are verified before any updates. The split file is reused from its existing repository location and verified against the original MNIST split hash; Fashion images are never loaded.
+
+The optimizer, schedule, initialization rule, minibatch order, augmentation and recording match the Fashion augmented arm. Peak LR 0.001 after five warmup epochs; cosine decay to 0.0001 at epoch 120. Training-only translations by at most two pixels, with probability 0.5 and zero padding. The historical sample-normalized explicit AdamW decay is retained. No graft, optimizer replacement, tuning, early stopping, or best-checkpoint selection.
+
+Every epoch 0–120 saves model, Adam moments, RNG state, raw spectra, WeightWatcher estimates and fit support, full train/validation metrics and validation logits. Every training minibatch saves loss and gradient/momentum/update statistics. After a trajectory finishes all 120 epochs, every saved checkpoint is evaluated on test data and its logits saved; these metrics never feed training. Each seed has exactly 25,800 updates. Full curves, calibration, norms, learning-rate exposure and within-run changes at 20→60, 60→120 and 20→120 are reported.
+
+An excluded two-epoch augmented smoke run (seed 33998) must pass exact checkpoint replay, deliberately wrong-state/input/rate controls, deterministic augmentation, source/data checks and throughput checks. An independent native AdamW implementation checks 30 nonzero parameter updates including moments and biases. Final trajectories require exact replay at 1→2, 60→61 and 119→120, restored validation/spectra and all checkpoint hashes. The primary test has no accuracy or alpha gate. Validation accuracy below 90% is labeled as a functional failure and retained, never removed from the analysis.
+
+Two seeds support an exploratory replication, not a significance claim. Report both individual trajectories and their mean/range. Increasing alpha, clearing a sub-2 deficit and becoming closer to 2 are separate outcomes. FC3 has only ten correlated eigenvalues: its default and direct small-N estimates are exploratory. Training time and LR annealing co-vary. This test cannot establish that AdamW's implicit bias vanishes asymptotically.
+
+The automatic workflow is limited to these two 120-epoch runs, two workers, four hours including preflight, and five hours total. Numerical failure stops expansion. All available failed/partial states are archived. Results and plots are committed only under this folder using a fresh main-head lease; historical MNIST and Fashion results remain unchanged. Checkpoint artifacts are retained for 90 days and will be backed up durably by the monitor.
+
+Sources: `Protocol.json`, `Data_Provenance.json`, `Source_Manifest.json`, `Source_SHA256.txt`, `run.py`, `schedule.py`, `report.py`, `verify_setup.py`, `verify_postprocessing.py`, `archive.py`, `publish.py`. Synthetic reporting fixtures are isolated and never included as experimental data.

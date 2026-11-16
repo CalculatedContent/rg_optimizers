@@ -64,3 +64,9 @@ Continuation status: [run43861743291](https://github.com/CalculatedContent/rg_op
 [Protocol and code](2026-11-16_fashion_mnist_adamw_paired120/README.md): two paired seeds33001/33002 × augmentation off/on; native AdamW only, fixed120epochs, identical LR/update count, every-epoch spectra/checkpoints/train-validation-test curves. The user's latest correction supersedes the unlaunched1000-epoch draft. Shared concurrency queues this pass after run43861743291; no historical experiment is changed. Two seeds are exploratory. All outcomes are retained.
 
 **User-directed priority update,16Nov2026:** the unaugmented continuation43861743291 was cancelled with49/120 endpoints retained. Its partial results and all available states are preserved. [NativeAdamW paired120 run43864280628](https://github.com/CalculatedContent/rg_optimizers/actions/runs/43864280628) has started; its frozen protocol records all epochs0–120. See each folder's verification receipt. No continuation restart is authorized.
+
+### Native AdamW augmented digit-MNIST replication (16 November 2026)
+
+The Fashion native-AdamW paired120 diagnostic completed all four trajectories, with numerical verification and plots published. The sub-2 hidden-layer deficit faded by epoch120, while distance to2 and performance had different trajectories. Large checkpoint artifacts remain preserved on GitHub; additional durable backup is being handled separately.
+
+[New MNIST protocol and code](2026-11-16_mnist_adamw_augmented120/README.md): two independent seeds33001/33002, augmentation ON only, native AdamW, same MLP/B256/LR schedule as the Fashion augmented arm, fixed120epochs. Every epoch records spectra, full metrics and checkpoints; every minibatch records updates. Submitted with source/data/numerical preflight before training. No endpoint selection, tuning or automatic extension; all historical results preserved. Final results are pending.
