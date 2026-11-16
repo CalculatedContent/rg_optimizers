@@ -1,0 +1,21 @@
+{
+  "models": 120,
+  "independent_seeds": 5,
+  "sampled_epoch_layer_summaries": 14400,
+  "all_settings_retained": true,
+  "max_error_decomposition_identity_error": 2.220446049250313e-16,
+  "test_used_for_temperature_fit": false,
+  "endpoint_selection": false,
+  "neural_training": false,
+  "predicted_classes_unchanged_by_temperature": true,
+  "source_training_modified": false,
+  "plot_inspection": "Three plots inspected after rendering",
+  "limitations": [
+    "Exploratory post-hoc analysis with reused test set",
+    "Temperature fits validation only; not a new independent confirmation",
+    "Intervals unadjusted for multiple comparisons",
+    "Recorded updates are sampled, not every optimizer step",
+    "FC3 norm is meaningful although its power-law alpha fit is unsupported",
+    "No optimizer Jacobian determinant or validated RG residual measured"
+  ]
+}

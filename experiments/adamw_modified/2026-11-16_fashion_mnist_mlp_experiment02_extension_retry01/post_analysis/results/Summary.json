@@ -1,0 +1,377 @@
+{
+  "models": 120,
+  "seeds": 5,
+  "new_training": false,
+  "temperature_fit": "Minimize epoch60 validation CE over log T in [-4,4]; apply to saved test logits; no endpoint selection",
+  "calibration_predictions_unchanged": true,
+  "all_settings_retained": true,
+  "group_means": {
+    "adamw": {
+      "temperature": 1.370203889300749,
+      "test_loss": 0.33910377865012065,
+      "calibrated_test_loss": 0.30940243660498523,
+      "calibration_ce_change": -0.029701342045135422,
+      "logit_centered_rms": 8.963197510467484,
+      "wrong_mean_loss": 2.619069919382005,
+      "loss_q99": 5.346975627115791,
+      "confident_errors": 237.975,
+      "val_loss_change": 0.01065534454345703,
+      "fc1_frob_60": 27.089820597179965,
+      "fc2_frob_60": 18.422088531708017,
+      "fc3_frob_60": 6.07582240716573
+    },
+    "magnitude_graft": {
+      "temperature": 2.0857798381104216,
+      "test_loss": 0.4336200821542232,
+      "calibrated_test_loss": 0.3122445210123024,
+      "calibration_ce_change": -0.12137556114192086,
+      "logit_centered_rms": 14.820622973861811,
+      "wrong_mean_loss": 3.839359722389942,
+      "loss_q99": 8.644893815321414,
+      "confident_errors": 386.8,
+      "val_loss_change": 0.07412214637756347,
+      "fc1_frob_60": 21.347736556860585,
+      "fc2_frob_60": 24.870152732876612,
+      "fc3_frob_60": 44.27477497296487
+    },
+    "sgdm": {
+      "temperature": 1.5734349180658964,
+      "test_loss": 0.34996389553461565,
+      "calibrated_test_loss": 0.3008221738525676,
+      "calibration_ce_change": -0.04914172168204805,
+      "logit_centered_rms": 8.66617207635154,
+      "wrong_mean_loss": 2.8893662616333966,
+      "loss_q99": 6.167213575651583,
+      "confident_errors": 288.875,
+      "val_loss_change": 0.023451710128784185,
+      "fc1_frob_60": 15.825429276219026,
+      "fc2_frob_60": 19.570396432056153,
+      "fc3_frob_60": 25.328768466486387
+    }
+  },
+  "pooled_effects": [
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "temperature",
+      "mean": 0.7155759488096726,
+      "ci_low": 0.6780469389989646,
+      "ci_high": 0.7531049586203805
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "test_loss",
+      "mean": 0.09451630350410259,
+      "ci_low": 0.08849317615148448,
+      "ci_high": 0.1005394308567207
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "calibrated_test_loss",
+      "mean": 0.002842084407317147,
+      "ci_low": 0.00045502745219580835,
+      "ci_high": 0.005229141362438485
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "calibration_ce_change",
+      "mean": -0.09167421909678544,
+      "ci_low": -0.09624292692625405,
+      "ci_high": -0.08710551126731683
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "logit_centered_rms",
+      "mean": 5.857425463394325,
+      "ci_low": 5.5541903209090755,
+      "ci_high": 6.160660605879574
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "wrong_mean_loss",
+      "mean": 1.2202898030079372,
+      "ci_low": 1.1607475716972262,
+      "ci_high": 1.2798320343186482
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "loss_q99",
+      "mean": 3.2979181882056223,
+      "ci_low": 3.073544654774443,
+      "ci_high": 3.5222917216368015
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "confident_errors",
+      "mean": 148.825,
+      "ci_low": 139.97501317731852,
+      "ci_high": 157.67498682268146
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "val_loss_change",
+      "mean": 0.06346680183410644,
+      "ci_low": 0.05789411685915445,
+      "ci_high": 0.06903948680905843
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "fc1_frob_60",
+      "mean": -5.742084040319379,
+      "ci_low": -5.910374793897836,
+      "ci_high": -5.573793286740922
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "fc2_frob_60",
+      "mean": 6.448064201168597,
+      "ci_low": 6.061383298294395,
+      "ci_high": 6.834745104042799
+    },
+    {
+      "scope": "all_settings",
+      "arm": "magnitude_graft",
+      "metric": "fc3_frob_60",
+      "mean": 38.19895256579914,
+      "ci_low": 37.91920137388235,
+      "ci_high": 38.47870375771593
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "temperature",
+      "mean": 0.20323102876514745,
+      "ci_low": 0.19571691479893677,
+      "ci_high": 0.21074514273135814
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "test_loss",
+      "mean": 0.010860116884494963,
+      "ci_low": 0.005835731274740425,
+      "ci_high": 0.0158845024942495
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "calibrated_test_loss",
+      "mean": -0.008580262752417656,
+      "ci_low": -0.01216028860017282,
+      "ci_high": -0.005000236904662492
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "calibration_ce_change",
+      "mean": -0.01944037963691263,
+      "ci_low": -0.021214571113897473,
+      "ci_high": -0.01766618815992779
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "logit_centered_rms",
+      "mean": -0.29702543411594534,
+      "ci_low": -0.4112414801604102,
+      "ci_high": -0.18280938807148048
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "wrong_mean_loss",
+      "mean": 0.2702963422513916,
+      "ci_low": 0.24608298671608678,
+      "ci_high": 0.2945096977866964
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "loss_q99",
+      "mean": 0.8202379485357915,
+      "ci_low": 0.6852000123386041,
+      "ci_high": 0.9552758847329789
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "confident_errors",
+      "mean": 50.9,
+      "ci_low": 47.18407283508218,
+      "ci_high": 54.615927164917814
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "val_loss_change",
+      "mean": 0.012796365585327152,
+      "ci_low": 0.010260874908175956,
+      "ci_high": 0.015331856262478348
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "fc1_frob_60",
+      "mean": -11.264391320960938,
+      "ci_low": -11.377017026936471,
+      "ci_high": -11.151765614985404
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "fc2_frob_60",
+      "mean": 1.1483079003481387,
+      "ci_low": 0.8248134060238688,
+      "ci_high": 1.4718023946724086
+    },
+    {
+      "scope": "all_settings",
+      "arm": "sgdm",
+      "metric": "fc3_frob_60",
+      "mean": 19.252946059320657,
+      "ci_low": 19.081649953502968,
+      "ci_high": 19.424242165138345
+    }
+  ],
+  "error_decomposition": [
+    {
+      "arm": "magnitude_graft",
+      "category": "both_correct",
+      "metric": "count",
+      "mean": 8675.35,
+      "ci_low": 8668.662173917119,
+      "ci_high": 8682.037826082882
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "both_correct",
+      "metric": "ce_contribution",
+      "mean": -0.022197640195870633,
+      "ci_low": -0.02257745462479347,
+      "ci_high": -0.021817825766947796
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "both_wrong",
+      "metric": "count",
+      "mean": 784.65,
+      "ci_low": 777.525293460427,
+      "ci_high": 791.774706539573
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "both_wrong",
+      "metric": "ce_contribution",
+      "mean": 0.11207793892375999,
+      "ci_low": 0.10755631092257961,
+      "ci_high": 0.11659956692494036
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "corrected",
+      "metric": "count",
+      "mean": 290.975,
+      "ci_low": 283.79388293494367,
+      "ci_high": 298.1561170650564
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "corrected",
+      "metric": "ce_contribution",
+      "mean": -0.034644158651012634,
+      "ci_low": -0.0359157875677708,
+      "ci_high": -0.03337252973425447
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "introduced",
+      "metric": "count",
+      "mean": 249.025,
+      "ci_low": 241.68380927299302,
+      "ci_high": 256.366190727007
+    },
+    {
+      "arm": "magnitude_graft",
+      "category": "introduced",
+      "metric": "ce_contribution",
+      "mean": 0.039280163427225866,
+      "ci_low": 0.03631708877029386,
+      "ci_high": 0.04224323808415787
+    },
+    {
+      "arm": "sgdm",
+      "category": "both_correct",
+      "metric": "count",
+      "mean": 8669.15,
+      "ci_low": 8657.643967120726,
+      "ci_high": 8680.656032879273
+    },
+    {
+      "arm": "sgdm",
+      "category": "both_correct",
+      "metric": "ce_contribution",
+      "mean": -0.013334385125933598,
+      "ci_low": -0.01380377575748322,
+      "ci_high": -0.012864994494383976
+    },
+    {
+      "arm": "sgdm",
+      "category": "both_wrong",
+      "metric": "count",
+      "mean": 796.35,
+      "ci_low": 790.0250121605826,
+      "ci_high": 802.6749878394174
+    },
+    {
+      "arm": "sgdm",
+      "category": "both_wrong",
+      "metric": "ce_contribution",
+      "mean": 0.024227878909516398,
+      "ci_low": 0.020640563580494944,
+      "ci_high": 0.02781519423853785
+    },
+    {
+      "arm": "sgdm",
+      "category": "corrected",
+      "metric": "count",
+      "mean": 279.275,
+      "ci_low": 272.9385965794511,
+      "ci_high": 285.61140342054887
+    },
+    {
+      "arm": "sgdm",
+      "category": "corrected",
+      "metric": "ce_contribution",
+      "mean": -0.030819365003291428,
+      "ci_low": -0.03194691037210634,
+      "ci_high": -0.029691819634476514
+    },
+    {
+      "arm": "sgdm",
+      "category": "introduced",
+      "metric": "count",
+      "mean": 255.225,
+      "ci_low": 246.63553070980575,
+      "ci_high": 263.81446929019427
+    },
+    {
+      "arm": "sgdm",
+      "category": "introduced",
+      "metric": "ce_contribution",
+      "mean": 0.03078598810420362,
+      "ci_low": 0.029530474372113008,
+      "ci_high": 0.032041501836294235
+    }
+  ],
+  "proxy_caution": "Fixed-rank h-1 is a spectral tail-shape diagnostic; neither optimizer Jacobian logdet nor a verified RG scale-equivariance residual. Recorded norms alone do not identify those quantities."
+}
