@@ -1,0 +1,55 @@
+name: Preserve completed Fashion paired120 archives
+on:
+  push:
+    branches: [main]
+    paths: [experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/verification/backup/Archive_Request.json]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: fashion-paired120-archive-only
+  cancel-in-progress: false
+jobs:
+  preserve:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Verify original archives and split bytes only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python experiments/adamw_modified/2026-11-16_fashion_mnist_adamw_paired120/verification/backup/split_artifacts.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Fashion-Paired120-Backup-33001-Part01
+          path: preserved_parts/*33001*.part01
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Fashion-Paired120-Backup-33001-Part02
+          path: preserved_parts/*33001*.part02
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Fashion-Paired120-Backup-33002-Part01
+          path: preserved_parts/*33002*.part01
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Fashion-Paired120-Backup-33002-Part02
+          path: preserved_parts/*33002*.part02
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Fashion-Paired120-Backup-Manifest
+          path: preserved_parts/Reconstruction_Manifest.json
+          retention-days: 90
