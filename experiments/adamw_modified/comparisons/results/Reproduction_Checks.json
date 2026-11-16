@@ -1,0 +1,25 @@
+{
+  "commands": [
+    {
+      "command": "/workspace/scratch/1105f8fb381e/retry/venv/bin/python experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/post_analysis/weighted_alignment/reproduce.py",
+      "exit_code": 0
+    },
+    {
+      "command": "/workspace/scratch/1105f8fb381e/retry/venv/bin/python experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/post_analysis/weighted_alignment/reproduce.py",
+      "exit_code": 0
+    },
+    {
+      "command": "/workspace/scratch/1105f8fb381e/retry/venv/bin/python experiments/adamw_modified/comparisons/analysis/build.py",
+      "exit_code": 0
+    },
+    {
+      "command": "/workspace/scratch/1105f8fb381e/retry/venv/bin/python -m unittest discover -s experiments/adamw_modified/comparisons/tests -v",
+      "exit_code": 0
+    }
+  ],
+  "dataset_wrapper_numerical_csvs_unchanged": true,
+  "numerical_csv_count": 14,
+  "unit_tests_passed": 8,
+  "new_training": false,
+  "source_hash_checks_passed": true
+}

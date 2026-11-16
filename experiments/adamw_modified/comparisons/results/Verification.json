@@ -1,0 +1,29 @@
+{
+  "source_hashes_match": true,
+  "source_commit": "c868fd37b7b24c0d92a798b8d342dd30b953a06a",
+  "new_training": false,
+  "weighting_post_hoc": true,
+  "datasets": {
+    "mnist": {
+      "endpoint_rows": 135,
+      "unique_trajectories": 135,
+      "paired_seed_scores": 1140,
+      "all_expected_seed_scores_present": true,
+      "functional_failures_retained": 5,
+      "independent_array_score_max_error": 1.3877787807814457e-17
+    },
+    "fashion": {
+      "endpoint_rows": 240,
+      "unique_trajectories": 120,
+      "paired_seed_scores": 1080,
+      "all_expected_seed_scores_present": true,
+      "functional_failures_retained": 0,
+      "independent_array_score_max_error": 2.7755575615628914e-17
+    }
+  },
+  "reference_maximum_error": {
+    "mnist_saved_stable_endpoints": 4.440892098500626e-16,
+    "fashion_saved_weighted_results": 1.0061396160665481e-16
+  },
+  "passed": true
+}

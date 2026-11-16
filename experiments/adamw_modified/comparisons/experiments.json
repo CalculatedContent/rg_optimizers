@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "target_alpha": 2,
+  "baseline": "adamw",
+  "treatments": [
+    "magnitude_graft",
+    "sgdm"
+  ],
+  "weightings": [
+    "absolute_baseline_distance",
+    "sub2_baseline_deficit"
+  ],
+  "primary_weighting": "absolute_baseline_distance",
+  "shared_settings": [
+    {
+      "batch_size": 128,
+      "multiplier": 0.5
+    },
+    {
+      "batch_size": 128,
+      "multiplier": 1
+    },
+    {
+      "batch_size": 256,
+      "multiplier": 0.5
+    },
+    {
+      "batch_size": 256,
+      "multiplier": 1
+    },
+    {
+      "batch_size": 256,
+      "multiplier": 2
+    },
+    {
+      "batch_size": 512,
+      "multiplier": 0.5
+    },
+    {
+      "batch_size": 512,
+      "multiplier": 1
+    },
+    {
+      "batch_size": 512,
+      "multiplier": 2
+    }
+  ],
+  "inference": "Five equal-weight independent seed scores; setting/layer sums normalized within each seed; paired 95% Student-t intervals; post-hoc, unadjusted for multiplicity.",
+  "datasets": [
+    {
+      "id": "mnist",
+      "name": "MNIST",
+      "analysis_folder": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/post_analysis/weighted_alignment",
+      "status_source": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/model_status.csv",
+      "status_column": "model_status",
+      "status_cohort": "original",
+      "endpoints": [
+        {
+          "id": "mnist_e120",
+          "label": "MNIST \u00b7 epoch 120",
+          "source": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/endpoints.csv",
+          "epoch": 120,
+          "seeds": [
+            31001,
+            31002,
+            31003,
+            31004,
+            31005
+          ],
+          "layers": [
+            "fc1",
+            "fc2"
+          ],
+          "all_original_settings": true,
+          "schedule": "5-epoch warmup; cosine to 10% peak at 120",
+          "dependence_group": "mnist_experiment01"
+        }
+      ]
+    },
+    {
+      "id": "fashion",
+      "name": "Fashion-MNIST",
+      "analysis_folder": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/post_analysis/weighted_alignment",
+      "status_source": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/results/model_status.csv",
+      "status_column": "status",
+      "endpoints": [
+        {
+          "id": "fashion_e20",
+          "label": "Fashion \u00b7 epoch 20",
+          "source": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/results/endpoints20_and60.csv",
+          "epoch": 20,
+          "seeds": [
+            31001,
+            31002,
+            31003,
+            31004,
+            31005
+          ],
+          "layers": [
+            "fc1",
+            "fc2"
+          ],
+          "schedule": "5-epoch warmup; cosine to 10% peak at 20",
+          "dependence_group": "fashion_experiment02"
+        },
+        {
+          "id": "fashion_e60",
+          "label": "Fashion \u00b7 epoch 60",
+          "source": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/results/endpoints20_and60.csv",
+          "epoch": 60,
+          "seeds": [
+            31001,
+            31002,
+            31003,
+            31004,
+            31005
+          ],
+          "layers": [
+            "fc1",
+            "fc2"
+          ],
+          "schedule": "Same epoch 20 states; low-rate cosine continuation to 1% peak at 60",
+          "dependence_group": "fashion_experiment02"
+        }
+      ]
+    }
+  ],
+  "verification_references": {
+    "mnist_stable": "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/stable_endpoints.csv",
+    "fashion_weighted": "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/post_analysis/weighted_alignment/weighted_effects.csv"
+  }
+}

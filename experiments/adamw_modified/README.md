@@ -15,6 +15,20 @@ This campaign studies a **magnitude-only** modification: retain Adam's adaptive 
 
 ## Organization for the coming days
 
+### Weighted analysis and general comparison
+
+The same baseline-severity weighting is now applied to both datasets, with separate dataset reports and a third, reusable comparison folder:
+
+| Analysis | Contents |
+|---|---|
+| [Original MNIST](2026-11-13_mnist_mlp_experiment01/post_analysis/weighted_alignment/CAMPAIGN_REPORT.md) | Five-seed weighted FC1/FC2 alignment, accuracy and CE; shared eight-setting comparison and separate full-grid failure sensitivity |
+| [Fashion-MNIST](2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/post_analysis/weighted_alignment/CAMPAIGN_REPORT.md) | The same calculations at epochs 20 and 60, retaining their dependence and all outcomes |
+| [General comparison](comparisons/README.md) | Cross-experiment plots, numerical tables, source hashes, reusable code/tests and a registry for future completed experiments |
+
+On the shared settings, the graft's combined weighted alignment improvement is +0.07998 [0.06628, 0.09369] for MNIST, versus −0.00952 [−0.03221, 0.01317] for Fashion at epoch 60. Positive means closer to alpha=2. Performance outcomes are reported separately; schedules differ and the new weighting is post-hoc. All original data and failure records remain unchanged.
+
+### Future experiment organization
+
 Keep each experiment in a dated child folder: `YYYY-MM-DD_dataset_architecture_experimentNN/`. Continue the same experiment in its existing folder; do not duplicate completed runs. Store immutable source/config snapshots in `frozen/`, small numerical results in `results/`, and audit evidence in `verification/`. Record large artifact locations in `ARTIFACTS.md`.
 
 Use [EXPERIMENT_TEMPLATE.md](EXPERIMENT_TEMPLATE.md) for future experiments over the next five days. Maintain [CAMPAIGN_LOG.md](CAMPAIGN_LOG.md) as work actually completes. Future work is planned, not already running.

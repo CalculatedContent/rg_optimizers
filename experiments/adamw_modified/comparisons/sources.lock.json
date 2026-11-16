@@ -1,0 +1,35 @@
+{
+  "source_commit": "c868fd37b7b24c0d92a798b8d342dd30b953a06a",
+  "sources": {
+    "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/endpoints.csv": {
+      "bytes": 37063,
+      "sha256": "fd384a7edd5fa8a9b935960f6c8eac7c104aed91a3ffc234650a13524bbdd5a3",
+      "git_blob_sha": "d911607330b512a87ed816a1692c975fc1406d47"
+    },
+    "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/model_status.csv": {
+      "bytes": 50518,
+      "sha256": "74bc40f52e6ac701ac876cc7c209354e6a0b281d437b0cc89166e4ba993422fa",
+      "git_blob_sha": "f0bb67b4e6c8dd014962b733b3f78a5a0ee42ce3"
+    },
+    "experiments/adamw_modified/2026-11-13_mnist_mlp_experiment01/results/stable_endpoints.csv": {
+      "bytes": 31440,
+      "sha256": "aa62e7178336ba9d4f3e051b0226ae77247d3076b900c6d80677b3dc85340306",
+      "git_blob_sha": "bfa03977c5d238905a44c5d608775dd12a2abb66"
+    },
+    "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/post_analysis/weighted_alignment/weighted_effects.csv": {
+      "bytes": 3690,
+      "sha256": "3caf9f7c9a6e00d8a0d8b24c250fd1a216495f8af9dad300f1e307645f2eb576",
+      "git_blob_sha": "967d3965f108735d55c9b9bf4666fc683c9287a4"
+    },
+    "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/results/endpoints20_and60.csv": {
+      "bytes": 64919,
+      "sha256": "e0cd7a13c5500c2f2d7b714ccfc2a261fed717466eb55ec9071b95cbb878b8d2",
+      "git_blob_sha": "d5117a18c075505110ff27e192dea80c53291f2f"
+    },
+    "experiments/adamw_modified/2026-11-16_fashion_mnist_mlp_experiment02_extension_retry01/results/model_status.csv": {
+      "bytes": 33126,
+      "sha256": "ef9bb7bfe15bc0c8e7b230e1f950571cc1edfc77e70c12220e2058d99a2a97c2",
+      "git_blob_sha": "e2af59e76d18d64a5935cea94734831f38a1febe"
+    }
+  }
+}
