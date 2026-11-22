@@ -1,0 +1,8 @@
+{
+  "bias": [true, false],
+  "dropout": [0.0],
+  "fc1_weight_decay": [0.0],
+  "momentum": [0.8, 0.9, 0.95],
+  "batch_size": [64, 128, 256],
+  "lr_floor": [0.0, 0.01, 0.1]
+}
