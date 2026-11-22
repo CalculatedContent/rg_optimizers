@@ -1,5 +1,14 @@
 # Verified Fashion-MNIST continuation retry01
 
+## Results at a glance
+
+All 120 Fashion parent models reached epoch 60. Across the shared settings, mean test accuracy was 89.24% for AdamW and 89.66% after the correction. The follow-up folder records the separate matched augmentation experiment.
+
+[Results and code](../comparisons/rg_paper/README.md) · [Tiếng Việt](../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../comparisons/rg_paper/results.json)
+
+![Fashion comparison at the epoch-60 endpoint.](plots/Endpoint_Comparison.png)
+
+
 Retry the same120 epoch20-to60 continuations after the previous attempt failed before training. The parent epoch20 checkpoints and failed attempt remain unchanged. No new model, dataset, seed or setting is introduced. GPT stays on hold.
 
 All24 models for seed31001 passed a local full restoration/multiprocessing audit: 48 recorded minibatch losses and update-statistic arrays matched exactly. The independent15-matrix-step resumed graft contract passed. Nine deliberately incorrect minibatch/momentum/learning-rate controls were rejected. Local verification uses Python3.12 and pinned Torch2.15CPU; GitHub uses Python3.11 and the same numerical packages.
@@ -18,4 +27,4 @@ The frozen optimizer kernel and continuation training functions are unchanged. S
 
 Report all outcomes, functional failures and unsupported fits. Five seeds are replicates; average eight settings within seed for paired95%t intervals. Report alpha separately from|alpha−2| and accuracy separately from CE. This is a follow-up chosen after the epoch20 results, not a fresh independent test. FC3 is exploratory because its spectrum has only10 eigenvalues.
 
-[Protocol](Protocol.json) · [Local verification](verification/Retry_Local_Verification.json) · [Negative controls](verification/Local_Replay_Negative_Controls.json) · [Previous failed attempt](../2026-11-16_fashion_mnist_mlp_experiment02_extension/RESULTS.md) · [Epoch20 results](../2026-11-15_fashion_mnist_mlp_experiment02_clean/RESULTS.md)
+[Protocol](Protocol.json) · [Local verification](verification/Retry_Local_Verification.json) · [Negative controls](verification/Local_Replay_Negative_Controls.json) · [Previous failed attempt](../2026-11-16_fashion_mnist_mlp_experiment02_extension/RESULTS.md) · [Epoch20 results](../2026-11-15_fashion_mnist_mlp_experiment02_clean/README.md)

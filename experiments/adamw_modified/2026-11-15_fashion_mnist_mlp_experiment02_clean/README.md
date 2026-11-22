@@ -1,5 +1,14 @@
 # Fashion-MNIST Experiment02: completed fixed-endpoint pass
 
+## Results at a glance
+
+This experiment contributes 120 epoch-20 Fashion checkpoints. At this endpoint, the best modified AdamW checkpoint reached 90.26% test accuracy at average α = 2.0023. The epoch-60 extension tied on accuracy, and epoch 20 was closer to 2.
+
+[Results and code](../comparisons/rg_paper/README.md) · [Tiếng Việt](../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../comparisons/rg_paper/results.json)
+
+![Original epoch-20 Fashion alpha and accuracy plot.](original_plots/Final_Alpha_Accuracy.png)
+
+
 **Complete:120/120 runs, five paired seeds, eight settings, three optimizers. All runs use epoch 20.** This is the completed-results folder, parallel to the original MNIST Experiment01 folder. It publishes the verified clean pass; it is not a new training launch.
 
 - [Results and MNIST comparison](COMPARISON.md)

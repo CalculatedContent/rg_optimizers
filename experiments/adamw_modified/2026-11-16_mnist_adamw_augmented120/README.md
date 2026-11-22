@@ -1,5 +1,14 @@
 # Augmented digit MNIST: native AdamW through epoch 120
 
+## Results at a glance
+
+Both augmented digit AdamW runs reached epoch 120. FC1 α finished near 1.646 in both runs, at 99.09% and 99.10% test accuracy.
+
+[Results and code](../comparisons/rg_paper/README.md) · [Tiếng Việt](../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../comparisons/rg_paper/results.json)
+
+![Digit layer alpha after initialization.](plots/alpha_after_initialization.png)
+
+
 Charles requested a replication of the augmented Fashion-MNIST AdamW trajectory on OCR/digit MNIST, to see whether the early sub-2 spectral tendency fades with continued training.
 
 Two independent seeds (33001, 33002), native AdamW only, augmentation ON only. MLP 784→256→256→10 with ReLU, batch 256, original 55,000/5,000/10,000 split and pixels/255. The original MNIST image/label hashes and original training kernel are verified before any updates. The split file is reused from its existing repository location and verified against the original MNIST split hash; Fashion images are never loaded.

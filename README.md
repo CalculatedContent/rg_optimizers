@@ -1,5 +1,14 @@
 # rg_optimizers
 
+## RG optimizer experiments on MNIST and Fashion-MNIST
+
+SGD with momentum gives average layer α near 2 on both datasets. In the 5 matched digit runs, restoring the momentum step length moves AdamW from 1.855 to 2.043 (momentum baseline 2.025). The separate long Muon run approaches 2 over hundreds of epochs while test accuracy stays near 99.2%.
+
+[Results and code](experiments/adamw_modified/comparisons/rg_paper/README.md) · [Tiếng Việt](experiments/adamw_modified/comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](experiments/adamw_modified/comparisons/rg_paper/results.json)
+
+![Test accuracy versus weighted average layer α on MNIST and Fashion-MNIST, with checkpoints colored by training epoch.](experiments/adamw_modified/comparisons/rg_paper/plots/figure15_accuracy.png)
+
+
 Research implementations of optimizer extensions motivated by the WeightWatcher
 spectral renormalization-group program. The repository keeps the unmodified
 reference baselines separate from every RG intervention so optimizer claims can

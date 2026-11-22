@@ -1,5 +1,14 @@
 # Fashion-MNIST: same unaugmented models, epoch60 to120
 
+## Results at a glance
+
+This continuation preserved 49 completed epoch-120 endpoints. For the 2 central seeds with all optimizers present, average α moved from 1.867 to 2.067 after the correction, compared with 2.016 for momentum SGD.
+
+[Results and code](../comparisons/rg_paper/README.md) · [Tiếng Việt](../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../comparisons/rg_paper/results.json)
+
+![Fashion layer alpha during continuation.](plots/Alpha_Trajectories.png)
+
+
 Charles authorized continuation of the original120 epoch60 models to epoch120 and asked that learning rate and optimizer-step counts be accounted for. This folder preserves the earlier experiments and their source unchanged.
 
 ## Fixed design

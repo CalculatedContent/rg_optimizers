@@ -2,6 +2,10 @@
 
 This folder compares the original MNIST experiment and the verified Fashion-MNIST endpoints. It is an extensible analysis registry, not a training launcher. All raw historical experiments, failure records and original primary analyses remain unchanged.
 
+## RG paper results
+
+[English results and plots](rg_paper/RESULTS.md) · [Tiếng Việt](rg_paper/RESULTS.vi.md) · [Run the reproduction](rg_paper/README.md)
+
 ## Dataset folders
 
 - [MNIST: weighted report, code entry point and plots](../2026-11-13_mnist_mlp_experiment01/post_analysis/weighted_alignment/CAMPAIGN_REPORT.md)

@@ -1,7 +1,8 @@
 """Rebuild the four manuscript plates. Run in the directory containing the two CSVs.
 Pass the original RG paper PNG as the first argument (see the appendix link)."""
 from pathlib import Path
-import sys
+import argparse
+from datetime import datetime, timezone
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
@@ -92,8 +93,15 @@ def accuracy_plate():
     epoch_key(fig)
     return fig
 
-with PdfPages(root/'optimizer_figures.pdf') as pdf:
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("muon_image", nargs="?", type=Path, default=root/"figure9_mnist_optimizer_comparison_panelgrid.png")
+parser.add_argument("--out", type=Path, default=root)
+args = parser.parse_args()
+args.out.mkdir(parents=True, exist_ok=True)
+fixed_date = datetime(2000, 1, 1, tzinfo=timezone.utc)
+with PdfPages(args.out/'optimizer_figures.pdf', metadata={"CreationDate": fixed_date, "ModDate": fixed_date}) as pdf:
     fig = accuracy_plate()
+    fig.savefig(args.out/"figure15_accuracy.png", dpi=175)
     pdf.savefig(fig)
     plt.close(fig)
     fig=plt.figure(figsize=(7.9,7.76))
@@ -122,9 +130,10 @@ with PdfPages(root/'optimizer_figures.pdf') as pdf:
                     ax.set_ylabel(layer.upper()+' gap')
     fig.text(.51,.115,'Layer α',ha='center',size=10.5)
     epoch_key(fig)
+    fig.savefig(args.out/"figure16_erg_gap.png", dpi=175)
     pdf.savefig(fig)
     plt.close(fig)
-    img=Image.open(sys.argv[1]);size=img.size
+    img=Image.open(args.muon_image);size=img.size
     fig=plt.figure(figsize=(8,8*size[1]/size[0]));ax=fig.add_axes([0,0,1,1]);ax.imshow(img);ax.axis('off');pdf.savefig(fig,dpi=440);plt.close(fig)
     g=pd.read_csv(root/'muon_30_epochs.csv');fig,axs=plt.subplots(1,2,figsize=(7.45,2.65),layout='constrained')
     for ax,metric,yl in zip(axs,['alpha','ERG_gap'],['Layer α','ERG gap (eigenvalues)']):
@@ -132,4 +141,5 @@ with PdfPages(root/'optimizer_figures.pdf') as pdf:
             v=g[g.layer.eq(layer)&g.metric.eq(metric)].sort_values('epoch')
             ax.plot(v.epoch,v['mean'],color=color,linestyle=line,lw=1.6,label=layer.upper());ax.fill_between(v.epoch,v.minimum,v.maximum,color=color,alpha=.15)
         ax.axhline(2 if metric=='alpha' else 0,ls=':',lw=1,c='#384551');ax.set(xlabel='Epoch',ylabel=yl,xlim=(0,30));ax.legend(frameon=False,fontsize=8);grid(ax)
+    fig.savefig(args.out/"figure18_muon_30.png", dpi=175)
     pdf.savefig(fig);plt.close(fig)

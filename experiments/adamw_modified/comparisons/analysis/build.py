@@ -215,7 +215,7 @@ def main():
     for dataset in datasets:dataset_report(dataset,bundles[dataset['id']],reg,checks)
     if not args.dataset:
         combined=concat(list(bundles.values()));save_results(combined,HERE/'results');plots(combined,reg,HERE/'plots');writej(HERE/'results/Verification.json',checks)
-        lines=['# Cross-experiment weighted spectral comparison','','This folder compares the original MNIST experiment and the verified Fashion-MNIST endpoints. It is an extensible analysis registry, not a training launcher. All raw historical experiments, failure records and original primary analyses remain unchanged.','','## Dataset folders','']
+        lines=['# Cross-experiment weighted spectral comparison','','This folder compares the original MNIST experiment and the verified Fashion-MNIST endpoints. It is an extensible analysis registry, not a training launcher. All raw historical experiments, failure records and original primary analyses remain unchanged.','','## RG paper results','','[English results and plots](rg_paper/RESULTS.md) · [Tiếng Việt](rg_paper/RESULTS.vi.md) · [Run the reproduction](rg_paper/README.md)','','## Dataset folders','']
         for d in datasets:
             rel=os.path.relpath(REPO/d['analysis_folder'],HERE);lines.append(f'- [{d["name"]}: weighted report, code entry point and plots]({rel}/CAMPAIGN_REPORT.md)')
         lines+=['','## Shared-setting results','','Eight settings × five seeds × three arms per endpoint. All values are mean [paired 95% interval]. The same native-AdamW baseline weights are used for graft and SGDM.','']+table(combined,reg)
