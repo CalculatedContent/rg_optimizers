@@ -1,6 +1,6 @@
 # Reproduce the RG optimizer figures and tables
 
-[English results](RESULTS.md) · [Kết quả bằng tiếng Việt](RESULTS.vi.md) · [Machine-readable results](results.json) · [Data dictionary](INPUTS.md)
+[English results](RESULTS.md) · [Kết quả bằng tiếng Việt](RESULTS.vi.md) · [Machine-readable results](results.json) · [All 4 figure pages (PDF)](optimizer_figures.pdf) · [Data dictionary](INPUTS.md)
 
 On digits, the momentum baseline gives weighted average α = 2.025. AdamW gives 1.855, and modified AdamW gives 2.043. On Fashion the correction raises α on both schedules. It moves α toward 2 on the continuation and away from 2 on the original schedule.
 
