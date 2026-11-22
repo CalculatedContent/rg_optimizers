@@ -1,5 +1,8 @@
 # Modified AdamW experiments
 
+[Reproduce Figures 15–18 and the optimizer comparisons in the RG paper](comparisons/rg_paper/README.md). This folder includes the checkpoint tables, plotting code, and links to both Muon experiments.
+
+
 This campaign studies a **magnitude-only** modification: retain Adam's adaptive matrix-update direction and moment history, and replace its Frobenius magnitude with the SGDM target magnitude computed from that same run's gradient history. Bias updates remain AdamW. Controls are native AdamW and SGDM with matched decay.
 
 ## Experiments
