@@ -1,0 +1,2571 @@
+{
+  "seed": 1340,
+  "step": 500,
+  "units": "natural-log cross-entropy per character",
+  "purpose": "Single early validation checkpoint for CPU reproduction; the fixed endpoint is 20000 steps for each of five seeds.",
+  "corpus_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "runtime": {
+    "device": "cpu",
+    "system": "Linux",
+    "machine": "x86_64",
+    "python": "3.12.14",
+    "torch": "2.14.1+cpu",
+    "precision": "float32 tensors; backend-dependent kernels",
+    "stochastic_operations": "CPU initialization and minibatches; dropout must remain zero"
+  },
+  "packages": {
+    "torch": "2.14.1+cpu",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "weightwatcher": "0.7.7",
+    "powerlaw": "2.0.0"
+  },
+  "sources_sha256": {
+    "short_test_adamw_graft/run.py": "5bd3c60412f06b12017970d85c79101bee04fa04a6e1b59818a266ec9ca999a7",
+    "short_test_adamw_graft/graft.py": "e6c9fcf0e750e0efda8b716410623eff5e3f590751d5a345482e97a4b10c45a3",
+    "short_test_portable/comparison.py": "2245b2f052d8e4a2f81a8b110efa685b36c645189ecedf00d872351296c4ab26",
+    "short_test_portable/runtime.py": "ee9b3ed26fdd719cdafc6080b020dbd04d04f8994e7de77c00eb75b0f996e5bb",
+    "short_test_portable/portable_common.py": "62b87a111c56c663486a5b678c2f6f653de0b239a0a299753ddd63a41615bb9a",
+    "short_test/common.py": "4bfa41f7a098a202744b7982b8586473d5fcfd4b80077095c490a4a7c3809954",
+    "short_test/vendor/model.py": "7c01703240dbec5d554527dc666e35b3df8391d0b117fddc07afcf325a21d11c"
+  },
+  "historical_controls": {
+    "adamw": {
+      "file": "GPT_AdamW_SGDM_20261023T031957_Part005.zip",
+      "member": "confirmation/adamw_lr0.001_wd0_seed1340/summary_20000.json",
+      "validation_loss": 2.302430500190133
+    },
+    "sgdm": {
+      "file": "GPT_AdamW_SGDM_20261023T031957_Part006.zip",
+      "member": "confirmation/sgdm_lr0.1_m0.9_seed1340/summary_20000.json",
+      "validation_loss": 2.419553320507349
+    }
+  },
+  "runs": {
+    "adamw": {
+      "validation": {
+        "loss_nats_per_character": 2.302430850347248,
+        "perplexity": 9.998457692479878,
+        "next_character_accuracy": 0.32315444063906473,
+        "evaluated_targets": 55769
+      },
+      "train_sample_loss": 2.301839220523834,
+      "confidence_tail_weighted_alpha": 2.094750951202467,
+      "ww_raw_matrices": [
+        {
+          "matrix": "transformer.wte.weight",
+          "aliases": [
+            "transformer.wte.weight",
+            "lm_head.weight"
+          ],
+          "shape": [
+            65,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0552239232,
+              "M": 65,
+              "N": 128,
+              "Q": 1.9692307692,
+              "alpha": 2.2624032212,
+              "alpha_weighted": 2.0310413685,
+              "entropy": 0.7079534842,
+              "has_esd": true,
+              "lambda_max": 7.9019857701,
+              "layer_type": "dense",
+              "log_alpha_norm": 2.1104179314,
+              "log_norm": 1.416527359,
+              "log_spectral_norm": 0.8977362433,
+              "longname": "0",
+              "matrix_rank": 65,
+              "norm": 26.0932009574,
+              "num_evals": 65,
+              "num_pl_spikes": 14,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.3373914527,
+              "spectral_norm": 7.9019857701,
+              "stable_rank": 3.3021068016,
+              "status": "success",
+              "sv_max": 2.811047095,
+              "sv_min": 0.0904450639,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 7.9019857701,
+              "xmin": 0.4311293768
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.wpe.weight",
+          "aliases": [
+            "transformer.wpe.weight"
+          ],
+          "shape": [
+            64,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0680365023,
+              "M": 64,
+              "N": 128,
+              "Q": 2.0,
+              "alpha": 2.7228689206,
+              "alpha_weighted": 0.429161595,
+              "entropy": 0.7699856872,
+              "has_esd": true,
+              "lambda_max": 1.4375195344,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.4447790444,
+              "log_norm": 0.6774151139,
+              "log_spectral_norm": 0.157613755,
+              "longname": "0",
+              "matrix_rank": 64,
+              "norm": 4.7578978529,
+              "num_evals": 64,
+              "num_pl_spikes": 15,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.4448428425,
+              "spectral_norm": 1.4375195344,
+              "stable_rank": 3.3097970072,
+              "status": "success",
+              "sv_max": 1.1989660272,
+              "sv_min": 0.058387999,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.4375195344,
+              "xmin": 0.0824646215
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.0.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0526399061,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 2.5548264676,
+              "alpha_weighted": 1.5174330605,
+              "entropy": 0.8889048335,
+              "has_esd": true,
+              "lambda_max": 3.9259756764,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.7325201966,
+              "log_norm": 1.5708551479,
+              "log_spectral_norm": 0.5939476046,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 37.2267521541,
+              "num_evals": 128,
+              "num_pl_spikes": 53,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.2135718404,
+              "spectral_norm": 3.9259756764,
+              "stable_rank": 9.4821657652,
+              "status": "success",
+              "sv_max": 1.9814074988,
+              "sv_min": 0.1906496095,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 3.9259756764,
+              "xmin": 0.2221942815
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.0.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0577745067,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.8745411829,
+              "alpha_weighted": -0.7331089753,
+              "entropy": 0.7312686521,
+              "has_esd": true,
+              "lambda_max": 0.406361773,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.2739322307,
+              "log_norm": 0.4561734913,
+              "log_spectral_norm": -0.3910871534,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 2.8587323173,
+              "num_evals": 128,
+              "num_pl_spikes": 48,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1262291468,
+              "spectral_norm": 0.406361773,
+              "stable_rank": 7.0349440009,
+              "status": "success",
+              "sv_max": 0.6374651151,
+              "sv_min": 0.0005258342,
+              "warning": "over-trained",
+              "weak_rank_loss": 1,
+              "xmax": 0.406361773,
+              "xmin": 0.0094283244
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.0.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0596205118,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.0994858316,
+              "alpha_weighted": 0.8336830757,
+              "entropy": 0.8889397782,
+              "has_esd": true,
+              "lambda_max": 2.4951069444,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.777880083,
+              "log_norm": 1.7271911189,
+              "log_spectral_norm": 0.3970891649,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 53.3569650482,
+              "num_evals": 128,
+              "num_pl_spikes": 87,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1178772542,
+              "spectral_norm": 2.4951069444,
+              "stable_rank": 21.3846405133,
+              "status": "success",
+              "sv_max": 1.5795907522,
+              "sv_min": 0.2487707844,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 2.4951069444,
+              "xmin": 0.1559472798
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.0.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0686264368,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 1.6660234448,
+              "alpha_weighted": 0.422917246,
+              "entropy": 0.7577706694,
+              "has_esd": true,
+              "lambda_max": 1.7941068983,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.3006142566,
+              "log_norm": 1.3619346915,
+              "log_spectral_norm": 0.253848316,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 23.0109575619,
+              "num_evals": 128,
+              "num_pl_spikes": 114,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.0623788109,
+              "spectral_norm": 1.7941068983,
+              "stable_rank": 12.825856466,
+              "status": "success",
+              "sv_max": 1.3394427566,
+              "sv_min": 0.0943690607,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 1.7941068983,
+              "xmin": 0.0134980733
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.1.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0555776415,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 2.2828563691,
+              "alpha_weighted": 1.475080325,
+              "entropy": 0.8434046546,
+              "has_esd": true,
+              "lambda_max": 4.4274692683,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.8302043384,
+              "log_norm": 1.5861574282,
+              "log_spectral_norm": 0.6461555554,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 38.5618115726,
+              "num_evals": 128,
+              "num_pl_spikes": 69,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1544377584,
+              "spectral_norm": 4.4274692683,
+              "stable_rank": 8.7096734581,
+              "status": "success",
+              "sv_max": 2.1041552386,
+              "sv_min": 0.1714099515,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 4.4274692683,
+              "xmin": 0.1440851874
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.1.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0530479217,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.7857119977,
+              "alpha_weighted": 0.1000497286,
+              "entropy": 0.6158761623,
+              "has_esd": true,
+              "lambda_max": 1.1377004236,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.3488677642,
+              "log_norm": 0.6340918416,
+              "log_spectral_norm": 0.0560279198,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 4.3061766496,
+              "num_evals": 128,
+              "num_pl_spikes": 55,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1059453842,
+              "spectral_norm": 1.1377004236,
+              "stable_rank": 3.7849829008,
+              "status": "success",
+              "sv_max": 1.0666304063,
+              "sv_min": 0.0007940551,
+              "warning": "over-trained",
+              "weak_rank_loss": 1,
+              "xmax": 1.1377004236,
+              "xmin": 0.0071178513
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.1.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0550355232,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.3287312168,
+              "alpha_weighted": 1.1385581931,
+              "entropy": 0.8945534322,
+              "has_esd": true,
+              "lambda_max": 3.0826045945,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.7308368956,
+              "log_norm": 1.6681744698,
+              "log_spectral_norm": 0.4889178214,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 46.5773171749,
+              "num_evals": 128,
+              "num_pl_spikes": 76,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1524159236,
+              "spectral_norm": 3.0826045945,
+              "stable_rank": 15.1097280713,
+              "status": "success",
+              "sv_max": 1.7557347734,
+              "sv_min": 0.2351885977,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 3.0826045945,
+              "xmin": 0.1825051871
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.1.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0504514792,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 1.8117413722,
+              "alpha_weighted": 0.236641662,
+              "entropy": 0.7826885297,
+              "has_esd": true,
+              "lambda_max": 1.3508763128,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.9439854113,
+              "log_norm": 1.1648837375,
+              "log_spectral_norm": 0.1306155865,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 14.6178579562,
+              "num_evals": 128,
+              "num_pl_spikes": 103,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.079983254,
+              "spectral_norm": 1.3508763128,
+              "stable_rank": 10.821018784,
+              "status": "success",
+              "sv_max": 1.1622720477,
+              "sv_min": 0.0893136972,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 1.3508763128,
+              "xmin": 0.0167246642
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.2.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0627608774,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 2.1737957283,
+              "alpha_weighted": 1.6324093701,
+              "entropy": 0.822334445,
+              "has_esd": true,
+              "lambda_max": 5.6357125685,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.9789685904,
+              "log_norm": 1.6469613652,
+              "log_spectral_norm": 0.7509488352,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 44.3569182319,
+              "num_evals": 128,
+              "num_pl_spikes": 76,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1346436042,
+              "spectral_norm": 5.6357125685,
+              "stable_rank": 7.8706849742,
+              "status": "success",
+              "sv_max": 2.3739655786,
+              "sv_min": 0.185585816,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 5.6357125685,
+              "xmin": 0.1334328526
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.2.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0453733488,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.7499667004,
+              "alpha_weighted": -0.0060327056,
+              "entropy": 0.6379295754,
+              "has_esd": true,
+              "lambda_max": 0.9920936596,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.3293744385,
+              "log_norm": 0.6507586353,
+              "log_spectral_norm": -0.0034473259,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 4.4746455092,
+              "num_evals": 128,
+              "num_pl_spikes": 58,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.0984754522,
+              "spectral_norm": 0.9920936596,
+              "stable_rank": 4.5103055201,
+              "status": "success",
+              "sv_max": 0.996038985,
+              "sv_min": 0.0003878871,
+              "warning": "over-trained",
+              "weak_rank_loss": 2,
+              "xmax": 0.9920936596,
+              "xmin": 0.0067596326
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.2.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.047884358,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.4517622344,
+              "alpha_weighted": 1.2667055637,
+              "entropy": 0.8984245456,
+              "has_esd": true,
+              "lambda_max": 3.285875185,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.7356129213,
+              "log_norm": 1.6494007589,
+              "log_spectral_norm": 0.5166510626,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 44.6067681494,
+              "num_evals": 128,
+              "num_pl_spikes": 69,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1747716351,
+              "spectral_norm": 3.285875185,
+              "stable_rank": 13.5753081409,
+              "status": "success",
+              "sv_max": 1.8126983161,
+              "sv_min": 0.2421735821,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 3.285875185,
+              "xmin": 0.2024942435
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.2.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0453386703,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 1.8562131497,
+              "alpha_weighted": 0.1995252083,
+              "entropy": 0.7986419116,
+              "has_esd": true,
+              "lambda_max": 1.2808269636,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.8149877698,
+              "log_norm": 1.1057174702,
+              "log_spectral_norm": 0.1074904616,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 12.75608693,
+              "num_evals": 128,
+              "num_pl_spikes": 97,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.0869352738,
+              "spectral_norm": 1.2808269636,
+              "stable_rank": 9.9592585829,
+              "status": "success",
+              "sv_max": 1.1317362606,
+              "sv_min": 0.089981387,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 1.2808269636,
+              "xmin": 0.0184973454
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.3.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.056653835,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 2.234353062,
+              "alpha_weighted": 1.5327065419,
+              "entropy": 0.8401949249,
+              "has_esd": true,
+              "lambda_max": 4.8525866528,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.8585427463,
+              "log_norm": 1.6029552063,
+              "log_spectral_norm": 0.6859732993,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 40.08253738,
+              "num_evals": 128,
+              "num_pl_spikes": 73,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1444700984,
+              "spectral_norm": 4.8525866528,
+              "stable_rank": 8.2600353684,
+              "status": "success",
+              "sv_max": 2.2028587455,
+              "sv_min": 0.1806178634,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 4.8525866528,
+              "xmin": 0.137757652
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.3.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0415131268,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.7744971737,
+              "alpha_weighted": 0.0205427108,
+              "entropy": 0.633972884,
+              "has_esd": true,
+              "lambda_max": 1.0270146475,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.2695849778,
+              "log_norm": 0.6046815239,
+              "log_spectral_norm": 0.0115766376,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 4.024218228,
+              "num_evals": 128,
+              "num_pl_spikes": 57,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1025846567,
+              "spectral_norm": 1.0270146475,
+              "stable_rank": 3.9183649793,
+              "status": "success",
+              "sv_max": 1.0134173116,
+              "sv_min": 0.0003492314,
+              "warning": "over-trained",
+              "weak_rank_loss": 2,
+              "xmax": 1.0270146475,
+              "xmin": 0.0066715487
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.3.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0502233545,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.8433756549,
+              "alpha_weighted": 1.4306299403,
+              "entropy": 0.9169511375,
+              "has_esd": true,
+              "lambda_max": 3.1852600395,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.6527064395,
+              "log_norm": 1.5916898556,
+              "log_spectral_norm": 0.5031448932,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 39.0561882684,
+              "num_evals": 128,
+              "num_pl_spikes": 47,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.2688839742,
+              "spectral_norm": 3.1852600395,
+              "stable_rank": 12.2615383937,
+              "status": "success",
+              "sv_max": 1.7847296825,
+              "sv_min": 0.2442713097,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 3.1852600395,
+              "xmin": 0.2683812645
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.3.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0372260292,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.0174071616,
+              "alpha_weighted": 0.0178228137,
+              "entropy": 0.8281414531,
+              "has_esd": true,
+              "lambda_max": 1.0205505355,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.4856666591,
+              "log_norm": 0.9733612492,
+              "log_spectral_norm": 0.0088345149,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 9.4050530424,
+              "num_evals": 128,
+              "num_pl_spikes": 83,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1116749442,
+              "spectral_norm": 1.0205505355,
+              "stable_rank": 9.2156661673,
+              "status": "success",
+              "sv_max": 1.0102230128,
+              "sv_min": 0.0909254153,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.0205505355,
+              "xmin": 0.0224614827
+            }
+          ]
+        }
+      ],
+      "validation_loss_minus_archived": 3.5015711485897327e-07
+    },
+    "sgdm": {
+      "validation": {
+        "loss_nats_per_character": 2.4195533460126524,
+        "perplexity": 11.240837428583962,
+        "next_character_accuracy": 0.28666463447434953,
+        "evaluated_targets": 55769
+      },
+      "train_sample_loss": 2.431533145904541,
+      "confidence_tail_weighted_alpha": 2.9891480013251397,
+      "ww_raw_matrices": [
+        {
+          "matrix": "transformer.wte.weight",
+          "aliases": [
+            "transformer.wte.weight",
+            "lm_head.weight"
+          ],
+          "shape": [
+            65,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.1050180111,
+              "M": 65,
+              "N": 128,
+              "Q": 1.9692307692,
+              "alpha": 2.7255049952,
+              "alpha_weighted": 2.7156087323,
+              "entropy": 0.7607678064,
+              "has_esd": true,
+              "lambda_max": 9.9167420515,
+              "layer_type": "dense",
+              "log_alpha_norm": 2.9160748015,
+              "log_norm": 1.7639918692,
+              "log_spectral_norm": 0.9963690168,
+              "longname": "0",
+              "matrix_rank": 65,
+              "norm": 58.0753544636,
+              "num_evals": 65,
+              "num_pl_spikes": 12,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.4981103867,
+              "spectral_norm": 9.9167420515,
+              "stable_rank": 5.8562937467,
+              "status": "success",
+              "sv_max": 3.1490859073,
+              "sv_min": 0.0783527536,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 9.9167420515,
+              "xmin": 1.6527567914
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.wpe.weight",
+          "aliases": [
+            "transformer.wpe.weight"
+          ],
+          "shape": [
+            64,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0533419923,
+              "M": 64,
+              "N": 128,
+              "Q": 2.0,
+              "alpha": 1.9778526654,
+              "alpha_weighted": 0.7238962628,
+              "entropy": 0.712646392,
+              "has_esd": true,
+              "lambda_max": 2.322742711,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.9228728625,
+              "log_norm": 0.942108262,
+              "log_spectral_norm": 0.3660011059,
+              "longname": "0",
+              "matrix_rank": 64,
+              "norm": 8.7520192051,
+              "num_evals": 64,
+              "num_pl_spikes": 28,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1847967837,
+              "spectral_norm": 2.322742711,
+              "stable_rank": 3.7679675685,
+              "status": "success",
+              "sv_max": 1.5240546942,
+              "sv_min": 0.0635214536,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 2.322742711,
+              "xmin": 0.0543187142
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.0.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0368731198,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 2.7807972148,
+              "alpha_weighted": 0.6860605162,
+              "entropy": 0.9114571691,
+              "has_esd": true,
+              "lambda_max": 1.7648736084,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.1608976651,
+              "log_norm": 1.4364246756,
+              "log_spectral_norm": 0.2467136088,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 27.3164762373,
+              "num_evals": 128,
+              "num_pl_spikes": 51,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.2493614874,
+              "spectral_norm": 1.7648736084,
+              "stable_rank": 15.4778654446,
+              "status": "success",
+              "sv_max": 1.3284854566,
+              "sv_min": 0.1758913875,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.7648736084,
+              "xmin": 0.1806677528
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.0.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0467690876,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.7896295544,
+              "alpha_weighted": -0.3989475831,
+              "entropy": 0.6771589549,
+              "has_esd": true,
+              "lambda_max": 0.5985192471,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.0653703827,
+              "log_norm": 0.5541744741,
+              "log_spectral_norm": -0.222921879,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 3.5824032819,
+              "num_evals": 128,
+              "num_pl_spikes": 56,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1055186877,
+              "spectral_norm": 0.5985192471,
+              "stable_rank": 5.9854437417,
+              "status": "success",
+              "sv_max": 0.7736402569,
+              "sv_min": 0.0012441445,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 0.5985192471,
+              "xmin": 0.007100936
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.0.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0585589404,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.2280313609,
+              "alpha_weighted": 0.9099644526,
+              "entropy": 0.9057770806,
+              "has_esd": true,
+              "lambda_max": 2.5610399752,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.6178320952,
+              "log_norm": 1.6656671771,
+              "log_spectral_norm": 0.4084163574,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 46.3091891814,
+              "num_evals": 128,
+              "num_pl_spikes": 83,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1347939536,
+              "spectral_norm": 2.5610399752,
+              "stable_rank": 18.0821813131,
+              "status": "success",
+              "sv_max": 1.6003249592,
+              "sv_min": 0.2451475527,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 2.5610399752,
+              "xmin": 0.1642137961
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.0.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0821532545,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 1.6354502847,
+              "alpha_weighted": 0.8229373396,
+              "entropy": 0.7090518339,
+              "has_esd": true,
+              "lambda_max": 3.1855689565,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.4728769735,
+              "log_norm": 1.4150002662,
+              "log_spectral_norm": 0.5031870105,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 26.0016115692,
+              "num_evals": 128,
+              "num_pl_spikes": 121,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.0577682077,
+              "spectral_norm": 3.1855689565,
+              "stable_rank": 8.1623132081,
+              "status": "success",
+              "sv_max": 1.7848162249,
+              "sv_min": 0.0887238926,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 3.1855689565,
+              "xmin": 0.010603523
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.1.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0511934504,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 4.8180086738,
+              "alpha_weighted": 0.0401087664,
+              "entropy": 0.9530025777,
+              "has_esd": true,
+              "lambda_max": 1.0193533631,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.1267646239,
+              "log_norm": 1.3310159196,
+              "log_spectral_norm": 0.0083247601,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 21.4296915304,
+              "num_evals": 128,
+              "num_pl_spikes": 24,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.779347757,
+              "spectral_norm": 1.0193533631,
+              "stable_rank": 21.0228290854,
+              "status": "success",
+              "sv_max": 1.0096303101,
+              "sv_min": 0.1696731331,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.0193533631,
+              "xmin": 0.2596849602
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.1.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0669885957,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.9452193907,
+              "alpha_weighted": 0.3773047493,
+              "entropy": 0.508432494,
+              "has_esd": true,
+              "lambda_max": 1.5630221727,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.3940917272,
+              "log_norm": 0.4638553197,
+              "log_spectral_norm": 0.1939651389,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 2.9097476073,
+              "num_evals": 128,
+              "num_pl_spikes": 13,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.2621566907,
+              "spectral_norm": 1.5630221727,
+              "stable_rank": 1.8616163341,
+              "status": "success",
+              "sv_max": 1.2502088517,
+              "sv_min": 0.0004124847,
+              "warning": "over-trained",
+              "weak_rank_loss": 2,
+              "xmax": 1.5630221727,
+              "xmin": 0.0208008296
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.1.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0721088343,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 5.4429028838,
+              "alpha_weighted": -0.5906082667,
+              "entropy": 0.9679519074,
+              "has_esd": true,
+              "lambda_max": 0.7789152499,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.2241698353,
+              "log_norm": 1.4536114458,
+              "log_spectral_norm": -0.1085097933,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 28.4191736528,
+              "num_evals": 128,
+              "num_pl_spikes": 21,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.9695208938,
+              "spectral_norm": 0.7789152499,
+              "stable_rank": 36.4855787006,
+              "status": "success",
+              "sv_max": 0.8825617542,
+              "sv_min": 0.2307917724,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.7789152499,
+              "xmin": 0.3463256252
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.1.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0532549686,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.2349053657,
+              "alpha_weighted": -0.4964637491,
+              "entropy": 0.8580927945,
+              "has_esd": true,
+              "lambda_max": 0.5995966017,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.0135967632,
+              "log_norm": 0.8245701146,
+              "log_spectral_norm": -0.2221408373,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 6.6768268615,
+              "num_evals": 128,
+              "num_pl_spikes": 80,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1380666172,
+              "spectral_norm": 0.5995966017,
+              "stable_rank": 11.1355315269,
+              "status": "success",
+              "sv_max": 0.774336233,
+              "sv_min": 0.08755583,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.5995966017,
+              "xmin": 0.0214690943
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.2.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0817383995,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 5.3296959096,
+              "alpha_weighted": 0.2303420861,
+              "entropy": 0.9548376069,
+              "has_esd": true,
+              "lambda_max": 1.1046345355,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.24872029,
+              "log_norm": 1.3304189047,
+              "log_spectral_norm": 0.043218617,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 21.4002528503,
+              "num_evals": 128,
+              "num_pl_spikes": 23,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.9028040056,
+              "spectral_norm": 1.1046345355,
+              "stable_rank": 19.3731520804,
+              "status": "success",
+              "sv_max": 1.051015954,
+              "sv_min": 0.174508248,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.1046345355,
+              "xmin": 0.2643794603
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.2.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0580646532,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 2.153613779,
+              "alpha_weighted": 0.0075119419,
+              "entropy": 0.5882613973,
+              "has_esd": true,
+              "lambda_max": 1.0080639028,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.0621243122,
+              "log_norm": 0.4078098175,
+              "log_spectral_norm": 0.0034880636,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 2.5574656982,
+              "num_evals": 128,
+              "num_pl_spikes": 44,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1739138208,
+              "spectral_norm": 1.0080639028,
+              "stable_rank": 2.5370075161,
+              "status": "success",
+              "sv_max": 1.0040238557,
+              "sv_min": 0.0005143729,
+              "warning": "",
+              "weak_rank_loss": 2,
+              "xmax": 1.0080639028,
+              "xmin": 0.0086825658
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.2.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0570597586,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 5.873754271,
+              "alpha_weighted": -0.6658674904,
+              "entropy": 0.9683261377,
+              "has_esd": true,
+              "lambda_max": 0.77025906,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.3527276648,
+              "log_norm": 1.4458112711,
+              "log_spectral_norm": -0.1133631847,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 27.9133056488,
+              "num_evals": 128,
+              "num_pl_spikes": 20,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 1.0898045856,
+              "spectral_norm": 0.77025906,
+              "stable_rank": 36.2388540428,
+              "status": "success",
+              "sv_max": 0.8776440394,
+              "sv_min": 0.2355817471,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.77025906,
+              "xmin": 0.3474213927
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.2.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0485852628,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.437604231,
+              "alpha_weighted": -0.3926245904,
+              "entropy": 0.8737317611,
+              "has_esd": true,
+              "lambda_max": 0.6901287699,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.1808981682,
+              "log_norm": 0.7646349231,
+              "log_spectral_norm": -0.1610698675,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 5.8161409539,
+              "num_evals": 128,
+              "num_pl_spikes": 72,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1694232834,
+              "spectral_norm": 0.6901287699,
+              "stable_rank": 8.4276170004,
+              "status": "success",
+              "sv_max": 0.8307398931,
+              "sv_min": 0.0867760366,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.6901287699,
+              "xmin": 0.0240818941
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.3.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.070468358,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 4.9471791685,
+              "alpha_weighted": 0.2822159684,
+              "entropy": 0.9526290283,
+              "has_esd": true,
+              "lambda_max": 1.1403701357,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.3126178007,
+              "log_norm": 1.3310814537,
+              "log_spectral_norm": 0.0570458354,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 21.4329254673,
+              "num_evals": 128,
+              "num_pl_spikes": 23,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.8230437515,
+              "spectral_norm": 1.1403701357,
+              "stable_rank": 18.7947095388,
+              "status": "success",
+              "sv_max": 1.0678811431,
+              "sv_min": 0.1761425463,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.1403701357,
+              "xmin": 0.2616693736
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.3.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0579460557,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 2.1486173223,
+              "alpha_weighted": 0.1114795171,
+              "entropy": 0.5586235898,
+              "has_esd": true,
+              "lambda_max": 1.1268972143,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.1825003135,
+              "log_norm": 0.4383723623,
+              "log_spectral_norm": 0.0518843053,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 2.7439257942,
+              "num_evals": 128,
+              "num_pl_spikes": 44,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1731605766,
+              "spectral_norm": 1.1268972143,
+              "stable_rank": 2.4349388386,
+              "status": "success",
+              "sv_max": 1.0615541504,
+              "sv_min": 0.0003413244,
+              "warning": "",
+              "weak_rank_loss": 2,
+              "xmax": 1.1268972143,
+              "xmin": 0.0086582038
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.3.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.056998731,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 7.0098088957,
+              "alpha_weighted": -1.1363172909,
+              "entropy": 0.9705497872,
+              "has_esd": true,
+              "lambda_max": 0.6884875795,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.8999298386,
+              "log_norm": 1.4359077786,
+              "log_spectral_norm": -0.1621038901,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 27.2839835236,
+              "num_evals": 128,
+              "num_pl_spikes": 18,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 1.4165255413,
+              "spectral_norm": 0.6884875795,
+              "stable_rank": 39.6288681673,
+              "status": "success",
+              "sv_max": 0.8297515167,
+              "sv_min": 0.2369433102,
+              "warning": "under-trained",
+              "weak_rank_loss": 0,
+              "xmax": 0.6884875795,
+              "xmin": 0.3547810996
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.3.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0388781913,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.7420249185,
+              "alpha_weighted": -0.0836145174,
+              "entropy": 0.8673169616,
+              "has_esd": true,
+              "lambda_max": 0.9321939678,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.0573606623,
+              "log_norm": 0.7216975013,
+              "log_spectral_norm": -0.0304937117,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 5.2686275842,
+              "num_evals": 128,
+              "num_pl_spikes": 51,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.2439322799,
+              "spectral_norm": 0.9321939678,
+              "stable_rank": 5.6518576243,
+              "status": "success",
+              "sv_max": 0.9655019253,
+              "sv_min": 0.084534017,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.9321939678,
+              "xmin": 0.0304881524
+            }
+          ]
+        }
+      ],
+      "validation_loss_minus_archived": 2.550530320277744e-08
+    },
+    "graft": {
+      "validation": {
+        "loss_nats_per_character": 2.2961591227216323,
+        "perplexity": 9.935946321208139,
+        "next_character_accuracy": 0.32998619304631605,
+        "evaluated_targets": 55769
+      },
+      "train_sample_loss": 2.3007367610931397,
+      "confidence_tail_weighted_alpha": 2.67847172219232,
+      "ww_raw_matrices": [
+        {
+          "matrix": "transformer.wte.weight",
+          "aliases": [
+            "transformer.wte.weight",
+            "lm_head.weight"
+          ],
+          "shape": [
+            65,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0459455354,
+              "M": 65,
+              "N": 128,
+              "Q": 1.9692307692,
+              "alpha": 2.2556460323,
+              "alpha_weighted": 1.9795101483,
+              "entropy": 0.7233305944,
+              "has_esd": true,
+              "lambda_max": 7.5436257531,
+              "layer_type": "dense",
+              "log_alpha_norm": 2.0601915071,
+              "log_norm": 1.4110184036,
+              "log_spectral_norm": 0.8775801345,
+              "longname": "0",
+              "matrix_rank": 65,
+              "norm": 25.7643033284,
+              "num_evals": 65,
+              "num_pl_spikes": 19,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.288064956,
+              "spectral_norm": 7.5436257531,
+              "stable_rank": 3.4153740087,
+              "status": "success",
+              "sv_max": 2.7465661749,
+              "sv_min": 0.0862603996,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 7.5436257531,
+              "xmin": 0.3239779477
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.wpe.weight",
+          "aliases": [
+            "transformer.wpe.weight"
+          ],
+          "shape": [
+            64,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.064554231,
+              "M": 64,
+              "N": 128,
+              "Q": 2.0,
+              "alpha": 2.604617996,
+              "alpha_weighted": 0.6195242897,
+              "entropy": 0.7469374555,
+              "has_esd": true,
+              "lambda_max": 1.7292433104,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.6399445131,
+              "log_norm": 0.7322214533,
+              "log_spectral_norm": 0.2378561043,
+              "longname": "0",
+              "matrix_rank": 64,
+              "norm": 5.397857972,
+              "num_evals": 64,
+              "num_pl_spikes": 15,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.414310585,
+              "spectral_norm": 1.7292433104,
+              "stable_rank": 3.1215144448,
+              "status": "success",
+              "sv_max": 1.3150069621,
+              "sv_min": 0.0566800465,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.7292433104,
+              "xmin": 0.0902451342
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.0.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0670702619,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 2.8218308511,
+              "alpha_weighted": 2.5382094565,
+              "entropy": 0.8449672455,
+              "has_esd": true,
+              "lambda_max": 7.9339652153,
+              "layer_type": "dense",
+              "log_alpha_norm": 2.6232244125,
+              "log_norm": 1.7070388133,
+              "log_spectral_norm": 0.8994902921,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 50.9376392472,
+              "num_evals": 128,
+              "num_pl_spikes": 20,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.4073737627,
+              "spectral_norm": 7.9339652153,
+              "stable_rank": 6.4201994671,
+              "status": "success",
+              "sv_max": 2.8167295247,
+              "sv_min": 0.1941943482,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 7.9339652153,
+              "xmin": 0.6262823099
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.0.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0695753648,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.7091559505,
+              "alpha_weighted": -0.6177705818,
+              "entropy": 0.7399583231,
+              "has_esd": true,
+              "lambda_max": 0.4350630946,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.0960443664,
+              "log_norm": 0.6292854479,
+              "log_spectral_norm": -0.3614477553,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 4.2587823735,
+              "num_evals": 128,
+              "num_pl_spikes": 61,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.0907981153,
+              "spectral_norm": 0.4350630946,
+              "stable_rank": 9.7888844776,
+              "status": "success",
+              "sv_max": 0.6595931281,
+              "sv_min": 0.0007712886,
+              "warning": "over-trained",
+              "weak_rank_loss": 1,
+              "xmax": 0.4350630946,
+              "xmin": 0.0080260637
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.0.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0615776837,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.3040431894,
+              "alpha_weighted": 0.5913414473,
+              "entropy": 0.9217755301,
+              "has_esd": true,
+              "lambda_max": 1.8057341156,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.4747152428,
+              "log_norm": 1.6407618556,
+              "log_spectral_norm": 0.2566538032,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 43.7282256671,
+              "num_evals": 128,
+              "num_pl_spikes": 75,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1505779373,
+              "spectral_norm": 1.8057341156,
+              "stable_rank": 24.2163147322,
+              "status": "success",
+              "sv_max": 1.343776066,
+              "sv_min": 0.2485048003,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.8057341156,
+              "xmin": 0.1854593584
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.0.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.0.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0594662099,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 1.6768437964,
+              "alpha_weighted": 0.2985881769,
+              "entropy": 0.7753705801,
+              "has_esd": true,
+              "lambda_max": 1.5068346148,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.1979155436,
+              "log_norm": 1.3132859284,
+              "log_spectral_norm": 0.1780655882,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 20.5724458748,
+              "num_evals": 128,
+              "num_pl_spikes": 114,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.0633922296,
+              "spectral_norm": 1.5068346148,
+              "stable_rank": 13.652756363,
+              "status": "success",
+              "sv_max": 1.2275319201,
+              "sv_min": 0.0920104756,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 1.5068346148,
+              "xmin": 0.0138379893
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.1.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0745001294,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 3.4915771152,
+              "alpha_weighted": 0.8869939598,
+              "entropy": 0.9272022604,
+              "has_esd": true,
+              "lambda_max": 1.7948914896,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.0667501908,
+              "log_norm": 1.3939218593,
+              "log_spectral_norm": 0.2540381984,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 24.7697634599,
+              "num_evals": 128,
+              "num_pl_spikes": 35,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.4211534,
+              "spectral_norm": 1.7948914896,
+              "stable_rank": 13.8001453588,
+              "status": "success",
+              "sv_max": 1.3397356044,
+              "sv_min": 0.1734360025,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.7948914896,
+              "xmin": 0.2311358103
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.1.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0600232638,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.8976420429,
+              "alpha_weighted": 0.0149836391,
+              "entropy": 0.62291714,
+              "has_esd": true,
+              "lambda_max": 1.0183473203,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.1589866613,
+              "log_norm": 0.5221911278,
+              "log_spectral_norm": 0.0078959249,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 3.3280598497,
+              "num_evals": 128,
+              "num_pl_spikes": 47,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.130934549,
+              "spectral_norm": 1.0183473203,
+              "stable_rank": 3.2680989907,
+              "status": "success",
+              "sv_max": 1.0091319638,
+              "sv_min": 0.0013259326,
+              "warning": "over-trained",
+              "weak_rank_loss": 0,
+              "xmax": 1.0183473203,
+              "xmin": 0.0085427557
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.1.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0684395878,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 4.8518550312,
+              "alpha_weighted": -0.445613392,
+              "entropy": 0.9644861301,
+              "has_esd": true,
+              "lambda_max": 0.8093867278,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.1249536064,
+              "log_norm": 1.4724471107,
+              "log_spectral_norm": -0.0918439214,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 29.6788528595,
+              "num_evals": 128,
+              "num_pl_spikes": 18,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.9078909376,
+              "spectral_norm": 0.8093867278,
+              "stable_rank": 36.6683216318,
+              "status": "success",
+              "sv_max": 0.8996592287,
+              "sv_min": 0.226896051,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.8093867278,
+              "xmin": 0.3796131192
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.1.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.1.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0500752876,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.1052865514,
+              "alpha_weighted": -0.5162249584,
+              "entropy": 0.8593916701,
+              "has_esd": true,
+              "lambda_max": 0.5685856169,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.1662808284,
+              "log_norm": 0.893167371,
+              "log_spectral_norm": -0.2452041306,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 7.8192909098,
+              "num_evals": 128,
+              "num_pl_spikes": 83,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1213209604,
+              "spectral_norm": 0.5685856169,
+              "stable_rank": 13.7521785251,
+              "status": "success",
+              "sv_max": 0.7540461636,
+              "sv_min": 0.0884621381,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.5685856169,
+              "xmin": 0.0220118193
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.2.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0663276384,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 3.9222024303,
+              "alpha_weighted": 0.3986924846,
+              "entropy": 0.944484575,
+              "has_esd": true,
+              "lambda_max": 1.2637179517,
+              "layer_type": "dense",
+              "log_alpha_norm": 0.5811714617,
+              "log_norm": 1.3655342649,
+              "log_spectral_norm": 0.1016501549,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 23.2024724097,
+              "num_evals": 128,
+              "num_pl_spikes": 27,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.5623781199,
+              "spectral_norm": 1.2637179517,
+              "stable_rank": 18.3604833485,
+              "status": "success",
+              "sv_max": 1.1241521035,
+              "sv_min": 0.1748403462,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 1.2637179517,
+              "xmin": 0.2535034822
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.2.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0423342602,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.9947333941,
+              "alpha_weighted": -0.1094561629,
+              "entropy": 0.6446754321,
+              "has_esd": true,
+              "lambda_max": 0.8813074116,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.0389041034,
+              "log_norm": 0.4196368796,
+              "log_spectral_norm": -0.0548725776,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 2.628069703,
+              "num_evals": 128,
+              "num_pl_spikes": 46,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1466654375,
+              "spectral_norm": 0.8813074116,
+              "stable_rank": 2.9820124834,
+              "status": "success",
+              "sv_max": 0.938779746,
+              "sv_min": 9.67215e-05,
+              "warning": "over-trained",
+              "weak_rank_loss": 1,
+              "xmax": 0.8813074116,
+              "xmin": 0.0085619561
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.2.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0618006323,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 5.7977028254,
+              "alpha_weighted": -0.6711385004,
+              "entropy": 0.9675837952,
+              "has_esd": true,
+              "lambda_max": 0.7660208969,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.2986930813,
+              "log_norm": 1.4573472353,
+              "log_spectral_norm": -0.1157593827,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 28.6646890696,
+              "num_evals": 128,
+              "num_pl_spikes": 22,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 1.0228736792,
+              "spectral_norm": 0.7660208969,
+              "stable_rank": 37.4202442589,
+              "status": "success",
+              "sv_max": 0.8752261976,
+              "sv_min": 0.2325450883,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.7660208969,
+              "xmin": 0.3511253453
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.2.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.2.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0396474241,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.2791159825,
+              "alpha_weighted": -0.5194536659,
+              "entropy": 0.8790549732,
+              "has_esd": true,
+              "lambda_max": 0.5916720777,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.1103030945,
+              "log_norm": 0.81890406,
+              "log_spectral_norm": -0.2279189255,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 6.5902829322,
+              "num_evals": 128,
+              "num_pl_spikes": 70,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1528836017,
+              "spectral_norm": 0.5916720777,
+              "stable_rank": 11.1384044988,
+              "status": "success",
+              "sv_max": 0.7692022346,
+              "sv_min": 0.0883658048,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.5916720777,
+              "xmin": 0.0259654081
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.attn.c_attn.weight",
+          "aliases": [
+            "transformer.h.3.attn.c_attn.weight"
+          ],
+          "shape": [
+            384,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0646391697,
+              "M": 128,
+              "N": 384,
+              "Q": 3.0,
+              "alpha": 3.3844229318,
+              "alpha_weighted": 1.322975658,
+              "entropy": 0.9217561056,
+              "has_esd": true,
+              "lambda_max": 2.4598090711,
+              "layer_type": "dense",
+              "log_alpha_norm": 1.3651854187,
+              "log_norm": 1.3941258026,
+              "log_spectral_norm": 0.3909013987,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 24.7813979957,
+              "num_evals": 128,
+              "num_pl_spikes": 44,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.3594652821,
+              "spectral_norm": 2.4598090711,
+              "stable_rank": 10.07452094,
+              "status": "success",
+              "sv_max": 1.5683778471,
+              "sv_min": 0.1775180114,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 2.4598090711,
+              "xmin": 0.2019631033
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.attn.c_proj.weight",
+          "aliases": [
+            "transformer.h.3.attn.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0507029799,
+              "M": 128,
+              "N": 128,
+              "Q": 1.0,
+              "alpha": 1.9328955301,
+              "alpha_weighted": -0.3909181718,
+              "entropy": 0.6548835462,
+              "has_esd": true,
+              "lambda_max": 0.6277043629,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.0579744388,
+              "log_norm": 0.4621587398,
+              "log_spectral_norm": -0.2022448527,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 2.898402795,
+              "num_evals": 128,
+              "num_pl_spikes": 46,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.1375479418,
+              "spectral_norm": 0.6277043629,
+              "stable_rank": 4.6174647911,
+              "status": "success",
+              "sv_max": 0.7922779581,
+              "sv_min": 0.0001838839,
+              "warning": "over-trained",
+              "weak_rank_loss": 1,
+              "xmax": 0.6277043629,
+              "xmin": 0.0087162645
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.mlp.c_fc.weight",
+          "aliases": [
+            "transformer.h.3.mlp.c_fc.weight"
+          ],
+          "shape": [
+            512,
+            128
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.1114820434,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 8.3426252665,
+              "alpha_weighted": -2.3622889085,
+              "entropy": 0.9723643052,
+              "has_esd": true,
+              "lambda_max": 0.5210040056,
+              "layer_type": "dense",
+              "log_alpha_norm": -1.7164954134,
+              "log_norm": 1.4356944554,
+              "log_spectral_norm": -0.2831589377,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 27.2705850641,
+              "num_evals": 128,
+              "num_pl_spikes": 16,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 1.8356563166,
+              "spectral_norm": 0.5210040056,
+              "stable_rank": 52.3423712138,
+              "status": "success",
+              "sv_max": 0.721806072,
+              "sv_min": 0.2356610194,
+              "warning": "under-trained",
+              "weak_rank_loss": 0,
+              "xmax": 0.5210040056,
+              "xmin": 0.3656456075
+            }
+          ]
+        },
+        {
+          "matrix": "transformer.h.3.mlp.c_proj.weight",
+          "aliases": [
+            "transformer.h.3.mlp.c_proj.weight"
+          ],
+          "shape": [
+            128,
+            512
+          ],
+          "fits": [
+            {
+              "layer_id": 1,
+              "name": "0",
+              "D": 0.0389571679,
+              "M": 128,
+              "N": 512,
+              "Q": 4.0,
+              "alpha": 2.5982110749,
+              "alpha_weighted": -0.8915962613,
+              "entropy": 0.9083607674,
+              "has_esd": true,
+              "lambda_max": 0.4537767622,
+              "layer_type": "dense",
+              "log_alpha_norm": -0.6111105601,
+              "log_norm": 0.7307048359,
+              "log_spectral_norm": -0.343157748,
+              "longname": "0",
+              "matrix_rank": 128,
+              "norm": 5.3790407683,
+              "num_evals": 128,
+              "num_pl_spikes": 58,
+              "rank_loss": 0,
+              "rf": 1,
+              "sigma": 0.2098553952,
+              "spectral_norm": 0.4537767622,
+              "stable_rank": 11.8539361564,
+              "status": "success",
+              "sv_max": 0.6736295437,
+              "sv_min": 0.0894529141,
+              "warning": "",
+              "weak_rank_loss": 0,
+              "xmax": 0.4537767622,
+              "xmin": 0.0299825474
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
