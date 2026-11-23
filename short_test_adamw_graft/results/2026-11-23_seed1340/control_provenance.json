@@ -1,0 +1,14 @@
+[
+  {
+    "arm": "adamw",
+    "original_archive": "GPT_AdamW_SGDM_20261023T031957_Part005.zip",
+    "original_member": "confirmation/adamw_lr0.001_wd0_seed1340/result.json",
+    "sha256": "e3adcd3b62dd92a6317f37de33af924b96cece777ff21bf9fc6584a2dd8a0328"
+  },
+  {
+    "arm": "sgdm",
+    "original_archive": "GPT_AdamW_SGDM_20261023T031957_Part006.zip",
+    "original_member": "confirmation/sgdm_lr0.1_m0.9_seed1340/result.json",
+    "sha256": "9a5b3b2ebd12f9fa908b018bc782e56975a885d4ec129860b9e0744676186d21"
+  }
+]
