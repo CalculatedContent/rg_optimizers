@@ -18,3 +18,5 @@ The trajectory covers initialization and all 40 validation checkpoints. The laye
 [Comparison](comparison.csv) · [Trajectory](trajectory.csv) · [Per-layer fits](layers.csv) · [Full raw graft and control outputs](raw_results.zip) · [Frozen design](design.json) · [Archived control provenance](control_provenance.json)
 
 To reproduce this specific run, follow the [experiment setup](../../README.md) and pass `--arm graft --seed 1340` to the training command. The remaining four confirmation seeds were held for review.
+
+[Download the trained checkpoint](TinyShakespeare_graft_seed1340_checkpoint.zip). The archive contains the endpoint and validation-selected weights, optimizer and RNG state, training log, raw results, and run design.
