@@ -1,5 +1,14 @@
 # Baseline notebooks
 
+## Muon experiments in the spectral RG paper
+
+The 30-epoch notebook follows 3 seeds and records layer α and ERG gaps. A separate 500-epoch MNIST experiment in WeightWatcher-Examples records an average layer α of 2.402 at epoch 200 and 2.124 at epoch 500.
+
+[Results and code](../../experiments/adamw_modified/comparisons/rg_paper/README.md) · [Tiếng Việt](../../experiments/adamw_modified/comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../../experiments/adamw_modified/comparisons/rg_paper/results.json)
+
+![Layer alpha and ERG gaps across 3 seeds in the 30-epoch Muon experiment.](../../experiments/adamw_modified/comparisons/rg_paper/plots/figure18_muon_30.png)
+
+
 These notebooks are the interactive entry points for the audited reference
 experiments. Read:
 

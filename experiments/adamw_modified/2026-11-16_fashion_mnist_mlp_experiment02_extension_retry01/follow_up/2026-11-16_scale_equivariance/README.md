@@ -1,5 +1,14 @@
 # Fashion-MNIST scale-audited follow-up
 
+## Results at a glance
+
+All 15 augmented runs reached epoch 120 across 5 matched seeds and 3 optimizers. Their predictions enter the calibration analysis. The results table in this folder gives the optimizer-specific effects.
+
+[Results and code](../../../comparisons/rg_paper/README.md) · [Tiếng Việt](../../../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../../../comparisons/rg_paper/results.json)
+
+![Layer alpha in the separate matched Fashion augmentation study.](plots/alpha_trajectories.png)
+
+
 Execution status: see [STATUS.json](STATUS.json) and the exact GitHub Actions run linked there. The new protocol is frozen before launch; prior experiments remain unchanged.
 
 - Same dense 784→256→256→10 ReLU MLP and frozen magnitude-only kernel.

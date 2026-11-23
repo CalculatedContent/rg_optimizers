@@ -1,0 +1,274 @@
+{
+  "model_checkpoints": 1170,
+  "layer_spectra_recounted": 3510,
+  "checkpoints_by_schedule": {
+    "Digits sweep": 540,
+    "Fashion original": 341,
+    "Fashion continuation": 289
+  },
+  "central_epoch120": [
+    {
+      "cohort": "Digits sweep",
+      "arm": "adamw",
+      "seeds": 5,
+      "alpha_w": 1.855,
+      "test_accuracy_pct": 98.22
+    },
+    {
+      "cohort": "Digits sweep",
+      "arm": "magnitude_graft",
+      "seeds": 5,
+      "alpha_w": 2.043,
+      "test_accuracy_pct": 98.344
+    },
+    {
+      "cohort": "Digits sweep",
+      "arm": "sgdm",
+      "seeds": 5,
+      "alpha_w": 2.025,
+      "test_accuracy_pct": 98.446
+    },
+    {
+      "cohort": "Fashion continuation",
+      "arm": "adamw",
+      "seeds": 2,
+      "alpha_w": 1.867,
+      "test_accuracy_pct": 89.81
+    },
+    {
+      "cohort": "Fashion continuation",
+      "arm": "magnitude_graft",
+      "seeds": 2,
+      "alpha_w": 2.067,
+      "test_accuracy_pct": 89.75
+    },
+    {
+      "cohort": "Fashion continuation",
+      "arm": "sgdm",
+      "seeds": 2,
+      "alpha_w": 2.016,
+      "test_accuracy_pct": 89.73
+    },
+    {
+      "cohort": "Fashion original",
+      "arm": "adamw",
+      "seeds": 3,
+      "alpha_w": 2.188,
+      "test_accuracy_pct": 89.777
+    },
+    {
+      "cohort": "Fashion original",
+      "arm": "magnitude_graft",
+      "seeds": 3,
+      "alpha_w": 2.646,
+      "test_accuracy_pct": 89.583
+    },
+    {
+      "cohort": "Fashion original",
+      "arm": "sgdm",
+      "seeds": 3,
+      "alpha_w": 1.992,
+      "test_accuracy_pct": 89.63
+    }
+  ],
+  "best_test_checkpoints": [
+    {
+      "dataset": "Digits",
+      "arm": "adamw",
+      "cohort": "Digits sweep",
+      "seed": 31003,
+      "batch": 128,
+      "rate": 2.0,
+      "epoch": 120,
+      "test_accuracy_pct": 98.58,
+      "alpha_model": 2.043393
+    },
+    {
+      "dataset": "Digits",
+      "arm": "magnitude_graft",
+      "cohort": "Digits sweep",
+      "seed": 31005,
+      "batch": 256,
+      "rate": 2.0,
+      "epoch": 30,
+      "test_accuracy_pct": 98.67,
+      "alpha_model": 1.971819
+    },
+    {
+      "dataset": "Digits",
+      "arm": "sgdm",
+      "cohort": "Digits sweep",
+      "seed": 31001,
+      "batch": 128,
+      "rate": 0.5,
+      "epoch": 120,
+      "test_accuracy_pct": 98.58,
+      "alpha_model": 2.038898
+    },
+    {
+      "dataset": "Fashion",
+      "arm": "adamw",
+      "cohort": "Fashion original",
+      "seed": 31004,
+      "batch": 128,
+      "rate": 1.0,
+      "epoch": 60,
+      "test_accuracy_pct": 90.35,
+      "alpha_model": 2.296475
+    },
+    {
+      "dataset": "Fashion",
+      "arm": "magnitude_graft",
+      "cohort": "Fashion continuation",
+      "seed": 31005,
+      "batch": 128,
+      "rate": 0.5,
+      "epoch": 20,
+      "test_accuracy_pct": 90.26,
+      "alpha_model": 2.002294
+    },
+    {
+      "dataset": "Fashion",
+      "arm": "sgdm",
+      "cohort": "Fashion original",
+      "seed": 31004,
+      "batch": 128,
+      "rate": 0.5,
+      "epoch": 90,
+      "test_accuracy_pct": 90.2,
+      "alpha_model": 2.076547
+    }
+  ],
+  "validation_winners": [
+    {
+      "cohort": "Digits sweep",
+      "seed": 31004,
+      "batch": 128,
+      "rate": 1.0,
+      "arm": "magnitude_graft",
+      "validation_accuracy_pct": 98.42,
+      "test_accuracy_pct": 98.45,
+      "alpha_model": 1.986298
+    },
+    {
+      "cohort": "Fashion continuation",
+      "seed": 31001,
+      "batch": 256,
+      "rate": 1.0,
+      "arm": "magnitude_graft",
+      "validation_accuracy_pct": 90.88,
+      "test_accuracy_pct": 89.54,
+      "alpha_model": 2.102005
+    },
+    {
+      "cohort": "Fashion original",
+      "seed": 31003,
+      "batch": 128,
+      "rate": 0.5,
+      "arm": "sgdm",
+      "validation_accuracy_pct": 91.06,
+      "test_accuracy_pct": 89.77,
+      "alpha_model": 2.008569
+    }
+  ],
+  "erg_gap": {
+    "epoch120_hidden_layers": 536,
+    "positive_above_2": 246,
+    "above_2": 254,
+    "negative_below_2": 133,
+    "below_2": 282,
+    "closest_layer_alpha": 1.999527,
+    "closest_gap": 1,
+    "paired_digit_change_in_absolute_gap": [
+      {
+        "layer": "fc1",
+        "change": 15.2,
+        "low95": 5.687,
+        "high95": 24.713
+      },
+      {
+        "layer": "fc2",
+        "change": -39.2,
+        "low95": -50.661,
+        "high95": -27.739
+      },
+      {
+        "layer": "fc3",
+        "change": -0.8,
+        "low95": -1.355,
+        "high95": -0.245
+      }
+    ]
+  },
+  "muon_unweighted": [
+    {
+      "epoch": 200,
+      "alpha": 2.402,
+      "sd_across_layers": 0.339,
+      "test_accuracy_pct": 99.23
+    },
+    {
+      "epoch": 500,
+      "alpha": 2.124,
+      "sd_across_layers": 0.17,
+      "test_accuracy_pct": 99.22
+    }
+  ],
+  "confidence_pairs": 292,
+  "high_confidence": [
+    {
+      "dataset": "Digits",
+      "optimizer": "adamw",
+      "widened": 45,
+      "eligible": 45
+    },
+    {
+      "dataset": "Digits",
+      "optimizer": "magnitude_graft",
+      "widened": 21,
+      "eligible": 40
+    },
+    {
+      "dataset": "Digits",
+      "optimizer": "sgdm",
+      "widened": 15,
+      "eligible": 46
+    },
+    {
+      "dataset": "Fashion",
+      "optimizer": "adamw",
+      "widened": 32,
+      "eligible": 32
+    },
+    {
+      "dataset": "Fashion",
+      "optimizer": "magnitude_graft",
+      "widened": 23,
+      "eligible": 23
+    },
+    {
+      "dataset": "Fashion",
+      "optimizer": "sgdm",
+      "widened": 20,
+      "eligible": 20
+    }
+  ],
+  "paired_fashion_adamw": {
+    "hardest_tenth_pct": 91.26,
+    "validation_logit_scales": [
+      1.4124,
+      1.4248
+    ],
+    "log_loss_rise_reproduced_pct": 57.84,
+    "top8_trace_shares_pct_at_60_120": {
+      "fc1": [
+        28.124,
+        26.462
+      ],
+      "fc2": [
+        49.439,
+        47.873
+      ]
+    }
+  }
+}

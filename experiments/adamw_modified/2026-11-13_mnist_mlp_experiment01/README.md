@@ -1,5 +1,14 @@
 # Experiment 01: magnitude-only AdamW graft
 
+## Results at a glance
+
+135 digit runs reached epoch 120. At batch 256 and the nominal rate, all 5 seed pairs moved closer to α = 2 with modified AdamW. Their weighted average α moved from 1.855 to 2.043, and average test accuracy rose from 98.220% to 98.344%.
+
+[Results and code](../comparisons/rg_paper/README.md) · [Tiếng Việt](../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../comparisons/rg_paper/results.json)
+
+![Digit trajectories at the matched central setting.](plots/Central_Setting_Trajectories_Detail.png)
+
+
 **Complete. Main presentation: 120 runs across eight shared stable settings, five paired seeds, three optimizers.** The batch128/LR×2 graft collapse is reported separately as a hyperparameter-setting failure. No new training was performed for this cleanup.
 
 The graft keeps Adam's adaptive update direction, moments, bias correction and bias updates. Only matrix-update magnitudes are replaced with SGDM target magnitudes computed along the graft's own gradient history. MNIST; ReLU MLP 784→256→256→10; 120 epochs; WeightWatcher 0.7.7 default fits.

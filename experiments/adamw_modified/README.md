@@ -1,5 +1,16 @@
 # Modified AdamW experiments
 
+## Results across the optimizer sweeps
+
+At epoch 120, the matched digit and Fashion continuation runs recover average α near 2 with the AdamW correction. The original Fashion schedule already places AdamW above 2 and shifts higher after correction. Each dated folder below retains its own training history.
+
+[Results and code](comparisons/rg_paper/README.md) · [Tiếng Việt](comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](comparisons/rg_paper/results.json)
+
+![Accuracy versus average α. The panels pool schedules within each dataset and optimizer.](comparisons/rg_paper/plots/figure15_accuracy.png)
+
+
+
+
 This campaign studies a **magnitude-only** modification: retain Adam's adaptive matrix-update direction and moment history, and replace its Frobenius magnitude with the SGDM target magnitude computed from that same run's gradient history. Bias updates remain AdamW. Controls are native AdamW and SGDM with matched decay.
 
 ## Experiments

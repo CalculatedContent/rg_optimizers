@@ -1,5 +1,14 @@
 # Experiment02: Fashion-MNIST — recovery running
 
+## Results at a glance
+
+The original Fashion sweep and recovery contribute 341 saved checkpoints, including 84 at epoch 120. On the 3 matched central seeds, average α was 1.992 for momentum SGD, 2.188 for AdamW and 2.646 for modified AdamW. The upward shift moved this group farther above 2.
+
+[Results and code](../comparisons/rg_paper/README.md) · [Tiếng Việt](../comparisons/rg_paper/RESULTS.vi.md) · [Numbers (JSON)](../comparisons/rg_paper/results.json)
+
+![Paper comparison of signed ERG gaps in FC1 and FC2. The Fashion row includes both schedules.](../comparisons/rg_paper/plots/figure16_erg_gap.png)
+
+
 **Authorized recovery is running: preserve56 completed runs, resume6 saved states and complete58 unstarted runs. Final120-run verification remains pending.**
 
 [Live recovery](https://github.com/CalculatedContent/rg_optimizers/actions/runs/43706454292) · [Recovery protocol](recovery/README.md)
