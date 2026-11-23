@@ -1,0 +1,9 @@
+stage,reference_lr,step,status,validation_loss,selected
+screen,0.05,4000,complete,1.8102020008558994,False
+screen,0.1,4000,complete,1.7602041709070155,True
+screen,0.2,4000,complete,1.7108861387452508,True
+screen,0.4,4000,complete,1.7167847995429386,True
+screen,0.8,4000,complete,1.7632156284789677,False
+full_budget,0.1,20000,complete,1.4805938273325745,False
+full_budget,0.2,20000,complete,1.479674025120915,False
+full_budget,0.4,20000,complete,1.4747552584138863,True
