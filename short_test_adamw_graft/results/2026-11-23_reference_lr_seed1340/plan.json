@@ -1,0 +1,17 @@
+{
+  "reference_rates": [
+    0.05,
+    0.1,
+    0.2,
+    0.4,
+    0.8
+  ],
+  "native_peak_lr": 0.001,
+  "original_reference_rate": 0.1,
+  "calibration_seed": 2027,
+  "confirmation_seed": 1340,
+  "screen_steps": 4000,
+  "final_steps": 20000,
+  "driver_sha256": "df1f44704e709d88af17e50d02eb7ffcdbbc5b6a8ba68a691c8b6da59638d881",
+  "method": "Advance the two alternative rates with lowest validation loss at 4000 plus the original rate. Choose the best alternative by final validation loss at 20000. Ties favor the lower rate. Test only this alternative on seed 1340; archived baselines use the same seed."
+}
