@@ -1,0 +1,1162 @@
+[
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/README.md",
+    "local_path": "data/raw/native/README.md",
+    "bytes": 2843,
+    "git_blob_sha": "431a3b1e92bd5ee586ebbf7c355d55d9e659834c",
+    "sha256": "a6389e97892daa46ac0111fbf26aef6e34eaba3915c67428f10ddf5053d6c911",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/README.md"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/historical_comparison.json",
+    "local_path": "data/raw/native/analysis/historical_comparison.json",
+    "bytes": 1130,
+    "git_blob_sha": "7dba56be36d1177b6170983004ce88c6ff821b91",
+    "sha256": "8bec747fe167a7ec8e3807805e880abaff532fae26162dbb370a60ac3dff1f78",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/historical_comparison.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/per_matrix.csv",
+    "local_path": "data/raw/native/analysis/per_matrix.csv",
+    "bytes": 1429357,
+    "git_blob_sha": "dabb205631f1bb116e4890fc9af4faec7f20f33c",
+    "sha256": "206737ec0bf0cef918d05f27d5b12562c0f7fe8965b30c2385268d32bbe22f1f",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/per_matrix.csv"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/per_seed.csv",
+    "local_path": "data/raw/native/analysis/per_seed.csv",
+    "bytes": 21503,
+    "git_blob_sha": "657d425b3edcee12642a5d5b96848a4038455a66",
+    "sha256": "e533366b8a416f5883e1eb3f4ca1924c670d6aa83aba0a3a051a3f8b93af5cd5",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/per_seed.csv"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/status.json",
+    "local_path": "data/raw/native/analysis/status.json",
+    "bytes": 83,
+    "git_blob_sha": "e7d7ade9c1509800fcd2d62c281b118fdc3e5a07",
+    "sha256": "518199fd75435bef9cdf1edfe1d5a03b82472b639c2b1274605c88e0650e2df7",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/status.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/trajectory.csv",
+    "local_path": "data/raw/native/analysis/trajectory.csv",
+    "bytes": 11227,
+    "git_blob_sha": "aa6ff67feb289fad4814334e2d883cb99f0e43fa",
+    "sha256": "8b2b71b8b9d612a3bfb8543800c932806e5223e059863769295470d86e217a31",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/analysis/trajectory.csv"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/replay.py",
+    "local_path": "data/raw/native/replay.py",
+    "bytes": 4632,
+    "git_blob_sha": "6b5fcaf7a53dd319406de458732f05566189aa94",
+    "sha256": "4b0642b04b1135b8b1f2c1b3c0f188756d19d9d81ec0d4bae069359603d45393",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/replay.py"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/adamw/seed_1340/progress.json",
+    "local_path": "data/raw/native/runs/seed_1340/adamw/seed_1340/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "9df43c6eab9541949c598b558a7a097f696a739e",
+    "sha256": "49e06db8c2e8ede5de83646087db6e057e0844bf29f0c6b0af9e85f48dc70845",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/adamw/seed_1340/progress.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/adamw/seed_1340/result.json",
+    "local_path": "data/raw/native/runs/seed_1340/adamw/seed_1340/result.json",
+    "bytes": 1203622,
+    "git_blob_sha": "8365cbcb6fda7d92f670952f5ab399c29e25155b",
+    "sha256": "703f7a9abc3c11282991ace46a2ac41477c28315fac93e07e5e5d3352b746a0f",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/adamw/seed_1340/result.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/design.json",
+    "local_path": "data/raw/native/runs/seed_1340/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/design.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/execution.json",
+    "local_path": "data/raw/native/runs/seed_1340/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "6af5f03f9ee01a2f9be768dae26cbb30975f1a0c",
+    "sha256": "f06a1f4b67f9bf1cd57fd79a1045c5c2b600bc4155ffd6af657bcab98f30d530",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/execution.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/training.log",
+    "local_path": "data/raw/native/runs/seed_1340/training.log",
+    "bytes": 2103,
+    "git_blob_sha": "6ac3f7552982f0ebb6314c692d53f4d227f3114b",
+    "sha256": "4318e7b60a8c2243c6030774b7f3e7544a00c20d1af86b2ba96ee60a6cad24f8",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1340/training.log"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/adamw/seed_1341/progress.json",
+    "local_path": "data/raw/native/runs/seed_1341/adamw/seed_1341/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "daa13073c6a10fc5b6d177fd4209832d3a2cec3c",
+    "sha256": "7bb2a25f1881d1e109d1a6202532955e3f47c0d7cb5054df84dd699a0f9478a6",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/adamw/seed_1341/progress.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/adamw/seed_1341/result.json",
+    "local_path": "data/raw/native/runs/seed_1341/adamw/seed_1341/result.json",
+    "bytes": 1203926,
+    "git_blob_sha": "c75970fe9825781039ab927954a04eae9a772307",
+    "sha256": "063c3896add7db12f276184e5618605a4a4aa244233d7affd100349eebe37a04",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/adamw/seed_1341/result.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/design.json",
+    "local_path": "data/raw/native/runs/seed_1341/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/design.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/execution.json",
+    "local_path": "data/raw/native/runs/seed_1341/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "ad04e095f090398162cc029d31604fc6bba0d074",
+    "sha256": "e08d675c7f6a4b4083ffecb53d2ce3908d178ffd432b01099cf6df22dc062a6d",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/execution.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/training.log",
+    "local_path": "data/raw/native/runs/seed_1341/training.log",
+    "bytes": 2103,
+    "git_blob_sha": "9d2332eb80fb82bf13568f6850442c005fc8a8a1",
+    "sha256": "dc57d4a3dd3a776a8907ad37d50d7f915315a8344a6b472840bd50c7095eb36e",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1341/training.log"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/adamw/seed_1342/progress.json",
+    "local_path": "data/raw/native/runs/seed_1342/adamw/seed_1342/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "cf3ddf037bc124d963b5c01be747feebeefac45d",
+    "sha256": "1a5c3b438f8a3f7a5fe22fd07a75c026f116f121bd20064303b71b5fc0eee1b6",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/adamw/seed_1342/progress.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/adamw/seed_1342/result.json",
+    "local_path": "data/raw/native/runs/seed_1342/adamw/seed_1342/result.json",
+    "bytes": 1203971,
+    "git_blob_sha": "8ee2165e03eca84a60bd182968554f329798f1d6",
+    "sha256": "fffb54652e81ca9ca56ebad35cd0d10b5b2fa4a4ce1ad819b7fde0ea281e8ac3",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/adamw/seed_1342/result.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/design.json",
+    "local_path": "data/raw/native/runs/seed_1342/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/design.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/execution.json",
+    "local_path": "data/raw/native/runs/seed_1342/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "28efca650e15e08996344f9aca7f2dd142e24429",
+    "sha256": "c1bbcb11be5e6e3e9786d9ab23e8c6a204f4a3fc62b1be048a8756292b88c605",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/execution.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/training.log",
+    "local_path": "data/raw/native/runs/seed_1342/training.log",
+    "bytes": 2103,
+    "git_blob_sha": "f27affa4c92e3cf2afc4031d2b6c47e5d1a00803",
+    "sha256": "3c140eae8f9fbe9ad7fd4015b44c77b082f258007699d4a9810b6c0b376d9544",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1342/training.log"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/adamw/seed_1343/progress.json",
+    "local_path": "data/raw/native/runs/seed_1343/adamw/seed_1343/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "82e8aeb640a789d723632376182277506a44d3cf",
+    "sha256": "58b076bc1771342a1e0581301732985c79d91d3ae5c0f8791fbd0102da3a8715",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/adamw/seed_1343/progress.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/adamw/seed_1343/result.json",
+    "local_path": "data/raw/native/runs/seed_1343/adamw/seed_1343/result.json",
+    "bytes": 1203678,
+    "git_blob_sha": "653fe7b5c40bb0bbb40a66609e0f233c6764c677",
+    "sha256": "c541f83ebf5e4c2ad6c5e1a5b51badd0c8a754186128ccaaa787711e891a8d82",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/adamw/seed_1343/result.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/design.json",
+    "local_path": "data/raw/native/runs/seed_1343/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/design.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/execution.json",
+    "local_path": "data/raw/native/runs/seed_1343/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "3f58d4acbe8e4055d284409635f462e4e33e7d26",
+    "sha256": "466f802c6d370dd00088d09a6c0d7d9b0445122f32a43350050638bfb9f34747",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/execution.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/training.log",
+    "local_path": "data/raw/native/runs/seed_1343/training.log",
+    "bytes": 2103,
+    "git_blob_sha": "a4da37a1df179090d978634836d8ecbb01e85fc1",
+    "sha256": "39c96907c0c81360cdb89e93118590c2bf79c4775c0b9854c697c854f841b836",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1343/training.log"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/adamw/seed_1344/progress.json",
+    "local_path": "data/raw/native/runs/seed_1344/adamw/seed_1344/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "3fb96290971669473878200e6b2d0356cee0daaf",
+    "sha256": "c3252345ba33766579990e05bc252b9085fa51a0221480ac6afce571a2d01c13",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/adamw/seed_1344/progress.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/adamw/seed_1344/result.json",
+    "local_path": "data/raw/native/runs/seed_1344/adamw/seed_1344/result.json",
+    "bytes": 1203868,
+    "git_blob_sha": "eef5c254fbca3bffb9e9373ef866290307a60c8c",
+    "sha256": "b21385d4b7c56691cb15f471569039ebf04bcfb750e2bfb1900eef68cb9be697",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/adamw/seed_1344/result.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/design.json",
+    "local_path": "data/raw/native/runs/seed_1344/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/design.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/execution.json",
+    "local_path": "data/raw/native/runs/seed_1344/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "22f1c8588a7ff67bedae4968cdbe2fa8a9069a01",
+    "sha256": "f5891f941c34345491434c6280121e0ee1d50c74e27d26043d15d310c873959a",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/execution.json"
+  },
+  {
+    "arm": "native",
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/training.log",
+    "local_path": "data/raw/native/runs/seed_1344/training.log",
+    "bytes": 2103,
+    "git_blob_sha": "91da4457fab6c2c196fd6915d51ecaf280ab1a53",
+    "sha256": "b8d24a68cf6e2a400b192831d7e109e3431324655a1db74168e4644be6e4a397",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/163980048ab7381e02b97a8620b25ddefa52b613/short_test_adamw_graft/experiments/2026-11-24_adamw_replay/runs/seed_1344/training.log"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/ANALYSIS_README.md",
+    "local_path": "data/raw/modified/ANALYSIS_README.md",
+    "bytes": 4207,
+    "git_blob_sha": "00d90749d868822d18bf8fe3f774fe5214d9668a",
+    "sha256": "59cdf0e8adcfba8da7f8ee57776d66654c4f4a9e6260f9ffdd4780acc79def18",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/ANALYSIS_README.md"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/README.md",
+    "local_path": "data/raw/modified/README.md",
+    "bytes": 7864,
+    "git_blob_sha": "10e7dd26c9369e12f5baf23ce12e64adc6d4b681",
+    "sha256": "01617e1eaf4b7147b5ed928c26563420ceb8ba9e291c82e8f42aac4927c4e4cd",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/README.md"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/endpoint_layer_summary.csv",
+    "local_path": "data/raw/modified/analysis/endpoint_layer_summary.csv",
+    "bytes": 2817,
+    "git_blob_sha": "ea09af0b256530d6497d5073e888304f14fb761b",
+    "sha256": "700d7ff57aad48229dfa3be832aa9c96f55fd830d4c66beb34f3a2d3c7e32aad",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/endpoint_layer_summary.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/execution_cohort.json",
+    "local_path": "data/raw/modified/analysis/execution_cohort.json",
+    "bytes": 51147,
+    "git_blob_sha": "70c498cb11801601830edc56ce8065324e448cf8",
+    "sha256": "1e92667614dd5e330127c28243e087c5999cc880c6e0a9365be623dac8ceae96",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/execution_cohort.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/historical_seed1340_discrepancies.csv",
+    "local_path": "data/raw/modified/analysis/historical_seed1340_discrepancies.csv",
+    "bytes": 14420,
+    "git_blob_sha": "a87827a692ccf636c63f490538e4b6293c50b491",
+    "sha256": "d43b6351f54a8b4962526aed5c89e8c2ab16f4c40e53d2f10c8e93609f8bc302",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/historical_seed1340_discrepancies.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/historical_seed1340_metrics.csv",
+    "local_path": "data/raw/modified/analysis/historical_seed1340_metrics.csv",
+    "bytes": 400,
+    "git_blob_sha": "9553b06b1bfdc0a249b11d2dbcbb23764a87f362",
+    "sha256": "8bb1351e70b9e3f5a732c5a5ea09e98ba98fa3a8f474a59e19b181042bc7e216",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/historical_seed1340_metrics.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/layer_alpha_endpoints.csv",
+    "local_path": "data/raw/modified/analysis/layer_alpha_endpoints.csv",
+    "bytes": 14174,
+    "git_blob_sha": "5fc97327374a86674f1027e62546bf67b933c159",
+    "sha256": "25cefd8e5144e9666be12a6bf94d1454a6593563b3e1a37acdfc039eba5cff9a",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/layer_alpha_endpoints.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/layer_alpha_history.csv",
+    "local_path": "data/raw/modified/analysis/layer_alpha_history.csv",
+    "bytes": 576342,
+    "git_blob_sha": "d793bd59aa63cb1bad83c6eb3daa27a2668c55c7",
+    "sha256": "ec7e180795217e6df9fd589c08ab77b3a5f842e914f0dcd77dc084453b56ed63",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/layer_alpha_history.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/metrics_per_seed.csv",
+    "local_path": "data/raw/modified/analysis/metrics_per_seed.csv",
+    "bytes": 1337,
+    "git_blob_sha": "e9cb16e0ab26bc76ade45afb1a295623106ca9dc",
+    "sha256": "195c862a6868993d4a5f39c84326264df27a33342b382fce7077962d4f88571c",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/metrics_per_seed.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/model_alpha_history.csv",
+    "local_path": "data/raw/modified/analysis/model_alpha_history.csv",
+    "bytes": 18138,
+    "git_blob_sha": "821122949ce029080beee51a56c5e8318d261c48",
+    "sha256": "1163bad985c4ba1710739e2a2c2f9fb204dc0c82da5a0a7bb061a340b0d16700",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/model_alpha_history.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/model_alpha_history_summary.csv",
+    "local_path": "data/raw/modified/analysis/model_alpha_history_summary.csv",
+    "bytes": 5828,
+    "git_blob_sha": "0af2b6f5b5f5cc6ca0f65e582a253bcd478f77c2",
+    "sha256": "de661a593968b1a0f28e273019e2f1955ce9dccaff8424cd5110892bea5b539c",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/model_alpha_history_summary.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/paired_metrics_per_seed.csv",
+    "local_path": "data/raw/modified/analysis/paired_metrics_per_seed.csv",
+    "bytes": 1360,
+    "git_blob_sha": "1be051afacfc4c68121953ed7b5ce52b4a0698ff",
+    "sha256": "aadd8de2f3b656636fc30a2cbfdd5cea26478a4f67c6b8b0e2cecb8dc2b2ca0f",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/paired_metrics_per_seed.csv"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/summary.json",
+    "local_path": "data/raw/modified/analysis/summary.json",
+    "bytes": 60272,
+    "git_blob_sha": "e0fb738418e165537e77686a52dfc8f8d275c101",
+    "sha256": "8d0f2fa62f050792be6118c66d9c7188203ed231e7ec5d415dd05f98095147f2",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analysis/summary.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/analyze_results.py",
+    "local_path": "data/raw/modified/analyze_results.py",
+    "bytes": 21190,
+    "git_blob_sha": "633ae743fc23b2f2d8f0153f075e146836dc15c7",
+    "sha256": "afc91e9e32d4dfb40be6af5ce7e0beea6746638497a0b06ad505aac96eb1d86a",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/analyze_results.py"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/archive_seed.py",
+    "local_path": "data/raw/modified/archive_seed.py",
+    "bytes": 11128,
+    "git_blob_sha": "a5ab23e4ca22c65aa19362020a5e1b64cad5a171",
+    "sha256": "39e44f954477f38a1425b02eedd3bdca50853009b24679553f168260ff33803d",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/archive_seed.py"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/cohort_status.json",
+    "local_path": "data/raw/modified/cohort_status.json",
+    "bytes": 1004,
+    "git_blob_sha": "2340347a0dd38d3532c74d9203be156bb6082d64",
+    "sha256": "e5b15b8681cfc5336aaabbb8efdd916435e3fce0ab4eebed98d673781edf9e7f",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/cohort_status.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/complete_cohort.py",
+    "local_path": "data/raw/modified/complete_cohort.py",
+    "bytes": 3356,
+    "git_blob_sha": "e2d7b4bd51e1f6f9107869ee64432565d0ed7a1a",
+    "sha256": "d7d58ac924a9d17e2aaf596281545b5eecff4a1ad3db6869637804e3bbc9aa15",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/complete_cohort.py"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/plan.json",
+    "local_path": "data/raw/modified/plan.json",
+    "bytes": 2261,
+    "git_blob_sha": "616ae5725de63c35c89f088a0f4a455ca27c795c",
+    "sha256": "ac4efefc9224283062498c9bc9b8ed5f9aa3f1e491eea6d8b8e568315b7bb4da",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/plan.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/run_additional_seed.py",
+    "local_path": "data/raw/modified/run_additional_seed.py",
+    "bytes": 5374,
+    "git_blob_sha": "70c1b1866138c00ee9625b95ea2e7b5e3d8bdfd5",
+    "sha256": "91a146d9b794cfb28a41a93f87af293ccd152ecbe734e5439cee63ef8400fb00",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/run_additional_seed.py"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/design.json",
+    "local_path": "data/raw/modified/runs/seed_1340/confirmation/rate_0.4/design.json",
+    "bytes": 2975,
+    "git_blob_sha": "d0dc32cd5b8b29acc5a2da8dc471a88d893a4da8",
+    "sha256": "65f56632bd7e300f1481d76af5dd0e80024822ac81b38c794df23e93e2e36571",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/design.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/history.json",
+    "local_path": "data/raw/modified/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/history.json",
+    "bytes": 1080447,
+    "git_blob_sha": "23792cfa3b0e809ad129f6fa1c6d8af05f56a2ae",
+    "sha256": "e3ab73193869674591e0324d829ef085f89fb208a8c0adec4551e55c6b9f1560",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/history.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/progress.json",
+    "local_path": "data/raw/modified/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "03439077c84fb4dfd769d5fea69aa8c4f3e10f0e",
+    "sha256": "e2f5430177742c38d8c2a5fbd1364551d8b9b611797c043d1983b20887ae293b",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/progress.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/result.json",
+    "local_path": "data/raw/modified/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/result.json",
+    "bytes": 1204023,
+    "git_blob_sha": "08b610f18558f9d2eca76b58acd44012f38a130c",
+    "sha256": "d544924c189862c028b34c04bdd717d7989eb51787d26cae5292acb6a210f8e9",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/result.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/github_execution.json",
+    "local_path": "data/raw/modified/runs/seed_1340/github_execution.json",
+    "bytes": 9108,
+    "git_blob_sha": "b910e95c51f1131e79465ed2b09d2eed5b2d92b2",
+    "sha256": "5b5e0192a2554e2c9c5d4c146492e5a45919cbda5ae094b6efabb855ec781ac8",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/github_execution.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/preflight.json",
+    "local_path": "data/raw/modified/runs/seed_1340/preflight.json",
+    "bytes": 369,
+    "git_blob_sha": "5914d4db2acbc6edc82e7abcbd2407687b3e7627",
+    "sha256": "6fe6bccc017a7f6bf4449d3a6c850464b13e6805c4df1629d8ca3301605e1ab0",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/preflight.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/worker_state.json",
+    "local_path": "data/raw/modified/runs/seed_1340/worker_state.json",
+    "bytes": 471,
+    "git_blob_sha": "02e9b9be65bc736f9edcde1ddfd874c88f289a50",
+    "sha256": "683cc4dd415ca24de901fb0e2c96b25a5ba72d5642ab0df01fc37416a6cbf917",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1340/worker_state.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/design.json",
+    "local_path": "data/raw/modified/runs/seed_1341/confirmation/rate_0.4/design.json",
+    "bytes": 2975,
+    "git_blob_sha": "9919fd7e38bc850f501707fee51edfd912f4d9af",
+    "sha256": "4b4c5bf0c5dce7bb7f221a920c4ba3b1308e451d651c3a6fefb60c2ac5cfee5c",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/design.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/history.json",
+    "local_path": "data/raw/modified/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/history.json",
+    "bytes": 1080732,
+    "git_blob_sha": "c4d5cdeeb80542e86e9e2b65a799724f06a46c13",
+    "sha256": "7d5dbda4ce621a9c90d295e1f1119a4d8f8a4311bead5fab4d77ffa1739b7b40",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/history.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/progress.json",
+    "local_path": "data/raw/modified/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "1ac0bfa8c4162c02a1e654f564b87bb61913c95b",
+    "sha256": "b2429816255d350b5c3e6d16b020ad434d0c0b54c5d1bcabf2f172e4020feec5",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/progress.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/result.json",
+    "local_path": "data/raw/modified/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/result.json",
+    "bytes": 1204313,
+    "git_blob_sha": "22674fd34dc3048e2eb330e30a0adc9e324827b0",
+    "sha256": "53ce0c260edd7fb438b5f6abec91a5c5547734de33594dcd2d0f813c36267c62",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/confirmation/rate_0.4/graft/seed_1341/result.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/github_execution.json",
+    "local_path": "data/raw/modified/runs/seed_1341/github_execution.json",
+    "bytes": 9108,
+    "git_blob_sha": "336b798a73571eab88407d93624fcfeb430ab0f0",
+    "sha256": "5233c121d758f460b28338182e9dbd41b9b15180dc5e3a0b322486b19215104d",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/github_execution.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/preflight.json",
+    "local_path": "data/raw/modified/runs/seed_1341/preflight.json",
+    "bytes": 369,
+    "git_blob_sha": "ff4e1454968c1514846129791575ff970d66ab67",
+    "sha256": "3869aee3554f24d755a0fc8223c4a97cebbf525641dc371730abc1686bc5f610",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/preflight.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/worker_state.json",
+    "local_path": "data/raw/modified/runs/seed_1341/worker_state.json",
+    "bytes": 471,
+    "git_blob_sha": "ba27b23ce5d9eb1defdc060e0d53dd81d8066730",
+    "sha256": "1b666a2200e8ad13bef746942ee5ec6412066309538e7424080c0d1e71a75ff0",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1341/worker_state.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/design.json",
+    "local_path": "data/raw/modified/runs/seed_1342/confirmation/rate_0.4/design.json",
+    "bytes": 2975,
+    "git_blob_sha": "729b0798db04bd8e183a70f9884d1d1b0b10529d",
+    "sha256": "7a865554a26d2d5a1aa36eafa35e3eb0862c63c4674a39bb461c39997785535b",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/design.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/history.json",
+    "local_path": "data/raw/modified/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/history.json",
+    "bytes": 1080867,
+    "git_blob_sha": "8d25757026bfa812ed3d0bf6c7ffea3829a6085e",
+    "sha256": "5b2dba05eea18e3667da9b0ddb49ae5fe2964dc3318b36a74dc6dd33f26e8439",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/history.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/progress.json",
+    "local_path": "data/raw/modified/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "0c0a77fd112dc7f9a54879f7c9a1f028a3a1ea6b",
+    "sha256": "31d6e79633bf2feef2b43aae6f45f8723990baa08211a838327fdbd01392a43c",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/progress.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/result.json",
+    "local_path": "data/raw/modified/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/result.json",
+    "bytes": 1204446,
+    "git_blob_sha": "dc5b23a7af01c3eab522e6f7d51b85ea94d43388",
+    "sha256": "bfd289bea77460f8c4db9a031486cec854175cbe1ab5ef041e8ecd9271740251",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/confirmation/rate_0.4/graft/seed_1342/result.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/github_execution.json",
+    "local_path": "data/raw/modified/runs/seed_1342/github_execution.json",
+    "bytes": 9260,
+    "git_blob_sha": "23109a330dbe4f80f788e8c13af33d9e18a768ec",
+    "sha256": "e0618b602b42919780e6dc225b31e8fcb80b861238e50c02a2707fb7c6542983",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/github_execution.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/preflight.json",
+    "local_path": "data/raw/modified/runs/seed_1342/preflight.json",
+    "bytes": 369,
+    "git_blob_sha": "637c9d4018fd65861ba9c9f5e1af4e9ffd169305",
+    "sha256": "0bdf8511bd12154ee05de2403aa83414801e043b8f9965e57b231c0462a04d0e",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/preflight.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/worker_state.json",
+    "local_path": "data/raw/modified/runs/seed_1342/worker_state.json",
+    "bytes": 471,
+    "git_blob_sha": "1048766a36eae9604fc7c4834070cbdf179540fd",
+    "sha256": "eb3bba2ed38cbbd0eed2f7663abc32e402a8ee7bddb2928319ef40d4604a9d19",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1342/worker_state.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/design.json",
+    "local_path": "data/raw/modified/runs/seed_1343/confirmation/rate_0.4/design.json",
+    "bytes": 2975,
+    "git_blob_sha": "e580b3248f907444874f21d9c1696a978a891e83",
+    "sha256": "2d07897281529454770249d76536630f1f2270f4af4f293f3722931938c7999d",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/design.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/history.json",
+    "local_path": "data/raw/modified/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/history.json",
+    "bytes": 1080631,
+    "git_blob_sha": "024394309ea6777253f47db83ab1c2e7b1e2728e",
+    "sha256": "0cfe459cc99a5b075a7c3709d6b76268d138e718e6e3acd7e31c96114a609935",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/history.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/progress.json",
+    "local_path": "data/raw/modified/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "0cb681ddaf1513631717e049e3fb259a50560b6a",
+    "sha256": "8429df0934db7fa986418faf9e9174e7506df4d9109fa55620991f36bd691ac0",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/progress.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/result.json",
+    "local_path": "data/raw/modified/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/result.json",
+    "bytes": 1204202,
+    "git_blob_sha": "ef683e1ea5ab7fc4f2b8d37d6d36ece7543b9d5f",
+    "sha256": "8d5c9231ab47bc2bf098db28460301a6cb9fcebe9a96c9ca2e7d687fe8402701",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/result.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/github_execution.json",
+    "local_path": "data/raw/modified/runs/seed_1343/github_execution.json",
+    "bytes": 9045,
+    "git_blob_sha": "e1dff906360e00b37f8aee075298d08a87b9a9d9",
+    "sha256": "e38101919989a026ebf08d17f205e6c328c4abc29e7fa7d2cdfb3a299179a61b",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/github_execution.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/preflight.json",
+    "local_path": "data/raw/modified/runs/seed_1343/preflight.json",
+    "bytes": 369,
+    "git_blob_sha": "00bcdbcf4b20a73e5817cb2825cc7d9c5efb06db",
+    "sha256": "dedb65a0f05ff3ad7c3b1d5f19a8d78d2b52e1679e26f59fa7efcf52a13f233c",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/preflight.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/worker_state.json",
+    "local_path": "data/raw/modified/runs/seed_1343/worker_state.json",
+    "bytes": 471,
+    "git_blob_sha": "ef0ebeb78563a3ae27e4b9b2a134bfe1c08af8fc",
+    "sha256": "1a556af744e99bc65f98b21e515368fd42a9ec1e798ab2a8776c92f3e1ccee61",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1343/worker_state.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/design.json",
+    "local_path": "data/raw/modified/runs/seed_1344/confirmation/rate_0.4/design.json",
+    "bytes": 2975,
+    "git_blob_sha": "d85c2c224ee9180bd86c323105018a8ce9dd9972",
+    "sha256": "6bc3354fa0b645e8c3cfc8e96d061a9a99cc7d9275500b0aa9dd58cd67d3c71e",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/design.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/history.json",
+    "local_path": "data/raw/modified/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/history.json",
+    "bytes": 1080198,
+    "git_blob_sha": "c36874d5880a22b2b53c086859c3290a3bdeb82f",
+    "sha256": "b9fb356aeb0ae037e09b30621ed3d45ee78d8a5c39ca59b050416273e9143532",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/history.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/progress.json",
+    "local_path": "data/raw/modified/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/progress.json",
+    "bytes": 209,
+    "git_blob_sha": "ac65cf532c06a6373acf20d1f476edf2cf43e6d5",
+    "sha256": "1067b01949eb06dd10e81ef16223655fa03644b1c3c041a9ed11330de6305b91",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/progress.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/result.json",
+    "local_path": "data/raw/modified/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/result.json",
+    "bytes": 1203784,
+    "git_blob_sha": "86d858d758098959a743259abccbb5254720e954",
+    "sha256": "fdc948aaa19c739eb8c6440d493b00445587ffd8f00fed80dd6fe9317d14f3bb",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/confirmation/rate_0.4/graft/seed_1344/result.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/github_execution.json",
+    "local_path": "data/raw/modified/runs/seed_1344/github_execution.json",
+    "bytes": 9022,
+    "git_blob_sha": "dfa1cdbad63a18e9309ea3b3f2a932806217a398",
+    "sha256": "284c24b653fdde3535258adf800d9884b5926e6d97844cab5e7aa05a1021498e",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/github_execution.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/preflight.json",
+    "local_path": "data/raw/modified/runs/seed_1344/preflight.json",
+    "bytes": 369,
+    "git_blob_sha": "822309b3d522052e9ea26e0a7bb9bafbee6d7195",
+    "sha256": "fb06a1fac73ddd97f2d2fe7d4b1ff698f5b2faf8f35db895a2fbf942481c4c01",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/preflight.json"
+  },
+  {
+    "arm": "modified",
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/worker_state.json",
+    "local_path": "data/raw/modified/runs/seed_1344/worker_state.json",
+    "bytes": 471,
+    "git_blob_sha": "b2516aa1da740f82ac47147cfab39cb422f83d31",
+    "sha256": "7e3dc9844dc95954a364adfedf62758fa34f2c45838963b658791d22e0b0a8db",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/e0440e5a42dc6ba7f19d2d170f1a0d7551a16410/short_test_adamw_graft/experiments/2026-11-24_five_seeds/runs/seed_1344/worker_state.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/per_matrix.csv",
+    "local_path": "data/raw/sgdm/analysis/per_matrix.csv",
+    "bytes": 1427776,
+    "git_blob_sha": "ece9090b8a2d2932f65ca6d2b7a7783e6cc87a6b",
+    "sha256": "09a85cbdff552fcb1eccf6e763557b82b971ba1973cedb276c7cb2e75dcff8b3",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/per_matrix.csv"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/per_seed.csv",
+    "local_path": "data/raw/sgdm/analysis/per_seed.csv",
+    "bytes": 21532,
+    "git_blob_sha": "f40233a5a7c2e425751f1c1d0d4183b825f71e41",
+    "sha256": "c1b9fd697daf1ebdbe46454c8bff794e3f5fca0c31ba28f4ffa8ab00792d85dd",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/per_seed.csv"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/status.json",
+    "local_path": "data/raw/sgdm/analysis/status.json",
+    "bytes": 83,
+    "git_blob_sha": "e7d7ade9c1509800fcd2d62c281b118fdc3e5a07",
+    "sha256": "518199fd75435bef9cdf1edfe1d5a03b82472b639c2b1274605c88e0650e2df7",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/status.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/trajectory.csv",
+    "local_path": "data/raw/sgdm/analysis/trajectory.csv",
+    "bytes": 11203,
+    "git_blob_sha": "98e62ecf094030bd9eedb91f58ae385c41b36d96",
+    "sha256": "452174d38cda87ddfd3e0379b91d5c83c01b5a2662b8774e132ccd54ccc36c05",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/analysis/trajectory.csv"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/replay.py",
+    "local_path": "data/raw/sgdm/replay.py",
+    "bytes": 3639,
+    "git_blob_sha": "8f36bfe53d6b96f52125ba7d0b61997c0c0a9736",
+    "sha256": "fb4dedb3f2c8980dd70b8254b395c3b49173b9afe5fb7898005dc986a8eab2c4",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/replay.py"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/design.json",
+    "local_path": "data/raw/sgdm/runs/seed_1340/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/design.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/execution.json",
+    "local_path": "data/raw/sgdm/runs/seed_1340/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "4ad32cdbd566f01293cd8a19bb6ea78b26321f1b",
+    "sha256": "366ac00dbc244d93b97fabb329e909ce4c4bc3c92618fc4972b5f1bd55bdd1dc",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/execution.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/sgdm/seed_1340/progress.json",
+    "local_path": "data/raw/sgdm/runs/seed_1340/sgdm/seed_1340/progress.json",
+    "bytes": 208,
+    "git_blob_sha": "f5d53c9d6cd3af0ac02af07106c34d14127a69f3",
+    "sha256": "08efd667f64688b6c42c3293247d024b31ad0fb51d87289239ef2b3c41a08bd8",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/sgdm/seed_1340/progress.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/sgdm/seed_1340/result.json",
+    "local_path": "data/raw/sgdm/runs/seed_1340/sgdm/seed_1340/result.json",
+    "bytes": 1203778,
+    "git_blob_sha": "72275689247a54d4f3b40ccdfe0f46c4f0d8c506",
+    "sha256": "288d49c4a3d781772793733b5c06aa3ef04a1dc3f0d72ed4dccef03c3d6c124f",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/sgdm/seed_1340/result.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/training.log",
+    "local_path": "data/raw/sgdm/runs/seed_1340/training.log",
+    "bytes": 2061,
+    "git_blob_sha": "f7dfe1fe8ef0685c93b699105ed8d76fef56dcea",
+    "sha256": "e3885cc4e0621f13a7d5a2acf6318b6b6eeb3b32a33f0d3429ab7241af82dbe4",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1340/training.log"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/design.json",
+    "local_path": "data/raw/sgdm/runs/seed_1341/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/design.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/execution.json",
+    "local_path": "data/raw/sgdm/runs/seed_1341/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "e4ce153da9236debc5ecd0f6778e860bf9565780",
+    "sha256": "98946ce8e1cce11cf0939bb9188f78e739eab336bddbed7fbc44e45a27788376",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/execution.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/sgdm/seed_1341/progress.json",
+    "local_path": "data/raw/sgdm/runs/seed_1341/sgdm/seed_1341/progress.json",
+    "bytes": 208,
+    "git_blob_sha": "471f3129e515a18c954b81cd826652520c6d5683",
+    "sha256": "1fd3c006a0094ec667e5fa4f3afca1ffe642c2e5ceca8d3e1834ce6f509a049c",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/sgdm/seed_1341/progress.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/sgdm/seed_1341/result.json",
+    "local_path": "data/raw/sgdm/runs/seed_1341/sgdm/seed_1341/result.json",
+    "bytes": 1203211,
+    "git_blob_sha": "9b93d0fd17c104602e62427518021c437f097066",
+    "sha256": "06b856cb948a3b2bc8d7ae2108bb51599909084e39b8112e78048473d9fba4aa",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/sgdm/seed_1341/result.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/training.log",
+    "local_path": "data/raw/sgdm/runs/seed_1341/training.log",
+    "bytes": 2061,
+    "git_blob_sha": "faa659cb925e97a147945d743710fce05db07326",
+    "sha256": "aafef0b121bc006afc9f0cf9fa5f0e0cc2661043d8ac78d22b950320c90a7309",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1341/training.log"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/design.json",
+    "local_path": "data/raw/sgdm/runs/seed_1342/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/design.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/execution.json",
+    "local_path": "data/raw/sgdm/runs/seed_1342/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "b44154a0e375ab7a09c381d7c69642df23b65290",
+    "sha256": "51865f476990f3484f75dd0a2b0f657d07a1b0eff702ed7df684205aeb0a50bb",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/execution.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/sgdm/seed_1342/progress.json",
+    "local_path": "data/raw/sgdm/runs/seed_1342/sgdm/seed_1342/progress.json",
+    "bytes": 207,
+    "git_blob_sha": "53b6531277555f0cd9aadb2ecd2994005aee0706",
+    "sha256": "5223d96956b1453672649fc96450c8cdb0c6bdf1efb2748852131399427fab8a",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/sgdm/seed_1342/progress.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/sgdm/seed_1342/result.json",
+    "local_path": "data/raw/sgdm/runs/seed_1342/sgdm/seed_1342/result.json",
+    "bytes": 1203867,
+    "git_blob_sha": "d2293fc626f9143dd8cc307626dcc21cc87d11a9",
+    "sha256": "caf102c46779b3942202805f88a41d6480d87b3b5b15956a7835fafdcfdd66e1",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/sgdm/seed_1342/result.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/training.log",
+    "local_path": "data/raw/sgdm/runs/seed_1342/training.log",
+    "bytes": 2061,
+    "git_blob_sha": "b748781b6c4825679de6d326bdd050feaa64c8e0",
+    "sha256": "3f99d131a2f4d26d90891bfc07f97055669b8f908fde4e06488a96292ddc1b07",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1342/training.log"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/design.json",
+    "local_path": "data/raw/sgdm/runs/seed_1343/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/design.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/execution.json",
+    "local_path": "data/raw/sgdm/runs/seed_1343/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "f0d2a12316295a52ec7a507ed76818f2faa63e7e",
+    "sha256": "5dd93dc5c81331a229e007bd54b00541ab801d2e6f9689754d84dafd00a96e6e",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/execution.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/sgdm/seed_1343/progress.json",
+    "local_path": "data/raw/sgdm/runs/seed_1343/sgdm/seed_1343/progress.json",
+    "bytes": 208,
+    "git_blob_sha": "22ce4bfc4849c53fb5d890403c677886dfedcbfe",
+    "sha256": "67158497db43cb521a9cceaa94e6776f244c16759105fe3e675285ec63df4f96",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/sgdm/seed_1343/progress.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/sgdm/seed_1343/result.json",
+    "local_path": "data/raw/sgdm/runs/seed_1343/sgdm/seed_1343/result.json",
+    "bytes": 1203453,
+    "git_blob_sha": "890ad00ee04fcbcf294878603c82373b71b1f779",
+    "sha256": "25686ca7cb992750a08107920614e482c690197d8386446e9038dbe859b74080",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/sgdm/seed_1343/result.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/training.log",
+    "local_path": "data/raw/sgdm/runs/seed_1343/training.log",
+    "bytes": 2061,
+    "git_blob_sha": "8a4fa18aa345225c9af1e478f6e9f6e344187353",
+    "sha256": "f2d77f23235e98c8be2596c58ed2c9c8c10c91e927cb941b7f51699196a180ae",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1343/training.log"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/design.json",
+    "local_path": "data/raw/sgdm/runs/seed_1344/design.json",
+    "bytes": 2768,
+    "git_blob_sha": "c1423bf5e4b5c987771934e32c1d27bff077c520",
+    "sha256": "20a53764a5736ec0b291f4f1473e331d4ab7f6941f5387d87723997cd3e00509",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/design.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/execution.json",
+    "local_path": "data/raw/sgdm/runs/seed_1344/execution.json",
+    "bytes": 521,
+    "git_blob_sha": "122756cc776403c737887b94f1d424fbea4e783a",
+    "sha256": "a0318765e225eb0dc20287e6400b0ca856845fb97de2850ec250c596e1b84696",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/execution.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/sgdm/seed_1344/progress.json",
+    "local_path": "data/raw/sgdm/runs/seed_1344/sgdm/seed_1344/progress.json",
+    "bytes": 208,
+    "git_blob_sha": "310c9f9590c14a184799c5fe8eb86e7bd7d8fb4a",
+    "sha256": "ff2a7e5908db0cce8ed740e92c1887c0d45e167946867d0bc151b85e9edf0f94",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/sgdm/seed_1344/progress.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/sgdm/seed_1344/result.json",
+    "local_path": "data/raw/sgdm/runs/seed_1344/sgdm/seed_1344/result.json",
+    "bytes": 1203005,
+    "git_blob_sha": "575d18989b98862d98e971805a664efcbeedd357",
+    "sha256": "ca816bff272db062c27f3c625325b4a8693aab3cc9dded6d88b379239a365531",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/sgdm/seed_1344/result.json"
+  },
+  {
+    "arm": "sgdm",
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "repository_path": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/training.log",
+    "local_path": "data/raw/sgdm/runs/seed_1344/training.log",
+    "bytes": 2061,
+    "git_blob_sha": "cad3c2cc31dc2a558a7a0c5e46f29329fc380a36",
+    "sha256": "8974446c692ecbbb0001346720318b37bc4835c1b2391c2279efcd8b594e2c6f",
+    "url": "https://raw.githubusercontent.com/CalculatedContent/rg_optimizers/23ba932c01d63653985c28ef9df5ef3804ee4297/short_test_adamw_graft/experiments/2026-11-24_sgdm_replay/runs/seed_1344/training.log"
+  }
+]

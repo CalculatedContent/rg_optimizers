@@ -1,0 +1,26 @@
+[
+  {
+    "arm": "native",
+    "branch": "shakespeare-adamw-replay-20261124",
+    "exp": "short_test_adamw_graft/experiments/2026-11-24_adamw_replay",
+    "run": 45393623223,
+    "commit": "163980048ab7381e02b97a8620b25ddefa52b613",
+    "tree": "a297a607109cec4a7ba3bc55013886229a557029"
+  },
+  {
+    "arm": "modified",
+    "branch": "shakespeare-graft-five-seeds-20261124",
+    "exp": "short_test_adamw_graft/experiments/2026-11-24_five_seeds",
+    "run": 45375423863,
+    "commit": "e0440e5a42dc6ba7f19d2d170f1a0d7551a16410",
+    "tree": "0ef10c62cc6005c6183ba14a4bde135d68640e62"
+  },
+  {
+    "arm": "sgdm",
+    "branch": "shakespeare-sgdm-replay-20261124",
+    "exp": "short_test_adamw_graft/experiments/2026-11-24_sgdm_replay",
+    "run": 45386899611,
+    "commit": "23ba932c01d63653985c28ef9df5ef3804ee4297",
+    "tree": "560433daf1f6d3267eb7bccc8d8f81ed91b5bf59"
+  }
+]

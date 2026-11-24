@@ -1,0 +1,20 @@
+{
+  "seed": 1340,
+  "github": {
+    "GITHUB_RUN_ID": "45393623223",
+    "GITHUB_SHA": "4b36ca8ec66db48f165a0060090e2cd70265cb4e",
+    "RUNNER_OS": "Linux",
+    "RUNNER_ARCH": "X64",
+    "ImageVersion": "20261116.133.1"
+  },
+  "runtime": {
+    "device": "cpu",
+    "system": "Linux",
+    "machine": "x86_64",
+    "python": "3.12.14",
+    "torch": "2.14.1+cpu",
+    "precision": "float32 tensors; backend-dependent kernels",
+    "stochastic_operations": "CPU initialization and minibatches; dropout must remain zero"
+  }
+}
+

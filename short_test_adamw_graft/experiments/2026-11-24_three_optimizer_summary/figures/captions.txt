@@ -1,0 +1,8 @@
+trajectories
+Training trajectories across five seeds. Lines show seed means; shading shows pointwise 95% Student-t confidence intervals for those means. The horizontal reference marks alpha=2; the vertical guide marks 2,000 updates. Both panels start at500 updates; the shared initialization (mean alpha6.255, character perplexity65.436) is omitted to resolve the trained regime. Character perplexity is averaged after exponentiating each seed's full-validation cross-entropy. Lower perplexity is better. All18unique matrices enter each model mean. The bands quantify seed uncertainty, not layer dispersion or simultaneous coverage.
+
+family_comparison
+Layer families at matched budgets. Each marker averages five within-seed family estimates; bars show95% Student-t confidence intervals across seeds. Each family estimate uses the same confidence/tail weights as the model mean, renormalized within that family. Transformer families contain four matrices (one per block); each embedding family contains one unique matrix. The tied token/output matrix appears once. These family estimates are not equally weighted components of the model mean. The vertical reference marks alpha=2.
+
+sgdm_matrices
+SGDM layer variation at20,000 updates. Pale circles show the five individual seed fits for each unique matrix; dark diamonds show their arithmetic mean. The horizontal axis is logarithmic and displays the complete observed range. B1--B4 identify decoder blocks. MLP in/out are expansion/projection matrices. The vertical reference marks alpha=2; the tied token/output matrix appears once. No across-layer error bar is substituted for uncertainty across seeds.

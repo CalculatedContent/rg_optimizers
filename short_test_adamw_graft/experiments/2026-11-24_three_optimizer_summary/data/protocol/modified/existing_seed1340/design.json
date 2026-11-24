@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "arms": [
+    "adamw",
+    "sgdm",
+    "graft"
+  ],
+  "schedule": {
+    "max_steps": 20000,
+    "warmup_steps": 100,
+    "cosine_end": 17000,
+    "floor_fraction": 0.1,
+    "eval_every": 500,
+    "checkpoint_every": 250,
+    "grad_clip": 1.0
+  },
+  "recipes": {
+    "adamw": {
+      "optimizer": "AdamW",
+      "peak_lr": 0.001,
+      "betas": [
+        0.9,
+        0.99
+      ],
+      "weight_decay": 0.0
+    },
+    "sgdm": {
+      "optimizer": "SGDM",
+      "peak_lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0.0,
+      "dampening": 0.0,
+      "nesterov": false
+    },
+    "graft": {
+      "native": {
+        "optimizer": "AdamW",
+        "peak_lr": 0.001,
+        "betas": [
+          0.9,
+          0.99
+        ],
+        "weight_decay": 0.0
+      },
+      "reference": {
+        "optimizer": "SGDM",
+        "peak_lr": 0.4,
+        "momentum": 0.9,
+        "weight_decay": 0.0,
+        "dampening": 0.0,
+        "nesterov": false
+      },
+      "reference_lr_ratio": 400.0
+    }
+  },
+  "architecture": {
+    "n_layer": 4,
+    "n_head": 4,
+    "n_embd": 128,
+    "block_size": 64,
+    "vocab_size": 65,
+    "dropout": 0.0,
+    "bias": false
+  },
+  "batch_size": 12,
+  "split": "contiguous 90/5/5",
+  "input_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "device": {
+    "device": "cpu",
+    "system": "Linux",
+    "machine": "x86_64",
+    "python": "3.12.14",
+    "torch": "2.14.1+cpu",
+    "precision": "float32 tensors; backend-dependent kernels",
+    "stochastic_operations": "CPU initialization and minibatches; dropout must remain zero"
+  },
+  "packages": {
+    "torch": "2.14.1+cpu",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "weightwatcher": "0.7.7",
+    "powerlaw": "2.0.0"
+  },
+  "sources": {
+    "short_test_adamw_graft/run.py": "5bd3c60412f06b12017970d85c79101bee04fa04a6e1b59818a266ec9ca999a7",
+    "short_test_adamw_graft/graft.py": "e6c9fcf0e750e0efda8b716410623eff5e3f590751d5a345482e97a4b10c45a3",
+    "short_test_portable/comparison.py": "2245b2f052d8e4a2f81a8b110efa685b36c645189ecedf00d872351296c4ab26",
+    "short_test_portable/runtime.py": "ee9b3ed26fdd719cdafc6080b020dbd04d04f8994e7de77c00eb75b0f996e5bb",
+    "short_test_portable/portable_common.py": "62b87a111c56c663486a5b678c2f6f653de0b239a0a299753ddd63a41615bb9a",
+    "short_test/common.py": "4bfa41f7a098a202744b7982b8586473d5fcfd4b80077095c490a4a7c3809954",
+    "short_test/vendor/model.py": "7c01703240dbec5d554527dc666e35b3df8391d0b117fddc07afcf325a21d11c"
+  },
+  "primary": "Paired test cross-entropy in nats per character after 20000 updates",
+  "secondary": "Test cross-entropy at lowest full validation loss, assessed every 500 updates",
+  "phase": "confirmation",
+  "study_seed": 1340,
+  "available_splits": [
+    "test",
+    "train",
+    "validation"
+  ],
+  "driver_sha256": "df1f44704e709d88af17e50d02eb7ffcdbbc5b6a8ba68a691c8b6da59638d881"
+}

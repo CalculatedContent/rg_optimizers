@@ -1,0 +1,92 @@
+name: Shakespeare native AdamW spectral replay
+on:
+  push:
+    branches: [shakespeare-adamw-replay-20261124]
+    paths: [.github/workflows/shakespeare-adamw-replay-20261124.yml]
+permissions:
+  contents: write
+env:
+  SOURCE: short_test_adamw_graft/experiments/2026-11-24_five_seeds
+  EXP: short_test_adamw_graft/experiments/2026-11-24_adamw_replay
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  NUMEXPR_NUM_THREADS: "1"
+  SHORT_GPT_DEVICE: cpu
+jobs:
+  train:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        seed: [1340, 1341, 1342, 1343, 1344]
+    env:
+      SEED: ${{ matrix.seed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: shakespeare-adamw-replay-20261124
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.14"
+      - name: Install frozen CPU dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+          python -m pip install -r "$SOURCE/requirements.txt"
+          python -m zipfile -e "$SOURCE/experiment_inputs.zip" "$SOURCE"
+      - name: Train native AdamW and record every 500 updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EXP/runs/seed_$SEED"
+          python -u "$EXP/replay.py" "$SEED" 2>&1 | tee "$EXP/runs/seed_$SEED/training.log"
+      - name: Preserve results permanently
+        shell: bash
+        run: |
+          set -euo pipefail
+          D="$EXP/runs/seed_$SEED"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$D/design.json" "$D/execution.json" "$D/training.log" "$D/checkpoints.zip" "$D/checkpoint_hashes.json" "$D/adamw/seed_$SEED/result.json" "$D/adamw/seed_$SEED/progress.json"
+          git commit -m "Archive native AdamW seed $SEED"
+          for i in $(seq 1 15); do
+            git pull --rebase origin shakespeare-adamw-replay-20261124 && git push origin HEAD:shakespeare-adamw-replay-20261124 && exit 0
+            sleep 5
+          done
+          exit 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: adamw-seed-${{ matrix.seed }}
+          path: |
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/checkpoints.zip
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/checkpoint_hashes.json
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/design.json
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/execution.json
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/training.log
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/adamw/seed_${{ matrix.seed }}/result.json
+            ${{ env.EXP }}/runs/seed_${{ matrix.seed }}/adamw/seed_${{ matrix.seed }}/progress.json
+  analyze:
+    needs: train
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: shakespeare-adamw-replay-20261124
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.14"
+      - run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+          python -m pip install -r "$SOURCE/requirements.txt"
+          python "$EXP/replay.py" analyze
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$EXP/analysis"
+          git commit -m "Complete five-seed native AdamW trajectory analysis"
+          git push origin HEAD:shakespeare-adamw-replay-20261124
+
