@@ -26,7 +26,7 @@
     "unique_matrices": 18,
     "tied_embedding_count": 1
   },
-  "status": "training",
+  "status": "queued_for_github_actions",
   "cohort_seeds": [
     1340,
     1341,
@@ -34,12 +34,24 @@
     1343,
     1344
   ],
-  "cohort": "five_current_runtime_seeds",
+  "cohort": "github_actions_primary_five_seeds",
   "historical_seed1340": "retained separately and excluded from primary cohort",
   "runtime_replay_decision": {
     "time": "2026-11-24T10:20:39.103514+00:00",
     "reason": "Matching frozen design, versions, source and initial spectra did not produce numerically identical trajectories at500 updates. Extend the current-runtime replay from500 to20000, with a preserved2000 checkpoint, to keep the five-run cohort consistent. The specific numerical cause is not established.",
     "comparison_source": "compatibility.json",
-    "historical_controls": "Archived native AdamW and SGDM controls remain historical-runtime comparators."
-  }
+    "historical_controls": "Archived native AdamW and SGDM controls remain historical-runtime comparators.",
+    "followup": "Run all five primary seeds in the pinned GitHub Actions workflow so jobs, results and analysis remain available independently of the originating workspace. Local diagnostic continuations are not pooled with the primary cohort."
+  },
+  "execution_origin": "github_actions",
+  "primary_seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "local_partial_runs": "Retained separately in the originating workspace; excluded from primary results",
+  "background_workflow": ".github/workflows/shakespeare-graft-five-seeds-20261124.yml",
+  "durable_results": "Per-seed JSON and 2000/20000 checkpoint ZIPs, followed by validated five-seed analysis, are committed to the dedicated experiment branch"
 }

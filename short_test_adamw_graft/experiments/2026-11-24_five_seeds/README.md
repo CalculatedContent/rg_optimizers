@@ -1,6 +1,6 @@
 # Five-seed modified AdamW on Shakespeare GPT
 
-This experiment completes five **current-runtime** confirmation runs, seeds
+This experiment completes five **GitHub Actions** confirmation runs, seeds
 **1340–1344**, of the previously selected AdamW magnitude graft. Every run
 receives **20,000 updates**. The reference rate is frozen at **0.4**; there is
 no new hyperparameter selection, alpha-based selection, or early stopping.
@@ -39,12 +39,25 @@ exactly. Validation loss differed by −0.0052965 and the weighted alpha by
 +0.0287218 at update 500; the specific numerical cause is not established.
 `compatibility.json` records this comparison.
 
-The replay is therefore extended to 20,000 updates so that **all five primary
-results come from the current runtime**. The historical seed is excluded from
-the cohort mean and uncertainty; it is neither the fifth nor a sixth replicate.
+The local replay was continued while the execution path was checked. The
+primary background cohort now consists of **five fresh GitHub Actions runs**
+in the pinned environment, with execution/build metadata retained for every
+seed. Local partial runs are kept separately and are excluded, as is the
+historical seed. Duplicate versions of a seed are never counted as replicates.
 Archived native AdamW and SGDM controls in `data/original_comparison_audit.json`
 remain historical-runtime comparators. Matching their seed labels does not
 isolate an optimizer effect from possible runtime differences.
+
+## Background execution and archives
+
+The dedicated workflow is `.github/workflows/shakespeare-graft-five-seeds-20261124.yml`
+on branch `shakespeare-graft-five-seeds-20261124`. It starts only when that
+workflow file changes on that branch. Five independent jobs train seeds
+1340–1344 with the frozen recipe and archive each result, diagnostic log,
+execution metadata, and the 2,000/20,000-update checkpoint ZIP. A final job
+requires all five results, calculates the statistics, and commits `analysis/`
+and a completed `cohort_status.json`. Archived results are stored alongside
+this README. The commands below reproduce the same experiment locally.
 
 ## Environment and preflight
 

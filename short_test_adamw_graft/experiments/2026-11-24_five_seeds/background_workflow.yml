@@ -1,0 +1,138 @@
+name: Shakespeare graft five seeds
+
+on:
+  push:
+    branches:
+      - shakespeare-graft-five-seeds-20261124
+    paths:
+      - .github/workflows/shakespeare-graft-five-seeds-20261124.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shakespeare-graft-five-seeds-20261124
+  cancel-in-progress: false
+
+env:
+  EXPERIMENT: short_test_adamw_graft/experiments/2026-11-24_five_seeds
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  NUMEXPR_NUM_THREADS: "1"
+  SHORT_GPT_DEVICE: cpu
+
+jobs:
+  train:
+    name: Modified AdamW seed ${{ matrix.seed }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        seed: [1340, 1341, 1342, 1343, 1344]
+    env:
+      SEED: ${{ matrix.seed }}
+    steps:
+      - name: Check out the experiment branch
+        uses: actions/checkout@v4
+        with:
+          ref: shakespeare-graft-five-seeds-20261124
+          fetch-depth: 0
+
+      - name: Set up the pinned Python interpreter
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.14"
+
+      - name: Install the pinned CPU environment and unpack inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$EXPERIMENT"
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+          python -m pip install -r requirements.txt
+          python -m zipfile -e experiment_inputs.zip .
+          mkdir -p logs
+
+      - name: Check the local training and checkpoint path
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$EXPERIMENT"
+          python -u run_additional_seed.py --preflight | tee "logs/preflight_${SEED}.log"
+          # Historical numerical equality is not a gate. The launcher still
+          # verifies the frozen source, corpus, Python, and package versions.
+
+      - name: Train the frozen recipe to 20000 updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$EXPERIMENT"
+          python -u run_additional_seed.py --seed "$SEED" | tee "logs/seed_${SEED}.log"
+
+      - name: Preserve and commit this seed's results and weights
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$EXPERIMENT"
+          python archive_seed.py --seed "$SEED" --publish
+
+      - name: Retain full diagnostics if the job fails
+        if: ${{ failure() || cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: graft-seed-${{ matrix.seed }}-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ env.EXPERIMENT }}/runs/seed_${{ matrix.seed }}/
+            ${{ env.EXPERIMENT }}/archives/seed_${{ matrix.seed }}_checkpoints.zip
+            ${{ env.EXPERIMENT }}/logs/seed_${{ matrix.seed }}.log
+            ${{ env.EXPERIMENT }}/logs/preflight_${{ matrix.seed }}.log
+            ${{ env.EXPERIMENT }}/preflight.json
+
+  analyze:
+    name: Analyze and preserve the five GitHub runs
+    needs: train
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out the latest results on the experiment branch
+        uses: actions/checkout@v4
+        with:
+          ref: shakespeare-graft-five-seeds-20261124
+          fetch-depth: 0
+
+      - name: Set up the pinned Python interpreter
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.14"
+
+      - name: Install analysis dependencies and unpack inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$EXPERIMENT"
+          python -m pip install numpy==2.3.5 scipy==1.17.0
+          python -m zipfile -e experiment_inputs.zip .
+
+      - name: Validate all five results and calculate uncertainty
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$EXPERIMENT"
+          python analyze_results.py
+          python archive_seed.py --analysis --publish
+
+      - name: Retain analysis diagnostics if the job fails
+        if: ${{ failure() || cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: graft-analysis-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ env.EXPERIMENT }}/analysis/
+            ${{ env.EXPERIMENT }}/cohort_status.json
