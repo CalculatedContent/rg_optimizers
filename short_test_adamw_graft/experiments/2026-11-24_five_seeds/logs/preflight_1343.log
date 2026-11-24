@@ -1,0 +1,28 @@
+number of parameters: 0.80M
+number of parameters: 0.80M
+number of parameters: 0.80M
+number of parameters: 0.80M
+number of parameters: 0.80M
+number of parameters: 0.80M
+{
+  "device": "cpu",
+  "shared_initialization": true,
+  "checks": {
+    "adamw": {
+      "replayed_step": 3,
+      "loss": 4.136322498321533,
+      "fitted_matrices": 18
+    },
+    "sgdm": {
+      "replayed_step": 3,
+      "loss": 4.164499759674072,
+      "fitted_matrices": 18
+    },
+    "graft": {
+      "replayed_step": 3,
+      "loss": 4.139363765716553,
+      "fitted_matrices": 18
+    }
+  }
+}
+{"status": "passed", "completed_at": "2026-11-24T10:31:23.333466+00:00", "packages": {"torch": "2.14.1+cpu", "numpy": "2.3.5", "scipy": "1.17.0", "weightwatcher": "0.7.7", "powerlaw": "2.0.0"}, "python": "3.12.14", "reference_lr_ratio": 400.0, "checks": "shared initialization; exact CPU checkpoint replay;18successfulmatrixfits"}

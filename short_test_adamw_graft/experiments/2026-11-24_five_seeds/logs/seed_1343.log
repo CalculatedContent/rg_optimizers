@@ -1,0 +1,45 @@
+number of parameters: 0.80M
+graft seed 1343 starting at step 0
+graft seed 1343 step 500 validation 2.229315
+graft seed 1343 step 1000 validation 1.977457
+graft seed 1343 step 1500 validation 1.896775
+graft seed 1343 step 2000 validation 1.825169
+number of parameters: 0.80M
+graft seed 1343 starting at step 2000
+graft seed 1343 step 2500 validation 1.788309
+graft seed 1343 step 3000 validation 1.758499
+graft seed 1343 step 3500 validation 1.709725
+graft seed 1343 step 4000 validation 1.690568
+graft seed 1343 step 4500 validation 1.676070
+graft seed 1343 step 5000 validation 1.647235
+graft seed 1343 step 5500 validation 1.621630
+graft seed 1343 step 6000 validation 1.607553
+graft seed 1343 step 6500 validation 1.597630
+graft seed 1343 step 7000 validation 1.589191
+graft seed 1343 step 7500 validation 1.566562
+graft seed 1343 step 8000 validation 1.561177
+graft seed 1343 step 8500 validation 1.547327
+graft seed 1343 step 9000 validation 1.547825
+graft seed 1343 step 9500 validation 1.530137
+graft seed 1343 step 10000 validation 1.527321
+graft seed 1343 step 10500 validation 1.519042
+graft seed 1343 step 11000 validation 1.513594
+graft seed 1343 step 11500 validation 1.496556
+graft seed 1343 step 12000 validation 1.493300
+graft seed 1343 step 12500 validation 1.492530
+graft seed 1343 step 13000 validation 1.486114
+graft seed 1343 step 13500 validation 1.483614
+graft seed 1343 step 14000 validation 1.479890
+graft seed 1343 step 14500 validation 1.476314
+graft seed 1343 step 15000 validation 1.474481
+graft seed 1343 step 15500 validation 1.476878
+graft seed 1343 step 16000 validation 1.471441
+graft seed 1343 step 16500 validation 1.471442
+graft seed 1343 step 17000 validation 1.470693
+graft seed 1343 step 17500 validation 1.471283
+graft seed 1343 step 18000 validation 1.475423
+graft seed 1343 step 18500 validation 1.474768
+graft seed 1343 step 19000 validation 1.473968
+graft seed 1343 step 19500 validation 1.473419
+graft seed 1343 step 20000 validation 1.473848
+{"seed": 1343, "status": "completed", "pid": 2261, "started_at": "2026-11-24T10:31:25.137906+00:00", "packages": {"torch": "2.14.1+cpu", "numpy": "2.3.5", "scipy": "1.17.0", "weightwatcher": "0.7.7", "powerlaw": "2.0.0"}, "reference_peak_lr": 0.4, "native_peak_lr": 0.001, "target_steps": 20000, "finished_at": "2026-11-24T10:50:05.404033+00:00", "result": "runs/seed_1343/confirmation/rate_0.4/graft/seed_1343/result.json"}
