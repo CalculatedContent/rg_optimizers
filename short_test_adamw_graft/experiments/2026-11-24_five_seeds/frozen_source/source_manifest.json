@@ -1,0 +1,62 @@
+{
+  "repository_commit": "b306247d1b0078a18b1539c68ba14bb64d41a079",
+  "files": [
+    {
+      "path": "short_test/common.py",
+      "sha256": "4bfa41f7a098a202744b7982b8586473d5fcfd4b80077095c490a4a7c3809954"
+    },
+    {
+      "path": "short_test/vendor/model.py",
+      "sha256": "7c01703240dbec5d554527dc666e35b3df8391d0b117fddc07afcf325a21d11c"
+    },
+    {
+      "path": "short_test_portable/runtime.py",
+      "sha256": "ee9b3ed26fdd719cdafc6080b020dbd04d04f8994e7de77c00eb75b0f996e5bb"
+    },
+    {
+      "path": "short_test_portable/requirements-cpu.txt",
+      "sha256": "b7b01f86f74956415bcb1917d16163a3a2409e11010c560d55865844a6cda680"
+    },
+    {
+      "path": "short_test_portable/portable_common.py",
+      "sha256": "62b87a111c56c663486a5b678c2f6f653de0b239a0a299753ddd63a41615bb9a"
+    },
+    {
+      "path": "short_test_portable/comparison.py",
+      "sha256": "2245b2f052d8e4a2f81a8b110efa685b36c645189ecedf00d872351296c4ab26"
+    },
+    {
+      "path": "short_test_adamw_graft/graft.py",
+      "sha256": "e6c9fcf0e750e0efda8b716410623eff5e3f590751d5a345482e97a4b10c45a3"
+    },
+    {
+      "path": "short_test_adamw_graft/reference_lr_study.py",
+      "sha256": "df1f44704e709d88af17e50d02eb7ffcdbbc5b6a8ba68a691c8b6da59638d881"
+    },
+    {
+      "path": "short_test_adamw_graft/experiment.ipynb",
+      "sha256": "881da6d56146789247e91101e206fe55784726ec2e20105c1f65eef383686c3c"
+    },
+    {
+      "path": "short_test_adamw_graft/test_graft.py",
+      "sha256": "15dbdbd54401bbf0104be79ee725d8342802bad262e613a0e0fea03d7d3ca1bf"
+    },
+    {
+      "path": "short_test_adamw_graft/report.py",
+      "sha256": "395c819cca378626b5cc1d3e3bb5ab0d6bf2e194f8e8401891fdfd004540c743"
+    },
+    {
+      "path": "short_test_adamw_graft/test_report.py",
+      "sha256": "408ac00e382c579a11d12f1aed95cad136b7102499c3ddad2b0f25eb03028a0e"
+    },
+    {
+      "path": "short_test_adamw_graft/test_run.py",
+      "sha256": "321f2ddbb3002a00a80a3638a16ec530b6d7fca7aa54fdd087f00d5d07d84eae"
+    },
+    {
+      "path": "short_test_adamw_graft/run.py",
+      "sha256": "5bd3c60412f06b12017970d85c79101bee04fa04a6e1b59818a266ec9ca999a7"
+    }
+  ],
+  "training_run_in_this_revision": false
+}

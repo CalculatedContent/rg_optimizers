@@ -1,0 +1,8 @@
+# Measured runtime; PyTorch's CPU build is sufficient (no CUDA required).
+torch==2.14.1
+numpy==2.3.5
+scipy==1.17.0
+weightwatcher==0.7.7
+powerlaw==2.0.0
+matplotlib==3.10.8
+pandas==2.2.3
