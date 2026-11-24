@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "archived_on": "2026-11-24",
+  "repository": "CalculatedContent/rg_optimizers",
+  "purpose": "Versioned paper notes and reproducible source archives; preserve original bytes",
+  "archive_count": 15,
+  "total_bytes": 34360873,
+  "files": [
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_GPT_Section_v10_Source.zip",
+      "filename": "Shakespeare_GPT_Section_v10_Source.zip",
+      "bytes": 1984745,
+      "sha256": "a04ed1218d5cc80de48aeec0401b3911a2d2a7bebd5b4596556da66bcbad5a68",
+      "git_blob_sha1": "93330b26fe5c16b5670997c44636d75f7be34946",
+      "zip_integrity": "passed",
+      "contained_files": 109,
+      "description": "Current manuscript/source bundle: Table 2 includes modified AdamW seed1340; shortened caption."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_GPT_Section_v8_Source.zip",
+      "filename": "Shakespeare_GPT_Section_v8_Source.zip",
+      "bytes": 1694836,
+      "sha256": "2521391f2b36b8394723298d407a7922ef150d1b6eba49a96bfed4f7df4a6741",
+      "git_blob_sha1": "a4bced2fd83a6a0bba5bad415a14053f856a527b",
+      "zip_integrity": "passed",
+      "contained_files": 104,
+      "description": "Earlier two-page layout with two publication figures and full source/data; superseded by v9/v10 layout."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_GPT_Section_v9_Source.zip",
+      "filename": "Shakespeare_GPT_Section_v9_Source.zip",
+      "bytes": 1985317,
+      "sha256": "cba178ff0b731111f2bcea70abcdc77e70996d091c86100b2e90db7ad25a0194",
+      "git_blob_sha1": "d1f116eef216f29424c3215db80da1e18fea6e14",
+      "zip_integrity": "passed",
+      "contained_files": 109,
+      "description": "Previous two-page rewrite, one main figure and separate reproduction appendix; superseded by v10 table edit."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Comparison_Draft_v7.zip",
+      "filename": "Shakespeare_SGDM_Comparison_Draft_v7.zip",
+      "bytes": 1229188,
+      "sha256": "5ab00c0faf29fbbf03b774db55e11a27a1b6da7067f73d5631448f1e6961ef57",
+      "git_blob_sha1": "bc76d86f43b61efbe164185bf8a6a7d3ee1ebbd6",
+      "zip_integrity": "passed",
+      "contained_files": 90,
+      "description": "Intermediate comparison draft, historical manuscript snapshot."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Source.zip",
+      "filename": "Shakespeare_SGDM_Source.zip",
+      "bytes": 1058403,
+      "sha256": "1879a4450450e2cb584f1dd81b88b0abb4072c605925946ae5f6763270dc9330",
+      "git_blob_sha1": "012605c63e656ac118c2774b510a59dda7f70dfa",
+      "zip_integrity": "passed",
+      "contained_files": 28,
+      "description": "Original SGDM manuscript/source snapshot."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Source_Revised.zip",
+      "filename": "Shakespeare_SGDM_Source_Revised.zip",
+      "bytes": 1076511,
+      "sha256": "f0c1db5cf2c6ea0704e89c0d6e5703af2c4fd6e2558c0e0deb16dc444499b9cb",
+      "git_blob_sha1": "fb6e092df5e1a4f6d334aad23a7526af14c658e6",
+      "zip_integrity": "passed",
+      "contained_files": 32,
+      "description": "Early revised SGDM manuscript/source snapshot."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Source_v3.zip",
+      "filename": "Shakespeare_SGDM_Source_v3.zip",
+      "bytes": 1077684,
+      "sha256": "1934d5c25bb0ad0d9ec3b584240519831a6b73e28aff709dcbe868c380ed80ba",
+      "git_blob_sha1": "e27b0f3204c55b00cf7bdbd4422f689960f2b443",
+      "zip_integrity": "passed",
+      "contained_files": 32,
+      "description": "Earlier SGDM source bundle, historical manuscript snapshot."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Source_v4.zip",
+      "filename": "Shakespeare_SGDM_Source_v4.zip",
+      "bytes": 1070037,
+      "sha256": "863783fc9fa0d83a42971364f9b2b35436eb365082bd764af4d23ba5930eba0f",
+      "git_blob_sha1": "d23b405df321e2db486c87433ace96b44d8a1b23",
+      "zip_integrity": "passed",
+      "contained_files": 33,
+      "description": "Earlier SGDM source bundle, historical manuscript snapshot."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Source_v5.zip",
+      "filename": "Shakespeare_SGDM_Source_v5.zip",
+      "bytes": 1068577,
+      "sha256": "e473ac5e4e865a63bf80999abd15e231b4c37a60db2f3b91e802a7fe0b88db4d",
+      "git_blob_sha1": "db3e0c7294772bc188b76234b90dd42d15f8cb46",
+      "zip_integrity": "passed",
+      "contained_files": 33,
+      "description": "Earlier SGDM source bundle, historical manuscript snapshot."
+    },
+    {
+      "path": "paper_notes/shakespeare/archives/Shakespeare_SGDM_Source_v6.zip",
+      "filename": "Shakespeare_SGDM_Source_v6.zip",
+      "bytes": 1662245,
+      "sha256": "1dea41ae3174e3e8840747078984d526995ceedd54c617e97b6e40ba3262cf76",
+      "git_blob_sha1": "9bd2c222f836a3b260b0927822d382556555ace5",
+      "zip_integrity": "passed",
+      "contained_files": 58,
+      "description": "Earlier SGDM source/reproduction bundle, historical manuscript snapshot."
+    },
+    {
+      "path": "paper_notes/rg_theory/archives/RG_Marginality_MLE_FirstMoment_Source.zip",
+      "filename": "RG_Marginality_MLE_FirstMoment_Source.zip",
+      "bytes": 261122,
+      "sha256": "c74c5541a33fdb1ea141566f126445d38e836fb130fb021ef4345755b90aca19",
+      "git_blob_sha1": "c0c45693c906bc6e395dcb4462d9fabdc5a86767",
+      "zip_integrity": "passed",
+      "contained_files": 5,
+      "description": "Five-file theoretical first-moment/marginality insert: main and insert LaTeX, two PDFs, and README."
+    },
+    {
+      "path": "paper_notes/rg_theory/archives/RG_SETOL_MLE_Normalization_Insert_Source.zip",
+      "filename": "RG_SETOL_MLE_Normalization_Insert_Source.zip",
+      "bytes": 229083,
+      "sha256": "bf2923970cd92f1d004a25c7cf09e75980868745c11993f32e89e3e91960e188",
+      "git_blob_sha1": "5d76e411d00dd8555abfcc6ea7217552df585b8d",
+      "zip_integrity": "passed",
+      "contained_files": 12,
+      "description": "SETOL/MLE normalization insert with three LaTeX sources, six scientific plots, checkpoint CSV, plotting script, and README."
+    },
+    {
+      "path": "paper_notes/rg_theory/archives/Spectral_RG_Equivalence_Source.zip",
+      "filename": "Spectral_RG_Equivalence_Source.zip",
+      "bytes": 414910,
+      "sha256": "ed28c04cda4fb8218481833f6dc7621dc194f9ec922dca88d057eb4823577a5c",
+      "git_blob_sha1": "e5a9cf922dafbe8a8ac6bc668f7ea31147c195cd",
+      "zip_integrity": "passed",
+      "contained_files": 8,
+      "description": "Spectral-RG equivalence note with LaTeX/PDF, reproduction script, finite-size plot/data, algebra-check JSON, and README."
+    },
+    {
+      "path": "paper_notes/rg_theory/archives/rg_paper_sources.zip",
+      "filename": "rg_paper_sources.zip",
+      "bytes": 9863823,
+      "sha256": "49ebab955f933aefe775f0e07e804ec27a651145ef8d404bddf4888ab0c3c449",
+      "git_blob_sha1": "1a882a676927ed7dc60524d511ba210562b5a29b",
+      "zip_integrity": "passed",
+      "contained_files": 26,
+      "description": "Full RG paper source snapshot: six LaTeX files and twenty scientific PNG figures."
+    },
+    {
+      "path": "paper_notes/rg_theory/archives/rg_paper_v2_clean.zip",
+      "filename": "rg_paper_v2_clean.zip",
+      "bytes": 9684392,
+      "sha256": "d517f0afe985d2847f3d4a4a4fb615723c67eff197c3c82993d00d179995f8cb",
+      "git_blob_sha1": "eae80ec704e92051e7d89902210eb01ee3173223",
+      "zip_integrity": "passed",
+      "contained_files": 28,
+      "description": "Later clean RG-paper source snapshot: eight LaTeX files including marginality implications and trace-log rescaling, and twenty scientific PNG figures."
+    }
+  ]
+}
