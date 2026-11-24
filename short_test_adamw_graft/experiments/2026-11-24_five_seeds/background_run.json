@@ -1,0 +1,16 @@
+{
+  "status": "remote_training",
+  "workflow_run_id": 45375423863,
+  "workflow_url": "https://github.com/CalculatedContent/rg_optimizers/actions/runs/45375423863",
+  "seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "target_updates": 20000,
+  "observed": "All five GitHub jobs passed setup/preflight and entered training",
+  "observed_at": "2026-11-24T10:32:22.143879+00:00",
+  "local_partials": "Stopped and excluded; retained as local_partial_cohort_status.json and runs/"
+}
