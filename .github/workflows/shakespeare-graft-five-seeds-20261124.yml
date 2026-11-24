@@ -1,0 +1,126 @@
+name: Tuned Shakespeare graft five-seed recovery
+on:
+  push:
+    branches: [shakespeare-graft-five-seeds-20261124]
+    paths: ['.github/workflows/shakespeare-graft-five-seeds-20261124.yml']
+permissions:
+  contents: write
+concurrency:
+  group: shakespeare-graft-five-seeds-20261124
+  cancel-in-progress: false
+env:
+  OMP_NUM_THREADS: '1'
+  OPENBLAS_NUM_THREADS: '1'
+  MKL_NUM_THREADS: '1'
+  NUMEXPR_NUM_THREADS: '1'
+  PYTHONUNBUFFERED: '1'
+  SHORT_GPT_DEVICE: cpu
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract frozen numerical environment
+        id: frozen
+        run: |
+          python - <<'PY'
+          import os,json,zipfile
+          with zipfile.ZipFile('short_test_adamw_graft/results/2026-11-23_reference_lr_seed1340/raw_tuned_results.zip') as z:
+              d=json.loads(z.read('confirmation/rate_0.4/design.json'))
+          print(d['device'],d['packages'])
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              print('python='+d['device']['python'],file=f)
+          with open('frozen_requirements.txt','w') as f:
+              for k,v in d['packages'].items():
+                  print(k+'=='+v,file=f)
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.frozen.outputs.python }}
+      - name: Install exact numerical packages
+        run: |
+          python -m pip install "$(grep '^torch==' frozen_requirements.txt)" --index-url https://download.pytorch.org/whl/cpu
+          grep -v '^torch==' frozen_requirements.txt > frozen_other.txt
+          python -m pip install -r frozen_other.txt pandas==2.2.3 matplotlib==3.10.8
+      - name: Verify archived seed at 500 updates
+        run: |
+          python short_test/download_data.py --output /tmp/shakespeare.txt
+          python short_test_adamw_graft/five_seed_20261124/worker.py --seed 1340 --compatibility --data /tmp/shakespeare.txt --output compatibility
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compatibility
+          path: compatibility/
+      - name: Persist compatibility report
+        run: |
+          D=short_test_adamw_graft/results/2026-11-24_tuned_graft_five_seeds
+          mkdir -p "$D"
+          cp compatibility/compatibility.json "$D/"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$D/compatibility.json"
+          git commit -m 'Record verified compatibility with archived tuned graft'
+          git push origin HEAD:shakespeare-graft-five-seeds-20261124
+  train:
+    needs: compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1341, 1342, 1343, 1344]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract frozen numerical environment
+        id: frozen
+        run: |
+          python - <<'PY'
+          import os,json,zipfile
+          with zipfile.ZipFile('short_test_adamw_graft/results/2026-11-23_reference_lr_seed1340/raw_tuned_results.zip') as z:
+              d=json.loads(z.read('confirmation/rate_0.4/design.json'))
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              print('python='+d['device']['python'],file=f)
+          with open('frozen_requirements.txt','w') as f:
+              for k,v in d['packages'].items():
+                  print(k+'=='+v,file=f)
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.frozen.outputs.python }}
+      - name: Install exact numerical packages
+        run: |
+          python -m pip install "$(grep '^torch==' frozen_requirements.txt)" --index-url https://download.pytorch.org/whl/cpu
+          grep -v '^torch==' frozen_requirements.txt > frozen_other.txt
+          python -m pip install -r frozen_other.txt pandas==2.2.3 matplotlib==3.10.8
+      - name: Run the missing seed
+        env:
+          SEED: ${{ matrix.seed }}
+        run: |
+          python short_test/download_data.py --output /tmp/shakespeare.txt
+          mkdir -p /tmp/graft
+          python short_test_adamw_graft/five_seed_20261124/worker.py --seed "$SEED" --data /tmp/shakespeare.txt --output /tmp/graft 2>&1 | tee /tmp/graft/training.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: graft-seed-${{ matrix.seed }}
+          path: /tmp/graft/
+      - name: Archive verified result and weights in the repository
+        env:
+          SEED: ${{ matrix.seed }}
+        run: |
+          test -f "/tmp/graft/graft/seed_$SEED/verified.json"
+          D="short_test_adamw_graft/results/2026-11-24_tuned_graft_five_seeds/seed_$SEED"
+          mkdir -p "$D"
+          cp /tmp/graft/design.json /tmp/graft/training.log "$D/"
+          cp /tmp/graft/graft/seed_$SEED/{verified.json,step_2000.json,step_2000.pt,step_20000.pt,result.json,progress.json} "$D/"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$D"
+          git commit -m "Archive tuned graft seed $SEED (20,000 updates)"
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin shakespeare-graft-five-seeds-20261124 && git push origin HEAD:shakespeare-graft-five-seeds-20261124; then exit 0; fi
+            sleep $((attempt*5))
+          done
+          exit 1
