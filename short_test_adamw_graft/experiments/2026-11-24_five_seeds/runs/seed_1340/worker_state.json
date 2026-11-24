@@ -1,0 +1,18 @@
+{
+  "seed": 1340,
+  "status": "completed",
+  "pid": 2295,
+  "started_at": "2026-11-24T10:31:34.067837+00:00",
+  "packages": {
+    "torch": "2.14.1+cpu",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "weightwatcher": "0.7.7",
+    "powerlaw": "2.0.0"
+  },
+  "reference_peak_lr": 0.4,
+  "native_peak_lr": 0.001,
+  "target_steps": 20000,
+  "finished_at": "2026-11-24T10:45:11.713614+00:00",
+  "result": "runs/seed_1340/confirmation/rate_0.4/graft/seed_1340/result.json"
+}
