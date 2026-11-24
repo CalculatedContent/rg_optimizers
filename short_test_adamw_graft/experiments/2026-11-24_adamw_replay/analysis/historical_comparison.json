@@ -1,0 +1,35 @@
+{
+  "note": "Historical rounded means from prior reported controls; descriptive comparison only, not a paired equivalence test.",
+  "comparison": [
+    {
+      "step": 2000,
+      "metric": "validation_ppl",
+      "historical_mean": 6.643,
+      "replay_mean": 6.642490276331126,
+      "difference": -0.0005097236688733631,
+      "relative_difference": -7.673094518641624e-05,
+      "replay_ci95_half": 0.07416832829956284,
+      "historical_mean_inside_replay_ci": true
+    },
+    {
+      "step": 20000,
+      "metric": "validation_ppl",
+      "historical_mean": 4.339,
+      "replay_mean": 4.3419960357155025,
+      "difference": 0.00299603571550211,
+      "relative_difference": 0.0006904899090809195,
+      "replay_ci95_half": 0.03359050785637289,
+      "historical_mean_inside_replay_ci": true
+    },
+    {
+      "step": 20000,
+      "metric": "alpha",
+      "historical_mean": 3.243,
+      "replay_mean": 3.2474942845606525,
+      "difference": 0.004494284560652595,
+      "relative_difference": 0.0013858416776603747,
+      "replay_ci95_half": 0.3939716921551078,
+      "historical_mean_inside_replay_ci": true
+    }
+  ]
+}
