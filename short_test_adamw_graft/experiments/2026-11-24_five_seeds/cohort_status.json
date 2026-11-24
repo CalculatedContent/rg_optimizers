@@ -1,0 +1,32 @@
+{
+  "status": "complete",
+  "finished_at": "2026-11-24T10:54:34.164392+00:00",
+  "target_updates": 20000,
+  "cohort": "github_actions_primary_five_seeds",
+  "seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "completed_seeds": 5,
+  "complete_five_seeds": true,
+  "analysis_summary": "analysis/summary.json",
+  "execution_provenance": "analysis/execution_cohort.json",
+  "github": {
+    "GITHUB_RUN_ID": "45375423863",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_JOB": "analyze",
+    "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+    "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+    "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+    "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+    "RUNNER_OS": "Linux",
+    "RUNNER_ARCH": "X64",
+    "RUNNER_NAME": "GitHub Actions 1000006480",
+    "ImageOS": "ubuntu24",
+    "ImageVersion": "20261116.133.1"
+  },
+  "excluded": "Historical seed 1340 and local partial runs are not members of the primary cohort"
+}

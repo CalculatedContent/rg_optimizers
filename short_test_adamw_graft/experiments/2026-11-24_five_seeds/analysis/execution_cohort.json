@@ -1,0 +1,1177 @@
+{
+  "cohort": "github_actions_primary_five_seeds",
+  "seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "recorded_at": "2026-11-24T10:54:34.163543+00:00",
+  "analysis_execution": {
+    "GITHUB_RUN_ID": "45375423863",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_JOB": "analyze",
+    "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+    "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+    "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+    "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+    "RUNNER_OS": "Linux",
+    "RUNNER_ARCH": "X64",
+    "RUNNER_NAME": "GitHub Actions 1000006480",
+    "ImageOS": "ubuntu24",
+    "ImageVersion": "20261116.133.1"
+  },
+  "executions": {
+    "1340": {
+      "schema": 1,
+      "seed": 1340,
+      "archived_at": "2026-11-24T10:45:13.963901+00:00",
+      "execution_origin": "github_actions",
+      "github": {
+        "GITHUB_RUN_ID": "45375423863",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "train",
+        "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+        "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006476",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "environment": {
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "python": "3.12.14",
+        "cpu_description": {
+          "lscpu": [
+            {
+              "field": "Architecture:",
+              "data": "x86_64"
+            },
+            {
+              "field": "CPU op-mode(s):",
+              "data": "32-bit, 64-bit"
+            },
+            {
+              "field": "Address sizes:",
+              "data": "48 bits physical, 48 bits virtual"
+            },
+            {
+              "field": "Byte Order:",
+              "data": "Little Endian"
+            },
+            {
+              "field": "CPU(s):",
+              "data": "4"
+            },
+            {
+              "field": "On-line CPU(s) list:",
+              "data": "0-3"
+            },
+            {
+              "field": "Vendor ID:",
+              "data": "GenuineIntel"
+            },
+            {
+              "field": "Model name:",
+              "data": "Intel(R) Xeon(R) 6975P-C"
+            },
+            {
+              "field": "CPU family:",
+              "data": "6"
+            },
+            {
+              "field": "Model:",
+              "data": "173"
+            },
+            {
+              "field": "Thread(s) per core:",
+              "data": "2"
+            },
+            {
+              "field": "Core(s) per socket:",
+              "data": "2"
+            },
+            {
+              "field": "Socket(s):",
+              "data": "1"
+            },
+            {
+              "field": "Stepping:",
+              "data": "1"
+            },
+            {
+              "field": "BogoMIPS:",
+              "data": "5400.00"
+            },
+            {
+              "field": "Flags:",
+              "data": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat vnmi avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid bus_lock_detect cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities"
+            },
+            {
+              "field": "Virtualization:",
+              "data": "VT-x"
+            },
+            {
+              "field": "Hypervisor vendor:",
+              "data": "KVM"
+            },
+            {
+              "field": "Virtualization type:",
+              "data": "full"
+            },
+            {
+              "field": "L1d cache:",
+              "data": "96 KiB (2 instances)"
+            },
+            {
+              "field": "L1i cache:",
+              "data": "128 KiB (2 instances)"
+            },
+            {
+              "field": "L2 cache:",
+              "data": "4 MiB (2 instances)"
+            },
+            {
+              "field": "L3 cache:",
+              "data": "480 MiB (1 instance)"
+            },
+            {
+              "field": "NUMA node(s):",
+              "data": "1"
+            },
+            {
+              "field": "NUMA node0 CPU(s):",
+              "data": "0-3"
+            },
+            {
+              "field": "Vulnerability Gather data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Ghostwrite:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Indirect target selection:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Itlb multihit:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability L1tf:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Meltdown:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mmio stale data:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Old microcode:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Reg file data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Retbleed:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec rstack overflow:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec store bypass:",
+              "data": "Mitigation; Speculative Store Bypass disabled via prctl"
+            },
+            {
+              "field": "Vulnerability Spectre v1:",
+              "data": "Mitigation; usercopy/swapgs barriers and __user pointer sanitization"
+            },
+            {
+              "field": "Vulnerability Spectre v2:",
+              "data": "Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS Not affected; BHI BHI_DIS_S"
+            },
+            {
+              "field": "Vulnerability Srbds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsa:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsx async abort:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Vmscape:",
+              "data": "Not affected"
+            }
+          ]
+        },
+        "torch_version": "2.14.1+cpu",
+        "torch_build": "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.12.0 (Git Hash 80afa71049cd69a3df32adcccb623b12cd7baa22)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=5c4886908584029761b579af026dcfb627c84070, CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all  -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -DC10_NODEPRECATED, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++, CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.14.1, USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_HIPSPARSELT=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF, \n",
+        "torch_cpu_capability": "AVX512",
+        "worker_numerical_threads": 1,
+        "note": "Host/build metadata are recorded; identical kernels across hosts are not assumed."
+      },
+      "result_sha256": "d544924c189862c028b34c04bdd717d7989eb51787d26cae5292acb6a210f8e9",
+      "design_sha256": "65f56632bd7e300f1481d76af5dd0e80024822ac81b38c794df23e93e2e36571",
+      "checkpoint_archive": "archives/seed_1340_checkpoints.zip",
+      "archive_sha256": "6bc6cbea4d2b1b07d1e750a330922bfb70303ea53ae9f8dc1bb15d2b46555954",
+      "checkpoints": {
+        "checkpoint_2000.pt": {
+          "sha256": "c27c630c16b5ae3fc37a871bb46cfc52bb74e36e372209c99a51ff6a9e7131e3",
+          "bytes": 13071465
+        },
+        "checkpoint_20000.pt": {
+          "sha256": "46d1fe6e0e8813c3e53565595098489b7676bfdb25924e3d55bfbec519e62a9f",
+          "bytes": 13645801
+        }
+      },
+      "primary_cohort": "Five GitHub Actions seeds 1340\u20131344",
+      "excluded": "Historical seed 1340 and local partial runs are retained separately; neither enters this cohort"
+    },
+    "1341": {
+      "schema": 1,
+      "seed": 1341,
+      "archived_at": "2026-11-24T10:43:43.763229+00:00",
+      "execution_origin": "github_actions",
+      "github": {
+        "GITHUB_RUN_ID": "45375423863",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "train",
+        "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+        "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006479",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "environment": {
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "python": "3.12.14",
+        "cpu_description": {
+          "lscpu": [
+            {
+              "field": "Architecture:",
+              "data": "x86_64"
+            },
+            {
+              "field": "CPU op-mode(s):",
+              "data": "32-bit, 64-bit"
+            },
+            {
+              "field": "Address sizes:",
+              "data": "48 bits physical, 48 bits virtual"
+            },
+            {
+              "field": "Byte Order:",
+              "data": "Little Endian"
+            },
+            {
+              "field": "CPU(s):",
+              "data": "4"
+            },
+            {
+              "field": "On-line CPU(s) list:",
+              "data": "0-3"
+            },
+            {
+              "field": "Vendor ID:",
+              "data": "GenuineIntel"
+            },
+            {
+              "field": "Model name:",
+              "data": "Intel(R) Xeon(R) 6975P-C"
+            },
+            {
+              "field": "CPU family:",
+              "data": "6"
+            },
+            {
+              "field": "Model:",
+              "data": "173"
+            },
+            {
+              "field": "Thread(s) per core:",
+              "data": "2"
+            },
+            {
+              "field": "Core(s) per socket:",
+              "data": "2"
+            },
+            {
+              "field": "Socket(s):",
+              "data": "1"
+            },
+            {
+              "field": "Stepping:",
+              "data": "1"
+            },
+            {
+              "field": "BogoMIPS:",
+              "data": "5400.00"
+            },
+            {
+              "field": "Flags:",
+              "data": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat vnmi avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid bus_lock_detect cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities"
+            },
+            {
+              "field": "Virtualization:",
+              "data": "VT-x"
+            },
+            {
+              "field": "Hypervisor vendor:",
+              "data": "KVM"
+            },
+            {
+              "field": "Virtualization type:",
+              "data": "full"
+            },
+            {
+              "field": "L1d cache:",
+              "data": "96 KiB (2 instances)"
+            },
+            {
+              "field": "L1i cache:",
+              "data": "128 KiB (2 instances)"
+            },
+            {
+              "field": "L2 cache:",
+              "data": "4 MiB (2 instances)"
+            },
+            {
+              "field": "L3 cache:",
+              "data": "480 MiB (1 instance)"
+            },
+            {
+              "field": "NUMA node(s):",
+              "data": "1"
+            },
+            {
+              "field": "NUMA node0 CPU(s):",
+              "data": "0-3"
+            },
+            {
+              "field": "Vulnerability Gather data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Ghostwrite:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Indirect target selection:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Itlb multihit:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability L1tf:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Meltdown:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mmio stale data:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Old microcode:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Reg file data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Retbleed:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec rstack overflow:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec store bypass:",
+              "data": "Mitigation; Speculative Store Bypass disabled via prctl"
+            },
+            {
+              "field": "Vulnerability Spectre v1:",
+              "data": "Mitigation; usercopy/swapgs barriers and __user pointer sanitization"
+            },
+            {
+              "field": "Vulnerability Spectre v2:",
+              "data": "Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS Not affected; BHI BHI_DIS_S"
+            },
+            {
+              "field": "Vulnerability Srbds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsa:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsx async abort:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Vmscape:",
+              "data": "Not affected"
+            }
+          ]
+        },
+        "torch_version": "2.14.1+cpu",
+        "torch_build": "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.12.0 (Git Hash 80afa71049cd69a3df32adcccb623b12cd7baa22)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=5c4886908584029761b579af026dcfb627c84070, CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all  -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -DC10_NODEPRECATED, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++, CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.14.1, USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_HIPSPARSELT=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF, \n",
+        "torch_cpu_capability": "AVX512",
+        "worker_numerical_threads": 1,
+        "note": "Host/build metadata are recorded; identical kernels across hosts are not assumed."
+      },
+      "result_sha256": "53ce0c260edd7fb438b5f6abec91a5c5547734de33594dcd2d0f813c36267c62",
+      "design_sha256": "4b4c5bf0c5dce7bb7f221a920c4ba3b1308e451d651c3a6fefb60c2ac5cfee5c",
+      "checkpoint_archive": "archives/seed_1341_checkpoints.zip",
+      "archive_sha256": "a8f98e56978c703b4ddbb3941f55f0e38d0354cb110f669224df4c780b79722c",
+      "checkpoints": {
+        "checkpoint_2000.pt": {
+          "sha256": "af182a3150c192a976f46a2724c1293bff31d44933953696e53b95f2843a08f7",
+          "bytes": 13071465
+        },
+        "checkpoint_20000.pt": {
+          "sha256": "c10735365bdcd926e19e1cfcd3c2e7f89a454c76a35836dd51dce48f4758a821",
+          "bytes": 13646185
+        }
+      },
+      "primary_cohort": "Five GitHub Actions seeds 1340\u20131344",
+      "excluded": "Historical seed 1340 and local partial runs are retained separately; neither enters this cohort"
+    },
+    "1342": {
+      "schema": 1,
+      "seed": 1342,
+      "archived_at": "2026-11-24T10:44:25.924113+00:00",
+      "execution_origin": "github_actions",
+      "github": {
+        "GITHUB_RUN_ID": "45375423863",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "train",
+        "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+        "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006475",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.376.1"
+      },
+      "environment": {
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "python": "3.12.14",
+        "cpu_description": {
+          "lscpu": [
+            {
+              "field": "Architecture:",
+              "data": "x86_64"
+            },
+            {
+              "field": "CPU op-mode(s):",
+              "data": "32-bit, 64-bit"
+            },
+            {
+              "field": "Address sizes:",
+              "data": "48 bits physical, 57 bits virtual"
+            },
+            {
+              "field": "Byte Order:",
+              "data": "Little Endian"
+            },
+            {
+              "field": "CPU(s):",
+              "data": "4"
+            },
+            {
+              "field": "On-line CPU(s) list:",
+              "data": "0-3"
+            },
+            {
+              "field": "Vendor ID:",
+              "data": "GenuineIntel"
+            },
+            {
+              "field": "Model name:",
+              "data": "INTEL(R) XEON(R) PLATINUM 8573C"
+            },
+            {
+              "field": "CPU family:",
+              "data": "6"
+            },
+            {
+              "field": "Model:",
+              "data": "207"
+            },
+            {
+              "field": "Thread(s) per core:",
+              "data": "2"
+            },
+            {
+              "field": "Core(s) per socket:",
+              "data": "2"
+            },
+            {
+              "field": "Socket(s):",
+              "data": "1"
+            },
+            {
+              "field": "Stepping:",
+              "data": "2"
+            },
+            {
+              "field": "CPU(s) scaling MHz:",
+              "data": "126%"
+            },
+            {
+              "field": "CPU max MHz:",
+              "data": "2300.0000"
+            },
+            {
+              "field": "CPU min MHz:",
+              "data": "800.0000"
+            },
+            {
+              "field": "BogoMIPS:",
+              "data": "4600.00"
+            },
+            {
+              "field": "Flags:",
+              "data": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni avx512_bf16 vnmi avx512vbmi umip waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq la57 rdpid cldemote movdiri movdir64b fsrm serialize tsxldtrk ibt amx_bf16 avx512_fp16 amx_tile amx_int8 arch_capabilities"
+            },
+            {
+              "field": "Virtualization:",
+              "data": "VT-x"
+            },
+            {
+              "field": "Hypervisor vendor:",
+              "data": "Microsoft"
+            },
+            {
+              "field": "Virtualization type:",
+              "data": "full"
+            },
+            {
+              "field": "L1d cache:",
+              "data": "96 KiB (2 instances)"
+            },
+            {
+              "field": "L1i cache:",
+              "data": "64 KiB (2 instances)"
+            },
+            {
+              "field": "L2 cache:",
+              "data": "4 MiB (2 instances)"
+            },
+            {
+              "field": "L3 cache:",
+              "data": "260 MiB (1 instance)"
+            },
+            {
+              "field": "NUMA node(s):",
+              "data": "1"
+            },
+            {
+              "field": "NUMA node0 CPU(s):",
+              "data": "0-3"
+            },
+            {
+              "field": "Vulnerability Gather data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Ghostwrite:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Indirect target selection:",
+              "data": "Mitigation; Aligned branch/return thunks"
+            },
+            {
+              "field": "Vulnerability Itlb multihit:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability L1tf:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Meltdown:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mmio stale data:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Old microcode:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Reg file data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Retbleed:",
+              "data": "Vulnerable"
+            },
+            {
+              "field": "Vulnerability Spec rstack overflow:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec store bypass:",
+              "data": "Vulnerable"
+            },
+            {
+              "field": "Vulnerability Spectre v1:",
+              "data": "Mitigation; usercopy/swapgs barriers and __user pointer sanitization"
+            },
+            {
+              "field": "Vulnerability Spectre v2:",
+              "data": "Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Retpoline"
+            },
+            {
+              "field": "Vulnerability Srbds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsa:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsx async abort:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Vmscape:",
+              "data": "Not affected"
+            }
+          ]
+        },
+        "torch_version": "2.14.1+cpu",
+        "torch_build": "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.12.0 (Git Hash 80afa71049cd69a3df32adcccb623b12cd7baa22)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=5c4886908584029761b579af026dcfb627c84070, CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all  -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -DC10_NODEPRECATED, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++, CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.14.1, USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_HIPSPARSELT=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF, \n",
+        "torch_cpu_capability": "AVX512",
+        "worker_numerical_threads": 1,
+        "note": "Host/build metadata are recorded; identical kernels across hosts are not assumed."
+      },
+      "result_sha256": "bfd289bea77460f8c4db9a031486cec854175cbe1ab5ef041e8ecd9271740251",
+      "design_sha256": "7a865554a26d2d5a1aa36eafa35e3eb0862c63c4674a39bb461c39997785535b",
+      "checkpoint_archive": "archives/seed_1342_checkpoints.zip",
+      "archive_sha256": "9a9da24b67ce504fe2cf078c5312cddf65e7929ace1240b5fa257a6ef9b3dc49",
+      "checkpoints": {
+        "checkpoint_2000.pt": {
+          "sha256": "0dd443a48b03be55f689bec155faabec5281c2740cdd6aa0078917678e1a98a8",
+          "bytes": 13071529
+        },
+        "checkpoint_20000.pt": {
+          "sha256": "ea8874689b3da116108d4340b1f32049355cdb14a8ecbf59aa9cf94cb204baf7",
+          "bytes": 13646505
+        }
+      },
+      "primary_cohort": "Five GitHub Actions seeds 1340\u20131344",
+      "excluded": "Historical seed 1340 and local partial runs are retained separately; neither enters this cohort"
+    },
+    "1343": {
+      "schema": 1,
+      "seed": 1343,
+      "archived_at": "2026-11-24T10:50:07.663694+00:00",
+      "execution_origin": "github_actions",
+      "github": {
+        "GITHUB_RUN_ID": "45375423863",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "train",
+        "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+        "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006478",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.376.1"
+      },
+      "environment": {
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "python": "3.12.14",
+        "cpu_description": {
+          "lscpu": [
+            {
+              "field": "Architecture:",
+              "data": "x86_64"
+            },
+            {
+              "field": "CPU op-mode(s):",
+              "data": "32-bit, 64-bit"
+            },
+            {
+              "field": "Address sizes:",
+              "data": "48 bits physical, 48 bits virtual"
+            },
+            {
+              "field": "Byte Order:",
+              "data": "Little Endian"
+            },
+            {
+              "field": "CPU(s):",
+              "data": "4"
+            },
+            {
+              "field": "On-line CPU(s) list:",
+              "data": "0-3"
+            },
+            {
+              "field": "Vendor ID:",
+              "data": "AuthenticAMD"
+            },
+            {
+              "field": "Model name:",
+              "data": "AMD EPYC 9V45 96-Core Processor"
+            },
+            {
+              "field": "CPU family:",
+              "data": "26"
+            },
+            {
+              "field": "Model:",
+              "data": "2"
+            },
+            {
+              "field": "Thread(s) per core:",
+              "data": "2"
+            },
+            {
+              "field": "Core(s) per socket:",
+              "data": "2"
+            },
+            {
+              "field": "Socket(s):",
+              "data": "1"
+            },
+            {
+              "field": "Stepping:",
+              "data": "1"
+            },
+            {
+              "field": "BogoMIPS:",
+              "data": "5192.24"
+            },
+            {
+              "field": "Flags:",
+              "data": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni avx512_bf16 clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm avx512_vp2intersect"
+            },
+            {
+              "field": "Virtualization:",
+              "data": "AMD-V"
+            },
+            {
+              "field": "Hypervisor vendor:",
+              "data": "Microsoft"
+            },
+            {
+              "field": "Virtualization type:",
+              "data": "full"
+            },
+            {
+              "field": "L1d cache:",
+              "data": "96 KiB (2 instances)"
+            },
+            {
+              "field": "L1i cache:",
+              "data": "64 KiB (2 instances)"
+            },
+            {
+              "field": "L2 cache:",
+              "data": "2 MiB (2 instances)"
+            },
+            {
+              "field": "L3 cache:",
+              "data": "32 MiB (1 instance)"
+            },
+            {
+              "field": "NUMA node(s):",
+              "data": "1"
+            },
+            {
+              "field": "NUMA node0 CPU(s):",
+              "data": "0-3"
+            },
+            {
+              "field": "Vulnerability Gather data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Ghostwrite:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Indirect target selection:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Itlb multihit:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability L1tf:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Meltdown:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mmio stale data:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Old microcode:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Reg file data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Retbleed:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec rstack overflow:",
+              "data": "Vulnerable: Safe RET, no microcode"
+            },
+            {
+              "field": "Vulnerability Spec store bypass:",
+              "data": "Vulnerable"
+            },
+            {
+              "field": "Vulnerability Spectre v1:",
+              "data": "Mitigation; usercopy/swapgs barriers and __user pointer sanitization"
+            },
+            {
+              "field": "Vulnerability Spectre v2:",
+              "data": "Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected"
+            },
+            {
+              "field": "Vulnerability Srbds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsa:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsx async abort:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Vmscape:",
+              "data": "Not affected"
+            }
+          ]
+        },
+        "torch_version": "2.14.1+cpu",
+        "torch_build": "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.12.0 (Git Hash 80afa71049cd69a3df32adcccb623b12cd7baa22)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=5c4886908584029761b579af026dcfb627c84070, CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all  -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -DC10_NODEPRECATED, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++, CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.14.1, USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_HIPSPARSELT=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF, \n",
+        "torch_cpu_capability": "AVX512",
+        "worker_numerical_threads": 1,
+        "note": "Host/build metadata are recorded; identical kernels across hosts are not assumed."
+      },
+      "result_sha256": "8d5c9231ab47bc2bf098db28460301a6cb9fcebe9a96c9ca2e7d687fe8402701",
+      "design_sha256": "2d07897281529454770249d76536630f1f2270f4af4f293f3722931938c7999d",
+      "checkpoint_archive": "archives/seed_1343_checkpoints.zip",
+      "archive_sha256": "884168214a66824d579771d98cd321cb953c1535cc3233ca141ae1ebfe42b8e0",
+      "checkpoints": {
+        "checkpoint_2000.pt": {
+          "sha256": "d086aa7da8885f3301cfdb2a690e3eac44ee06a2ece17b267dbfd920e58dee33",
+          "bytes": 13071529
+        },
+        "checkpoint_20000.pt": {
+          "sha256": "c6e2063e7d9aa93f8b2261488e3e7ef22a539d5826bc28826f9127de38bc76bf",
+          "bytes": 13646441
+        }
+      },
+      "primary_cohort": "Five GitHub Actions seeds 1340\u20131344",
+      "excluded": "Historical seed 1340 and local partial runs are retained separately; neither enters this cohort"
+    },
+    "1344": {
+      "schema": 1,
+      "seed": 1344,
+      "archived_at": "2026-11-24T10:53:48.122841+00:00",
+      "execution_origin": "github_actions",
+      "github": {
+        "GITHUB_RUN_ID": "45375423863",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "train",
+        "GITHUB_SHA": "0afcdca715f6c65ff6b9f2fc0b9403e0c98d5846",
+        "GITHUB_WORKFLOW": "Shakespeare graft five seeds",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_REF_NAME": "shakespeare-graft-five-seeds-20261124",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006477",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.376.1"
+      },
+      "environment": {
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "python": "3.12.14",
+        "cpu_description": {
+          "lscpu": [
+            {
+              "field": "Architecture:",
+              "data": "x86_64"
+            },
+            {
+              "field": "CPU op-mode(s):",
+              "data": "32-bit, 64-bit"
+            },
+            {
+              "field": "Address sizes:",
+              "data": "48 bits physical, 48 bits virtual"
+            },
+            {
+              "field": "Byte Order:",
+              "data": "Little Endian"
+            },
+            {
+              "field": "CPU(s):",
+              "data": "4"
+            },
+            {
+              "field": "On-line CPU(s) list:",
+              "data": "0-3"
+            },
+            {
+              "field": "Vendor ID:",
+              "data": "AuthenticAMD"
+            },
+            {
+              "field": "Model name:",
+              "data": "AMD EPYC 9V74 80-Core Processor"
+            },
+            {
+              "field": "CPU family:",
+              "data": "25"
+            },
+            {
+              "field": "Model:",
+              "data": "17"
+            },
+            {
+              "field": "Thread(s) per core:",
+              "data": "2"
+            },
+            {
+              "field": "Core(s) per socket:",
+              "data": "2"
+            },
+            {
+              "field": "Socket(s):",
+              "data": "1"
+            },
+            {
+              "field": "Stepping:",
+              "data": "1"
+            },
+            {
+              "field": "BogoMIPS:",
+              "data": "5192.27"
+            },
+            {
+              "field": "Flags:",
+              "data": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx512_bf16 clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm"
+            },
+            {
+              "field": "Virtualization:",
+              "data": "AMD-V"
+            },
+            {
+              "field": "Hypervisor vendor:",
+              "data": "Microsoft"
+            },
+            {
+              "field": "Virtualization type:",
+              "data": "full"
+            },
+            {
+              "field": "L1d cache:",
+              "data": "64 KiB (2 instances)"
+            },
+            {
+              "field": "L1i cache:",
+              "data": "64 KiB (2 instances)"
+            },
+            {
+              "field": "L2 cache:",
+              "data": "2 MiB (2 instances)"
+            },
+            {
+              "field": "L3 cache:",
+              "data": "32 MiB (1 instance)"
+            },
+            {
+              "field": "NUMA node(s):",
+              "data": "1"
+            },
+            {
+              "field": "NUMA node0 CPU(s):",
+              "data": "0-3"
+            },
+            {
+              "field": "Vulnerability Gather data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Ghostwrite:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Indirect target selection:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Itlb multihit:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability L1tf:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Meltdown:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Mmio stale data:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Old microcode:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Reg file data sampling:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Retbleed:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Spec rstack overflow:",
+              "data": "Vulnerable: Safe RET, no microcode"
+            },
+            {
+              "field": "Vulnerability Spec store bypass:",
+              "data": "Vulnerable"
+            },
+            {
+              "field": "Vulnerability Spectre v1:",
+              "data": "Mitigation; usercopy/swapgs barriers and __user pointer sanitization"
+            },
+            {
+              "field": "Vulnerability Spectre v2:",
+              "data": "Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected"
+            },
+            {
+              "field": "Vulnerability Srbds:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Tsa:",
+              "data": "Vulnerable: No microcode"
+            },
+            {
+              "field": "Vulnerability Tsx async abort:",
+              "data": "Not affected"
+            },
+            {
+              "field": "Vulnerability Vmscape:",
+              "data": "Not affected"
+            }
+          ]
+        },
+        "torch_version": "2.14.1+cpu",
+        "torch_build": "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.12.0 (Git Hash 80afa71049cd69a3df32adcccb623b12cd7baa22)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=5c4886908584029761b579af026dcfb627c84070, CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all  -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -DC10_NODEPRECATED, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++, CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.14.1, USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_HIPSPARSELT=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF, \n",
+        "torch_cpu_capability": "AVX512",
+        "worker_numerical_threads": 1,
+        "note": "Host/build metadata are recorded; identical kernels across hosts are not assumed."
+      },
+      "result_sha256": "fdc948aaa19c739eb8c6440d493b00445587ffd8f00fed80dd6fe9317d14f3bb",
+      "design_sha256": "6bc3354fa0b645e8c3cfc8e96d061a9a99cc7d9275500b0aa9dd58cd67d3c71e",
+      "checkpoint_archive": "archives/seed_1344_checkpoints.zip",
+      "archive_sha256": "a6f3f63f1dcfab2d72e7319d5c49fa56fd30bc59cacb62bc026cf37b997a76d8",
+      "checkpoints": {
+        "checkpoint_2000.pt": {
+          "sha256": "d4989ba43e8a4be91f1e76917885171be9df978f65d0859e0a7f10f1a74671ce",
+          "bytes": 13071529
+        },
+        "checkpoint_20000.pt": {
+          "sha256": "fae1f5d5b81781e8f2fe33d3f96ef098f536d9b39bf1675ebf2ff1face540cbd",
+          "bytes": 13645481
+        }
+      },
+      "primary_cohort": "Five GitHub Actions seeds 1340\u20131344",
+      "excluded": "Historical seed 1340 and local partial runs are retained separately; neither enters this cohort"
+    }
+  },
+  "local_partial_runs": "Retained separately in the original workspace and excluded",
+  "historical_seed1340": "Retained in existing_seed1340 and excluded",
+  "historical_controls": "Native AdamW and SGDM remain historical-runtime comparators"
+}
