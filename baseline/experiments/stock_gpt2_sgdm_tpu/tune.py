@@ -98,7 +98,7 @@ def stage_config(config: TrainingConfig, spec: Mapping[str, Any]) -> TrainingCon
                             eval_interval_tokens=spec["eval_interval_tokens"],
                             spectral_interval_tokens=spec["spectral_interval_tokens"],
                             checkpoint_interval_tokens=spec["checkpoint_interval_tokens"],
-                            stop_at_target=False)
+                            stop_at_target=bool(spec.get("stop_at_target", False)))
 
 
 def write_stage(output: Path, candidates: Iterable[TrainingConfig], stages: list[dict[str, Any]],

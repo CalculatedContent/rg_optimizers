@@ -7,6 +7,12 @@ then measure its full-budget result with the official validation window and all
 required spectral measurements. The literature and its transfer limitations are
 recorded in [SOURCES.md](SOURCES.md).
 
+The normal entry point is `run_speedrun.py start` from the repository root with
+this folder's path. It executes the selection protocol automatically, including
+all candidate launches and promotions. Commands later in this document are for
+auditing or deliberately managing individual stages. [CAMPAIGN.md](CAMPAIGN.md)
+defines the finite automatic policy and its stopping rules.
+
 ## Fixed scientific contract
 
 Production uses the pinned stock GPT-2 Small model: 12 layers, 12 heads, width 768,
@@ -23,13 +29,20 @@ SHA256-verified pretokenized cache manifest at
 cache manifest and data receipts; a configuration name alone does not establish
 data identity.
 
-All candidates use ordinary `torch.optim.SGD`, unnormalized momentum accumulation,
+All candidates use ordinary SGD equations, unnormalized momentum accumulation,
 `dampening=0`, `nesterov=False`, and global gradient clipping at norm 1. The update
 convention after the first-buffer initialization is
 
 \[
 v_t=\mu v_{t-1}+g_t,\qquad \theta_{t+1}=\theta_t-\eta_t v_t.
 \]
+
+The implementation in `optim.py` subclasses `torch.optim.SGD` and preserves its
+momentum buffers and parameter-group state. It multiplies the update by a tensor
+LR rather than converting that LR to the scalar `add_` argument. This is an XLA
+execution correction, not a change to the mathematical optimizer. Native SGD
+parity, state interchange and absence of optimizer host scalar extraction are
+tested. The actual TPU compile-reuse gate runs at launch.
 
 When weight decay is nonzero, it is ordinary coupled PyTorch SGD weight decay on
 parameters with at least two dimensions. Biases and normalization vectors have
@@ -77,7 +90,8 @@ its learning-rate floor.
 |---|---:|---:|---:|---|
 | screen | 134,217,728 | 11 | Best 4 | Separate tuning window |
 | refine | 1,073,741,824 | Up to 4 | Best 1 | Separate tuning window |
-| full | 10,255,073,280 | 1 | None; report confirmation | Official benchmark prefix |
+| full | Up to 10,255,073,280 | 1 | Stop at target; report confirmation | Official benchmark prefix |
+| extended, if needed | Up to 20,510,146,560 | Same finalist, fresh start | Stop at target or report budget exhaustion | Official benchmark prefix |
 
 At the full budget, batches 16, 64 and 512 require 625,920, 156,480 and 19,560 optimizer
 updates respectively. Compare their losses at equal processed tokens, not equal
@@ -91,11 +105,24 @@ uses the last validation result at that horizon. Short-budget rankings can chang
 at the full budget; this resource-conscious search can discard the eventual best
 candidate. It cannot establish a global optimum or guarantee 3.28.
 
-All production stages finish their planned token budget by default, including the
-full stage if the target is crossed early. The runner can still report the first
-qualifying target observation and its elapsed time. A configuration that requests
-`stop_at_target=true` must use the full official benchmark window; partial runs
-are never eligible for equal-budget tuning promotion.
+Screen and refinement finish their equal-token horizons before selection. The
+automatic campaign sets `stop_at_target=true` for full and extended stages only.
+It accepts an early endpoint only when the complete official validation window
+meets the target and all required layer measurements and publication complete.
+Partial runs are never eligible for equal-budget tuning promotion.
+
+If the first full horizon misses, the default campaign runs the selected candidate
+once more from initialization with a twice-longer warmup/cosine horizon. It repeats
+the verified corpus when needed. This is a bounded experimental fallback, not
+evidence that doubling tokens guarantees convergence. The maximum planned total
+is 36,536,582,144 tokens, or 16,026,435,584 with
+`--max-full-budget-multiplier 1` at the first start. Failure to reach the target
+within that policy is reported as `budget_exhausted_target_not_met`.
+
+Standalone `tune.py plan` retains its original fixed-horizon full confirmation;
+the campaign records its explicit target-stop override in the immutable plan.
+Do not compare an early target-stop endpoint as though it completed an equal
+full-token optimization comparison.
 
 ## Validation separation
 

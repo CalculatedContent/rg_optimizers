@@ -2,7 +2,39 @@
 
 This directory prepares **plain SGD with momentum on stock GPT-2 Small and pinned FineWeb10B**, with a staged parameter search and passive layer measurements. It is a proposed experiment. No configuration here has been demonstrated to reach validation NLL 3.28.
 
-`launch.py` defaults to **plan**. Planning reads the selected configuration and prints the exact training/tracking commands; it starts no process. `preflight` checks the supplied environment and runs disposable kernel/capability checks. **Only the explicit `start` action launches detached training.** Nothing in this directory allocates a TPU, starts a stopped node, modifies IAM, installs packages automatically, or stops another run.
+## Recommended: launch the whole campaign
+
+Use the one-command entry point from the repository root on the existing TPU VM:
+
+```bash
+python3 baseline/experiments/stock_gpt2_sgdm_tpu/run_speedrun.py start
+```
+
+It creates an isolated pinned environment, verifies data, runs the hardware and
+spectral checks, executes the 11 → 4 → 1 search, stops the full finalist at the
+official target, attempts one bounded longer horizon if needed, saves measurements
+to GitHub as they finish, and generates reports. Candidate-by-candidate commands
+below are an operational reference; they are not required for this workflow.
+See [CAMPAIGN.md](CAMPAIGN.md) for the automatic budget and resume policy.
+
+The default work directory is
+`/mnt/disks/rg-data/gpt2small/stock_gpt2_sgdm_tpu`. Override it once with
+`--work-dir /absolute/persistent/path` if the actual mount differs. The entry point
+checks the mount and 100 GiB of initial free space before installing packages.
+GitHub authentication with contents-write access must already be available through
+`GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth token` on that VM. Do not paste tokens into
+commands, repository files or chat. [PUBLISHING.md](PUBLISHING.md) describes the
+automatic write/readback check and dedicated results branch. A ChatGPT connector
+session does not supply credentials to the TPU host.
+
+`run_speedrun.py plan` only previews the work. `status` reads the latest campaign;
+`resume` continues that same saved campaign after an interruption. These use the
+same work directory. Optional `--gcs-uri gs://BUCKET/unique-campaign` adds verified
+checkpoint backup, with separate child paths for each run.
+
+## Lower-level individual-run reference
+
+`launch.py` defaults to **plan**. Planning reads the selected configuration and prints the exact training/tracking commands; it starts no process. `preflight` checks the supplied environment and runs disposable kernel/capability checks. **Only the explicit `start` action launches detached training.** These low-level commands do not install packages. The higher-level `run_speedrun.py start` installs its own isolated dependencies. Neither entry point allocates a TPU, starts a stopped node, or modifies IAM. A campaign can pause only its own supervised run.
 
 ## 1. Prepare an existing single-host TPU and a separate environment
 
@@ -10,7 +42,7 @@ Use an existing **v5litepod-8** TPU VM with all eight chips addressable from wor
 
 Keep run outputs and the prepared data on a persistent mounted volume. Preflight rejects a TPU output path on the root filesystem or a temporary filesystem. Verify that the volume survives the lifecycle of your allocation. The full token corpus uses about 20.7 GB. Run preflight requires 30 GiB free after data preparation; a volume with 100 GiB free allows room for data, three resumable checkpoints plus a conditional first-target checkpoint, logs, and the bounded spectral queue. The metrics worker removes a snapshot only after its measurement is committed; it does not delete the training checkpoints.
 
-From your checked-out repository on the TPU VM, create a **new** Python3.10–3.12 environment. These are commands to run later, not completed setup:
+For manual individual-run work, create a **new** Python3.10–3.12 environment. The recommended campaign entry point performs this step automatically. These are commands to run later, not completed setup:
 
 ```bash
 python3.12 -m venv /your/persistent/sgdm-venv
@@ -83,7 +115,7 @@ This example is a candidate, not a preselected winner.
 
 Start repeats the mandatory readiness checks and writes `PREFLIGHT.json` before spawning the trainer. The checks verify the pinned model source and dataset manifest, SHA256 and binary headers of the required token shards, installed runtime versions, writable storage/free space, all eight observed TPU devices, attention outputs/derivatives, one disposable full-model SGDM update at the configured microbatch shape, and the native WeightWatcher/ERG fields. A passed kernel probe does not establish convergence, full-run throughput, or numerical identity to the CUDA record.
 
-The launcher refuses an existing output directory unless `--resume` explicitly requests the same saved checkpoint/configuration. It never accepts a `--replace` option. Launch one candidate at a time on this TPU; wait for its training and tracking outcomes before starting the next candidate with its own path. It does not automatically launch every candidate or extend an allocation.
+The individual-run launcher refuses an existing output directory unless `--resume` explicitly requests the same saved checkpoint/configuration. It never accepts a `--replace` option. Use one candidate at a time on this TPU. The campaign controller applies this policy automatically, waits for training and tracking, publishes results, and then launches the next candidate. Neither path extends a cloud allocation.
 
 The supervisor is detached, so disconnecting SSH does not intentionally terminate it. Node preemption, node deletion, lease expiry, or reboot can still terminate all processes. There is no automatic restart.
 
@@ -166,4 +198,4 @@ The resulting `full/winner.json` freezes the selected settings. Launch it fresh 
 
 ## Validation status of this preparation
 
-CPU/unit checks validate configuration, data identity, launch boundaries, checkpoint/resume handling, and the spectral worker. **This new launcher has not been executed on a TPU.** The observed device, attention, full-model update, credentials, persistent storage, and data checks must pass on the future allocation before production training starts. No TPU throughput or completion-time promise is implied.
+CPU/unit checks validate configuration, data identity, launch boundaries, checkpoint/resume handling, native SGD equivalence, and the spectral worker. **This new launcher has not been executed on a TPU.** The observed device, attention, full-model update, stable changing-LR compilation, credentials, persistent storage, and data checks run automatically on the future allocation before production training starts. No TPU throughput or completion-time promise is implied.

@@ -216,7 +216,7 @@ def run_preflight(*, config_path, data_dir, run_dir, device="tpu", skip_spectral
 
 
 def tpu_probe(config_path):
-    """One full-model update at the real microbatch shape, isolated and disposable."""
+    """Five full-model updates at the real microbatch shape, isolated and disposable."""
     config = load_config(config_path)
     import torch
     import torch_xla.runtime as xr
@@ -246,6 +246,26 @@ def tpu_probe(config_path):
 
 def _tpu_model_probe(config, observed, Runtime, stock_model, attention):
     import torch
+    from torch.utils._python_dispatch import TorchDispatchMode
+    import torch_xla.debug.metrics as xla_metrics
+    from optim import make_optimizer
+
+    class ObserveOptimizerScalars(TorchDispatchMode):
+        def __init__(self):
+            super().__init__()
+            self.scalar_extractions = []
+
+        def __torch_dispatch__(self, func, types, args=(), kwargs=None):
+            if "_local_scalar_dense" in str(func):
+                self.scalar_extractions.append(str(func))
+            return func(*args, **(kwargs or {}))
+
+    def compile_samples():
+        # Official XLA 2.6 API: (TOTAL_SAMPLES, ACCUMULATOR, SAMPLES).
+        # https://github.com/pytorch/xla/blob/v2.6.0/torch_xla/debug/metrics.py
+        data = xla_metrics.metric_data("CompileTime")
+        return None if data is None else int(data[0])
+
     rt = Runtime("tpu")
     stock_model.configure_attention(rt.attention("flash"))
     architecture = stock_model.GPTConfig(block_size=config.context_length, vocab_size=config.vocab_size,
@@ -253,41 +273,70 @@ def _tpu_model_probe(config, observed, Runtime, stock_model, attention):
     model = stock_model.make_model(architecture, seed=config.seed, device=rt.device)
     for value in (*model.parameters(), *model.buffers()):
         rt.replicate(value)
-    groups = [{"params": [p for p in model.parameters() if p.ndim >= 2],
-               "weight_decay": config.weight_decay},
-              {"params": [p for p in model.parameters() if p.ndim < 2], "weight_decay": 0.0}]
-    optimizer = torch.optim.SGD(groups, lr=rt.scalar(config.peak_lr * config.schedule_factor(0)),
-                                 momentum=config.momentum, nesterov=False, dampening=0.0,
-                                 foreach=False)
+    optimizer = make_optimizer(model, config)
     generator = torch.Generator().manual_seed(config.seed)
     tokens = torch.randint(config.vocab_size,
                             (config.microbatch_sequences, config.context_length + 1), generator=generator)
-    model.zero_grad(set_to_none=False)
     accumulation = config.global_batch_sequences // config.microbatch_sequences
-    with rt.autocast():
-        _, loss = model(rt.put(tokens[:, :-1].contiguous()), rt.put(tokens[:, 1:].contiguous()),
-                         return_logits=False)
-    (loss / accumulation).backward()
-    gradients = [p.grad for p in model.parameters() if p.grad is not None]
-    for grad in gradients:
-        rt.replicate(grad)
-    norm = sum(grad.detach().float().square().sum() for grad in gradients).sqrt()
-    scale = torch.clamp(config.grad_clip / (norm + 1e-6), max=1.0)
-    with torch.no_grad():
+    updates = []
+    first_lr = config.peak_lr * config.schedule_factor(0)
+    for index in range(5):
+        before = compile_samples()
+        model.zero_grad(set_to_none=False)
+        with rt.autocast():
+            _, loss = model(rt.put(tokens[:, :-1].contiguous()), rt.put(tokens[:, 1:].contiguous()),
+                             return_logits=False)
+        (loss / accumulation).backward()
+        # Match the trainer's backward, clipping, and optimizer graph boundaries.
+        rt.step()
+        gradients = [p.grad for p in model.parameters() if p.grad is not None]
         for grad in gradients:
-            grad.mul_(scale)
-    optimizer.step()
-    finite = torch.stack([torch.isfinite(p).all() for p in model.parameters()]).all()
-    rt.step(wait=True)
-    loss_value, norm_value = float(loss.cpu()), float(norm.cpu())
-    if not bool(finite.cpu()) or not math.isfinite(loss_value) or not math.isfinite(norm_value):
-        raise RuntimeError("Nonfinite full-model TPU optimizer probe")
+            rt.replicate(grad)
+        norm = sum(grad.detach().float().square().sum() for grad in gradients).sqrt()
+        scale = torch.clamp(config.grad_clip / (norm + 1e-6), max=1.0)
+        with torch.no_grad():
+            for grad in gradients:
+                grad.mul_(scale)
+        rt.step(wait=True)
+        loss_value, norm_value = float(loss.cpu()), float(norm.cpu())
+        if not math.isfinite(loss_value) or not math.isfinite(norm_value):
+            raise RuntimeError("Nonfinite full-model TPU optimizer probe")
+        # Deliberately distinct nonzero tensor values test dynamic LR even for
+        # a WSD plateau or a production config with fewer than five updates.
+        learning_rate = first_lr * (1.0 + 0.125 * index)
+        for group in optimizer.param_groups:
+            group["lr"] = rt.scalar(learning_rate)
+        with ObserveOptimizerScalars() as observer:
+            optimizer.step()
+        finite = torch.stack([torch.isfinite(p).all() for p in model.parameters()]).all()
+        rt.step(wait=True)
+        if not bool(finite.cpu()):
+            raise RuntimeError("Nonfinite full-model TPU optimizer probe")
+        if observer.scalar_extractions:
+            raise RuntimeError("TPU optimizer extracted a host scalar during step: "
+                               + ", ".join(observer.scalar_extractions))
+        after = compile_samples()
+        if after is None:
+            raise RuntimeError("XLA CompileTime telemetry unavailable; cannot verify dynamic-LR graph reuse")
+        updates.append({"update": index + 1, "learning_rate": learning_rate,
+                        "loss": loss_value, "gradient_norm": norm_value,
+                        "compile_samples": after, "new_compilations": after - (before or 0),
+                        "optimizer_host_scalar_extractions": len(observer.scalar_extractions)})
+    # The first graph creates momentum/gradient buffers; subsequent warmups
+    # establish their steady-state aliasing. Changed LR values must then reuse
+    # the graph, rather than trigger one expensive compilation per update.
+    if any(row["new_compilations"] != 0 for row in updates[3:]):
+        raise RuntimeError("Changing tensor LR recompiled the warmed TPU model: "
+                           + json.dumps(updates))
     if model.lm_head.weight is not model.transformer.wte.weight:
         raise RuntimeError("Tied embedding/output alias was lost")
     return {**observed, "attention": attention, "parameters": sum(p.numel() for p in model.parameters()),
             "microbatch_sequences": config.microbatch_sequences, "loss": loss_value,
             "gradient_norm": norm_value, "status": "passed",
-            "note": "One disposable microbatch update; no claim of convergence or accumulation parity."}
+            "optimizer": type(optimizer).__name__, "optimizer_updates": updates,
+            "dynamic_lr_graph_reuse": {"status": "passed", "warmup_updates": 3,
+                                       "checked_updates": 2, "metric": "CompileTime.TOTAL_SAMPLES"},
+            "note": "Five disposable microbatch updates; no claim of convergence or accumulation parity."}
 
 
 def main(argv=None):

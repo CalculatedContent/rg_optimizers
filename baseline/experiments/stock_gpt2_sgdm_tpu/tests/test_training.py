@@ -55,7 +55,7 @@ def test_accumulation_is_one_global_mean_sgd_update():
     rt = Runtime("cpu")
     first, second = make_model(config, rt), make_model(small, rt)
     opt1, opt2 = make_optimizer(first, config), make_optimizer(second, small)
-    assert type(opt1) is torch.optim.SGD
+    assert isinstance(opt1, torch.optim.SGD)
     assert opt1.defaults["dampening"] == 0 and opt1.defaults["nesterov"] is False
     assert len({id(p) for group in opt1.param_groups for p in group["params"]}) == len(list(first.parameters()))
     arrays = [np.arange(1024) % config.vocab_size]

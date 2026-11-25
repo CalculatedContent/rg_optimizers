@@ -17,6 +17,16 @@ These diagnostics accompany the validation NLL. An alpha value, ERG gap, or
 weighted average does not establish that the run reached the 3.28 benchmark
 target.
 
+The automatic campaign publishes each completed snapshot's full native JSON and
+per-step layer/group CSV to its dedicated GitHub results namespace. The canonical
+summary CSV updates incrementally; final aggregate tables and report JSON are
+added after diagnostics drain. Remote verification retains the full raw and
+`clip_xmax` fields, not just the average alpha. Publication failures request a
+graceful training pause and cannot silently pass the final success gate.
+[PUBLISHING.md](PUBLISHING.md) specifies the exact paths, commit receipts,
+authentication and retry behavior. Tensor checkpoints remain on persistent disk
+or optional GCS backup; GitHub stores the scientific measurement artifacts.
+
 ## Matrix inventory
 
 The canonical aggregate contains **72 matrices** for the production 12-block
