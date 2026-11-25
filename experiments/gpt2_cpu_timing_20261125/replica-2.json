@@ -1,0 +1,199 @@
+{
+  "kind": "BENCHMARK_RESULT_JSON",
+  "schema": 1,
+  "replica": 2,
+  "measurement": "real full-size CPU timing; synthetic input IDs",
+  "model": "stock GPT-2 Small",
+  "parameters": 124439808,
+  "context": 1024,
+  "vocabulary": 50257,
+  "precision": "float32",
+  "attention": "PyTorch scaled_dot_product_attention, causal",
+  "validation_includes_token_argmax": true,
+  "torch_compile": false,
+  "model_source_sha256": "757d0cea0d48cbc4c7d7d70371f955d49cdf3a7cfb4c87701a720c2fe0905c34",
+  "git_sha": "044b2a8133f50f4f12e097014c2c8619ad3bdf0e",
+  "github_run_id": "45579460692",
+  "runner_os": "Linux",
+  "runner_arch": "X64",
+  "hardware": {
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "logical_cpus": 4,
+    "affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "torch_threads": 4,
+    "memory_kb": 16367528,
+    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39"
+  },
+  "software": {
+    "torch": "2.6.0+cpu",
+    "python": "3.12.16",
+    "numpy": "2.2.6",
+    "mkldnn": true
+  },
+  "torch_build": "PyTorch built with:\n  - GCC 9.3\n  - C++ Version: 201703\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.5.3 (Git Hash 66f0cb9eb66affd2da3bf5f8d897376f04aae6af)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=2236df1770800ffea5697b11b0bb0d910b2e59e1, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOCUPTI -DLIBKINETO_NOROCTRACER -DLIBKINETO_NOXPUPTI=ON -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.6.0, USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, \n",
+  "protocol": {
+    "updates": 19560,
+    "batch_tokens": 524288,
+    "training_tokens": 10255073280,
+    "validation_tokens_per_event": 10485760,
+    "validation_events_excluding_initial": 79
+  },
+  "microbatches": [
+    {
+      "batch_sequences": 1,
+      "tokens": 1024,
+      "accumulations_per_update": 512,
+      "forward_backward": {
+        "samples_seconds": [
+          5.919587449000005,
+          5.888095664000048,
+          5.776384006999933,
+          5.885280720999845,
+          5.868615749000128
+        ],
+        "median_seconds": 5.885280720999845,
+        "mean_seconds": 5.867592717999992,
+        "min_seconds": 5.776384006999933,
+        "max_seconds": 5.919587449000005
+      },
+      "validation_forward": {
+        "samples_seconds": [
+          2.014845479000087,
+          1.9928807430001143,
+          2.047246737000023
+        ],
+        "median_seconds": 2.014845479000087,
+        "mean_seconds": 2.0183243196667413,
+        "min_seconds": 1.9928807430001143,
+        "max_seconds": 2.047246737000023
+      },
+      "training_tokens_per_second": 173.99339955801355
+    },
+    {
+      "batch_sequences": 2,
+      "tokens": 2048,
+      "accumulations_per_update": 256,
+      "forward_backward": {
+        "samples_seconds": [
+          11.242175075999967,
+          11.296174485999927,
+          11.173596066000073,
+          11.191341926000177,
+          11.22175452800002
+        ],
+        "median_seconds": 11.22175452800002,
+        "mean_seconds": 11.225008416400033,
+        "min_seconds": 11.173596066000073,
+        "max_seconds": 11.296174485999927
+      },
+      "validation_forward": {
+        "samples_seconds": [
+          4.0092818299999635,
+          3.948552601000074,
+          3.9737461050001457
+        ],
+        "median_seconds": 3.9737461050001457,
+        "mean_seconds": 3.977193512000061,
+        "min_seconds": 3.948552601000074,
+        "max_seconds": 4.0092818299999635
+      },
+      "training_tokens_per_second": 182.50265543502329
+    },
+    {
+      "batch_sequences": 4,
+      "tokens": 4096,
+      "accumulations_per_update": 128,
+      "forward_backward": {
+        "samples_seconds": [
+          22.539806752000004,
+          22.06256190299996,
+          22.279318798000077,
+          22.03659126499997,
+          22.390305377999994
+        ],
+        "median_seconds": 22.279318798000077,
+        "mean_seconds": 22.2617168192,
+        "min_seconds": 22.03659126499997,
+        "max_seconds": 22.539806752000004
+      },
+      "validation_forward": {
+        "samples_seconds": [
+          7.703770721999945,
+          7.690722597000104,
+          7.698708151999881
+        ],
+        "median_seconds": 7.698708151999881,
+        "mean_seconds": 7.697733823666643,
+        "min_seconds": 7.690722597000104,
+        "max_seconds": 7.703770721999945
+      },
+      "training_tokens_per_second": 183.84763183907046
+    }
+  ],
+  "optimizers": {
+    "adamw": {
+      "clip_and_step": {
+        "samples_seconds": [
+          0.2223975120000432,
+          0.25688196400005836,
+          0.2129885029999059,
+          0.2137251969998033,
+          0.21341491899988796
+        ],
+        "median_seconds": 0.2137251969998033,
+        "mean_seconds": 0.22388161899993975,
+        "min_seconds": 0.2129885029999059,
+        "max_seconds": 0.25688196400005836
+      },
+      "zero_grad_seconds": 0.015749528000014834
+    },
+    "sgdm": {
+      "clip_and_step": {
+        "samples_seconds": [
+          0.1030898530000286,
+          0.16345798799989097,
+          0.10004471799993553,
+          0.10013438400005725,
+          0.10005580500001088
+        ],
+        "median_seconds": 0.10013438400005725,
+        "mean_seconds": 0.11335654959998465,
+        "min_seconds": 0.10004471799993553,
+        "max_seconds": 0.16345798799989097
+      },
+      "zero_grad_seconds": 0.015973936999898797
+    },
+    "adamw_sgdm": {
+      "clip_and_step": {
+        "samples_seconds": [
+          0.4343976960001328,
+          0.3746031179998681,
+          0.3529601330001242,
+          0.4340603209998335,
+          0.35508354399985365
+        ],
+        "median_seconds": 0.3746031179998681,
+        "mean_seconds": 0.39022096239996246,
+        "min_seconds": 0.3529601330001242,
+        "max_seconds": 0.4343976960001328
+      },
+      "zero_grad_seconds": 0.015935039000169127
+    }
+  },
+  "excluded": [
+    "dataset I/O",
+    "WeightWatcher/SVD",
+    "checkpoint storage and transfers",
+    "job startup, package installation and queues",
+    "job restarts",
+    "convergence to target loss"
+  ],
+  "max_rss_kb": 9998660,
+  "elapsed_benchmark_seconds": 296.774155772,
+  "status": "complete"
+}
