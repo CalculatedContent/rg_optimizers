@@ -1,14 +1,96 @@
 {
   "benchmark_results": false,
+  "campaign_integration": {
+    "all_runs_published_to_test_double": true,
+    "automatic_selection": true,
+    "benchmark_target_met": false,
+    "canonical_matrices_per_snapshot": 6,
+    "completed_campaign_resume_is_noop": true,
+    "embeddings_per_snapshot": 2,
+    "final_plot_visually_inspected": true,
+    "fresh_finalist_initialization": true,
+    "github_transport": "in_memory_test_double_with_real_git_blob_hashing",
+    "incremental_before_final_report": true,
+    "live_github_result_publication": false,
+    "matrix_rows_per_snapshot": 8,
+    "measurement_bytes_identical": true,
+    "mode": "synthetic_smoke",
+    "model": {
+      "blocks": 1,
+      "context": 32,
+      "heads": 2,
+      "vocabulary": 64,
+      "width": 24
+    },
+    "outcome": "smoke_completed_not_a_benchmark",
+    "plots_generated_for_all_runs": true,
+    "real_training": true,
+    "real_weightwatcher": true,
+    "runs": [
+      {
+        "all_fits_valid": true,
+        "failed": 0,
+        "pending": 0,
+        "publication_complete": true,
+        "run_key": "screen/smoke-lr001",
+        "snapshot_steps": [
+          0,
+          2
+        ],
+        "tokens_seen": 64,
+        "tracking_complete": true,
+        "verified_artifacts": 27
+      },
+      {
+        "all_fits_valid": true,
+        "failed": 0,
+        "pending": 0,
+        "publication_complete": true,
+        "run_key": "screen/smoke-lr003",
+        "snapshot_steps": [
+          0,
+          2
+        ],
+        "tokens_seen": 64,
+        "tracking_complete": true,
+        "verified_artifacts": 27
+      },
+      {
+        "all_fits_valid": true,
+        "failed": 0,
+        "pending": 0,
+        "publication_complete": true,
+        "run_key": "full/smoke-lr003",
+        "snapshot_steps": [
+          0,
+          4
+        ],
+        "tokens_seen": 128,
+        "tracking_complete": true,
+        "verified_artifacts": 27
+      }
+    ],
+    "snapshot_count": 6,
+    "training_tokens": 256
+  },
   "code_sha256": {
+    "campaign.py": "163612db7fefff36971046a59424243e1abbc8a17e185a3512a7fa4f174d0298",
     "checkpoint.py": "f040542708a4f6c607496283797f09982ccd335f2b06a131f00007649769edfb",
     "config.py": "0de19fcd35caaae53874e60f9d0a969a2df18209c2562b6b5e1547a34c67ce6e",
     "dataset.py": "07bbfe121135b9dd8e3c106e78dea04021b13474898eba9859f0465e178c5f5e",
+    "launch.py": "9383c2eafefd027865d3bc7c04bf4644efa5df59e3fb3d263c028c87e86bdb73",
     "metrics.py": "f2ba045ae0e933887825ed428c27325f60067c256c91fbc4abbccbaf552e3543",
+    "optim.py": "1953e06e0dc52f76a919a99ccf13b5bab1092f156aedb00ea0abb90909fcb185",
+    "preflight.py": "43c3cb2b2ef9765b5472fadcafce93ff20d0c766db6747a687627f3c6c07f97f",
+    "prepare_data.py": "e3fcdfc936f4ab76c1c3f8d90809f850087f377f29b62d1b466c231063f497fc",
+    "publish_metrics.py": "fe36897cbec6ff6b587353e01278cd485ff5107c6912be2cb2c70cdea0e5a89f",
     "reference/runtime.py": "30bab3f9edc92f17b2e039bbaa456ac3ce418a95d4f92bed6dcfcff7d1edff8f",
     "reference/stock_config.py": "31777545f4c3cbf15aa0f450b72d707d5a2166835288eb6176ebdb9e8ac5a152",
     "reference/stock_model.py": "dea38f4141627b6fa4c2b466b7896eb1a9f20b2eb006724786e2fb443ee1c4ca",
-    "train.py": "9f9d9000b2dda1f9466b4c18c807fb8c59cdeb268b3eb63c5390c5440710592d"
+    "report.py": "f9b3aa97d5cd8facfd0ce3d8fe8a0ee7597ddd76d0c7b94b3c45d909e04c728d",
+    "run_speedrun.py": "eea4fd385528082d02791b8a306b79f122ea94d288383fabb73724a4d929df71",
+    "train.py": "bd7b49291c0d28e504b6d467ed95c181fb76fecdc825b924df58a3275643d54d",
+    "tune.py": "b7f792f8c8bef893ca3ac5bfde0457f0d8901a2dc60e609360be437f986c1287"
   },
   "data_manifest_sha256": "028141b267e9a6c99af8beea42bed58fe1d7418bdf034d630f1792aeb6a20e19",
   "existing_repository_ci": {
@@ -34,6 +116,19 @@
     "syntax_run_id": 45618716296,
     "verified_failing_source_files_unchanged": 5
   },
+  "future_campaign": {
+    "conditional_fresh_extended_attempts": 1,
+    "full_candidates": 1,
+    "full_stops_at_verified_target": true,
+    "global_optimality_claim": false,
+    "incremental_github_required": true,
+    "maximum_planned_training_tokens": 36536582144,
+    "official_validation_tokens": 10485760,
+    "refine_candidates": 4,
+    "screen_candidates": 11,
+    "target_nll": 3.28,
+    "target_perplexity": 26.575772699873955
+  },
   "gcs_executed": false,
   "integration": {
     "all_fits_valid": true,
@@ -53,7 +148,25 @@
     "tracking_exit_code": 0,
     "training_exit_code": 0
   },
+  "live_github_result_publication_executed": false,
   "model_source_sha256": "757d0cea0d48cbc4c7d7d70371f955d49cdf3a7cfb4c87701a720c2fe0905c34",
+  "optimizer_verification": {
+    "changed_lr_updates_per_case": 6,
+    "conventional_sgd_parity": true,
+    "dtypes": [
+      "float32",
+      "float64"
+    ],
+    "momentum_values": [
+      0.0,
+      0.9,
+      0.98
+    ],
+    "native_state_interchange": true,
+    "optimizer_host_scalar_extractions": 0,
+    "tpu_compile_guard_tested_with_simulated_telemetry": true,
+    "tpu_compile_reuse_observed_on_hardware": false
+  },
   "packages": {
     "matplotlib": "3.9.4",
     "numpy": "1.26.4",
@@ -71,8 +184,33 @@
     "errors": 0,
     "failures": 0,
     "skipped": 0,
-    "tests": 56
+    "test_groups": {
+      "bootstrap": 12,
+      "campaign_contracts": 18,
+      "campaign_native_integration": 1,
+      "configuration_and_selection": 15,
+      "launch": 17,
+      "metrics": 14,
+      "optimizer_and_tpu_preflight": 51,
+      "publisher": 23,
+      "single_run_native_integration": 1,
+      "training": 9
+    },
+    "tests": 161,
+    "warnings": 15
   },
-  "test_runtime_seconds": 85.639,
+  "test_runtime_seconds": 253.877,
+  "test_sha256": {
+    "test_bootstrap.py": "52280c99645641532fd3854b89c78261445aaafcc29092d8d83de3579abd5c35",
+    "test_campaign.py": "b5fb80e56d5323c47b0be05e1ae4b73426a5c4eff2c74e5175a79e2bfec422b0",
+    "test_campaign_integration.py": "3dac37d8c3c19e8e8f45ba1bf34f8610e7b2fa85ffd65d51c97a3c6b90119cd2",
+    "test_config_tune.py": "8ba0a2ade2846628f29f05cb2e99a45dc0495bcb8576bc14883e187f4538ce1c",
+    "test_launch.py": "8ee2a5e140f0e25f8a3786efd065eb0fe1efebe78305ecf1919385669b0fb64f",
+    "test_metrics.py": "6f14e8ada851a4f145d6c8dd90097b7245545927303305e9b71e5e8f1871e69b",
+    "test_optim.py": "d32bbda3c93527ce6e527047f52d69c2e3c2aeb1bf199312520ac9351828a6c7",
+    "test_publish_metrics.py": "0e0655e2dfdc424b2f355c6951ed69af4ebc34dfa6857a2d6c40be1aa351602d",
+    "test_smoke_integration.py": "6c10cbd9627fe46032467b34b3c43936e2cd5f359f71dfa6186cd98b7cec2752",
+    "test_training.py": "83bb3cc23b5c032d7526597f25b52bf8fcfddd910cc96e61caa4361abbf2668a"
+  },
   "tpu_executed": false
 }

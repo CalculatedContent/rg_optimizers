@@ -23,6 +23,7 @@ import torch
 from config import TrainingConfig, BENCHMARK_VALIDATION_TOKENS
 from checkpoint import load_checkpoint, recover_checkpoint_aliases, rng_state, restore_rng, save_checkpoint, sha256_file, to_cpu, write_json
 from dataset import build_data, MANIFEST_SHA256
+from optim import make_optimizer
 
 HERE = Path(__file__).resolve().parent
 REFERENCE = HERE.parents[1] / "gpt2_small/muon_speedrun"
@@ -70,18 +71,6 @@ def make_model(config, rt):
     return model
 
 
-def make_optimizer(model, config):
-    # named_parameters()/parameters() de-duplicate the tied embedding/head.
-    groups = [
-        {"params": [p for p in model.parameters() if p.ndim >= 2],
-         "weight_decay": config.weight_decay, "role": "matrices_and_embeddings"},
-        {"params": [p for p in model.parameters() if p.ndim < 2],
-         "weight_decay": 0.0, "role": "bias_and_layernorm"},
-    ]
-    return torch.optim.SGD(groups, lr=config.peak_lr, momentum=config.momentum,
-                           dampening=0.0, nesterov=False, foreach=False)
-
-
 @torch.no_grad()
 def clip_gradients(model, maximum):
     grads = [parameter.grad for parameter in model.parameters() if parameter.grad is not None]
@@ -117,7 +106,8 @@ def train_step(model, optimizer, stream, config, rt, step):
         raise NumericalDivergence("Nonfinite loss/gradient before optimizer update")
     learning_rate = config.peak_lr * config.schedule_factor(step)
     for group in optimizer.param_groups:
-        # A device scalar keeps the changing LR out of the XLA graph constants.
+        # TensorLrSGD multiplies by this tensor instead of converting it through
+        # torch.optim.SGD's scalar alpha argument on every XLA update.
         group["lr"] = rt.scalar(learning_rate)
     optimizer.step()
     rt.step(wait=True)
@@ -163,7 +153,7 @@ def evaluate(model, tokens, config, rt, step):
 
 
 def _code_hashes():
-    names = ("train.py", "config.py", "dataset.py", "checkpoint.py", "metrics.py")
+    names = ("train.py", "config.py", "dataset.py", "checkpoint.py", "metrics.py", "optim.py")
     result = {name: sha256_file(HERE / name) for name in names if (HERE / name).exists()}
     for name in ("runtime.py", "stock_model.py", "stock_config.py"):
         result["reference/" + name] = sha256_file(REFERENCE / name)
@@ -219,7 +209,8 @@ def run(args):
     run_id = str(uuid.uuid4())
     manifest = {"schema_version": 1, "run_id": run_id, "config_sha256": config.config_sha256,
                 "architecture": config.architecture, "model_source_sha256": architecture.SOURCE_SHA256,
-                "parameters": sum(p.numel() for p in model.parameters()), "optimizer": "torch.optim.SGD",
+                "parameters": sum(p.numel() for p in model.parameters()), "optimizer": "TensorLrSGD",
+                "optimizer_equivalence": "Conventional PyTorch SGD momentum/decay equations and state, with tensor multiplication for dynamic learning rates",
                 "optimizer_convention": "unnormalized momentum; dampening=0; Nesterov=false; coupled matrix-only decay after gradient clipping",
                 "layer_metrics_control_training": False, "code_sha256": code_hashes,
                 "data_manifest_sha256": MANIFEST_SHA256, "data_receipts": data_receipts,

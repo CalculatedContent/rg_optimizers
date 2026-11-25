@@ -105,3 +105,31 @@ optional 42/43/44 confirmation, immutable configuration hashes, exact diagnostic
 completion gate, continuous cross-shard data stream, and optional longer WSD
 fresh-start plan are experimental-design decisions made for this implementation.
 They are not attributed to a paper and should be reported as such.
+
+The automatic controller additionally uses a target-stopping full confirmation
+and, if needed, one fresh twice-budget cosine horizon. Its 36,536,582,144-token
+maximum is an explicit resource policy, not a published SGDM convergence bound.
+
+The current [speedrun rules](https://github.com/KellerJordan/modded-nanogpt#rules)
+also require repeated-run statistical evidence (p < 0.01 for the mean validation
+loss under the rule's stated exceptions) and faster timing on comparable hardware
+for a new record. This single-seed TPU experiment targets the same quality
+threshold; it does not claim to satisfy the record-submission requirements.
+
+## Runtime and incremental publication interfaces
+
+- [PyTorch 2.6 SGD source](https://github.com/pytorch/pytorch/blob/v2.6.0/torch/optim/sgd.py):
+  the single-tensor implementation passes `-lr` to `Tensor.add_`'s scalar `alpha`
+  argument. The local optimizer preserves its conventional equations and state
+  while using tensor multiplication for changing XLA learning rates. CPU dispatch
+  tests verify numerical parity and no host scalar extraction in that update.
+- [PyTorch/XLA 2.6 metrics source](https://github.com/pytorch/xla/blob/v2.6.0/torch_xla/debug/metrics.py):
+  `metric_data("CompileTime")` returns total samples, accumulator and sampled data.
+  The actual TPU preflight checks that changed-LR updates stop adding compilation
+  samples after warmup. Simulated telemetry tests do not certify TPU behavior.
+- [GitHub Git references API](https://docs.github.com/en/rest/git/refs),
+  [Git trees API](https://docs.github.com/en/rest/git/trees), and
+  [Git blobs API](https://docs.github.com/en/rest/git/blobs): the publisher creates
+  immutable metric blobs and commits, advances only a dedicated results branch
+  without force, and verifies the resulting blob identities. The advertised
+  `2026-03-10` API version was checked during this preparation.
