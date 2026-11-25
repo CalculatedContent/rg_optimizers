@@ -1,0 +1,64 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "sgdm-b0016-lr0p01-m0p98",
+      "config_sha256": "f4d4e9580b6f94a416929c4ed5fff556fd834aeedef8e45a3b7b8b0dd9a3a1be",
+      "path": "candidates/sgdm-b0016-lr0p01-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0016-lr0p03-m0p98",
+      "config_sha256": "f278077a4bd118c5d567d1bf82a05730b205b57879f7c71dfc9542bd2a493615",
+      "path": "candidates/sgdm-b0016-lr0p03-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0016-lr0p1-m0p98",
+      "config_sha256": "b141c16bab994f8322dc685e213886438380cec7e4b5ec089f7598dfae6285ce",
+      "path": "candidates/sgdm-b0016-lr0p1-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0016-lr0p3-m0p98",
+      "config_sha256": "0ac7e5849141c3b1829c5b0a4ea7385f6c729f43c8fdcf82f9f5915f956b90cf",
+      "path": "candidates/sgdm-b0016-lr0p3-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0016-lr1-m0p98",
+      "config_sha256": "3a2eea80bd85bbd83a1441e87dfbe0ef8c94d7d7b3cc87ae028127d7c6790b6b",
+      "path": "candidates/sgdm-b0016-lr1-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0064-lr0p01-m0p98",
+      "config_sha256": "6b28e9bbdc0f716c8fde0a38ccd9bdb1dd6190e5a03eca47805da14a41313d88",
+      "path": "candidates/sgdm-b0064-lr0p01-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0064-lr0p03-m0p98",
+      "config_sha256": "e9cd7b1019ce473600404ea9def3f35808f0b5f5bc9a7b1531d3ad86fd5ae4ac",
+      "path": "candidates/sgdm-b0064-lr0p03-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0064-lr0p1-m0p98",
+      "config_sha256": "cd46d12226d2f89558730790d54c772fd971b87ab86660345827b160f96a02bf",
+      "path": "candidates/sgdm-b0064-lr0p1-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0064-lr0p3-m0p98",
+      "config_sha256": "9a0fbd5ff1298cc7e67eca4782ad3d41bc435e77bdea4f463c383e8c91234a41",
+      "path": "candidates/sgdm-b0064-lr0p3-m0p98.json"
+    },
+    {
+      "candidate_id": "sgdm-b0064-lr1-m0p98",
+      "config_sha256": "9b8a9beeb3bab36c0b1e78e88d3f7eee8e8a67145d9b07558809c876350e1014",
+      "path": "candidates/sgdm-b0064-lr1-m0p98.json"
+    },
+    {
+      "candidate_id": "control-b0512-lr0p3-m0p9-wd3em5",
+      "config_sha256": "b28b12e172124dee2c05e511252893e59e6a07107e95917f99d7d68f32f9aba4",
+      "path": "candidates/control-b0512-lr0p3-m0p9-wd3em5.json"
+    }
+  ],
+  "default_full_candidate": null,
+  "manifest_sha256": "63cb3f8d52664034b638c32aea49011fcc6f37b31f085b568ff80bb2598a56c2",
+  "note": "Explicit candidate selection is required; no candidate is claimed optimal.",
+  "schema_version": 1,
+  "status": "proposed_not_run"
+}

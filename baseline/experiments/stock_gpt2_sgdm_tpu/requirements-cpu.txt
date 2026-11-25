@@ -1,0 +1,16 @@
+# Python 3.10–3.12, isolated venv. The CPU wheel also supplies the PyTorch host
+# implementation used by torch-xla; no CUDA packages are needed on the TPU VM.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.6.0+cpu
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.2.3
+weightwatcher==0.7.7
+powerlaw==1.5
+matplotlib==3.9.4
+matplotlib-inline==0.1.7
+scikit-learn==1.5.2
+safetensors==0.5.3
+tqdm==4.67.1
+packaging==24.2
+pytest==8.3.5
