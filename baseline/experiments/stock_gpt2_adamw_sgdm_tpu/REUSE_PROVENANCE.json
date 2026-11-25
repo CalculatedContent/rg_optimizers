@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "source_repository": "CalculatedContent/rg_optimizers",
+  "source_commit": "98891bed61a816277b7a92f296e44173704f5910",
+  "source_folder": "baseline/experiments/stock_gpt2_sgdm_tpu",
+  "destination_folder": "baseline/experiments/stock_gpt2_adamw_sgdm_tpu",
+  "policy": "Self-contained sister experiment; SGDM source remains unchanged. Inherited engine behavior is audited against these hashes; optimizer, configuration, search and identity changes are documented separately.",
+  "inherited_files": [
+    {
+      "path": ".gitignore",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/.gitignore",
+      "source_sha256": "ad9e30ff6700f3c239ea77bab538697bc2cf3dc204959ef703f91ac98df84eb0"
+    },
+    {
+      "path": "CAMPAIGN.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/CAMPAIGN.md",
+      "source_sha256": "56fad4111eeca868955fba9aa06d9e5211ed61da88fc5c5c7dc3a610195b3fe3"
+    },
+    {
+      "path": "LAUNCH.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/LAUNCH.md",
+      "source_sha256": "7098a18fbd39d7472fa1387b8eaa588fbabadec091ee1a6cf32039aa81d8085a"
+    },
+    {
+      "path": "METRICS.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/METRICS.md",
+      "source_sha256": "1e7a355cd6b0f2a999a218cdea61707d455cc85c6a60c6586817f28dac3aaf2a"
+    },
+    {
+      "path": "PUBLISHING.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/PUBLISHING.md",
+      "source_sha256": "70de6d538a5e3bf264eab4a823eee5416395bd801b3e147d44e2592c48b1e2e0"
+    },
+    {
+      "path": "README.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/README.md",
+      "source_sha256": "e715a516fcdd588ecead6616089452be6d42c09da01c03aad7ce96f2f6425c7c"
+    },
+    {
+      "path": "SOURCES.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/SOURCES.md",
+      "source_sha256": "064a7d4ce5b99f96917564a16afd813a71e03e1397d041dbea18a2dbef93923d"
+    },
+    {
+      "path": "TUNING.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/TUNING.md",
+      "source_sha256": "70377d733ce2f9a2642cd85d7cb378b8269d1ff44613955bf1e1a4cce11dc31c"
+    },
+    {
+      "path": "VALIDATION.md",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/VALIDATION.md",
+      "source_sha256": "51d8f2633b121dcc45608f2c0eff507e77df331fb3e022f34c04ede9ff33bb26"
+    },
+    {
+      "path": "campaign.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/campaign.py",
+      "source_sha256": "163612db7fefff36971046a59424243e1abbc8a17e185a3512a7fa4f174d0298"
+    },
+    {
+      "path": "checkpoint.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/checkpoint.py",
+      "source_sha256": "f040542708a4f6c607496283797f09982ccd335f2b06a131f00007649769edfb"
+    },
+    {
+      "path": "config.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/config.py",
+      "source_sha256": "0de19fcd35caaae53874e60f9d0a969a2df18209c2562b6b5e1547a34c67ce6e"
+    },
+    {
+      "path": "configs/candidates.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates.json",
+      "source_sha256": "ee2b85c6f5c93b14c311ee3beb46244484b2b29f234b37f990fae6fc8f6cc3d2"
+    },
+    {
+      "path": "configs/candidates/control-b0512-lr0p3-m0p9-wd3em5.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/control-b0512-lr0p3-m0p9-wd3em5.json",
+      "source_sha256": "f359347df08c207f0d3bc216e7109cd947ab903fec3c875f0a89de9b45f6c5cb"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0016-lr0p01-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0016-lr0p01-m0p98.json",
+      "source_sha256": "e3956606d4103dee00163c96ec8deff89afdb34b0ea778e5ac57a2d0bed6750a"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0016-lr0p03-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0016-lr0p03-m0p98.json",
+      "source_sha256": "7aa698288b8100c3d54b930f5ff81328b7a2a2ce2a3b1446f6e56597e8daf2a4"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0016-lr0p1-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0016-lr0p1-m0p98.json",
+      "source_sha256": "b5569937f7ed4d1afcd96deb0524483b0e5db9fd746b3b994356815d7bb3b85e"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0016-lr0p3-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0016-lr0p3-m0p98.json",
+      "source_sha256": "dca31c45ee6a302fbc04229fc7603c73a755f9789689d4dde43d29052c4c36fd"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0016-lr1-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0016-lr1-m0p98.json",
+      "source_sha256": "c41c70c795334fc7e65bad9d0d173e67bf4d70d002fb9ee17ced94e7deb7ade9"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0064-lr0p01-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0064-lr0p01-m0p98.json",
+      "source_sha256": "b37abfcbe63a776c21f9debae44ec79ce189b5b5696c6d3283da821ec67a5547"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0064-lr0p03-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0064-lr0p03-m0p98.json",
+      "source_sha256": "45e05c6b9ecc384f76d7fb0ddc46e8218c39fc5bd7ef53f5799ae55a0454e61c"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0064-lr0p1-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0064-lr0p1-m0p98.json",
+      "source_sha256": "1b219b6b4b442c26465b3ffcaec18a7ae50e2d5568ba1325539b2e9c0e7eaa37"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0064-lr0p3-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0064-lr0p3-m0p98.json",
+      "source_sha256": "314accf8f1469c512985ec5e17cd3125f86b41ca14d4fea73afb18da4b0e197e"
+    },
+    {
+      "path": "configs/candidates/sgdm-b0064-lr1-m0p98.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/candidates/sgdm-b0064-lr1-m0p98.json",
+      "source_sha256": "48e84ca50c2ccdbf9cb50646db46d2d4a0ca6b8e0fdc4d75958c47e5a8056001"
+    },
+    {
+      "path": "configs/smoke.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/configs/smoke.json",
+      "source_sha256": "68f4d2e7f5abee5543bfd119589e2d17b435e52bc6270b0292dca8c0a452d7fd"
+    },
+    {
+      "path": "dataset.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/dataset.py",
+      "source_sha256": "07bbfe121135b9dd8e3c106e78dea04021b13474898eba9859f0465e178c5f5e"
+    },
+    {
+      "path": "launch.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/launch.py",
+      "source_sha256": "9383c2eafefd027865d3bc7c04bf4644efa5df59e3fb3d263c028c87e86bdb73"
+    },
+    {
+      "path": "metrics.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/metrics.py",
+      "source_sha256": "f2ba045ae0e933887825ed428c27325f60067c256c91fbc4abbccbaf552e3543"
+    },
+    {
+      "path": "optim.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/optim.py",
+      "source_sha256": "1953e06e0dc52f76a919a99ccf13b5bab1092f156aedb00ea0abb90909fcb185"
+    },
+    {
+      "path": "preflight.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/preflight.py",
+      "source_sha256": "43c3cb2b2ef9765b5472fadcafce93ff20d0c766db6747a687627f3c6c07f97f"
+    },
+    {
+      "path": "prepare_data.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/prepare_data.py",
+      "source_sha256": "e3fcdfc936f4ab76c1c3f8d90809f850087f377f29b62d1b466c231063f497fc"
+    },
+    {
+      "path": "publish_metrics.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/publish_metrics.py",
+      "source_sha256": "fe36897cbec6ff6b587353e01278cd485ff5107c6912be2cb2c70cdea0e5a89f"
+    },
+    {
+      "path": "report.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/report.py",
+      "source_sha256": "f9b3aa97d5cd8facfd0ce3d8fe8a0ee7597ddd76d0c7b94b3c45d909e04c728d"
+    },
+    {
+      "path": "requirements-cpu.txt",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/requirements-cpu.txt",
+      "source_sha256": "5bc7771af347be49412fc95d302ac3ee49155ee1d36d0abf8dd2119aae41f8f4"
+    },
+    {
+      "path": "requirements-tpu.txt",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/requirements-tpu.txt",
+      "source_sha256": "5a8f4ab1fdd1d92d114a6ac0ad269f9185459e78cc54fa22e36da2e239b83c03"
+    },
+    {
+      "path": "run_speedrun.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/run_speedrun.py",
+      "source_sha256": "eea4fd385528082d02791b8a306b79f122ea94d288383fabb73724a4d929df71"
+    },
+    {
+      "path": "tests/test_bootstrap.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_bootstrap.py",
+      "source_sha256": "52280c99645641532fd3854b89c78261445aaafcc29092d8d83de3579abd5c35"
+    },
+    {
+      "path": "tests/test_campaign.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_campaign.py",
+      "source_sha256": "b5fb80e56d5323c47b0be05e1ae4b73426a5c4eff2c74e5175a79e2bfec422b0"
+    },
+    {
+      "path": "tests/test_campaign_integration.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_campaign_integration.py",
+      "source_sha256": "3dac37d8c3c19e8e8f45ba1bf34f8610e7b2fa85ffd65d51c97a3c6b90119cd2"
+    },
+    {
+      "path": "tests/test_config_tune.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_config_tune.py",
+      "source_sha256": "8ba0a2ade2846628f29f05cb2e99a45dc0495bcb8576bc14883e187f4538ce1c"
+    },
+    {
+      "path": "tests/test_launch.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_launch.py",
+      "source_sha256": "8ee2a5e140f0e25f8a3786efd065eb0fe1efebe78305ecf1919385669b0fb64f"
+    },
+    {
+      "path": "tests/test_metrics.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_metrics.py",
+      "source_sha256": "6f14e8ada851a4f145d6c8dd90097b7245545927303305e9b71e5e8f1871e69b"
+    },
+    {
+      "path": "tests/test_optim.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_optim.py",
+      "source_sha256": "d32bbda3c93527ce6e527047f52d69c2e3c2aeb1bf199312520ac9351828a6c7"
+    },
+    {
+      "path": "tests/test_publish_metrics.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_publish_metrics.py",
+      "source_sha256": "0e0655e2dfdc424b2f355c6951ed69af4ebc34dfa6857a2d6c40be1aa351602d"
+    },
+    {
+      "path": "tests/test_smoke_integration.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_smoke_integration.py",
+      "source_sha256": "6c10cbd9627fe46032467b34b3c43936e2cd5f359f71dfa6186cd98b7cec2752"
+    },
+    {
+      "path": "tests/test_training.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tests/test_training.py",
+      "source_sha256": "83bb3cc23b5c032d7526597f25b52bf8fcfddd910cc96e61caa4361abbf2668a"
+    },
+    {
+      "path": "train.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/train.py",
+      "source_sha256": "bd7b49291c0d28e504b6d467ed95c181fb76fecdc825b924df58a3275643d54d"
+    },
+    {
+      "path": "tune.py",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/tune.py",
+      "source_sha256": "b7f792f8c8bef893ca3ac5bfde0457f0d8901a2dc60e609360be437f986c1287"
+    },
+    {
+      "path": "validation_evidence.json",
+      "source_path": "baseline/experiments/stock_gpt2_sgdm_tpu/validation_evidence.json",
+      "source_sha256": "07fb0893d8e9646c02200f17dcb56676c363006ef748d7bda80c91a1095a03a8"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p0003-r100",
+      "config_sha256": "107d2ba7e6af4810508d3792c2ea2754129b59107acee668e5b7dde83ef0ce05",
+      "path": "candidates/adamw-sgdm-b0064-lr0p0003-r100.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p0003-r400",
+      "config_sha256": "4873fd00e343dde1d50b84dc9113fbf46451aa034e9dd3b1432bbae5467bcaa6",
+      "path": "candidates/adamw-sgdm-b0064-lr0p0003-r400.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p0003-r1000",
+      "config_sha256": "45782bccce0fc1053b479ded193be94c0b2c645ab05dd6155f4815bdcce2844d",
+      "path": "candidates/adamw-sgdm-b0064-lr0p0003-r1000.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p001-r100",
+      "config_sha256": "d0584e7eb7f484194e388da9f79ffb043a91429c0316364ff2bc6227a576333b",
+      "path": "candidates/adamw-sgdm-b0064-lr0p001-r100.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p001-r400",
+      "config_sha256": "67ecbbd03bfff6dcef7e24d537fa282f40bb69fd92d7cbf9cb98166cd3f47f00",
+      "path": "candidates/adamw-sgdm-b0064-lr0p001-r400.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p001-r1000",
+      "config_sha256": "cfa0150162511dc5256f725d74e11c4fcafaa263a00fe2c929123a2a4a8ff860",
+      "path": "candidates/adamw-sgdm-b0064-lr0p001-r1000.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p003-r100",
+      "config_sha256": "30ccb461dde67d0832f8200d9724a20bc6a8bf9e260efccbc0e16dfd9392f9ca",
+      "path": "candidates/adamw-sgdm-b0064-lr0p003-r100.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p003-r400",
+      "config_sha256": "fa9787c838753ecbc3c7c283c12fbd4f5381b896f558d930180b180f1086e425",
+      "path": "candidates/adamw-sgdm-b0064-lr0p003-r400.json"
+    },
+    {
+      "candidate_id": "adamw-sgdm-b0064-lr0p003-r1000",
+      "config_sha256": "4f7753b18f0418843634323cb1fb5b9b3062dc821f48f5c51e59f5ee33af43e1",
+      "path": "candidates/adamw-sgdm-b0064-lr0p003-r1000.json"
+    }
+  ],
+  "default_full_candidate": null,
+  "manifest_sha256": "26c36de4e09d15514f6fc05e5093c00037f30ced79dbbcf5affcc8970b116f6c",
+  "note": "The automatic campaign selects the full finalist through a 9-to-3-to-1 finite search. No candidate is claimed optimal.",
+  "optimizer": "adamw_sgdm_graft_v1",
+  "schema_version": 1,
+  "status": "proposed_not_run"
+}
