@@ -11,6 +11,29 @@
     "train.py": "9f9d9000b2dda1f9466b4c18c807fb8c59cdeb268b3eb63c5390c5440710592d"
   },
   "data_manifest_sha256": "028141b267e9a6c99af8beea42bed58fe1d7418bdf034d630f1792aeb6a20e19",
+  "existing_repository_ci": {
+    "base_commit": "a5ce682eccba852991b9063211cc9070d170386a",
+    "core_baselines": "passed",
+    "executable_run_id": 45618716108,
+    "executable_tests": "failed_on_unchanged_legacy_tests",
+    "failures": [
+      "legacy_schedule_floor_differs_from_zero_decay_reference",
+      "legacy_saved_configuration_differs_from_live_protocol"
+    ],
+    "full_base_suite_rerun": false,
+    "legacy_gpt2_integration": {
+      "failed": 2,
+      "passed": 86
+    },
+    "new_experiment_collected_by_failed_command": false,
+    "one_head_tests": {
+      "passed": 218,
+      "skipped": 1
+    },
+    "syntax": "passed",
+    "syntax_run_id": 45618716296,
+    "verified_failing_source_files_unchanged": 5
+  },
   "gcs_executed": false,
   "integration": {
     "all_fits_valid": true,
