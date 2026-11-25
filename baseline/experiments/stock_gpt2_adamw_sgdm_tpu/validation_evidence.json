@@ -1,0 +1,204 @@
+{
+  "benchmark_results": false,
+  "campaign_integration": {
+    "automatic_selection": true,
+    "benchmark_target_met": false,
+    "completed_campaign_resume_is_noop": true,
+    "final_plot_visually_inspected": true,
+    "fresh_finalist_initialization": true,
+    "github_transport": "in_memory_test_double_with_real_git_blob_hashing",
+    "incremental_before_final_report": true,
+    "live_github_result_publication": false,
+    "measurement_bytes_identical": true,
+    "mode": "synthetic_smoke",
+    "model": {
+      "blocks": 1,
+      "context": 32,
+      "heads": 2,
+      "vocabulary": 64,
+      "width": 24
+    },
+    "outcome": "smoke_completed_not_a_benchmark",
+    "real_training": true,
+    "real_weightwatcher": true,
+    "runs": [
+      {
+        "all_fits_valid": true,
+        "failed": 0,
+        "matrix_rows_per_snapshot": [
+          8,
+          8
+        ],
+        "peak_lr": 0.001,
+        "pending": 0,
+        "physical_grafted_matrices": 4,
+        "publication_complete": true,
+        "reference_lr_ratio": 400.0,
+        "run_key": "screen/graft-smoke-lr0001",
+        "snapshot_steps": [
+          0,
+          2
+        ],
+        "tokens_seen": 64,
+        "tracking_complete": true,
+        "verified_artifacts": 27
+      },
+      {
+        "all_fits_valid": true,
+        "failed": 0,
+        "matrix_rows_per_snapshot": [
+          8,
+          8
+        ],
+        "peak_lr": 0.003,
+        "pending": 0,
+        "physical_grafted_matrices": 4,
+        "publication_complete": true,
+        "reference_lr_ratio": 400.0,
+        "run_key": "screen/graft-smoke-lr0003",
+        "snapshot_steps": [
+          0,
+          2
+        ],
+        "tokens_seen": 64,
+        "tracking_complete": true,
+        "verified_artifacts": 27
+      },
+      {
+        "all_fits_valid": true,
+        "failed": 0,
+        "matrix_rows_per_snapshot": [
+          8,
+          8
+        ],
+        "peak_lr": 0.001,
+        "pending": 0,
+        "physical_grafted_matrices": 4,
+        "publication_complete": true,
+        "reference_lr_ratio": 400.0,
+        "run_key": "full/graft-smoke-lr0001",
+        "snapshot_steps": [
+          0,
+          4
+        ],
+        "tokens_seen": 128,
+        "tracking_complete": true,
+        "verified_artifacts": 27
+      }
+    ],
+    "snapshot_count": 6,
+    "training_tokens": 256
+  },
+  "canonical_graft_sha256": "e6c9fcf0e750e0efda8b716410623eff5e3f590751d5a345482e97a4b10c45a3",
+  "code_sha256": {
+    "__init__.py": "e67dcf441b3d057d9af10d2ebc25c284143f5249f5d8168d77d7ddfabc0d0e50",
+    "campaign.py": "08e75ed215baaae65c177b7af060ce0059bfedefcf79ed61f90eb62c7c680220",
+    "checkpoint.py": "40110982346d15cfe49e888d4599cf8b9cfe08dc5797dd72fc86041bde0857c1",
+    "config.py": "034f20783f2b0c2505f6c06de47e5eb4293a14d9a95a58c9aa37642ba5f41dcd",
+    "dataset.py": "46e4b0510c35ff7e7964d07a50d1c2f48676f477f60e1f5b23b7a93c10cb43ac",
+    "launch.py": "a76fc84222b1253881a8871f05fdf051af008ab7a46d033071ccae8258e3831b",
+    "metrics.py": "49570dc5fbd29a1299330d75bc94388aafe137fb2facada078262c877d397599",
+    "optim.py": "46b9f5fbf9720167ae7d74f0ef0ae5a19e38329c41d42edfe81d684b8120c8c3",
+    "preflight.py": "b0ccdfc282c8293ee2aa47821661f9a9c263564d25dded1ffbfe37d8164735f2",
+    "prepare_data.py": "9212d4b4d9379d8c9de3bc5b4b35d273fc7cb9c5b876b00e5bfbfc4474b19e2a",
+    "publish_metrics.py": "9be299a59573fd3558fd488d5456c282cbc0834754f64e5ae70dead76829af32",
+    "report.py": "e80866b7ddd9e6b15fc89e9e37f94d68699297562d1d051e0efffc57d695e2cb",
+    "requirements-cpu.txt": "5bc7771af347be49412fc95d302ac3ee49155ee1d36d0abf8dd2119aae41f8f4",
+    "requirements-tpu.txt": "5a8f4ab1fdd1d92d114a6ac0ad269f9185459e78cc54fa22e36da2e239b83c03",
+    "run_speedrun.py": "1c79c24d19120adf1cb5efb08b08dac529b10d33cc935c3585e4755a55ec94ae",
+    "tests/__init__.py": "f0eb15200d12054bc790357673ec6fe74ec850fa60f4637266f1a5f1f0c38741",
+    "tests/test_bootstrap.py": "3d052cabb0cb89e299db34dae2578c3a549644a8d8e2870d0b86a00fb0dfcece",
+    "tests/test_campaign.py": "10e08e45b6f99c14958ef3564c54b00f0dfbfafa9d879bac169978747c57a45b",
+    "tests/test_campaign_integration.py": "e994457a0afa6d783d5792340701a2b93f5194e2eaa42bd221966ae59b08734a",
+    "tests/test_config_tune.py": "55532b919d22df88be355c6b03033b197783d9dad9545234ea92dad2f193e68f",
+    "tests/test_launch.py": "9ce933d6433c93f7ffc62b8e02afc907101de7062dc3fb0bc422dcd3522560db",
+    "tests/test_metrics.py": "ad06508ba7db45024d9ece5d96935f6efd8b29f0b11f54e55144c4215bf13105",
+    "tests/test_optim.py": "02c478221c6db94803d6bd29ede830fbb1ecac852d9078f5bcb0926633fadd4a",
+    "tests/test_publish_metrics.py": "f359c6291d8e97188b11a1206b91cef42900eeb2c86a3b5a934b02900902c6c4",
+    "tests/test_smoke_integration.py": "1aca2e7e43ae85286e90a625565841a88ae4c1d30cba242a8c0d8932800958d2",
+    "tests/test_training.py": "2c570f44a9a3d17e3ea01eb0901f8a2a14ec6fd139ce614e9b81b35fe63db75b",
+    "train.py": "e8ec9261545ec98a50ca5292b9dc906a17ad342ce28340334da064bfecf459ec",
+    "tune.py": "33162ead2fbabbc486eedaa776ac25fc8ce6e1ca6cf0465127450c334425ad76"
+  },
+  "environment": {
+    "Python": "3.12.14",
+    "matplotlib": "3.9.4",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "powerlaw": "1.5",
+    "pytest": "8.3.5",
+    "scipy": "1.13.1",
+    "torch": "2.6.0+cpu",
+    "weightwatcher": "0.7.7"
+  },
+  "future_campaign": {
+    "conditional_fresh_extended_attempts": 1,
+    "full_candidates": 1,
+    "full_stops_at_verified_target": true,
+    "incremental_github_required": true,
+    "initial_free_gib": 150,
+    "maximum_planned_training_tokens": 35194404864,
+    "official_validation_tokens": 10485760,
+    "per_run_free_gib": 30,
+    "refine_candidates": 3,
+    "screen_candidates": 9,
+    "target_nll": 3.28,
+    "target_perplexity": 26.575772699873955
+  },
+  "gcs_executed": false,
+  "global_optimality_claim": false,
+  "live_github_result_publication": false,
+  "namespace_coexistence": {
+    "duration_seconds": 18.787,
+    "failed": 0,
+    "includes_native_spectral_integration": false,
+    "original_sgdm_files_verified_unchanged": 49,
+    "passed": 312,
+    "skipped": 0
+  },
+  "optimizer": "adamw_sgdm_graft_v1",
+  "prepared_date": "2026-11-25",
+  "schema_version": 1,
+  "single_run_integration": {
+    "all_fits_valid": true,
+    "canonical_matrices_per_snapshot": [
+      12,
+      12
+    ],
+    "final_plot_visually_inspected": false,
+    "matrix_rows_per_snapshot": [
+      14,
+      14
+    ],
+    "mode": "synthetic_smoke",
+    "physical_grafted_matrices": 8,
+    "snapshot_steps": [
+      0,
+      2
+    ],
+    "tracking_complete": true,
+    "tracking_exit_code": 0,
+    "training_exit_code": 0,
+    "training_tokens": 128
+  },
+  "source_engine_commit": "98891bed61a816277b7a92f296e44173704f5910",
+  "tests": {
+    "counts_by_module": {
+      "test_bootstrap": 14,
+      "test_campaign": 18,
+      "test_campaign_integration": 1,
+      "test_config_tune": 17,
+      "test_launch": 17,
+      "test_metrics": 14,
+      "test_optim": 40,
+      "test_publish_metrics": 23,
+      "test_smoke_integration": 1,
+      "test_training": 10
+    },
+    "duration_seconds": 239.501,
+    "failed": 0,
+    "passed": 155,
+    "skipped": 0
+  },
+  "tpu_executed": false
+}
