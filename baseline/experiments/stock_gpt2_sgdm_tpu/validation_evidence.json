@@ -1,0 +1,78 @@
+{
+  "benchmark_results": false,
+  "code_sha256": {
+    "checkpoint.py": "f040542708a4f6c607496283797f09982ccd335f2b06a131f00007649769edfb",
+    "config.py": "0de19fcd35caaae53874e60f9d0a969a2df18209c2562b6b5e1547a34c67ce6e",
+    "dataset.py": "07bbfe121135b9dd8e3c106e78dea04021b13474898eba9859f0465e178c5f5e",
+    "metrics.py": "f2ba045ae0e933887825ed428c27325f60067c256c91fbc4abbccbaf552e3543",
+    "reference/runtime.py": "30bab3f9edc92f17b2e039bbaa456ac3ce418a95d4f92bed6dcfcff7d1edff8f",
+    "reference/stock_config.py": "31777545f4c3cbf15aa0f450b72d707d5a2166835288eb6176ebdb9e8ac5a152",
+    "reference/stock_model.py": "dea38f4141627b6fa4c2b466b7896eb1a9f20b2eb006724786e2fb443ee1c4ca",
+    "train.py": "9f9d9000b2dda1f9466b4c18c807fb8c59cdeb268b3eb63c5390c5440710592d"
+  },
+  "data_manifest_sha256": "028141b267e9a6c99af8beea42bed58fe1d7418bdf034d630f1792aeb6a20e19",
+  "existing_repository_ci": {
+    "base_commit": "a5ce682eccba852991b9063211cc9070d170386a",
+    "core_baselines": "passed",
+    "executable_run_id": 45618716108,
+    "executable_tests": "failed_on_unchanged_legacy_tests",
+    "failures": [
+      "legacy_schedule_floor_differs_from_zero_decay_reference",
+      "legacy_saved_configuration_differs_from_live_protocol"
+    ],
+    "full_base_suite_rerun": false,
+    "legacy_gpt2_integration": {
+      "failed": 2,
+      "passed": 86
+    },
+    "new_experiment_collected_by_failed_command": false,
+    "one_head_tests": {
+      "passed": 218,
+      "skipped": 1
+    },
+    "syntax": "passed",
+    "syntax_run_id": 45618716296,
+    "verified_failing_source_files_unchanged": 5
+  },
+  "gcs_executed": false,
+  "integration": {
+    "all_fits_valid": true,
+    "canonical_matrices_per_snapshot": 12,
+    "embedding_matrices_per_snapshot": 2,
+    "failed": 0,
+    "mode": "synthetic_smoke",
+    "pending": 0,
+    "plot_visually_inspected": true,
+    "png_pdf_exported": true,
+    "snapshot_steps": [
+      0,
+      2
+    ],
+    "target_met": false,
+    "tracking_complete": true,
+    "tracking_exit_code": 0,
+    "training_exit_code": 0
+  },
+  "model_source_sha256": "757d0cea0d48cbc4c7d7d70371f955d49cdf3a7cfb4c87701a720c2fe0905c34",
+  "packages": {
+    "matplotlib": "3.9.4",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "powerlaw": "1.5",
+    "pytest": "8.3.5",
+    "scipy": "1.13.1",
+    "torch": "2.6.0+cpu",
+    "weightwatcher": "0.7.7"
+  },
+  "prepared_date": "2026-11-25",
+  "python": "3.12.14",
+  "resume_cpu_bit_exact": true,
+  "suite": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 56
+  },
+  "test_runtime_seconds": 85.639,
+  "tpu_executed": false
+}
