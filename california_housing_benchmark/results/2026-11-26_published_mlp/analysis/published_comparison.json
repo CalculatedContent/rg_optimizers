@@ -1,0 +1,302 @@
+{
+  "paper": {
+    "title": "Benchmarking Optimizers for MLPs in Tabular Deep Learning",
+    "authors": [
+      "Yury Gorishniy",
+      "Ivan Rubachev",
+      "Dmitrii Feoktistov",
+      "Artem Babenko"
+    ],
+    "arxiv": "https://arxiv.org/html/2604.15297v2",
+    "table": "Table 10",
+    "uncertainty": "Mean and sample SD over 10 independent model seeds on a fixed dataset split"
+  },
+  "upstream_repository": "https://github.com/yandex-research/tabular-dl-optimizers",
+  "upstream_commit": "c34e33152db9eea8ed4b2d742b9bef5628d71fb5",
+  "manifest_sha256": "06a089c6529f22afec777de2f3dca7687aafcc216f1e595edb7b0bfc0a0386f8",
+  "unit": "100000 USD",
+  "references": [
+    {
+      "optimizer": "sgd",
+      "n_parameters": 299745,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.5089314384188482,
+        0.5158414964178929,
+        0.5155299127929867,
+        0.5166848878057296,
+        0.5228870971141191,
+        0.5190719352383663,
+        0.5314740101371213,
+        0.5183358458042071,
+        0.5182759313393849,
+        0.5096258212904666
+      ],
+      "test_rmse_mean": 0.5176658376359122,
+      "test_rmse_sample_sd": 0.006416209204506472,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 5,
+            "d_block": 272,
+            "dropout": 0
+          }
+        },
+        "optimizer": {
+          "type": "SGD",
+          "momentum": 0.9,
+          "dampening": 0.9,
+          "lr": 0.06315547150081433,
+          "weight_decay": 0.005277362486160341
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/sgd/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/sgd/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        6344,
+        6136,
+        4576,
+        5096,
+        3952,
+        4940,
+        3068,
+        5200,
+        5148,
+        6812
+      ],
+      "recalculated_test_rmse": {
+        "n": 10,
+        "mean": 0.5176658376359122,
+        "sample_sd": 0.0064162092045064725,
+        "standard_error": 0.0020289835030377545,
+        "ci95_half_width": 0.004589879564709658,
+        "ci95_low": 0.5130759580712025,
+        "ci95_high": 0.5222557172006219,
+        "ci_method": "two-sided Student-t over seeds",
+        "confidence_level": 0.95,
+        "degrees_of_freedom": 9,
+        "t_critical": 2.2621571628540993,
+        "expected_n": 10,
+        "complete_expected_seeds": true,
+        "complete_five_seeds": false
+      }
+    },
+    {
+      "optimizer": "adamw",
+      "n_parameters": 623281,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.4844736029645101,
+        0.4989265303009736,
+        0.4814131534506113,
+        0.48899122882750323,
+        0.4881104284937167,
+        0.5150697203543096,
+        0.48412259508890404,
+        0.499402270067828,
+        0.5066304460972106,
+        0.48871520023409326
+      ],
+      "test_rmse_mean": 0.4935855175879661,
+      "test_rmse_sample_sd": 0.011003265043117574,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 2,
+            "d_block": 784,
+            "dropout": 0.3690073279296028
+          }
+        },
+        "optimizer": {
+          "type": "AdamW",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/adamw/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/adamw/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        14612,
+        8008,
+        16120,
+        10972,
+        12532,
+        4992,
+        11596,
+        7176,
+        6396,
+        11284
+      ],
+      "recalculated_test_rmse": {
+        "n": 10,
+        "mean": 0.49358551758796604,
+        "sample_sd": 0.011003265043117574,
+        "standard_error": 0.003479537923476236,
+        "ci95_half_width": 0.007871261637014246,
+        "ci95_low": 0.4857142559509518,
+        "ci95_high": 0.5014567792249803,
+        "ci_method": "two-sided Student-t over seeds",
+        "confidence_level": 0.95,
+        "degrees_of_freedom": 9,
+        "t_critical": 2.2621571628540993,
+        "expected_n": 10,
+        "complete_expected_seeds": true,
+        "complete_five_seeds": false
+      }
+    },
+    {
+      "optimizer": "muon-ema",
+      "n_parameters": 1410145,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.47541400221909097,
+        0.47185255717281593,
+        0.4692258644644395,
+        0.4682202365548415,
+        0.46989350712896005,
+        0.47332837260304056,
+        0.46788603317496763,
+        0.47394071972435087,
+        0.46960239791700614,
+        0.46871544392687187
+      ],
+      "test_rmse_mean": 0.47080791348863854,
+      "test_rmse_sample_sd": 0.0026432028997803126,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "save_checkpoint": false,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 5,
+            "d_block": 592,
+            "dropout": 0.008876594234180645
+          }
+        },
+        "optimizer": {
+          "ema_decay": 0.9371493465645674,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-08,
+          "lr": 0.0005711949087439411,
+          "weight_decay": 0.3202275785456249,
+          "muon": {
+            "lr": 0.011874902068991946
+          },
+          "type": "Muon"
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/muon-ema/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/muon-ema/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        1456,
+        1664,
+        2652,
+        1508,
+        2132,
+        1248,
+        1716,
+        1768,
+        2860,
+        1508
+      ],
+      "recalculated_test_rmse": {
+        "n": 10,
+        "mean": 0.47080791348863854,
+        "sample_sd": 0.0026432028997803126,
+        "standard_error": 0.0008358541481267562,
+        "ci95_half_width": 0.0018908334482862527,
+        "ci95_low": 0.46891708004035226,
+        "ci95_high": 0.4726987469369248,
+        "ci_method": "two-sided Student-t over seeds",
+        "confidence_level": 0.95,
+        "degrees_of_freedom": 9,
+        "t_critical": 2.2621571628540993,
+        "expected_n": 10,
+        "complete_expected_seeds": true,
+        "complete_five_seeds": false
+      }
+    }
+  ],
+  "native_replication_minus_published_adamw": {
+    "mean_difference": -0.00754660821455283,
+    "ci95_low": -0.015580475292588391,
+    "ci95_high": 0.0004872588634827306,
+    "ci95_half_width": 0.00803386707803556,
+    "degrees_of_freedom": 10.444130994613168,
+    "method": "independent-seed Welch Student-t interval; not paired; not an equivalence test"
+  },
+  "interpretation": "Published results use validation stopping and different training seeds/runtime. The current native AdamW recipe matches the published architecture and settings; CPU results need not be numerically identical to the authors' GPU results. Published SGD and Muon-EMA use separately tuned architectures, so they are context, not same-model optimizer controls. Fixed-update results must not be compared as if they used the paper's checkpoint selection. A confidence interval containing zero does not establish equivalence or reproduction within a prespecified tolerance."
+}
