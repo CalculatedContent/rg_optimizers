@@ -1,0 +1,31 @@
+{
+  "status": "dry_run_no_training",
+  "grid": [],
+  "confirmation": [
+    {
+      "track": "sgdm_wd0",
+      "seed": 3472,
+      "updates": 20000
+    },
+    {
+      "track": "sgdm_wd0",
+      "seed": 3473,
+      "updates": 20000
+    },
+    {
+      "track": "sgdm_wd0",
+      "seed": 3474,
+      "updates": 20000
+    },
+    {
+      "track": "sgdm_wd0",
+      "seed": 3475,
+      "updates": 20000
+    },
+    {
+      "track": "sgdm_wd0",
+      "seed": 3476,
+      "updates": 20000
+    }
+  ]
+}

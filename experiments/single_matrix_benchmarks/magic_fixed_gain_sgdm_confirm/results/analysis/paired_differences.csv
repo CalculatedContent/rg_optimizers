@@ -1,0 +1,13 @@
+arm,metric,n,mean,ci95_half_width
+fixed_sgdm_minus_ordinary_adamw,alpha,5,-0.19321083179999995,0.05980869549471646
+fixed_sgdm_minus_ordinary_adamw,D,5,0.02180098462,0.00780066096942073
+fixed_sgdm_minus_ordinary_adamw,tail,5,-202.8,10.026004308057406
+fixed_sgdm_minus_ordinary_adamw,test_accuracy,5,0.010410094637223977,0.0036171187273219153
+fixed_sgdm_minus_ordinary_adamw,test_ce,5,-0.09230104088783264,0.007176746939394127
+fixed_sgdm_minus_ordinary_adamw,test_auc,5,0.01183004168686852,0.0019508818970651837
+fixed_sgdm_minus_learned_gain_adamw,alpha,5,-0.19798556165999998,0.05331893113269442
+fixed_sgdm_minus_learned_gain_adamw,D,5,0.009901739500000001,0.008290977092262009
+fixed_sgdm_minus_learned_gain_adamw,tail,5,-205.6,10.630558367701676
+fixed_sgdm_minus_learned_gain_adamw,test_accuracy,5,0.024342797055730836,0.017850782841724273
+fixed_sgdm_minus_learned_gain_adamw,test_ce,5,-0.18130386471748353,0.025995962880844842
+fixed_sgdm_minus_learned_gain_adamw,test_auc,5,0.01886547112294055,0.0015094001453634437

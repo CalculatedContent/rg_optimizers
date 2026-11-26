@@ -1,0 +1,250 @@
+{
+  "complete": true,
+  "n_completed": 5,
+  "n_checkpoints": 30,
+  "raw_fit_failures": 0,
+  "errors": [],
+  "statistics": [
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "alpha",
+      "n": 5,
+      "mean": 1.87829595666,
+      "ci95_half_width": 0.04596121478511914
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "D",
+      "n": 5,
+      "mean": 0.0420205519,
+      "ci95_half_width": 0.007263149487101458
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "tail",
+      "n": 5,
+      "mean": 28.8,
+      "ci95_half_width": 8.797432586763891
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "test_accuracy",
+      "n": 5,
+      "mean": 0.8760778128286014,
+      "ci95_half_width": 0.00298803437968883
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "test_ce",
+      "n": 5,
+      "mean": 0.30721129179000856,
+      "ci95_half_width": 0.004058359605062807
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "test_auc",
+      "n": 5,
+      "mean": 0.929148565975974,
+      "ci95_half_width": 0.0014321661139683347
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "test_brier",
+      "n": 5,
+      "mean": 0.09275517436656569,
+      "ci95_half_width": 0.0017340479983190167
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "test_ece15",
+      "n": 5,
+      "mean": 0.023195435656973774,
+      "ci95_half_width": 0.005577564823622739
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "train_accuracy",
+      "n": 5,
+      "mean": 0.9022213459516298,
+      "ci95_half_width": 0.0016160596396494716
+    },
+    {
+      "arm": "fixed_gain_sgdm",
+      "metric": "train_ce",
+      "n": 5,
+      "mean": 0.2410549610853195,
+      "ci95_half_width": 0.0033686525465174704
+    },
+    {
+      "arm": "ordinary_adamw",
+      "metric": "alpha",
+      "n": 5,
+      "mean": 2.07150678846,
+      "ci95_half_width": 0.014874852447710836
+    },
+    {
+      "arm": "ordinary_adamw",
+      "metric": "D",
+      "n": 5,
+      "mean": 0.02021956728,
+      "ci95_half_width": 0.0008861180008713401
+    },
+    {
+      "arm": "ordinary_adamw",
+      "metric": "tail",
+      "n": 5,
+      "mean": 231.6,
+      "ci95_half_width": 6.83479358710938
+    },
+    {
+      "arm": "ordinary_adamw",
+      "metric": "test_accuracy",
+      "n": 5,
+      "mean": 0.8656677181913774,
+      "ci95_half_width": 0.004280828252397639
+    },
+    {
+      "arm": "ordinary_adamw",
+      "metric": "test_ce",
+      "n": 5,
+      "mean": 0.3995123326778412,
+      "ci95_half_width": 0.010321057251305709
+    },
+    {
+      "arm": "ordinary_adamw",
+      "metric": "test_auc",
+      "n": 5,
+      "mean": 0.9173185242891054,
+      "ci95_half_width": 0.0025931821740046122
+    },
+    {
+      "arm": "learned_gain_adamw",
+      "metric": "alpha",
+      "n": 5,
+      "mean": 2.07628151832,
+      "ci95_half_width": 0.007682128097748358
+    },
+    {
+      "arm": "learned_gain_adamw",
+      "metric": "D",
+      "n": 5,
+      "mean": 0.0321188124,
+      "ci95_half_width": 0.0034187889868514914
+    },
+    {
+      "arm": "learned_gain_adamw",
+      "metric": "tail",
+      "n": 5,
+      "mean": 234.4,
+      "ci95_half_width": 5.013002154028703
+    },
+    {
+      "arm": "learned_gain_adamw",
+      "metric": "test_accuracy",
+      "n": 5,
+      "mean": 0.8517350157728706,
+      "ci95_half_width": 0.01864827460666784
+    },
+    {
+      "arm": "learned_gain_adamw",
+      "metric": "test_ce",
+      "n": 5,
+      "mean": 0.48851515650749205,
+      "ci95_half_width": 0.028369674553255186
+    },
+    {
+      "arm": "learned_gain_adamw",
+      "metric": "test_auc",
+      "n": 5,
+      "mean": 0.9102830948530334,
+      "ci95_half_width": 0.0024585580750627113
+    }
+  ],
+  "paired": [
+    {
+      "arm": "fixed_sgdm_minus_ordinary_adamw",
+      "metric": "alpha",
+      "n": 5,
+      "mean": -0.19321083179999995,
+      "ci95_half_width": 0.05980869549471646
+    },
+    {
+      "arm": "fixed_sgdm_minus_ordinary_adamw",
+      "metric": "D",
+      "n": 5,
+      "mean": 0.02180098462,
+      "ci95_half_width": 0.00780066096942073
+    },
+    {
+      "arm": "fixed_sgdm_minus_ordinary_adamw",
+      "metric": "tail",
+      "n": 5,
+      "mean": -202.8,
+      "ci95_half_width": 10.026004308057406
+    },
+    {
+      "arm": "fixed_sgdm_minus_ordinary_adamw",
+      "metric": "test_accuracy",
+      "n": 5,
+      "mean": 0.010410094637223977,
+      "ci95_half_width": 0.0036171187273219153
+    },
+    {
+      "arm": "fixed_sgdm_minus_ordinary_adamw",
+      "metric": "test_ce",
+      "n": 5,
+      "mean": -0.09230104088783264,
+      "ci95_half_width": 0.007176746939394127
+    },
+    {
+      "arm": "fixed_sgdm_minus_ordinary_adamw",
+      "metric": "test_auc",
+      "n": 5,
+      "mean": 0.01183004168686852,
+      "ci95_half_width": 0.0019508818970651837
+    },
+    {
+      "arm": "fixed_sgdm_minus_learned_gain_adamw",
+      "metric": "alpha",
+      "n": 5,
+      "mean": -0.19798556165999998,
+      "ci95_half_width": 0.05331893113269442
+    },
+    {
+      "arm": "fixed_sgdm_minus_learned_gain_adamw",
+      "metric": "D",
+      "n": 5,
+      "mean": 0.009901739500000001,
+      "ci95_half_width": 0.008290977092262009
+    },
+    {
+      "arm": "fixed_sgdm_minus_learned_gain_adamw",
+      "metric": "tail",
+      "n": 5,
+      "mean": -205.6,
+      "ci95_half_width": 10.630558367701676
+    },
+    {
+      "arm": "fixed_sgdm_minus_learned_gain_adamw",
+      "metric": "test_accuracy",
+      "n": 5,
+      "mean": 0.024342797055730836,
+      "ci95_half_width": 0.017850782841724273
+    },
+    {
+      "arm": "fixed_sgdm_minus_learned_gain_adamw",
+      "metric": "test_ce",
+      "n": 5,
+      "mean": -0.18130386471748353,
+      "ci95_half_width": 0.025995962880844842
+    },
+    {
+      "arm": "fixed_sgdm_minus_learned_gain_adamw",
+      "metric": "test_auc",
+      "n": 5,
+      "mean": 0.01886547112294055,
+      "ci95_half_width": 0.0015094001453634437
+    }
+  ],
+  "protocol": "Refit on original outer_train (train+validation); test only at step 20000; same reused split and paired seeds as earlier ordinary and learned-gain controls; exploratory, not independent evidence."
+}
