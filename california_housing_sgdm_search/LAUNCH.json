@@ -10,5 +10,11 @@
   "maximum_simultaneous_training_jobs": 20,
   "maximum_job_minutes": 90,
   "automatic_repeat_search": false,
-  "archive": "Results and retained checkpoints in this repository; lightweight seven-day Actions artifacts."
+  "archive": "Results and retained checkpoints in this repository; lightweight seven-day Actions artifacts.",
+  "execution_packaging_repair": {
+    "superseded_preflight_run": 45758442883,
+    "training_started": false,
+    "error": "Parent source manifest byte hash differed due to an extra newline in the local source-manifest copy. All33 parent source files passed verification.",
+    "repair": "Restore the exact authoritative parent SOURCE_SHA256.json and update the extension manifest; no training code, grid, seed or optimizer setting changed."
+  }
 }
