@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "seed_measurements": 615,
+  "summary_rows": 123,
+  "maximum_summary_difference": 0.0,
+  "input_audit_sha256": "cba0aac017958e9f1598295c9546550b05098cd3dba725f441bd83567bfaa615",
+  "plot": "Full0\u201320k means and2k\u201320k detail, update-order connections, independent seed points, marginal95%CIs at2k/20k.",
+  "metric": "Test RMSE in $100,000 units; lower is better; no classification accuracy is inferred.",
+  "uncertainty": "Seed variability conditional on one fixed split. Crossbars are marginal pointwise intervals, not joint95% regions.",
+  "same_model_evidence": "Metric and alpha are paired from exactly the same archived fixed-step history row. Hash-verified frozen train.py observation() evaluates test and measure(measured_model) without any intervening optimizer update; original rows do not store per-row weights_sha256/spectral_weights_sha256. This is source/row evidence, not a cryptographic same-weight-hash check."
+}
