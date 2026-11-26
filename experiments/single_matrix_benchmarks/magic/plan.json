@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "dataset": "MAGIC Gamma Telescope",
+  "source": "https://archive.ics.uci.edu/static/public/159/magic%2Bgamma%2Btelescope.zip",
+  "doi": "10.24432/C52C8B",
+  "license": "CC BY 4.0",
+  "rows": 19020,
+  "features": [
+    "fLength",
+    "fWidth",
+    "fSize",
+    "fConc",
+    "fConc1",
+    "fAsym",
+    "fM3Long",
+    "fM3Trans",
+    "fAlpha",
+    "fDist"
+  ],
+  "labels": {
+    "g": 1,
+    "h": 0
+  },
+  "split": {
+    "protocol": "StratifiedGroupKFold 5-fold, groups defined by identical 10-feature vectors; fold 0 test, fold 1 validation, folds 2-4 training; no fold selection",
+    "seed": 20261126
+  },
+  "architecture": [
+    10,
+    784,
+    784,
+    2
+  ],
+  "primary_matrix": "fc2",
+  "preprocessing": "train-only z-score numerical features; no target rescaling or oversampling",
+  "dropout": 0,
+  "dev_seeds": [
+    3470,
+    3471
+  ],
+  "confirmation_seeds": [
+    3472,
+    3473,
+    3474,
+    3475,
+    3476
+  ],
+  "grid": [
+    {
+      "id": "s0",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s1",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.01,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s2",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s3",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s4",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.8,
+      "weight_decay": 0
+    },
+    {
+      "id": "s5",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.95,
+      "weight_decay": 0
+    },
+    {
+      "id": "a0",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0001,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a1",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a2",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.001,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a3",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.0001,
+      "weight_decay": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a4",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "weight_decay": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a5",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.001,
+      "weight_decay": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    }
+  ],
+  "cap": 20000,
+  "batch_size": 256,
+  "clip": 1,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "max_parallel": 5,
+  "job_timeout_minutes": 45,
+  "development_runs": 24,
+  "confirmation_runs": 15,
+  "max_primary_updates": 780000,
+  "selection": "per track maximum mean fixed-20k validation accuracy, then minimum mean validation CE, then case ID; never alpha/test",
+  "test_protocol": "confirmation refit on full train+validation, one test evaluation at step 20000",
+  "reference": {
+    "paper": "Gorishniy et al., TabM, ICLR 2025",
+    "url": "https://openreview.net/attachment?id=Sd4wYYOhmY&name=pdf",
+    "mlp_accuracy": 0.8539,
+    "xgb_accuracy": 0.855,
+    "catboost_accuracy": 0.8586,
+    "tabr_accuracy": 0.8682,
+    "comparability": "different published split/preprocessing/tuning; context only; no claim of exact reproduction"
+  },
+  "xgb": {
+    "max_depth": [
+      3,
+      6,
+      9
+    ],
+    "learning_rate": [
+      0.05,
+      0.1
+    ],
+    "n_estimators": 400,
+    "seed": 3470,
+    "selection": "validation accuracy then CE then depth then LR",
+    "test": "refit chosen configuration train+validation; evaluate once after selection"
+  },
+  "roc_fpr": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ]
+}
