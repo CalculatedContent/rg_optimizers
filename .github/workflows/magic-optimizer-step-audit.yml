@@ -1,0 +1,91 @@
+{
+  "name": "MAGIC frozen optimizer step audit",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-optimizer-step-audit-20261127"
+      ],
+      "paths": [
+        ".github/workflows/magic-optimizer-step-audit.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "magic-frozen-optimizer-step-audit",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "0"
+  },
+  "jobs": {
+    "diagnose": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 35,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/optimizer_step_audit/\n",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "ref": "09dbaa4e095ff21fc8b1e130798d247b75c15913",
+            "path": "ordinary_archive",
+            "persist-credentials": false,
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s1-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s1-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s1-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s1-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s2-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s2-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s2-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s2-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s3-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s3-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/s3-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s3-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/a0-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/a0-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/a0-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/a0-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/a1-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/a1-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/a1-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/a1-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/a2-3470/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/a2-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/grid/a2-3471/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/a2-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3472/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3472/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3473/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3473/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3474/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3474/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3475/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3475/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3476/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3476/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3472/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3472/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3473/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3473/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3474/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3474/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3475/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3475/final_resume.pt\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3476/result.json\n/experiments/single_matrix_benchmarks/magic/results/confirm/adamw_wd0-3476/final_resume.pt",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "ref": "e6ec5fb97bc3db0130937dd49e710399dbc1dbec",
+            "path": "normalized_archive",
+            "persist-credentials": false,
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/model.py\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s0-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s0-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s0-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s0-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s1-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s1-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s1-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s1-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s2-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s2-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s2-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s2-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s3-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s3-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s3-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/s3-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a0-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a0-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a0-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a0-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a1-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a1-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a1-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a1-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a2-3470/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a2-3470/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a2-3471/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/a2-3471/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3472/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3472/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3473/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3473/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3474/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3474/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3475/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3475/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3476/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/sgdm_wd0-3476/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3472/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3472/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3473/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3473/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3474/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3474/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3475/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3475/final_resume.pt\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3476/result.json\n/experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/adamw_wd0-3476/final_resume.pt",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Verify pinned source commits and install original dependencies",
+          "run": "set -euo pipefail\ntest \"$(git -C ordinary_archive rev-parse HEAD)\" = \"09dbaa4e095ff21fc8b1e130798d247b75c15913\"\ntest \"$(git -C normalized_archive rev-parse HEAD)\" = \"e6ec5fb97bc3db0130937dd49e710399dbc1dbec\"\npython -m pip install -r \"ordinary_archive/experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "name": "Measure optimizer updates on disposable copies only",
+          "run": "python -m py_compile \"experiments/single_matrix_benchmarks/magic_scale_invariant/optimizer_step_audit/audit_steps.py\"\npython \"experiments/single_matrix_benchmarks/magic_scale_invariant/optimizer_step_audit/audit_steps.py\" --ordinary \"ordinary_archive/experiments/single_matrix_benchmarks/magic\" --normalized \"normalized_archive/experiments/single_matrix_benchmarks/magic_scale_invariant\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "optimizer-step-audit",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/optimizer_step_audit/results/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        },
+        {
+          "if": "${{ always() && !cancelled() }}",
+          "name": "Commit all available diagnostics permanently",
+          "run": "set -euo pipefail\ngit config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\nif [ -d \"experiments/single_matrix_benchmarks/magic_scale_invariant/optimizer_step_audit/results\" ]; then git add -f \"experiments/single_matrix_benchmarks/magic_scale_invariant/optimizer_step_audit/results\"; git diff --cached --quiet || git commit -m 'Archive frozen MAGIC optimizer step diagnostics'; git push origin HEAD:\"$GITHUB_REF_NAME\"; fi"
+        }
+      ]
+    }
+  }
+}
