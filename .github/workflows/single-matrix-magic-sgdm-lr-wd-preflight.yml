@@ -1,0 +1,63 @@
+{
+  "name": "MAGIC accelerated SGDM data and source preflight — zero training",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-sgdm-lr-wd-20261126"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-magic-sgdm-lr-wd-preflight.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "concurrency": {
+    "group": "magic-accelerated-sgdm-preflight",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "0"
+  },
+  "jobs": {
+    "preflight": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 25,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_sgdm_lr_wd/\n/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/source/\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3470/\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3472/\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3473/\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3474/\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3475/\n/experiments/single_matrix_benchmarks/magic/results/confirm/sgdm_wd0-3476/",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "name": "Verify original archived files and dry-run exact plan",
+          "run": "set -euo pipefail\npython -m py_compile \"experiments/single_matrix_benchmarks/magic_sgdm_lr_wd/run.py\" \"experiments/single_matrix_benchmarks/magic_sgdm_lr_wd/preflight.py\"\npython \"experiments/single_matrix_benchmarks/magic_sgdm_lr_wd/run.py\" > \"$RUNNER_TEMP/dry_run.json\"\npython \"experiments/single_matrix_benchmarks/magic_sgdm_lr_wd/preflight.py\" | tee \"$RUNNER_TEMP/preflight.json\"\npython -c 'import json,sys; j=json.load(open(sys.argv[1])); assert len(j[\"grid\"])==16 and len(j[\"confirmation\"])==5 and all(x[\"updates\"]==20000 for x in j[\"grid\"]+j[\"confirmation\"])' \"$RUNNER_TEMP/dry_run.json\""
+        },
+        {
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "accelerated-sgdm-preflight",
+            "path": "${{ runner.temp }}/preflight.json\n${{ runner.temp }}/dry_run.json",
+            "if-no-files-found": "error",
+            "retention-days": 14
+          }
+        }
+      ]
+    }
+  }
+}
