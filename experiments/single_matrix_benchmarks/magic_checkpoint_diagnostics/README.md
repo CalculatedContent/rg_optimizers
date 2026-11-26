@@ -1,0 +1,5 @@
+# MAGIC checkpoint failure analysis
+
+Immutable original archive 09dbaa4e095ff21fc8b1e130798d247b75c15913. All 24 original development runs, six checkpoints each (144); no neural training or test evaluation. Verify weights and data hashes before examining train/validation logits. Diagnostics: logit scale, signed margins, incorrect CE, confidence, ECE, two-fold duplicate-grouped validation cross-fitted scalar temperature, prediction flips, weight/displacement spectra, ordinary WW fit on final displacement, full-mean ERG rank gap, per-layer scale-gradient and ReLU compensated-gauge identity, analytic hypothetical next update from saved SGDM/AdamW momentum and preconditioner state (not applied), and FC2 PL/ECS truncated-SVD inference without fine-tuning. This is exploratory diagnostic analysis, not model selection or an independent test. One CPU worker, 25-minute total job cap. No other model run is started.
+
+`results/summary.json`, `endpoints.csv`, `trajectory.csv`, and per-run JSON records are committed automatically.
