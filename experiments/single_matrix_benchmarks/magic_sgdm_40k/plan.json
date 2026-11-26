@@ -1,0 +1,62 @@
+{
+  "dataset": "MAGIC Gamma Telescope",
+  "primary_archive_commit": "09dbaa4e095ff21fc8b1e130798d247b75c15913",
+  "primary_launch_commit": "9571f954a2070e717123f499ec9f41340a56b9ef",
+  "primary_plan_sha256": "7a91ecde85613937a054e9feccc108760ac98e4f724da398806892b16a3a4915",
+  "primary_prepared_sha256": "c42ba2691997b884dae5d738bcb2b5bb5a5b07fbca0f0c83afae12ce76812d73",
+  "architecture": [
+    10,
+    784,
+    784,
+    2
+  ],
+  "start_step": 20000,
+  "cap": 40000,
+  "checkpoints": [
+    20000,
+    25000,
+    30000,
+    35000,
+    40000
+  ],
+  "config": {
+    "id": "s0",
+    "track": "sgdm_wd0",
+    "optimizer": "sgdm",
+    "lr": 0.003,
+    "momentum": 0.9,
+    "weight_decay": 0
+  },
+  "seeds": [
+    3470,
+    3471
+  ],
+  "dropout": 0,
+  "batch_size": 256,
+  "clip": 1,
+  "roc_fpr": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "max_additional_updates": 40000,
+  "source_runs": [
+    {
+      "seed": 3470,
+      "final_resume_sha256": "01669242995c9193bd784da9620a9dcd285e1796a2c98a31bf7857a3a5d5b12a",
+      "endpoint_weights_sha256": "d3c478d57fbfad4b077d727378ac2cda5a1fd16793f59c796bcb1e8d76e6e359",
+      "endpoint_checkpoint_sha256": "741521228d320338b717e3d11c203ea739e09d181253aef508f7d5934fdf6cad"
+    },
+    {
+      "seed": 3471,
+      "final_resume_sha256": "c519e366cf707aef5326a460eb88c23fa6199f66a6a89aeaea17e666d8d57c5e",
+      "endpoint_weights_sha256": "6e9cfce12a3a427d2131eac3c1d915a1b628140b7e8e75d6191268e215664b2a",
+      "endpoint_checkpoint_sha256": "a56bba0158c4dfdef6f787b35b2dc8a8cf4a4c66576482beaf4931fbd1d8e424"
+    }
+  ],
+  "selection": "frozen original validation accuracy winner, no new selection or test access; descriptive continuation",
+  "max_parallel": 2,
+  "job_timeout_minutes": 45
+}
