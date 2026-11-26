@@ -1,0 +1,3118 @@
+{
+  "audit_kind": "Independent recalculation from fetched GitHub per-seed records",
+  "workflow_run_id": "45753214421",
+  "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+  "complete_fifteen_runs": true,
+  "n_records": 15,
+  "errors": [],
+  "statistics": [
+    {
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.5440558500074728,
+      "sample_sd": 0.012405578854906948,
+      "ci95_half_width": 0.015403560641015834,
+      "ci95_low": 0.5286522893664569,
+      "ci95_high": 0.5594594106484887
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.3850260078907013,
+      "sample_sd": 0.014581794592504744,
+      "ci95_half_width": 0.018105689374715465,
+      "ci95_low": 0.36692031851598583,
+      "ci95_high": 0.40313169726541676
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.7729063391685486,
+      "sample_sd": 0.010378844019779718,
+      "ci95_half_width": 0.01288703696233291,
+      "ci95_low": 0.7600193022062156,
+      "ci95_high": 0.7857933761308815
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 23.471516767657604,
+      "sample_sd": 1.6510720171941906,
+      "ci95_half_width": 2.0500766821916923,
+      "ci95_low": 21.42144008546591,
+      "ci95_high": 25.5215934498493
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 3.47118477964,
+      "sample_sd": 0.30097002274679263,
+      "ci95_half_width": 0.3737036417832604,
+      "ci95_low": 3.09748113785674,
+      "ci95_high": 3.8448884214232604
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.5711469386046805,
+      "sample_sd": 0.002799296882264734,
+      "ci95_half_width": 0.0034757861589921613,
+      "ci95_low": 0.5676711524456883,
+      "ci95_high": 0.5746227247636726
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.4146127998828888,
+      "sample_sd": 0.010431106711296698,
+      "ci95_half_width": 0.012951929664838775,
+      "ci95_low": 0.40166087021805,
+      "ci95_high": 0.42756472954772756
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.7498263835906982,
+      "sample_sd": 0.0024512136326654567,
+      "ci95_half_width": 0.0030435837195869637,
+      "ci95_low": 0.7467827998711112,
+      "ci95_high": 0.7528699673102852
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 26.344795483367466,
+      "sample_sd": 1.8140053331134507,
+      "ci95_half_width": 2.252385114676598,
+      "ci95_low": 24.092410368690867,
+      "ci95_high": 28.597180598044066
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 3.57601114532,
+      "sample_sd": 0.49404611259588194,
+      "ci95_half_width": 0.6134392714628298,
+      "ci95_low": 2.9625718738571702,
+      "ci95_high": 4.1894504167828295
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.5096895985497802,
+      "sample_sd": 0.004660525205787526,
+      "ci95_half_width": 0.0057868063607475605,
+      "ci95_low": 0.5039027921890327,
+      "ci95_high": 0.5154764049105278
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.3530584514141083,
+      "sample_sd": 0.00848933234370756,
+      "ci95_half_width": 0.01054089833996846,
+      "ci95_low": 0.34251755307413984,
+      "ci95_high": 0.36359934975407676
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.8007593274116516,
+      "sample_sd": 0.0036383173134319677,
+      "ci95_half_width": 0.0045175676221299145,
+      "ci95_low": 0.7962417597895216,
+      "ci95_high": 0.8052768950337815
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 21.277099229311464,
+      "sample_sd": 1.1405466816918528,
+      "ci95_half_width": 1.4161757529275418,
+      "ci95_low": 19.86092347638392,
+      "ci95_high": 22.693274982239007
+    },
+    {
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 2.2778164869,
+      "sample_sd": 0.007662542538280787,
+      "ci95_half_width": 0.00951430320448814,
+      "ci95_low": 2.268302183695512,
+      "ci95_high": 2.287330790104488
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.4860389093734132,
+      "sample_sd": 0.002284565532595972,
+      "ci95_half_width": 0.002836662773361626,
+      "ci95_low": 0.48320224660005157,
+      "ci95_high": 0.48887557214677485
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.3272491991519928,
+      "sample_sd": 0.0009769509938772672,
+      "ci95_half_width": 0.0012130448771067886,
+      "ci95_low": 0.326036154274886,
+      "ci95_high": 0.32846224402909957
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.8188296318054199,
+      "sample_sd": 0.0017012018746936956,
+      "ci95_half_width": 0.0021123211214839127,
+      "ci95_low": 0.8167173106839359,
+      "ci95_high": 0.8209419529269039
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 18.460766844981176,
+      "sample_sd": 0.2253396529551817,
+      "ci95_half_width": 0.27979613444217954,
+      "ci95_low": 18.180970710538997,
+      "ci95_high": 18.740562979423355
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 1.6731963267199998,
+      "sample_sd": 0.010694697046811513,
+      "ci95_half_width": 0.013279220294721972,
+      "ci95_low": 1.6599171064252778,
+      "ci95_high": 1.686475547014722
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.548178206647427,
+      "sample_sd": 0.0005500090053364475,
+      "ci95_half_width": 0.0006829263806141288,
+      "ci95_low": 0.5474952802668128,
+      "ci95_high": 0.5488611330280412
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.3849653244018555,
+      "sample_sd": 0.002947305651438901,
+      "ci95_half_width": 0.0036595633190941754,
+      "ci95_low": 0.3813057610827613,
+      "ci95_high": 0.38862488772094966
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.7695475578308105,
+      "sample_sd": 0.0004627429439706095,
+      "ci95_half_width": 0.0005745712539511274,
+      "ci95_low": 0.7689729865768594,
+      "ci95_high": 0.7701221290847616
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 23.055251409462095,
+      "sample_sd": 0.47273504551217327,
+      "ci95_half_width": 0.5869780867016834,
+      "ci95_low": 22.46827332276041,
+      "ci95_high": 23.64222949616378
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 2.12582088754,
+      "sample_sd": 0.03649038004485827,
+      "ci95_half_width": 0.04530879118247357,
+      "ci95_low": 2.0805120963575265,
+      "ci95_high": 2.171129678722474
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.48077975462397965,
+      "sample_sd": 0.0022526104060343285,
+      "ci95_half_width": 0.0027969852431519887,
+      "ci95_low": 0.4779827693808277,
+      "ci95_high": 0.4835767398671316
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.3250515580177307,
+      "sample_sd": 0.0042732390585088105,
+      "ci95_half_width": 0.005305927094668538,
+      "ci95_low": 0.3197456309230622,
+      "ci95_high": 0.33035748511239926
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.8227291226387023,
+      "sample_sd": 0.001662359160030744,
+      "ci95_half_width": 0.0020640915210944247,
+      "ci95_low": 0.8206650311176079,
+      "ci95_high": 0.8247932141597968
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 18.733579445091618,
+      "sample_sd": 0.5816941980795998,
+      "ci95_half_width": 0.7222687437194482,
+      "ci95_low": 18.01131070137217,
+      "ci95_high": 19.455848188811064
+    },
+    {
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 1.67808321034,
+      "sample_sd": 0.01919691154917858,
+      "ci95_half_width": 0.023836113947317092,
+      "ci95_low": 1.654247096392683,
+      "ci95_high": 1.7019193242873172
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.5051760360308467,
+      "sample_sd": 0.0380028441669415,
+      "ci95_half_width": 0.04718676343143918,
+      "ci95_low": 0.4579892725994075,
+      "ci95_high": 0.552362799462286
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.34569271802902224,
+      "sample_sd": 0.03383652277663931,
+      "ci95_half_width": 0.042013592156154696,
+      "ci95_low": 0.30367912587286755,
+      "ci95_high": 0.38770631018517693
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.8033994793891907,
+      "sample_sd": 0.030913941717136625,
+      "ci95_half_width": 0.038384728472738,
+      "ci95_low": 0.7650147509164527,
+      "ci95_high": 0.8417842078619286
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 19.797395458712767,
+      "sample_sd": 2.6919550494008133,
+      "ci95_half_width": 3.342503669623825,
+      "ci95_low": 16.454891789088943,
+      "ci95_high": 23.13989912833659
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 2.75887877388,
+      "sample_sd": 2.185401622095053,
+      "ci95_half_width": 2.713534515771535,
+      "ci95_low": 0.045344258108464874,
+      "ci95_high": 5.472413289651534
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.5635478726786304,
+      "sample_sd": 0.0018319382619979882,
+      "ci95_half_width": 0.0022746517868548768,
+      "ci95_low": 0.5612732208917754,
+      "ci95_high": 0.5658225244654853
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.39994746446609497,
+      "sample_sd": 0.004023737713132525,
+      "ci95_half_width": 0.004996130256611401,
+      "ci95_low": 0.3949513342094836,
+      "ci95_high": 0.40494359472270636
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.7564418196678162,
+      "sample_sd": 0.0015843060045789023,
+      "ci95_half_width": 0.0019671757280236707,
+      "ci95_low": 0.7544746439397926,
+      "ci95_high": 0.7584089953958398
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 24.34096569481006,
+      "sample_sd": 0.6307950893832446,
+      "ci95_half_width": 0.7832355527309002,
+      "ci95_low": 23.55773014207916,
+      "ci95_high": 25.12420124754096
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 4.384999474080001,
+      "sample_sd": 0.07092339064076386,
+      "ci95_half_width": 0.08806302078917828,
+      "ci95_low": 4.296936453290822,
+      "ci95_high": 4.473062494869179
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.48376612023490323,
+      "sample_sd": 0.0016549216117345855,
+      "ci95_half_width": 0.0020548565851401827,
+      "ci95_low": 0.481711263649763,
+      "ci95_high": 0.48582097682004344
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.32871835827827456,
+      "sample_sd": 0.0021182113492896845,
+      "ci95_half_width": 0.0026301067729996193,
+      "ci95_low": 0.32608825150527493,
+      "ci95_high": 0.3313484650512742
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": 0.8205214977264405,
+      "sample_sd": 0.0012280376775995504,
+      "ci95_half_width": 0.0015248101727131228,
+      "ci95_low": 0.8189966875537273,
+      "ci95_high": 0.8220463078991536
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 18.885601923578616,
+      "sample_sd": 0.40360554139536303,
+      "ci95_half_width": 0.5011424702261613,
+      "ci95_low": 18.384459453352456,
+      "ci95_high": 19.386744393804776
+    },
+    {
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 1.6127863026199996,
+      "sample_sd": 0.00280319025002989,
+      "ci95_half_width": 0.0034806204135779226,
+      "ci95_low": 1.6093056822064216,
+      "ci95_high": 1.6162669230335776
+    }
+  ],
+  "paired_modified_minus_native": [
+    {
+      "endpoint": "primary_best_validation",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.0191371266574335,
+      "sample_sd": 0.03749050427272367,
+      "ci95_half_width": 0.04655060942994537,
+      "ci95_low": -0.02741348277251187,
+      "ci95_high": 0.06568773608737888,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.00439916879705915
+        },
+        {
+          "seed": 2341,
+          "difference": 0.0012809711812142854
+        },
+        {
+          "seed": 2342,
+          "difference": 0.004785816123299869
+        },
+        {
+          "seed": 2343,
+          "difference": 0.08607364783082355
+        },
+        {
+          "seed": 2344,
+          "difference": -0.0008539706452293516
+        }
+      ]
+    },
+    {
+      "endpoint": "primary_best_validation",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.01844351887702942,
+      "sample_sd": 0.03443276570040827,
+      "ci95_half_width": 0.04275392552878236,
+      "ci95_low": -0.024310406651752943,
+      "ci95_high": 0.061197444405811784,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.0034956932067871094
+        },
+        {
+          "seed": 2341,
+          "difference": -0.00002568960189819336
+        },
+        {
+          "seed": 2342,
+          "difference": 0.006068766117095947
+        },
+        {
+          "seed": 2343,
+          "difference": 0.07991617918014526
+        },
+        {
+          "seed": 2344,
+          "difference": 0.0027626454830169678
+        }
+      ]
+    },
+    {
+      "endpoint": "primary_best_validation",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": -0.015430152416229248,
+      "sample_sd": 0.030534432725007683,
+      "ci95_half_width": 0.037913505820216895,
+      "ci95_low": -0.05334365823644614,
+      "ci95_high": 0.022483353403987646,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": -0.003272414207458496
+        },
+        {
+          "seed": 2341,
+          "difference": -0.0009533166885375977
+        },
+        {
+          "seed": 2342,
+          "difference": -0.0036001205444335938
+        },
+        {
+          "seed": 2343,
+          "difference": -0.06996333599090576
+        },
+        {
+          "seed": 2344,
+          "difference": 0.000638425350189209
+        }
+      ]
+    },
+    {
+      "endpoint": "primary_best_validation",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 1.3366286137315917,
+      "sample_sd": 2.8676558944570942,
+      "ci95_half_width": 3.560665083384187,
+      "ci95_low": -2.224036469652595,
+      "ci95_high": 4.897293697115779,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": -0.21620036478500992
+        },
+        {
+          "seed": 2341,
+          "difference": -0.30326268820020985
+        },
+        {
+          "seed": 2342,
+          "difference": 0.43826577067863326
+        },
+        {
+          "seed": 2343,
+          "difference": 6.4332145571578785
+        },
+        {
+          "seed": 2344,
+          "difference": 0.33112579380666674
+        }
+      ]
+    },
+    {
+      "endpoint": "primary_best_validation",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 1.0856824471599997,
+      "sample_sd": 2.1815512953554936,
+      "ci95_half_width": 2.708753703677703,
+      "ci95_low": -1.6230712565177032,
+      "ci95_high": 3.7944361508377025,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.030352379400000018
+        },
+        {
+          "seed": 2341,
+          "difference": 0.025738221600000166
+        },
+        {
+          "seed": 2342,
+          "difference": 0.27951747699999996
+        },
+        {
+          "seed": 2343,
+          "difference": 4.983834668699999
+        },
+        {
+          "seed": 2344,
+          "difference": 0.1089694890999997
+        }
+      ]
+    },
+    {
+      "endpoint": "2000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.015369666031203422,
+      "sample_sd": 0.0015830876256202225,
+      "ci95_half_width": 0.001965662910734509,
+      "ci95_low": 0.013404003120468914,
+      "ci95_high": 0.01733532894193793,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.014554125077818947
+        },
+        {
+          "seed": 2341,
+          "difference": 0.0177456615439453
+        },
+        {
+          "seed": 2342,
+          "difference": 0.014500295190328472
+        },
+        {
+          "seed": 2343,
+          "difference": 0.016190228795572636
+        },
+        {
+          "seed": 2344,
+          "difference": 0.013858019548351752
+        }
+      ]
+    },
+    {
+      "endpoint": "2000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.014982140064239502,
+      "sample_sd": 0.001903268273738378,
+      "ci95_half_width": 0.0023632196944243706,
+      "ci95_low": 0.012618920369815132,
+      "ci95_high": 0.017345359758663872,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.014213144779205322
+        },
+        {
+          "seed": 2341,
+          "difference": 0.01593443751335144
+        },
+        {
+          "seed": 2342,
+          "difference": 0.012746989727020264
+        },
+        {
+          "seed": 2343,
+          "difference": 0.01772424578666687
+        },
+        {
+          "seed": 2344,
+          "difference": 0.014291882514953613
+        }
+      ]
+    },
+    {
+      "endpoint": "2000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": -0.013105738162994384,
+      "sample_sd": 0.0013732856070878478,
+      "ci95_half_width": 0.0017051592975723805,
+      "ci95_low": -0.014810897460566765,
+      "ci95_high": -0.011400578865422003,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": -0.012392818927764893
+        },
+        {
+          "seed": 2341,
+          "difference": -0.015156269073486328
+        },
+        {
+          "seed": 2342,
+          "difference": -0.012346804141998291
+        },
+        {
+          "seed": 2343,
+          "difference": -0.013837993144989014
+        },
+        {
+          "seed": 2344,
+          "difference": -0.011794805526733398
+        }
+      ]
+    },
+    {
+      "endpoint": "2000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 1.285714285347965,
+      "sample_sd": 0.2533239403073951,
+      "ci95_half_width": 0.31454321656281187,
+      "ci95_low": 0.9711710687851531,
+      "ci95_high": 1.600257501910777,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 1.2010115928147833
+        },
+        {
+          "seed": 2341,
+          "difference": 1.359865292751472
+        },
+        {
+          "seed": 2342,
+          "difference": 0.9269361135506031
+        },
+        {
+          "seed": 2343,
+          "difference": 1.6238313378485962
+        },
+        {
+          "seed": 2344,
+          "difference": 1.3169270897743708
+        }
+      ]
+    },
+    {
+      "endpoint": "2000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": 2.25917858654,
+      "sample_sd": 0.10208421860831482,
+      "ci95_half_width": 0.12675429903070726,
+      "ci95_low": 2.1324242875092927,
+      "ci95_high": 2.3859328855707074,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 2.3496356472000004
+        },
+        {
+          "seed": 2341,
+          "difference": 2.0844205944000005
+        },
+        {
+          "seed": 2342,
+          "difference": 2.3059210169
+        },
+        {
+          "seed": 2343,
+          "difference": 2.2719686879
+        },
+        {
+          "seed": 2344,
+          "difference": 2.2839469863
+        }
+      ]
+    },
+    {
+      "endpoint": "20000",
+      "metric": "test_rmse",
+      "n": 5,
+      "mean": 0.0029863656109235803,
+      "sample_sd": 0.0021427192855943,
+      "ci95_half_width": 0.0026605373951793317,
+      "ci95_low": 0.00032582821574424865,
+      "ci95_high": 0.005646903006102912,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.005040165853602119
+        },
+        {
+          "seed": 2341,
+          "difference": 0.005232943665734124
+        },
+        {
+          "seed": 2342,
+          "difference": 0.00019109156857682885
+        },
+        {
+          "seed": 2343,
+          "difference": 0.0025108955767894625
+        },
+        {
+          "seed": 2344,
+          "difference": 0.001956731389915367
+        }
+      ]
+    },
+    {
+      "endpoint": "20000",
+      "metric": "test_mae",
+      "n": 5,
+      "mean": 0.003666800260543823,
+      "sample_sd": 0.005460373019385735,
+      "ci95_half_width": 0.006779948594934452,
+      "ci95_low": -0.0031131483343906285,
+      "ci95_high": 0.010446748855478274,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.008936494588851929
+        },
+        {
+          "seed": 2341,
+          "difference": 0.008448034524917603
+        },
+        {
+          "seed": 2342,
+          "difference": -0.00396353006362915
+        },
+        {
+          "seed": 2343,
+          "difference": 0.0043905675411224365
+        },
+        {
+          "seed": 2344,
+          "difference": 0.0005224347114562988
+        }
+      ]
+    },
+    {
+      "endpoint": "20000",
+      "metric": "test_r2",
+      "n": 5,
+      "mean": -0.002207624912261963,
+      "sample_sd": 0.0015819261072046544,
+      "ci95_half_width": 0.0019642206951346474,
+      "ci95_low": -0.004171845607396611,
+      "ci95_high": -0.0002434042171273157,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": -0.0037247538566589355
+        },
+        {
+          "seed": 2341,
+          "difference": -0.0038623809814453125
+        },
+        {
+          "seed": 2342,
+          "difference": -0.00014162063598632812
+        },
+        {
+          "seed": 2343,
+          "difference": -0.001867055892944336
+        },
+        {
+          "seed": 2344,
+          "difference": -0.0014423131942749023
+        }
+      ]
+    },
+    {
+      "endpoint": "20000",
+      "metric": "test_mape_percent",
+      "n": 5,
+      "mean": 0.15202247848699812,
+      "sample_sd": 0.6717889341871175,
+      "ci95_half_width": 0.8341361339718216,
+      "ci95_low": -0.6821136554848235,
+      "ci95_high": 0.9861586124588197,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": 0.8417466156327329
+        },
+        {
+          "seed": 2341,
+          "difference": 0.7703658516844634
+        },
+        {
+          "seed": 2342,
+          "difference": -0.6888445467027715
+        },
+        {
+          "seed": 2343,
+          "difference": 0.17429141648026913
+        },
+        {
+          "seed": 2344,
+          "difference": -0.33744694465970326
+        }
+      ]
+    },
+    {
+      "endpoint": "20000",
+      "metric": "confidence_tail_alpha",
+      "n": 5,
+      "mean": -0.06529690771999999,
+      "sample_sd": 0.019780617821339854,
+      "ci95_half_width": 0.024560881010985473,
+      "ci95_low": -0.08985778873098546,
+      "ci95_high": -0.04073602670901452,
+      "seed_differences": [
+        {
+          "seed": 2340,
+          "difference": -0.09109697690000029
+        },
+        {
+          "seed": 2341,
+          "difference": -0.04219817919999991
+        },
+        {
+          "seed": 2342,
+          "difference": -0.0797670908000001
+        },
+        {
+          "seed": 2343,
+          "difference": -0.05884184109999979
+        },
+        {
+          "seed": 2344,
+          "difference": -0.05458045059999983
+        }
+      ]
+    }
+  ],
+  "seed_metrics": [
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 14508,
+      "validation_rmse": 0.4832361584707355,
+      "test_rmse": 0.48278259197055756,
+      "test_mae": 0.32657426595687866,
+      "test_r2": 0.8212522268295288,
+      "test_mape_percent": 18.745887966675518,
+      "confidence_tail_alpha": 1.6868748998
+    },
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5335428182889145,
+      "test_rmse": 0.5478811273060306,
+      "test_mae": 0.3828884959220886,
+      "test_r2": 0.7697974443435669,
+      "test_mape_percent": 22.720472934732765,
+      "confidence_tail_alpha": 2.0802281613
+    },
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4817226145215327,
+      "test_rmse": 0.47929783939926757,
+      "test_mae": 0.32261109352111816,
+      "test_r2": 0.8238233327865601,
+      "test_mape_percent": 18.634509426059935,
+      "confidence_tail_alpha": 1.7003026819000002
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 15808,
+      "validation_rmse": 0.4846882268825174,
+      "test_rmse": 0.4871817607676167,
+      "test_mae": 0.33006995916366577,
+      "test_r2": 0.8179798126220703,
+      "test_mape_percent": 18.529687601890508,
+      "confidence_tail_alpha": 1.7172272792
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5505138045493545,
+      "test_rmse": 0.5624352523838495,
+      "test_mae": 0.39710164070129395,
+      "test_r2": 0.757404625415802,
+      "test_mape_percent": 23.92148452754755,
+      "confidence_tail_alpha": 4.4298638085
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4852446163867406,
+      "test_rmse": 0.4843380052528697,
+      "test_mae": 0.3315475881099701,
+      "test_r2": 0.8200985789299011,
+      "test_mape_percent": 19.476256041692668,
+      "confidence_tail_alpha": 1.609205705
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 3848,
+      "validation_rmse": 0.527794821642458,
+      "test_rmse": 0.5371141190752845,
+      "test_mae": 0.37597349286079407,
+      "test_r2": 0.7787564992904663,
+      "test_mape_percent": 22.511120628654062,
+      "confidence_tail_alpha": 3.306397068
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.557512717807582,
+      "test_rmse": 0.5677877218984183,
+      "test_mae": 0.4013563096523285,
+      "test_r2": 0.7527652978897095,
+      "test_mape_percent": 24.134597294518272,
+      "confidence_tail_alpha": 3.7934376216
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.5073051852932223,
+      "test_rmse": 0.5075156591376696,
+      "test_mae": 0.3504011631011963,
+      "test_r2": 0.8024685382843018,
+      "test_mape_percent": 21.092181276946913,
+      "confidence_tail_alpha": 2.2788690287
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 13832,
+      "validation_rmse": 0.48074010614062523,
+      "test_rmse": 0.4845829486544726,
+      "test_mae": 0.327089786529541,
+      "test_r2": 0.8199166059494019,
+      "test_mape_percent": 18.498822887100523,
+      "confidence_tail_alpha": 1.6599496812
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5341748057810101,
+      "test_rmse": 0.5479706551480902,
+      "test_mae": 0.38748401403427124,
+      "test_r2": 0.7697222232818604,
+      "test_mape_percent": 23.50110493453961,
+      "confidence_tail_alpha": 2.1783923937
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4791722521940124,
+      "test_rmse": 0.47860537874476833,
+      "test_mae": 0.3197990357875824,
+      "test_r2": 0.8243319988250732,
+      "test_mape_percent": 17.891089361545543,
+      "confidence_tail_alpha": 1.6564093588
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 16848,
+      "validation_rmse": 0.4820518773640918,
+      "test_rmse": 0.4858639198356869,
+      "test_mae": 0.3270640969276428,
+      "test_r2": 0.8189632892608643,
+      "test_mape_percent": 18.195560198900314,
+      "confidence_tail_alpha": 1.6856879028000002
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5554975853583375,
+      "test_rmse": 0.5657163166920355,
+      "test_mae": 0.4034184515476227,
+      "test_r2": 0.754565954208374,
+      "test_mape_percent": 24.860970227291084,
+      "confidence_tail_alpha": 4.2628129881
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4820722479055384,
+      "test_rmse": 0.48383832241050245,
+      "test_mae": 0.3282470703125,
+      "test_r2": 0.8204696178436279,
+      "test_mape_percent": 18.661455213230006,
+      "confidence_tail_alpha": 1.6142111796
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 1768,
+      "validation_rmse": 0.5455098961702591,
+      "test_rmse": 0.5614531365214833,
+      "test_mae": 0.408442884683609,
+      "test_r2": 0.7582511305809021,
+      "test_mape_percent": 25.987384618870717,
+      "confidence_tail_alpha": 3.8223151018
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5611609043268853,
+      "test_rmse": 0.57307023388893,
+      "test_mae": 0.4265681207180023,
+      "test_r2": 0.7481434941291809,
+      "test_mape_percent": 28.648947427567556,
+      "confidence_tail_alpha": 2.693084622
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.5116997344000125,
+      "test_rmse": 0.5096362888937536,
+      "test_mae": 0.34722408652305603,
+      "test_r2": 0.8008143305778503,
+      "test_mape_percent": 20.264464553462442,
+      "confidence_tail_alpha": 2.2762196146
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11440,
+      "validation_rmse": 0.48509009704217065,
+      "test_rmse": 0.48805503182566135,
+      "test_mae": 0.328479528427124,
+      "test_r2": 0.8173267245292664,
+      "test_mape_percent": 18.564918251882716,
+      "confidence_tail_alpha": 1.6728142364
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5349409965260916,
+      "test_rmse": 0.5478992951350474,
+      "test_mae": 0.38155677914619446,
+      "test_r2": 0.7697821855545044,
+      "test_mape_percent": 22.534259864343763,
+      "confidence_tail_alpha": 2.1315520729
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4829149544904679,
+      "test_rmse": 0.48286842034696165,
+      "test_mae": 0.32972291111946106,
+      "test_r2": 0.8211886882781982,
+      "test_mape_percent": 19.123054105786203,
+      "confidence_tail_alpha": 1.6958386352
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11440,
+      "validation_rmse": 0.4889115956917289,
+      "test_rmse": 0.4928408479489612,
+      "test_mae": 0.33454829454421997,
+      "test_r2": 0.8137266039848328,
+      "test_mape_percent": 19.00318402256135,
+      "confidence_tail_alpha": 1.9523317134
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5515706783044972,
+      "test_rmse": 0.5623995903253759,
+      "test_mae": 0.3943037688732147,
+      "test_r2": 0.7574353814125061,
+      "test_mape_percent": 23.461195977894366,
+      "confidence_tail_alpha": 4.4374730898
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4813167717673131,
+      "test_rmse": 0.4830595119155385,
+      "test_mae": 0.3257593810558319,
+      "test_r2": 0.8210470676422119,
+      "test_mape_percent": 18.43420955908343,
+      "confidence_tail_alpha": 1.6160715444
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 4524,
+      "validation_rmse": 0.5242065360043491,
+      "test_rmse": 0.5289631597422182,
+      "test_mae": 0.3711460828781128,
+      "test_r2": 0.7854204773902893,
+      "test_mape_percent": 22.43556045337932,
+      "confidence_tail_alpha": 3.0975938704
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5589654925960519,
+      "test_rmse": 0.5719362424149442,
+      "test_mae": 0.4222296178340912,
+      "test_r2": 0.7491393089294434,
+      "test_mape_percent": 27.639890905129548,
+      "confidence_tail_alpha": 3.7806983971
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.502863018468723,
+      "test_rmse": 0.5031075172467024,
+      "test_mae": 0.34419432282447815,
+      "test_r2": 0.8058850169181824,
+      "test_mape_percent": 20.245495130533413,
+      "confidence_tail_alpha": 2.2727834406
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11076,
+      "validation_rmse": 0.4856026228483137,
+      "test_rmse": 0.48691045987004883,
+      "test_mae": 0.32611721754074097,
+      "test_r2": 0.8181825280189514,
+      "test_mape_percent": 18.151663701804832,
+      "confidence_tail_alpha": 1.680055519
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5359833166707328,
+      "test_rmse": 0.549159021507654,
+      "test_mae": 0.3844398558139801,
+      "test_r2": 0.7687223553657532,
+      "test_mape_percent": 22.92286432663765,
+      "confidence_tail_alpha": 2.1330694578
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.4819161084374331,
+      "test_rmse": 0.4835361014964509,
+      "test_mae": 0.3240020275115967,
+      "test_r2": 0.820693850517273,
+      "test_mape_percent": 18.603556609822984,
+      "confidence_tail_alpha": 1.6726680367
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 780,
+      "validation_rmse": 0.5595846124389678,
+      "test_rmse": 0.5729841077008724,
+      "test_mae": 0.40603339672088623,
+      "test_r2": 0.7482191920280457,
+      "test_mape_percent": 24.58487825896271,
+      "confidence_tail_alpha": 6.663890187699999
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5542026334817018,
+      "test_rmse": 0.5653492503032267,
+      "test_mae": 0.402164101600647,
+      "test_r2": 0.7548843622207642,
+      "test_mape_percent": 24.546695664486247,
+      "confidence_tail_alpha": 4.4050381457
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.48215058455506454,
+      "test_rmse": 0.48604699707324034,
+      "test_mae": 0.3283925950527191,
+      "test_r2": 0.8188267946243286,
+      "test_mape_percent": 18.777848026303253,
+      "confidence_tail_alpha": 1.6138261956000002
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 2184,
+      "validation_rmse": 0.5373869577458562,
+      "test_rmse": 0.549993777239883,
+      "test_mae": 0.3810792565345764,
+      "test_r2": 0.7680186629295349,
+      "test_mape_percent": 22.106306712000528,
+      "confidence_tail_alpha": 3.7303130001999993
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5561101962790309,
+      "test_rmse": 0.5686837807556877,
+      "test_mae": 0.4070613384246826,
+      "test_r2": 0.7519842982292175,
+      "test_mape_percent": 25.24631036541817,
+      "confidence_tail_alpha": 3.833078752
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.5154378724830588,
+      "test_rmse": 0.5139776849782429,
+      "test_mae": 0.35873720049858093,
+      "test_r2": 0.7974063158035278,
+      "test_mape_percent": 21.84624820999363,
+      "confidence_tail_alpha": 2.2903600527
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11648,
+      "validation_rmse": 0.486647045554287,
+      "test_rmse": 0.4878635145463256,
+      "test_mae": 0.3279851973056793,
+      "test_r2": 0.8174700736999512,
+      "test_mape_percent": 18.34254141744229,
+      "confidence_tail_alpha": 1.6662872972
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5355947048829328,
+      "test_rmse": 0.5479809341403127,
+      "test_mae": 0.3884574770927429,
+      "test_r2": 0.7697135806083679,
+      "test_mape_percent": 23.597554987056682,
+      "confidence_tail_alpha": 2.105862352
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.48234284097173735,
+      "test_rmse": 0.47959103313244966,
+      "test_mae": 0.32912272214889526,
+      "test_r2": 0.8236077427864075,
+      "test_mape_percent": 19.415687722243426,
+      "confidence_tail_alpha": 1.6651973391
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 14300,
+      "validation_rmse": 0.48737044263451945,
+      "test_rmse": 0.48700954390109624,
+      "test_mae": 0.3307478427886963,
+      "test_r2": 0.8181084990501404,
+      "test_mape_percent": 18.673667211248958,
+      "confidence_tail_alpha": 1.7752567862999997
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5514255569809391,
+      "test_rmse": 0.5618389536886644,
+      "test_mae": 0.40274935960769653,
+      "test_r2": 0.7579187750816345,
+      "test_mape_percent": 24.914482076831053,
+      "confidence_tail_alpha": 4.3898093383
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.48394288507909355,
+      "test_rmse": 0.48154776452236503,
+      "test_mae": 0.32964515686035156,
+      "test_r2": 0.8221654295921326,
+      "test_mape_percent": 19.078240777583723,
+      "confidence_tail_alpha": 1.6106168885
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 3276,
+      "validation_rmse": 0.5324536600231966,
+      "test_rmse": 0.5427550574584951,
+      "test_mae": 0.3884883224964142,
+      "test_r2": 0.7740849256515503,
+      "test_mape_percent": 24.31721142538339,
+      "confidence_tail_alpha": 3.3993048578
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "validation_rmse": 0.5589296891328822,
+      "test_rmse": 0.5742567140654219,
+      "test_mae": 0.41584861278533936,
+      "test_r2": 0.7470995187759399,
+      "test_mape_percent": 26.05423142420379,
+      "confidence_tail_alpha": 3.7797563339
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "validation_rmse": 0.5140187647804477,
+      "test_rmse": 0.5142108424925329,
+      "test_mae": 0.36473548412323,
+      "test_r2": 0.7972224354743958,
+      "test_mape_percent": 22.937106975620924,
+      "confidence_tail_alpha": 2.2708502979
+    }
+  ],
+  "spectral_recalculation": [
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 14508,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6868748998,
+      "D": 0.0386800073,
+      "num_pl_spikes": 158,
+      "weight": 214.20933071316327,
+      "recomputed_confidence_tail_alpha": 1.6868748998
+    },
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.0802281613,
+      "D": 0.0540525841,
+      "num_pl_spikes": 26,
+      "weight": 68.85673978246473,
+      "recomputed_confidence_tail_alpha": 2.0802281613
+    },
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.7003026819,
+      "D": 0.0489894338,
+      "num_pl_spikes": 148,
+      "weight": 176.33896077280806,
+      "recomputed_confidence_tail_alpha": 1.7003026819000002
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 15808,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.7172272792,
+      "D": 0.0167505378,
+      "num_pl_spikes": 300,
+      "weight": 471.29944519311977,
+      "recomputed_confidence_tail_alpha": 1.7172272792
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 4.4298638085,
+      "D": 0.0777755021,
+      "num_pl_spikes": 100,
+      "weight": 102.2751076212576,
+      "recomputed_confidence_tail_alpha": 4.4298638085
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.609205705,
+      "D": 0.0249953032,
+      "num_pl_spikes": 291,
+      "weight": 379.122283794989,
+      "recomputed_confidence_tail_alpha": 1.609205705
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 3848,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.306397068,
+      "D": 0.0675095861,
+      "num_pl_spikes": 151,
+      "weight": 140.42125297452992,
+      "recomputed_confidence_tail_alpha": 3.306397068
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.7934376216,
+      "D": 0.0711037848,
+      "num_pl_spikes": 131,
+      "weight": 125.63169760055455,
+      "recomputed_confidence_tail_alpha": 3.7934376216
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.2788690287,
+      "D": 0.0345956736,
+      "num_pl_spikes": 214,
+      "weight": 267.9468513477191,
+      "recomputed_confidence_tail_alpha": 2.2788690287
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 13832,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6599496812,
+      "D": 0.0320743247,
+      "num_pl_spikes": 213,
+      "weight": 280.2632507172277,
+      "recomputed_confidence_tail_alpha": 1.6599496812
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.1783923937,
+      "D": 0.0503363143,
+      "num_pl_spikes": 32,
+      "weight": 80.42579861897002,
+      "recomputed_confidence_tail_alpha": 2.1783923937
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6564093588,
+      "D": 0.0416576131,
+      "num_pl_spikes": 194,
+      "weight": 225.89892110475034,
+      "recomputed_confidence_tail_alpha": 1.6564093588
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 16848,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6856879028,
+      "D": 0.0166425435,
+      "num_pl_spikes": 283,
+      "weight": 459.10033077427397,
+      "recomputed_confidence_tail_alpha": 1.6856879028000002
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 4.2628129881,
+      "D": 0.0773315912,
+      "num_pl_spikes": 113,
+      "weight": 109.2157816560452,
+      "recomputed_confidence_tail_alpha": 4.2628129881
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6142111796,
+      "D": 0.0247994048,
+      "num_pl_spikes": 275,
+      "weight": 370.16393467301157,
+      "recomputed_confidence_tail_alpha": 1.6142111796
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 1768,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.8223151018,
+      "D": 0.0808474889,
+      "num_pl_spikes": 135,
+      "weight": 115.21308230236211,
+      "recomputed_confidence_tail_alpha": 3.8223151018
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.693084622,
+      "D": 0.0734789913,
+      "num_pl_spikes": 14,
+      "weight": 40.02671974461005,
+      "recomputed_confidence_tail_alpha": 2.693084622
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.2762196146,
+      "D": 0.0339817673,
+      "num_pl_spikes": 219,
+      "weight": 274.14160979032533,
+      "recomputed_confidence_tail_alpha": 2.2762196146
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11440,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6728142364,
+      "D": 0.0195999233,
+      "num_pl_spikes": 257,
+      "weight": 404.8295604118354,
+      "recomputed_confidence_tail_alpha": 1.6728142364
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.1315520729,
+      "D": 0.0536902486,
+      "num_pl_spikes": 30,
+      "weight": 74.32768485804323,
+      "recomputed_confidence_tail_alpha": 2.1315520729
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6958386352,
+      "D": 0.0446731262,
+      "num_pl_spikes": 145,
+      "weight": 186.19162682122357,
+      "recomputed_confidence_tail_alpha": 1.6958386352
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11440,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.9523317134,
+      "D": 0.0435327389,
+      "num_pl_spikes": 300,
+      "weight": 272.6233494033857,
+      "recomputed_confidence_tail_alpha": 1.9523317134
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 4.4374730898,
+      "D": 0.0764876873,
+      "num_pl_spikes": 105,
+      "weight": 106.19956859469258,
+      "recomputed_confidence_tail_alpha": 4.4374730898
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6160715444,
+      "D": 0.0223013659,
+      "num_pl_spikes": 266,
+      "weight": 385.55507802881823,
+      "recomputed_confidence_tail_alpha": 1.6160715444
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 4524,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.0975938704,
+      "D": 0.0732341101,
+      "num_pl_spikes": 174,
+      "weight": 141.48154515686122,
+      "recomputed_confidence_tail_alpha": 3.0975938704
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.7806983971,
+      "D": 0.0744733315,
+      "num_pl_spikes": 137,
+      "weight": 123.89422205058604,
+      "recomputed_confidence_tail_alpha": 3.7806983971
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.2727834406,
+      "D": 0.0352361985,
+      "num_pl_spikes": 222,
+      "weight": 269.74456661334756,
+      "recomputed_confidence_tail_alpha": 2.2727834406
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11076,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.680055519,
+      "D": 0.0197556176,
+      "num_pl_spikes": 270,
+      "weight": 413.31710377340437,
+      "recomputed_confidence_tail_alpha": 1.680055519
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.1330694578,
+      "D": 0.0683269714,
+      "num_pl_spikes": 30,
+      "weight": 62.010793399077876,
+      "recomputed_confidence_tail_alpha": 2.1330694578
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6726680367,
+      "D": 0.0474668613,
+      "num_pl_spikes": 175,
+      "weight": 196.0778417792344,
+      "recomputed_confidence_tail_alpha": 1.6726680367
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 780,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 6.6638901877,
+      "D": 0.0748223849,
+      "num_pl_spikes": 55,
+      "weight": 78.2114739564588,
+      "recomputed_confidence_tail_alpha": 6.663890187699999
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 4.4050381457,
+      "D": 0.0703122044,
+      "num_pl_spikes": 104,
+      "weight": 112.91983287239492,
+      "recomputed_confidence_tail_alpha": 4.4050381457
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6138261956,
+      "D": 0.023731459,
+      "num_pl_spikes": 280,
+      "weight": 382.63531364644183,
+      "recomputed_confidence_tail_alpha": 1.6138261956000002
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 2184,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.7303130002,
+      "D": 0.0759137831,
+      "num_pl_spikes": 133,
+      "weight": 120.23884599199795,
+      "recomputed_confidence_tail_alpha": 3.7303130001999993
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.833078752,
+      "D": 0.074358798,
+      "num_pl_spikes": 128,
+      "weight": 119.90093916822426,
+      "recomputed_confidence_tail_alpha": 3.833078752
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.2903600527,
+      "D": 0.0324976776,
+      "num_pl_spikes": 217,
+      "weight": 280.6013625002001,
+      "recomputed_confidence_tail_alpha": 2.2903600527
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "endpoint": "primary_best_validation",
+      "step": 11648,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6662872972,
+      "D": 0.0185454401,
+      "num_pl_spikes": 280,
+      "weight": 434.1162141947242,
+      "recomputed_confidence_tail_alpha": 1.6662872972
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.105862352,
+      "D": 0.0567366018,
+      "num_pl_spikes": 27,
+      "weight": 67.71413251070797,
+      "recomputed_confidence_tail_alpha": 2.105862352
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6651973391,
+      "D": 0.0424999134,
+      "num_pl_spikes": 167,
+      "weight": 206.765854227889,
+      "recomputed_confidence_tail_alpha": 1.6651973391
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "endpoint": "primary_best_validation",
+      "step": 14300,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.7752567863,
+      "D": 0.0234870596,
+      "num_pl_spikes": 301,
+      "weight": 398.95434946577694,
+      "recomputed_confidence_tail_alpha": 1.7752567862999997
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 4.3898093383,
+      "D": 0.0676491825,
+      "num_pl_spikes": 107,
+      "weight": 118.01685010340628,
+      "recomputed_confidence_tail_alpha": 4.3898093383
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 1.6106168885,
+      "D": 0.0235853373,
+      "num_pl_spikes": 268,
+      "weight": 375.6012126524234,
+      "recomputed_confidence_tail_alpha": 1.6106168885
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "endpoint": "primary_best_validation",
+      "step": 3276,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.3993048578,
+      "D": 0.0692169239,
+      "num_pl_spikes": 149,
+      "weight": 136.8188352852827,
+      "recomputed_confidence_tail_alpha": 3.3993048578
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "endpoint": "2000",
+      "step": 2000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 3.7797563339,
+      "D": 0.0770751656,
+      "num_pl_spikes": 134,
+      "weight": 119.24612058339075,
+      "recomputed_confidence_tail_alpha": 3.7797563339
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "endpoint": "20000",
+      "step": 20000,
+      "matrix": "backbone.blocks.1.0.weight",
+      "ordinary_alpha": 2.2708502979,
+      "D": 0.0332454521,
+      "num_pl_spikes": 226,
+      "weight": 282.3395385983192,
+      "recomputed_confidence_tail_alpha": 2.2708502979
+    }
+  ],
+  "provenance": [
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 15340,
+      "primary_step": 14508,
+      "initialization_sha256": "f4be722c1806c798373828aa829de461e142af9d5896a03a312e709c99cde34b",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006545",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "30a79ff6cb05ead031f7a3ac84e091c9dab18890332296352cd28308ccd7a844",
+      "final_weights_sha256": "1e75ac924cb9cdfec895cd7c703158cd7b595d7ed7e18b0932dc75331d6c68fe",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "1c17ee5647ba0061f6ed8a4a6a69fecfc9323cea4ce50e5034e3c88571a9afdf",
+          "minibatch_rng_sha256": "ce7b736bee040fda393812492046a4c421aec46ead238e47b03d441dee6299a6",
+          "training_rng_sha256": "5c448bef6500465bfbd82f088abd2eadac34ce58ab9e7de0dfefdd37b0689f45"
+        },
+        "20000": {
+          "minibatch_sha256": "b31109e17d0f71f71fd4faad375debc7084f8ebc1eb0ab92d4de208176040818",
+          "minibatch_rng_sha256": "f4f0002dc54a91760e37986e0571331e3694d4f6d5fb078aa21ca3db2448f2ce",
+          "training_rng_sha256": "3546f22f08e558ccc79e9ba052e5f1404080af39b940a49bebc16e72e02315e6"
+        }
+      }
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 16640,
+      "primary_step": 15808,
+      "initialization_sha256": "f4be722c1806c798373828aa829de461e142af9d5896a03a312e709c99cde34b",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006538",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "cd39f7d090abfd3a8e311e306230f188850790a0e611c7822b22be8f705aec08",
+      "final_weights_sha256": "32808306d6a9c8c8b9cf541743c6e5843d4c70c471858feb1c78a3055bc45b91",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "1c17ee5647ba0061f6ed8a4a6a69fecfc9323cea4ce50e5034e3c88571a9afdf",
+          "minibatch_rng_sha256": "ce7b736bee040fda393812492046a4c421aec46ead238e47b03d441dee6299a6",
+          "training_rng_sha256": "5c448bef6500465bfbd82f088abd2eadac34ce58ab9e7de0dfefdd37b0689f45"
+        },
+        "20000": {
+          "minibatch_sha256": "b31109e17d0f71f71fd4faad375debc7084f8ebc1eb0ab92d4de208176040818",
+          "minibatch_rng_sha256": "f4f0002dc54a91760e37986e0571331e3694d4f6d5fb078aa21ca3db2448f2ce",
+          "training_rng_sha256": "3546f22f08e558ccc79e9ba052e5f1404080af39b940a49bebc16e72e02315e6"
+        }
+      }
+    },
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "completed_updates": 20000,
+      "paper_stop_step": 4680,
+      "primary_step": 3848,
+      "initialization_sha256": "f4be722c1806c798373828aa829de461e142af9d5896a03a312e709c99cde34b",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006543",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "924568b5fcc8448ee2aaeabd9a198fbad70d1942fe83e733e249397a1fcfa170",
+      "final_weights_sha256": "2eacfca9c38d19e793b9b7375fe8072cd8d2915d30f841bd87f3169b019824f0",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "1c17ee5647ba0061f6ed8a4a6a69fecfc9323cea4ce50e5034e3c88571a9afdf",
+          "minibatch_rng_sha256": "ce7b736bee040fda393812492046a4c421aec46ead238e47b03d441dee6299a6",
+          "training_rng_sha256": "5c448bef6500465bfbd82f088abd2eadac34ce58ab9e7de0dfefdd37b0689f45"
+        },
+        "20000": {
+          "minibatch_sha256": "b31109e17d0f71f71fd4faad375debc7084f8ebc1eb0ab92d4de208176040818",
+          "minibatch_rng_sha256": "f4f0002dc54a91760e37986e0571331e3694d4f6d5fb078aa21ca3db2448f2ce",
+          "training_rng_sha256": "3546f22f08e558ccc79e9ba052e5f1404080af39b940a49bebc16e72e02315e6"
+        }
+      }
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 14664,
+      "primary_step": 13832,
+      "initialization_sha256": "1d532f2da8d0c8d9cb9a4ae80c66158c3af9eadb64b8e0f2e2d40b364c4fe445",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006546",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "e310f81372faec9cd1bfa9249ca81252b94e44490fa8e4f02ffd74f954550c08",
+      "final_weights_sha256": "66fffd90d6d9cfcb36cdcf3121a2e671fe6fdfa236bede053d81ec122304e279",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "be1b0e884a50bd262dc1ae63da6adec35f228d24af1d43f4ce287d5e5d3c6602",
+          "minibatch_rng_sha256": "4dba9080977d36d4d5af80c1e7a5dbe441e151fec7a6a0579e2daee5f465586a",
+          "training_rng_sha256": "3fb7006b68b2ef320ed0fa2283eed4d810268a7aa7f19f0318a863f78ef15e24"
+        },
+        "20000": {
+          "minibatch_sha256": "cfe0460939079d7936490cf5576a035b76d0edc5e4c8320619a24ea26e796e71",
+          "minibatch_rng_sha256": "fe4ee1cde9fb3570672bfb88cd0dea188320b2b64dd0294cdba09a470e75b8af",
+          "training_rng_sha256": "9d86291a1a4d624ca9fe8c0b666da7e6456d22dfdb0b5ed8192658646ea58013"
+        }
+      }
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 17680,
+      "primary_step": 16848,
+      "initialization_sha256": "1d532f2da8d0c8d9cb9a4ae80c66158c3af9eadb64b8e0f2e2d40b364c4fe445",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006550",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "7a0b189acb278142aff59eaf491e18a167eec7877d03b49fa2ac5f213fd5cdd5",
+      "final_weights_sha256": "aa319af009d173a68b7618dc8be8711b5c33ba24b5e20c01e49a20b2d6e1e849",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "be1b0e884a50bd262dc1ae63da6adec35f228d24af1d43f4ce287d5e5d3c6602",
+          "minibatch_rng_sha256": "4dba9080977d36d4d5af80c1e7a5dbe441e151fec7a6a0579e2daee5f465586a",
+          "training_rng_sha256": "3fb7006b68b2ef320ed0fa2283eed4d810268a7aa7f19f0318a863f78ef15e24"
+        },
+        "20000": {
+          "minibatch_sha256": "cfe0460939079d7936490cf5576a035b76d0edc5e4c8320619a24ea26e796e71",
+          "minibatch_rng_sha256": "fe4ee1cde9fb3570672bfb88cd0dea188320b2b64dd0294cdba09a470e75b8af",
+          "training_rng_sha256": "9d86291a1a4d624ca9fe8c0b666da7e6456d22dfdb0b5ed8192658646ea58013"
+        }
+      }
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "completed_updates": 20000,
+      "paper_stop_step": 2600,
+      "primary_step": 1768,
+      "initialization_sha256": "1d532f2da8d0c8d9cb9a4ae80c66158c3af9eadb64b8e0f2e2d40b364c4fe445",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006537",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "c3ff607dd50455620c9c493b715b754fe795bf891e90707b4206923fd280396e",
+      "final_weights_sha256": "c1a29859237cfaa55cb35f412cf07e50d3c0c054ce8f828eb3a28f76f79d9745",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "be1b0e884a50bd262dc1ae63da6adec35f228d24af1d43f4ce287d5e5d3c6602",
+          "minibatch_rng_sha256": "4dba9080977d36d4d5af80c1e7a5dbe441e151fec7a6a0579e2daee5f465586a",
+          "training_rng_sha256": "3fb7006b68b2ef320ed0fa2283eed4d810268a7aa7f19f0318a863f78ef15e24"
+        },
+        "20000": {
+          "minibatch_sha256": "cfe0460939079d7936490cf5576a035b76d0edc5e4c8320619a24ea26e796e71",
+          "minibatch_rng_sha256": "fe4ee1cde9fb3570672bfb88cd0dea188320b2b64dd0294cdba09a470e75b8af",
+          "training_rng_sha256": "9d86291a1a4d624ca9fe8c0b666da7e6456d22dfdb0b5ed8192658646ea58013"
+        }
+      }
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 12272,
+      "primary_step": 11440,
+      "initialization_sha256": "e4b01a48edea2dca5ce24be908ff962483eb07f635cca4e440b21742bf104dd9",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006544",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.376.1"
+      },
+      "best_weights_sha256": "fed873c3ed964a88a3858c68c019652d2b8285e3a34a374a07f82313052423b4",
+      "final_weights_sha256": "30c4012393ac18bf2b6cc7378a4500c3407c1d4b21abfb8a61aac4786b7e8f94",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "7c4d03671a2348b5335d0f020874f9557bd0ce920560c9df27480fad7b717b9f",
+          "minibatch_rng_sha256": "f8d83039ebdc1f8fd1f38eb241fd155bb0ef1224aa9713f4c314789b73f2541c",
+          "training_rng_sha256": "f7542fb16eff8a0282d047af714c5ef176cd52d795c583d48538d62134c42c6a"
+        },
+        "20000": {
+          "minibatch_sha256": "7a628a74a6ab248f7a5bdb90992c6c51e65ecb5ffb0522f08bb912304f06fb3c",
+          "minibatch_rng_sha256": "86ac47784808ae968db1675bf974a79639af1641e779dc555240a2e49c987466",
+          "training_rng_sha256": "01f26ea70216010bc87e8d6ff861f0c9207c5a5eee6f3957f759f139d667134b"
+        }
+      }
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 12272,
+      "primary_step": 11440,
+      "initialization_sha256": "e4b01a48edea2dca5ce24be908ff962483eb07f635cca4e440b21742bf104dd9",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006548",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "9c187482452069251c985423b9a5c40312265e1beeac25bfbf1443403adac489",
+      "final_weights_sha256": "752d2a7a3f3c8be31d66b324e040933d5b7542558dee8d42692acc4900357d04",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "7c4d03671a2348b5335d0f020874f9557bd0ce920560c9df27480fad7b717b9f",
+          "minibatch_rng_sha256": "f8d83039ebdc1f8fd1f38eb241fd155bb0ef1224aa9713f4c314789b73f2541c",
+          "training_rng_sha256": "f7542fb16eff8a0282d047af714c5ef176cd52d795c583d48538d62134c42c6a"
+        },
+        "20000": {
+          "minibatch_sha256": "7a628a74a6ab248f7a5bdb90992c6c51e65ecb5ffb0522f08bb912304f06fb3c",
+          "minibatch_rng_sha256": "86ac47784808ae968db1675bf974a79639af1641e779dc555240a2e49c987466",
+          "training_rng_sha256": "01f26ea70216010bc87e8d6ff861f0c9207c5a5eee6f3957f759f139d667134b"
+        }
+      }
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "completed_updates": 20000,
+      "paper_stop_step": 5356,
+      "primary_step": 4524,
+      "initialization_sha256": "e4b01a48edea2dca5ce24be908ff962483eb07f635cca4e440b21742bf104dd9",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006540",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "cd9a48cdefb1293f4935ed4deafefc20d176147b8e04962a793df95fd59e7a9c",
+      "final_weights_sha256": "8fffdf225353ce08dadda4c99916e4b16df8aae888150265a5f4df9277e8ba29",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "7c4d03671a2348b5335d0f020874f9557bd0ce920560c9df27480fad7b717b9f",
+          "minibatch_rng_sha256": "f8d83039ebdc1f8fd1f38eb241fd155bb0ef1224aa9713f4c314789b73f2541c",
+          "training_rng_sha256": "f7542fb16eff8a0282d047af714c5ef176cd52d795c583d48538d62134c42c6a"
+        },
+        "20000": {
+          "minibatch_sha256": "7a628a74a6ab248f7a5bdb90992c6c51e65ecb5ffb0522f08bb912304f06fb3c",
+          "minibatch_rng_sha256": "86ac47784808ae968db1675bf974a79639af1641e779dc555240a2e49c987466",
+          "training_rng_sha256": "01f26ea70216010bc87e8d6ff861f0c9207c5a5eee6f3957f759f139d667134b"
+        }
+      }
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 11908,
+      "primary_step": 11076,
+      "initialization_sha256": "22698f7cefb53e8251a34e3b33df5e8793e614048c53ca6d0be578cd9e3307c7",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006541",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "66d5d5405c8a2fdf0cb7c3f1a571f4cd5e4b1dd34987dbca22f074e13b34f17b",
+      "final_weights_sha256": "a81343095e2176f87f87e8458375601d5568bf242d7203d1fba4b16998a74e28",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "0b08416a4631129217e086133ccdc69499bd487d37d29733ad872e1d33c1edee",
+          "minibatch_rng_sha256": "3996711181e5d5712b39884368accfff01df658bf426c34c3f3647f434f91277",
+          "training_rng_sha256": "aaea881cb0251ec563d154e3cc9df66c6ed96f2d5a7d85451ea6bca957ba9083"
+        },
+        "20000": {
+          "minibatch_sha256": "d61f04b7e230c232b9362a7c6147b73ef9b8830259ca91a8282c9ae5e2069c1e",
+          "minibatch_rng_sha256": "41aa8abe1924bbaff3bb61062d38a06b810c5fc2e06f481d1e80de355d5130b2",
+          "training_rng_sha256": "79df720e470974d5e6c86cd7f5178cc00de153b7edf57c4328d33a1b0b615cdd"
+        }
+      }
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 1612,
+      "primary_step": 780,
+      "initialization_sha256": "22698f7cefb53e8251a34e3b33df5e8793e614048c53ca6d0be578cd9e3307c7",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006549",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.376.1"
+      },
+      "best_weights_sha256": "18828c3cdbc268b6616b667ecc08dec24f160d66ee74606592f7e5d6b4b7b6ea",
+      "final_weights_sha256": "83b9cd925216701a63f735d1fb57715832042e604f34ae7b524c824991899cfa",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "0b08416a4631129217e086133ccdc69499bd487d37d29733ad872e1d33c1edee",
+          "minibatch_rng_sha256": "3996711181e5d5712b39884368accfff01df658bf426c34c3f3647f434f91277",
+          "training_rng_sha256": "aaea881cb0251ec563d154e3cc9df66c6ed96f2d5a7d85451ea6bca957ba9083"
+        },
+        "20000": {
+          "minibatch_sha256": "d61f04b7e230c232b9362a7c6147b73ef9b8830259ca91a8282c9ae5e2069c1e",
+          "minibatch_rng_sha256": "41aa8abe1924bbaff3bb61062d38a06b810c5fc2e06f481d1e80de355d5130b2",
+          "training_rng_sha256": "79df720e470974d5e6c86cd7f5178cc00de153b7edf57c4328d33a1b0b615cdd"
+        }
+      }
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "completed_updates": 20000,
+      "paper_stop_step": 3016,
+      "primary_step": 2184,
+      "initialization_sha256": "22698f7cefb53e8251a34e3b33df5e8793e614048c53ca6d0be578cd9e3307c7",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006547",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261122.23.1"
+      },
+      "best_weights_sha256": "7b5274c116256e723ce16a1dfc30570e4f99d2b8a700e5d73857de1e0ef4fbbb",
+      "final_weights_sha256": "313e2b143fbe1ef35fd90426df8d81da51426045aadfe31e7ff32266a1fd2d95",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "0b08416a4631129217e086133ccdc69499bd487d37d29733ad872e1d33c1edee",
+          "minibatch_rng_sha256": "3996711181e5d5712b39884368accfff01df658bf426c34c3f3647f434f91277",
+          "training_rng_sha256": "aaea881cb0251ec563d154e3cc9df66c6ed96f2d5a7d85451ea6bca957ba9083"
+        },
+        "20000": {
+          "minibatch_sha256": "d61f04b7e230c232b9362a7c6147b73ef9b8830259ca91a8282c9ae5e2069c1e",
+          "minibatch_rng_sha256": "41aa8abe1924bbaff3bb61062d38a06b810c5fc2e06f481d1e80de355d5130b2",
+          "training_rng_sha256": "79df720e470974d5e6c86cd7f5178cc00de153b7edf57c4328d33a1b0b615cdd"
+        }
+      }
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 12480,
+      "primary_step": 11648,
+      "initialization_sha256": "5235d842b1126220ac892ef750fc9e4915870291b72b1f8c46c1bb1730b3db77",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006539",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "a0aef51670964e73a0a5457cd06b3a7c8abad9a934fc32c3516f0c7bae19f800",
+      "final_weights_sha256": "83d384d7d1b10ad0582cbdbdbd51ba60c1b33687b559c09e6b1068fa312525c6",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "bb05ff8bd330f954f91e3ebeb7529d210f1aebeffd6d32dbde85dcd0eca8fd24",
+          "minibatch_rng_sha256": "637fbac46a7a71d4744628012f361112099291d99f8d78be31e99165c9a69494",
+          "training_rng_sha256": "f4d4fc1f91321ec740a233c328600452fca586a766c00fe2c8dd1f22efbdfecc"
+        },
+        "20000": {
+          "minibatch_sha256": "5f46e76f8997495af89490d35008244ec891ffa1d71868c0178712d94618348c",
+          "minibatch_rng_sha256": "ac9da89e5308fd90b955f5013342ab3d04e4128d6033ddad88abed1123e50746",
+          "training_rng_sha256": "b67d765c99ec68fc22373efcf182ab06bbedf6992428f8b12acabe27ac1ed1b9"
+        }
+      }
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "completed_updates": 20000,
+      "paper_stop_step": 15132,
+      "primary_step": 14300,
+      "initialization_sha256": "5235d842b1126220ac892ef750fc9e4915870291b72b1f8c46c1bb1730b3db77",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006542",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "6e901faf5570cadbf9cb6c94e46488d2a82413b41c2a2b12832bbc476ed3a84b",
+      "final_weights_sha256": "75a0b8d4f243570d2e1feb3e77039a6271f779196aaf48338896953e0a45adb1",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "bb05ff8bd330f954f91e3ebeb7529d210f1aebeffd6d32dbde85dcd0eca8fd24",
+          "minibatch_rng_sha256": "637fbac46a7a71d4744628012f361112099291d99f8d78be31e99165c9a69494",
+          "training_rng_sha256": "f4d4fc1f91321ec740a233c328600452fca586a766c00fe2c8dd1f22efbdfecc"
+        },
+        "20000": {
+          "minibatch_sha256": "5f46e76f8997495af89490d35008244ec891ffa1d71868c0178712d94618348c",
+          "minibatch_rng_sha256": "ac9da89e5308fd90b955f5013342ab3d04e4128d6033ddad88abed1123e50746",
+          "training_rng_sha256": "b67d765c99ec68fc22373efcf182ab06bbedf6992428f8b12acabe27ac1ed1b9"
+        }
+      }
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "completed_updates": 20000,
+      "paper_stop_step": 4108,
+      "primary_step": 3276,
+      "initialization_sha256": "5235d842b1126220ac892ef750fc9e4915870291b72b1f8c46c1bb1730b3db77",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "frozen_selection_sha256": "acfce460e6e47e806c9bf092902c80930818c8af0bb4e41e20fbec4222b41173",
+      "numerical_runtime_sha256": "3f39109d48f97969477bffd0b07434c1a01debee7a55d3a11b5f376a33dfc969",
+      "cpu": "Intel(R) Xeon(R) 6975P-C",
+      "github": {
+        "GITHUB_RUN_ID": "45753214421",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_JOB": "confirmation",
+        "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+        "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+        "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "RUNNER_NAME": "GitHub Actions 1000006536",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261116.133.1"
+      },
+      "best_weights_sha256": "33314cf5474232a2c032fa7a8163958b94ca3846f7f87272ae1b1fed6652bbd4",
+      "final_weights_sha256": "5714fce0e848dade699e054969ce1e19315be469eef2829b1c9d2e3911be07c6",
+      "fixed_budget_digests": {
+        "2000": {
+          "minibatch_sha256": "bb05ff8bd330f954f91e3ebeb7529d210f1aebeffd6d32dbde85dcd0eca8fd24",
+          "minibatch_rng_sha256": "637fbac46a7a71d4744628012f361112099291d99f8d78be31e99165c9a69494",
+          "training_rng_sha256": "f4d4fc1f91321ec740a233c328600452fca586a766c00fe2c8dd1f22efbdfecc"
+        },
+        "20000": {
+          "minibatch_sha256": "5f46e76f8997495af89490d35008244ec891ffa1d71868c0178712d94618348c",
+          "minibatch_rng_sha256": "ac9da89e5308fd90b955f5013342ab3d04e4128d6033ddad88abed1123e50746",
+          "training_rng_sha256": "b67d765c99ec68fc22373efcf182ab06bbedf6992428f8b12acabe27ac1ed1b9"
+        }
+      }
+    }
+  ],
+  "paired_integrity": [
+    {
+      "seed": 2340,
+      "n_arms": 3,
+      "complete": true
+    },
+    {
+      "seed": 2341,
+      "n_arms": 3,
+      "complete": true
+    },
+    {
+      "seed": 2342,
+      "n_arms": 3,
+      "complete": true
+    },
+    {
+      "seed": 2343,
+      "n_arms": 3,
+      "complete": true
+    },
+    {
+      "seed": 2344,
+      "n_arms": 3,
+      "complete": true
+    }
+  ],
+  "retained_checkpoints": [
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/best_checkpoint.pt",
+      "git_blob_sha": "76a23ca7af6e187e4b541261cc0e39b794dc5c9b",
+      "size": 2506585
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "6e4cb972e9ced73693c67ffe86ecc82ebe1d450d",
+      "size": 10166896
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "b9fcafb805ad5c827bacaeb297bf732a2721a4b9",
+      "size": 10547607
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/resume.pt",
+      "git_blob_sha": "08080aad4b2d89ed1fed0c1179068e7bf8e5f72a",
+      "size": 10546894
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/best_checkpoint.pt",
+      "git_blob_sha": "6640e1465ccb9964601401a35cb8e9127b16f6ca",
+      "size": 2506649
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "9308fca3bf2a13329f3cb6c08f782f533230e96b",
+      "size": 10167216
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "b3399c6ec5a54c4dbdbc587cff839c414189e960",
+      "size": 10547671
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/resume.pt",
+      "git_blob_sha": "7325bb82aa41cdc13d66eecb82a1bae5f8f4d4c6",
+      "size": 10546958
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/best_checkpoint.pt",
+      "git_blob_sha": "a59f64fe610e4afe387ca0393915a9488a86acc6",
+      "size": 2506521
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_2000.pt",
+      "git_blob_sha": "7c7e0eb888f9ee8b7f6a7a897e6ce9fc8e1000e8",
+      "size": 7670548
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_20000.pt",
+      "git_blob_sha": "98dfc1f43aaf00d22b4adc8b53bb548dc372316a",
+      "size": 8051631
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/resume.pt",
+      "git_blob_sha": "127c14c58e0077d56c94aaacd51bfd1551c2a549",
+      "size": 8051162
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/best_checkpoint.pt",
+      "git_blob_sha": "fc82ee32d4df0e9d088694de18dd77e605fbd393",
+      "size": 2506585
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "c933d64b84c2f0876d915508bee074cc7b3060a0",
+      "size": 10166896
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "1e6bfa3ebd3bc0ad159e88692fd6b34cfe7ac8b8",
+      "size": 10547607
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/resume.pt",
+      "git_blob_sha": "d0aaa9de557ae8a5347eb14eee4acdcb5b1827ba",
+      "size": 10546894
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/best_checkpoint.pt",
+      "git_blob_sha": "84cafc7be0d337885cceb7f926d15a006305f817",
+      "size": 2506649
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "d2a3944bb014a95c19103c4411203115d4625535",
+      "size": 10167216
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "21b33f1263ba550d22e64ba6a61d0123e7b66f63",
+      "size": 10547607
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/resume.pt",
+      "git_blob_sha": "7b37e15c7c3b223f149758ad4a0873a21e153ce6",
+      "size": 10546958
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/best_checkpoint.pt",
+      "git_blob_sha": "64f9dd44cd0c161e6234d4bda063629961f25f13",
+      "size": 2506521
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_2000.pt",
+      "git_blob_sha": "74ebd0783472a8972e55547991fbf36614f50f0a",
+      "size": 7670548
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_20000.pt",
+      "git_blob_sha": "bc97adfbbf219c209f6f69951cccd30deeccb2f0",
+      "size": 8051631
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/resume.pt",
+      "git_blob_sha": "eeb30407234d90ddca57d62e1f24237eef02fb96",
+      "size": 8051162
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/best_checkpoint.pt",
+      "git_blob_sha": "a3795e629c3c5b575b447834f73b1d1f56aab163",
+      "size": 2506585
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "dec9f80d9d54828fe7d509e60d6498b04f4b4531",
+      "size": 10166960
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "0b3410ea3b98d27d2d35022bd1c8aa3cdefb0e3f",
+      "size": 10547671
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/resume.pt",
+      "git_blob_sha": "ba94873fe634277d3d1b3174ff9241c179abc974",
+      "size": 10546958
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/best_checkpoint.pt",
+      "git_blob_sha": "2da966ff9ee4cd624936964533dc258973ee0c3f",
+      "size": 2506649
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "77ed94b457d977190a0966c09af8b496bd157ca5",
+      "size": 10167216
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "17ee442137647cf8bcd38166d7daf24ee903353d",
+      "size": 10547671
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/resume.pt",
+      "git_blob_sha": "278e7eaa5dd7ae588e927fbb9fb13b73a4dc1a82",
+      "size": 10547022
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/best_checkpoint.pt",
+      "git_blob_sha": "acad6e70488e284fb100180e2caa0fb6b3f37ddb",
+      "size": 2506521
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_2000.pt",
+      "git_blob_sha": "39fc9f673343dd717037a85841df2d690817b31e",
+      "size": 7670612
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_20000.pt",
+      "git_blob_sha": "1ab8260a451712a9579d05ee4c8b2755cd0f6b75",
+      "size": 8051695
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/resume.pt",
+      "git_blob_sha": "a2c9c9ceeb06851defb10a1298782dcc1284d72b",
+      "size": 8051226
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/best_checkpoint.pt",
+      "git_blob_sha": "56fc6042a2e834824cb0b3b1263a180ddaad4373",
+      "size": 2506585
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "592644994a91e939aea344483238fc55eff4d0fb",
+      "size": 10166960
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "5490c87b2c647cdf1e55b570e37348b7bd75e636",
+      "size": 10547607
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/resume.pt",
+      "git_blob_sha": "7e7f159aed3d1705b5303b0a0d92f42b4dec9b1b",
+      "size": 10546958
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/best_checkpoint.pt",
+      "git_blob_sha": "e1d0aec00259c8c1e6512714b59b7df2705e7001",
+      "size": 2506649
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "a87dc6d6905911acc674f9c4ce5f8cb00736f9e2",
+      "size": 10176240
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "8cc41144b4dc569abea80ba8dcb7bdc1eeb845d0",
+      "size": 10547735
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/resume.pt",
+      "git_blob_sha": "7cfcb52505545d348d7f48a6190b330ab84ce36b",
+      "size": 10547086
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/best_checkpoint.pt",
+      "git_blob_sha": "b6bbd473ad24747ca64990363b9fde93d70e0c44",
+      "size": 2506521
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_2000.pt",
+      "git_blob_sha": "ded85db5f493ae2221d7fc92f2c960d004aa38d4",
+      "size": 7670612
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_20000.pt",
+      "git_blob_sha": "a477607bf983edbd84583e9a2632e604eeaedeb0",
+      "size": 8051695
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/resume.pt",
+      "git_blob_sha": "a22a35925ba32faa5b5b890b29c281725515de1b",
+      "size": 8051226
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/best_checkpoint.pt",
+      "git_blob_sha": "a42a6df0742c689272e23ccde7a075faa219b1bd",
+      "size": 2506585
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "766ab49f981828f9eab62f59e48bbcfbf8e34f4e",
+      "size": 10166896
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "d9ca10219ece4b88d4c296765a56154007e94cb9",
+      "size": 10547543
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/resume.pt",
+      "git_blob_sha": "c4e0f7da19410f46fe4be9beead92da58b792537",
+      "size": 10546894
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/best_checkpoint.pt",
+      "git_blob_sha": "1c322b89ba0105881e54a67a6bd704bb87fdd871",
+      "size": 2506649
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/checkpoint_step_2000.pt",
+      "git_blob_sha": "69295425723c4ef53f6bf4817ac1138bbb2ce12c",
+      "size": 10167152
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/checkpoint_step_20000.pt",
+      "git_blob_sha": "e0274f8be230397aeb2a35f33849a382143fce09",
+      "size": 10547607
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/resume.pt",
+      "git_blob_sha": "0b112a0be6344a32e0ed3e88ae954c586744e97d",
+      "size": 10546958
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/best_checkpoint.pt",
+      "git_blob_sha": "db40337104ecfeb66e814eeb301488a48a238c4d",
+      "size": 2506521
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_2000.pt",
+      "git_blob_sha": "da580d14e9c894cfca15af956f699b4da86c7f56",
+      "size": 7670484
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_20000.pt",
+      "git_blob_sha": "17ff32daf5ef3cf00444c5475a0dedafb97a30ad",
+      "size": 8051631
+    },
+    {
+      "path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/resume.pt",
+      "git_blob_sha": "f5066bb844a5e5c939ab27b56d47635df8cd53d4",
+      "size": 8051098
+    }
+  ],
+  "method": "Equal weight per seed; sample SD; two-sided 95% Student-t confidence interval.",
+  "spectral_scope": "One eligible 784x784 hidden matrix; model confidence/tail average equals its ordinary fitted alpha.",
+  "limits": "All 60 checkpoint paths and byte sizes audited against the repository. The five SGDM 20,000-update checkpoints were downloaded and verified by both Git blob SHA-1 and SHA-256; weights were not reloaded or re-evaluated. Metrics recomputed statistically from per-seed measured values, not from raw predictions.",
+  "agreement_with_committed_analysis": {
+    "official_complete_five_seeds": true,
+    "official_n_completed": 5,
+    "official_n_completed_runs": 15,
+    "official_audit_errors": [],
+    "rows_checked": 60,
+    "numeric_values_checked": 360,
+    "maximum_absolute_difference": 7.993605777301127e-15,
+    "errors": [],
+    "official_summary_git_blob_sha": "12111f65e6974f5977ce16df77622f47e0781fca",
+    "official_cohort_git_blob_sha": "4ebb4ee014e8bf3a4125ce4fd1f2fb6dba12fbdb"
+  },
+  "sgdm_20000_checkpoint_content_verification": {
+    "source_commit": "a8826f1f46b18b0bd472ca6036c441038a6a569b",
+    "method": "Downloaded each checkpoint from the immutable GitHub commit; recomputed the Git blob SHA-1 including its byte-length header and matched the repository blob; computed SHA-256 over the checkpoint bytes.",
+    "seeds": {
+      "2340": {
+        "seed": 2340,
+        "sgdm_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/result.json",
+        "sgdm_result_git_blob_sha": "0a5abcc63accdde16df49ec05e4cd2388e3c449f",
+        "sgdm_result_sha256": "31ac2fdfa3b6792f84209a0eac0d772b6519eca0e625fcdfce5e3a3a5c0083e6",
+        "sgdm_checkpoint_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_20000.pt",
+        "sgdm_checkpoint_git_blob_sha": "98dfc1f43aaf00d22b4adc8b53bb548dc372316a",
+        "sgdm_checkpoint_bytes": 8051631,
+        "sgdm_checkpoint_sha256": "469fbba0f35bb6479d58edc71dcad784c29d2a2f7dfcc939e2e865cd36a65e3f",
+        "native_adamw_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/result.json",
+        "native_adamw_result_git_blob_sha": "2eb3e847554fcc7358f527f5576256516649ca79",
+        "native_adamw_result_sha256": "5432c4982bbc0c6c4d6b6dde9c93df77923329b128098217de47f7d2b4ad473c"
+      },
+      "2341": {
+        "seed": 2341,
+        "sgdm_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/result.json",
+        "sgdm_result_git_blob_sha": "5c67884e5af1abf2fabcdc91d28dfc60be372e22",
+        "sgdm_result_sha256": "2544e3f75e54ffb354b844ab0b27ed7023d42d2b67dc66aadd56921e693aab12",
+        "sgdm_checkpoint_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_20000.pt",
+        "sgdm_checkpoint_git_blob_sha": "bc97adfbbf219c209f6f69951cccd30deeccb2f0",
+        "sgdm_checkpoint_bytes": 8051631,
+        "sgdm_checkpoint_sha256": "1a48f61e8d22ff070993e64376b0969616e22f46640437c79612e31a8ae5ed46",
+        "native_adamw_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/result.json",
+        "native_adamw_result_git_blob_sha": "c4d1e9b499219e38c6d04197a3649fefe9306805",
+        "native_adamw_result_sha256": "bbad409f03850b2ee77285f355aa18901fe39dea60944612a9a86967b8d2851c"
+      },
+      "2342": {
+        "seed": 2342,
+        "sgdm_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/result.json",
+        "sgdm_result_git_blob_sha": "f32e2f582ec271632dd69f0b200ef0b3c9e24098",
+        "sgdm_result_sha256": "519cf7680262802013c06897f221a7b29e3e2dfcd2c3e471c0985ef9a9386877",
+        "sgdm_checkpoint_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_20000.pt",
+        "sgdm_checkpoint_git_blob_sha": "1ab8260a451712a9579d05ee4c8b2755cd0f6b75",
+        "sgdm_checkpoint_bytes": 8051695,
+        "sgdm_checkpoint_sha256": "21592922c3d715891b33b83b097365df66cb9b07f0acc14ee11638ebc57925fb",
+        "native_adamw_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/result.json",
+        "native_adamw_result_git_blob_sha": "6198c294122b819d66948e5a2cbddd800eada1a8",
+        "native_adamw_result_sha256": "cfd53d0070b1ea4b7d765b5db7d514606f4581e0c15e9077c833daffe793157e"
+      },
+      "2343": {
+        "seed": 2343,
+        "sgdm_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/result.json",
+        "sgdm_result_git_blob_sha": "b4c60681453ee3a3a2e1b438f741d5bf633875d9",
+        "sgdm_result_sha256": "d3b04b228569b6fbcbaf75e10c2a61e90526d61f5e6563ed4f901070fe0f54af",
+        "sgdm_checkpoint_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_20000.pt",
+        "sgdm_checkpoint_git_blob_sha": "a477607bf983edbd84583e9a2632e604eeaedeb0",
+        "sgdm_checkpoint_bytes": 8051695,
+        "sgdm_checkpoint_sha256": "c5723f4a540b12f2ba1327ad9490622c0f3d8b6389c510458627610df4060cf1",
+        "native_adamw_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/result.json",
+        "native_adamw_result_git_blob_sha": "1bc0f4f7476c41ab5c87cdcb46d7d1f0c2dbeb70",
+        "native_adamw_result_sha256": "34b2dfab539c12ae3734058f59b782f292df006389144ebe7d786d52d27f9177"
+      },
+      "2344": {
+        "seed": 2344,
+        "sgdm_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/result.json",
+        "sgdm_result_git_blob_sha": "52e1bad23e9cabaaab905d8a2f8c563a612ee5b4",
+        "sgdm_result_sha256": "403ece3cc9d1e224e673d7d2739f35e89e1bf2e7662ed3a80de9663c7936b7cb",
+        "sgdm_checkpoint_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_20000.pt",
+        "sgdm_checkpoint_git_blob_sha": "17ff32daf5ef3cf00444c5475a0dedafb97a30ad",
+        "sgdm_checkpoint_bytes": 8051631,
+        "sgdm_checkpoint_sha256": "8312f6fe96535c254801d7953a622904098364531850a7302bfe1dbb87cb7be4",
+        "native_adamw_result_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/result.json",
+        "native_adamw_result_git_blob_sha": "7986abc2ddc23ac4130f297f375973084ee0e6b2",
+        "native_adamw_result_sha256": "41c128a723793d753fda1f385974cc37f98e0a2fce73d6b30f0bfdcd5fb26a88"
+      }
+    }
+  }
+}
