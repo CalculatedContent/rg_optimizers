@@ -1,0 +1,55 @@
+{
+  "source_url": "https://archive.ics.uci.edu/static/public/159/magic%2Bgamma%2Btelescope.zip",
+  "doi": "10.24432/C52C8B",
+  "license": "CC BY 4.0",
+  "source_sha256": "e9314b7ebd4b4b59a3b3d65f7316663963777b16a46786877651dbbaa640b36a",
+  "zip_sha256": "252e0a78333c108d0ea54537b61154aa781e95a15675e65ddf9b76993617191d",
+  "prepared_sha256": "c42ba2691997b884dae5d738bcb2b5bb5a5b07fbca0f0c83afae12ce76812d73",
+  "plan_sha256": "7a91ecde85613937a054e9feccc108760ac98e4f724da398806892b16a3a4915",
+  "n_rows": 19020,
+  "features": 10,
+  "classes": [
+    6688,
+    12332
+  ],
+  "unique_feature_rows": 18905,
+  "cross_partition_duplicate_feature_groups": 0,
+  "split": {
+    "protocol": "StratifiedGroupKFold 5-fold, groups defined by identical 10-feature vectors; fold 0 test, fold 1 validation, folds 2-4 training; no fold selection",
+    "seed": 20261126
+  },
+  "counts": {
+    "train": {
+      "n": 11411,
+      "classes": [
+        4041,
+        7370
+      ],
+      "index_sha256": "b345e9c5e4925b8211fa73d34f718b21415f18272deb375d4016a1d416134324"
+    },
+    "val": {
+      "n": 3805,
+      "classes": [
+        1314,
+        2491
+      ],
+      "index_sha256": "124a2074813ee5f5f333f0a816575f5d0d27a0b3377e264bed72bc94c884ca6f"
+    },
+    "test": {
+      "n": 3804,
+      "classes": [
+        1333,
+        2471
+      ],
+      "index_sha256": "0947eb8df102e3391e2f50c6b4db08122adf6b36c619202e9c87c329fbbc3712"
+    },
+    "outer_train": {
+      "n": 15216,
+      "classes": [
+        5355,
+        9861
+      ],
+      "index_sha256": "69cb06733000cbdd65b39b2ee147bbe873e9d51a84e4b9d73cac0c619f795204"
+    }
+  }
+}
