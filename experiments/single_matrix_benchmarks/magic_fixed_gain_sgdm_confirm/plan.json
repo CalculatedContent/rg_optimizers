@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "dataset": "MAGIC Gamma Telescope",
+  "source": "https://archive.ics.uci.edu/static/public/159/magic%2Bgamma%2Btelescope.zip",
+  "doi": "10.24432/C52C8B",
+  "license": "CC BY 4.0",
+  "rows": 19020,
+  "features": [
+    "fLength",
+    "fWidth",
+    "fSize",
+    "fConc",
+    "fConc1",
+    "fAsym",
+    "fM3Long",
+    "fM3Trans",
+    "fAlpha",
+    "fDist"
+  ],
+  "labels": {
+    "g": 1,
+    "h": 0
+  },
+  "split": {
+    "protocol": "StratifiedGroupKFold 5-fold, groups defined by identical 10-feature vectors; fold 0 test, fold 1 validation, folds 2-4 training; no fold selection",
+    "seed": 20261126
+  },
+  "architecture": [
+    10,
+    784,
+    784,
+    2
+  ],
+  "primary_matrix": "fc2",
+  "preprocessing": "train-only z-score numerical features; no target rescaling or oversampling",
+  "dropout": 0,
+  "dev_seeds": [],
+  "confirmation_seeds": [
+    3472,
+    3473,
+    3474,
+    3475,
+    3476
+  ],
+  "grid": [
+    {
+      "id": "s2",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.9,
+      "weight_decay": 0
+    }
+  ],
+  "cap": 20000,
+  "batch_size": 256,
+  "clip": 1,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "max_parallel": 5,
+  "job_timeout_minutes": 75,
+  "development_runs": 0,
+  "confirmation_runs": 5,
+  "max_primary_updates": 100000,
+  "selection": "User-directed exploratory confirmation of the previously observed near-marginal fixed-gain SGDM s2 (.03); no new hyperparameter search; not the validation-accuracy winner.",
+  "test_protocol": "Refit on original outer_train (train+validation); test only at step 20000; same reused split and paired seeds as earlier ordinary and learned-gain controls; exploratory, not independent evidence.",
+  "reference": {
+    "paper": "Gorishniy et al., TabM, ICLR 2025",
+    "url": "https://openreview.net/attachment?id=Sd4wYYOhmY&name=pdf",
+    "mlp_accuracy": 0.8539,
+    "xgb_accuracy": 0.855,
+    "catboost_accuracy": 0.8586,
+    "tabr_accuracy": 0.8682,
+    "comparability": "different published split/preprocessing/tuning; context only; no claim of exact reproduction"
+  },
+  "roc_fpr": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "primary_archive": "09dbaa4e095ff21fc8b1e130798d247b75c15913",
+  "primary_plan_sha256": "7a91ecde85613937a054e9feccc108760ac98e4f724da398806892b16a3a4915",
+  "primary_prepared_sha256": "c42ba2691997b884dae5d738bcb2b5bb5a5b07fbca0f0c83afae12ce76812d73",
+  "parameterization": "gain * sqrt(out_features) * W / norm(W), gains frozen at exact initial values, biases unchanged",
+  "learned_gain_control": "e6ec5fb97bc3db0130937dd49e710399dbc1dbec",
+  "calibration_control": "c4eda173b511cebd4d3809624c3e9fbba4884b5f",
+  "diagnostic_control": "ab1b7a686bb23e4edc0b0faaf4d5ee75064b6bb4",
+  "fixed_gain_development_archive": "169a1b0d9b1636a51db2bef4c403529bfa4b7c8d"
+}
