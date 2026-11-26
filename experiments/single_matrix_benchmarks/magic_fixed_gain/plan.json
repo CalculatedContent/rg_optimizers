@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "dataset": "MAGIC Gamma Telescope",
+  "source": "https://archive.ics.uci.edu/static/public/159/magic%2Bgamma%2Btelescope.zip",
+  "doi": "10.24432/C52C8B",
+  "license": "CC BY 4.0",
+  "rows": 19020,
+  "features": [
+    "fLength",
+    "fWidth",
+    "fSize",
+    "fConc",
+    "fConc1",
+    "fAsym",
+    "fM3Long",
+    "fM3Trans",
+    "fAlpha",
+    "fDist"
+  ],
+  "labels": {
+    "g": 1,
+    "h": 0
+  },
+  "split": {
+    "protocol": "StratifiedGroupKFold 5-fold, groups defined by identical 10-feature vectors; fold 0 test, fold 1 validation, folds 2-4 training; no fold selection",
+    "seed": 20261126
+  },
+  "architecture": [
+    10,
+    784,
+    784,
+    2
+  ],
+  "primary_matrix": "fc2",
+  "preprocessing": "train-only z-score numerical features; no target rescaling or oversampling",
+  "dropout": 0,
+  "dev_seeds": [
+    3470,
+    3471
+  ],
+  "confirmation_seeds": [],
+  "grid": [
+    {
+      "id": "s0",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s1",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.01,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s2",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s3",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "a0",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0001,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a1",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "a2",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.001,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    }
+  ],
+  "cap": 20000,
+  "batch_size": 256,
+  "clip": 1,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "max_parallel": 5,
+  "job_timeout_minutes": 45,
+  "development_runs": 14,
+  "confirmation_runs": 0,
+  "max_primary_updates": 280000,
+  "selection": "No new confirmation or test evaluation; report paired validation metrics at all fixed matched LRs; any descriptive winner by validation accuracy then CE only",
+  "test_protocol": "Validation only; no test predictions or test-based selection",
+  "reference": {
+    "paper": "Gorishniy et al., TabM, ICLR 2025",
+    "url": "https://openreview.net/attachment?id=Sd4wYYOhmY&name=pdf",
+    "mlp_accuracy": 0.8539,
+    "xgb_accuracy": 0.855,
+    "catboost_accuracy": 0.8586,
+    "tabr_accuracy": 0.8682,
+    "comparability": "different published split/preprocessing/tuning; context only; no claim of exact reproduction"
+  },
+  "roc_fpr": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "primary_archive": "09dbaa4e095ff21fc8b1e130798d247b75c15913",
+  "primary_plan_sha256": "7a91ecde85613937a054e9feccc108760ac98e4f724da398806892b16a3a4915",
+  "primary_prepared_sha256": "c42ba2691997b884dae5d738bcb2b5bb5a5b07fbca0f0c83afae12ce76812d73",
+  "parameterization": "gain * sqrt(out_features) * W / norm(W), gains frozen at exact initial values, biases unchanged",
+  "learned_gain_control": "e6ec5fb97bc3db0130937dd49e710399dbc1dbec",
+  "calibration_control": "c4eda173b511cebd4d3809624c3e9fbba4884b5f",
+  "diagnostic_control": "ab1b7a686bb23e4edc0b0faaf4d5ee75064b6bb4"
+}
