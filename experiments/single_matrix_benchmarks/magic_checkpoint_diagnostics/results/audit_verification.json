@@ -1,0 +1,31 @@
+{
+  "source_archive": "09dbaa4e095ff21fc8b1e130798d247b75c15913",
+  "diagnostic_results_commit": "a7262f96f1a64ffffcc45b921884bc4284fd9b7f",
+  "diagnostic_workflow": 45846514114,
+  "completed_runs": 24,
+  "checkpoint_records": 144,
+  "unique_weight_states": 122,
+  "unique_expected_checkpoint_hashes": 122,
+  "neural_training_updates": 0,
+  "test_evaluations": 0,
+  "analysis_errors": [],
+  "csv_and_json_agree": true,
+  "summary_means_agree": true,
+  "original_failed_runs_explained": 18,
+  "original_failure_steps_match": true,
+  "old_auc_gate_failing_validation_records": 53,
+  "max_logit_vs_probability_auc_difference": 0.004776556333393689,
+  "maximum_archive_replay_errors": {
+    "train_ce": 2.9802322387695312e-08,
+    "train_accuracy": 0.0,
+    "train_auc": 5.036570549510344e-08,
+    "validation_ce": 2.384185791015625e-07,
+    "validation_accuracy": 0.0,
+    "validation_auc": 4.5827077943538796e-07
+  },
+  "maximum_compensated_binary_logit_gap_change": 0.0,
+  "maximum_relu_gauge_gradient_residual": 3.7656786217032945e-08,
+  "minimum_fc2_hypothetical_shape_squared_share": 0.996286405093917,
+  "failed_delta_fits": 0,
+  "checkpoint_binary_verification": "Passed in the executed diagnose.py workflow; this saved-record audit does not reload checkpoint binaries."
+}
