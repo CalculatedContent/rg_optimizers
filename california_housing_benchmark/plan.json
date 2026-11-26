@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "experiment_id": "2026-11-26_published_mlp",
+  "upstream_commit": "c34e33152db9eea8ed4b2d742b9bef5628d71fb5",
+  "published_adamw_config": {
+    "optimizer": "adamw",
+    "lr": 0.0002722214565241805,
+    "weight_decay": 0.4555843429087667,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-8
+  },
+  "published_target": {
+    "test_rmse_mean": 0.4935855176,
+    "test_rmse_sample_sd": 0.011003265,
+    "n_seeds": 10,
+    "units": "100000 USD",
+    "source": "https://arxiv.org/html/2604.15297v2"
+  },
+  "model": {
+    "n_blocks": 2,
+    "d_block": 784,
+    "dropout": 0.3690073279296028
+  },
+  "batch_size": 256,
+  "total_updates": 20000,
+  "safety_max_updates": 100000,
+  "patience": 16,
+  "grad_clip": 1,
+  "eval_every": 500,
+  "checkpoint_updates": [
+    2000,
+    20000
+  ],
+  "optimizers": [
+    "sgdm",
+    "adamw",
+    "modified_adamw"
+  ],
+  "confirmation_seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "development_seeds": [
+    2338,
+    2339
+  ],
+  "calibration": {
+    "max_updates": 20000,
+    "selection_metric": "mean over two development seeds of best validation RMSE before first patience-16 stop, capped at 20000 updates; ties by fixed candidate ID",
+    "candidates": [
+      {
+        "id": "sgdm_0",
+        "config": {
+          "optimizer": "sgdm",
+          "lr": 0.003,
+          "weight_decay": 0,
+          "momentum": 0.9,
+          "dampening": 0,
+          "nesterov": false
+        }
+      },
+      {
+        "id": "sgdm_1",
+        "config": {
+          "optimizer": "sgdm",
+          "lr": 0.003,
+          "weight_decay": 0.005277362486160341,
+          "momentum": 0.9,
+          "dampening": 0,
+          "nesterov": false
+        }
+      },
+      {
+        "id": "sgdm_2",
+        "config": {
+          "optimizer": "sgdm",
+          "lr": 0.01,
+          "weight_decay": 0,
+          "momentum": 0.9,
+          "dampening": 0,
+          "nesterov": false
+        }
+      },
+      {
+        "id": "sgdm_3",
+        "config": {
+          "optimizer": "sgdm",
+          "lr": 0.01,
+          "weight_decay": 0.005277362486160341,
+          "momentum": 0.9,
+          "dampening": 0,
+          "nesterov": false
+        }
+      },
+      {
+        "id": "sgdm_4",
+        "config": {
+          "optimizer": "sgdm",
+          "lr": 0.03,
+          "weight_decay": 0,
+          "momentum": 0.9,
+          "dampening": 0,
+          "nesterov": false
+        }
+      },
+      {
+        "id": "sgdm_5",
+        "config": {
+          "optimizer": "sgdm",
+          "lr": 0.03,
+          "weight_decay": 0.005277362486160341,
+          "momentum": 0.9,
+          "dampening": 0,
+          "nesterov": false
+        }
+      },
+      {
+        "id": "graft_0",
+        "config": {
+          "optimizer": "modified_adamw",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "reference_lr": 0.001,
+          "reference_lr_ratio": 3.673479720402471
+        }
+      },
+      {
+        "id": "graft_1",
+        "config": {
+          "optimizer": "modified_adamw",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "reference_lr": 0.003,
+          "reference_lr_ratio": 11.020439161207413
+        }
+      },
+      {
+        "id": "graft_2",
+        "config": {
+          "optimizer": "modified_adamw",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "reference_lr": 0.01,
+          "reference_lr_ratio": 36.73479720402471
+        }
+      },
+      {
+        "id": "graft_3",
+        "config": {
+          "optimizer": "modified_adamw",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "reference_lr": 0.03,
+          "reference_lr_ratio": 110.20439161207413
+        }
+      },
+      {
+        "id": "graft_4",
+        "config": {
+          "optimizer": "modified_adamw",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "reference_lr": 0.1,
+          "reference_lr_ratio": 367.3479720402471
+        }
+      }
+    ]
+  },
+  "primary_endpoint": "Best validation checkpoint before the first 16-epoch patience stop; report test metrics only after settings are frozen.",
+  "secondary_endpoints": [
+    2000,
+    20000
+  ],
+  "schedule": "constant learning rate; no warmup or cosine decay",
+  "precision": "CPU float32, one numerical thread per job",
+  "spectral": {
+    "minimum_matrix_dimension": 64,
+    "weight": "sqrt(num_pl_spikes)/(D+0.02)",
+    "alpha_field": "ordinary fitted alpha",
+    "eligible_matrices": 1,
+    "note": "Published two-hidden-layer MLP has one eligible 784x784 matrix; the weighted average equals that matrix alpha."
+  },
+  "comparison_note": "Native and modified AdamW share base learning rate, betas, epsilon, weight decay, architecture and preprocessing. SGDM uses ordinary zero-dampening momentum and a separate development grid. Published SGDM uses a different architecture and dampening 0.9, so its 0.5177 is contextual, not a direct reproduction target.",
+  "preserve_prior_campaign": "california_housing/results/2026-11-26_three_optimizers"
+}

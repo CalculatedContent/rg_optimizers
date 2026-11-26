@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "dataset": "California Housing",
+  "upstream_repository": "https://github.com/yandex-research/tabular-dl-optimizers",
+  "upstream_commit": "c34e33152db9eea8ed4b2d742b9bef5628d71fb5",
+  "huggingface_repository": "rototoHF/tabm-data",
+  "huggingface_repository_commit": "c2d6629df1192e714e2b35ac4c6df925d938adb0",
+  "url": "https://huggingface.co/datasets/rototoHF/tabm-data/resolve/c2d6629df1192e714e2b35ac4c6df925d938adb0/data.tar",
+  "archive_total_bytes": 1034147840,
+  "archive_lfs_sha256": "d8038250c20a83f241bab822c32b71c622c032b8c25559e9ab26caeafca5385d",
+  "archive_hash_note": "Archive SHA256 is the publisher's LFS metadata, not an independently downloaded 1 GB archive. Each necessary raw file is independently verified.",
+  "downloaded_range": "bytes=0-4194303",
+  "files": [
+    {
+      "path": "california/READY",
+      "tar_offset": 791040,
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "california/X_num_test.npy",
+      "tar_offset": 792576,
+      "size": 132224,
+      "sha256": "509dbf1d10a85301b2a560d1cce38b4acb96327e20414e7aea4ff1c0848b6827"
+    },
+    {
+      "path": "california/X_num_train.npy",
+      "tar_offset": 926720,
+      "size": 422816,
+      "sha256": "1579afba8fc21fe576de46ab0e04692162542cd6a54a29aa8b8db35b34633831"
+    },
+    {
+      "path": "california/X_num_val.npy",
+      "tar_offset": 1351168,
+      "size": 105824,
+      "sha256": "fcdc5aa78d48174953959f09f418abb6ce17133cf0297c2f3c52bbe533abb4b3"
+    },
+    {
+      "path": "california/Y_test.npy",
+      "tar_offset": 1458688,
+      "size": 16640,
+      "sha256": "93bfc0e8af7908026ab9d20cc3798579d97f4e5bfa558d39e5b03f5968ae078c"
+    },
+    {
+      "path": "california/Y_train.npy",
+      "tar_offset": 1477120,
+      "size": 52964,
+      "sha256": "219117b4a5c0b18aea5aa5c1ddb591b60664c51b8e5c983c486ab43ab69dd945"
+    },
+    {
+      "path": "california/Y_val.npy",
+      "tar_offset": 1531904,
+      "size": 13340,
+      "sha256": "4e766e32aef456f619ab69f146ebfb9dc41a9eeb4ef3a873ca392b7ddce35825"
+    },
+    {
+      "path": "california/info.json",
+      "tar_offset": 1547264,
+      "size": 246,
+      "sha256": "83e2064930dd791fcaaee1b76792da6e3f4a11c6fbc9b7256b984224df2d51c4"
+    }
+  ]
+}

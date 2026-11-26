@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "evidence_status": "Recovered summary of completed local verification, before runtime loss; not a newly executed test.",
+  "upstream_commit": "c34e33152db9eea8ed4b2d742b9bef5628d71fb5",
+  "upstream_data_py_sha256": "6416f904cc808c1a5e2807cb0e1ccc890b49865e8b36708db0980f2f8c2e7950",
+  "original_preparation_source_sha256": "e6444bbd617831fbd59ab2e7936632f282b9ef29e6bdec424be5c5f36113e3df",
+  "versions": {
+    "numpy": "2.3.1",
+    "scikit-learn": "1.7.0"
+  },
+  "verified_prepared_npz_sha256": "d546ac115ae7bd9e49a20adae63c949db6052a225d45294a58dabdd516ee1314",
+  "verification": "All actual train/validation/test transformed features and standardized targets matched independently extracted upstream functions bit for bit; all maximum absolute differences were 0.",
+  "label_mean": 2.0749101638793945,
+  "label_scale": 1.1605902910232544,
+  "cold_pinned_http_range_download_matches_local_import": true,
+  "recovery_change": "The lost original-row-index JSON is regenerated from exact canonical row identity. The recovered preparation code checks the complete prepared NPZ against the previously verified digest before permitting training.",
+  "new_code_verification": "The recovered code must pass fresh GitHub preflight tests and cold data preparation; the prior results are not asserted as tests of the recovery change."
+}

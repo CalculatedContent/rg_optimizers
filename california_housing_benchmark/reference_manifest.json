@@ -1,0 +1,581 @@
+{
+  "schema_version": 1,
+  "paper": {
+    "title": "Benchmarking Optimizers for MLPs in Tabular Deep Learning",
+    "authors": [
+      "Yury Gorishniy",
+      "Ivan Rubachev",
+      "Dmitrii Feoktistov",
+      "Artem Babenko"
+    ],
+    "arxiv": "https://arxiv.org/html/2604.15297v2",
+    "table": "Table 10",
+    "uncertainty": "Mean and sample SD over 10 independent model seeds on a fixed dataset split"
+  },
+  "upstream_repository": "https://github.com/yandex-research/tabular-dl-optimizers",
+  "upstream_commit": "c34e33152db9eea8ed4b2d742b9bef5628d71fb5",
+  "target_metric": "Test RMSE; lower is better",
+  "target_unit": "100000 USD",
+  "split_counts": {
+    "train": 13209,
+    "validation": 3303,
+    "test": 4128
+  },
+  "references": [
+    {
+      "optimizer": "sgd",
+      "n_parameters": 299745,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.5089314384188482,
+        0.5158414964178929,
+        0.5155299127929867,
+        0.5166848878057296,
+        0.5228870971141191,
+        0.5190719352383663,
+        0.5314740101371213,
+        0.5183358458042071,
+        0.5182759313393849,
+        0.5096258212904666
+      ],
+      "test_rmse_mean": 0.5176658376359122,
+      "test_rmse_sample_sd": 0.006416209204506472,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 5,
+            "d_block": 272,
+            "dropout": 0
+          }
+        },
+        "optimizer": {
+          "type": "SGD",
+          "momentum": 0.9,
+          "dampening": 0.9,
+          "lr": 0.06315547150081433,
+          "weight_decay": 0.005277362486160341
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/sgd/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/sgd/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        6344,
+        6136,
+        4576,
+        5096,
+        3952,
+        4940,
+        3068,
+        5200,
+        5148,
+        6812
+      ]
+    },
+    {
+      "optimizer": "adamw",
+      "n_parameters": 623281,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.4844736029645101,
+        0.4989265303009736,
+        0.4814131534506113,
+        0.48899122882750323,
+        0.4881104284937167,
+        0.5150697203543096,
+        0.48412259508890404,
+        0.499402270067828,
+        0.5066304460972106,
+        0.48871520023409326
+      ],
+      "test_rmse_mean": 0.4935855175879661,
+      "test_rmse_sample_sd": 0.011003265043117574,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 2,
+            "d_block": 784,
+            "dropout": 0.3690073279296028
+          }
+        },
+        "optimizer": {
+          "type": "AdamW",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/adamw/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/adamw/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        14612,
+        8008,
+        16120,
+        10972,
+        12532,
+        4992,
+        11596,
+        7176,
+        6396,
+        11284
+      ]
+    },
+    {
+      "optimizer": "muon-ema",
+      "n_parameters": 1410145,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.47541400221909097,
+        0.47185255717281593,
+        0.4692258644644395,
+        0.4682202365548415,
+        0.46989350712896005,
+        0.47332837260304056,
+        0.46788603317496763,
+        0.47394071972435087,
+        0.46960239791700614,
+        0.46871544392687187
+      ],
+      "test_rmse_mean": 0.47080791348863854,
+      "test_rmse_sample_sd": 0.0026432028997803126,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "save_checkpoint": false,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 5,
+            "d_block": 592,
+            "dropout": 0.008876594234180645
+          }
+        },
+        "optimizer": {
+          "ema_decay": 0.9371493465645674,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "lr": 0.0005711949087439411,
+          "weight_decay": 0.3202275785456249,
+          "muon": {
+            "lr": 0.011874902068991946
+          },
+          "type": "Muon"
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/muon-ema/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/muon-ema/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        1456,
+        1664,
+        2652,
+        1508,
+        2132,
+        1248,
+        1716,
+        1768,
+        2860,
+        1508
+      ]
+    }
+  ],
+  "published": {
+    "sgd": {
+      "optimizer": "sgd",
+      "n_parameters": 299745,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.5089314384188482,
+        0.5158414964178929,
+        0.5155299127929867,
+        0.5166848878057296,
+        0.5228870971141191,
+        0.5190719352383663,
+        0.5314740101371213,
+        0.5183358458042071,
+        0.5182759313393849,
+        0.5096258212904666
+      ],
+      "test_rmse_mean": 0.5176658376359122,
+      "test_rmse_sample_sd": 0.006416209204506472,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 5,
+            "d_block": 272,
+            "dropout": 0
+          }
+        },
+        "optimizer": {
+          "type": "SGD",
+          "momentum": 0.9,
+          "dampening": 0.9,
+          "lr": 0.06315547150081433,
+          "weight_decay": 0.005277362486160341
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/sgd/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/sgd/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        6344,
+        6136,
+        4576,
+        5096,
+        3952,
+        4940,
+        3068,
+        5200,
+        5148,
+        6812
+      ]
+    },
+    "adamw": {
+      "optimizer": "adamw",
+      "n_parameters": 623281,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.4844736029645101,
+        0.4989265303009736,
+        0.4814131534506113,
+        0.48899122882750323,
+        0.4881104284937167,
+        0.5150697203543096,
+        0.48412259508890404,
+        0.499402270067828,
+        0.5066304460972106,
+        0.48871520023409326
+      ],
+      "test_rmse_mean": 0.4935855175879661,
+      "test_rmse_sample_sd": 0.011003265043117574,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 2,
+            "d_block": 784,
+            "dropout": 0.3690073279296028
+          }
+        },
+        "optimizer": {
+          "type": "AdamW",
+          "lr": 0.0002722214565241805,
+          "weight_decay": 0.4555843429087667
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/adamw/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/adamw/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        14612,
+        8008,
+        16120,
+        10972,
+        12532,
+        4992,
+        11596,
+        7176,
+        6396,
+        11284
+      ]
+    },
+    "muon-ema": {
+      "optimizer": "muon-ema",
+      "n_parameters": 1410145,
+      "n_seeds": 10,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "test_rmse": [
+        0.47541400221909097,
+        0.47185255717281593,
+        0.4692258644644395,
+        0.4682202365548415,
+        0.46989350712896005,
+        0.47332837260304056,
+        0.46788603317496763,
+        0.47394071972435087,
+        0.46960239791700614,
+        0.46871544392687187
+      ],
+      "test_rmse_mean": 0.47080791348863854,
+      "test_rmse_sample_sd": 0.0026432028997803126,
+      "config": {
+        "seed": 0,
+        "batch_size": 256,
+        "n_epochs": -1,
+        "patience": 16,
+        "gradient_clipping_norm": 1,
+        "save_checkpoint": false,
+        "data": {
+          "path": "data/california",
+          "num_policy": "noisy-quantile",
+          "cache": true
+        },
+        "model": {
+          "type": "mlp",
+          "backbone": {
+            "n_blocks": 5,
+            "d_block": 592,
+            "dropout": 0.008876594234180645
+          }
+        },
+        "optimizer": {
+          "ema_decay": 0.9371493465645674,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-8,
+          "lr": 0.0005711949087439411,
+          "weight_decay": 0.3202275785456249,
+          "muon": {
+            "lr": 0.011874902068991946
+          },
+          "type": "Muon"
+        }
+      },
+      "report_file": "reference/upstream/exp/mlp/muon-ema/california/evaluation/report.json",
+      "config_file": "reference/upstream/exp/mlp/muon-ema/california/evaluation/config.toml",
+      "published_hardware": "NVIDIA A100-SXM4-80GB",
+      "best_steps": [
+        1456,
+        1664,
+        2652,
+        1508,
+        2132,
+        1248,
+        1716,
+        1768,
+        2860,
+        1508
+      ]
+    }
+  },
+  "copied_files": [
+    {
+      "source_path": "LICENSE",
+      "local_path": "california_housing_benchmark/reference/upstream/LICENSE",
+      "sha256": "24330ebf083bc17c1db833b0109ef6ffc9019449330e9e4ec9797c061185c7a6",
+      "git_blob_sha": "9c774d54b19e92cf62d166aa1bb09ea796337043",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/LICENSE"
+    },
+    {
+      "source_path": "pyproject.toml",
+      "local_path": "california_housing_benchmark/reference/upstream/pyproject.toml",
+      "sha256": "51c4be3d7f7f86217d42804695c864637c74be7d395b9570ada6321f24ca38fb",
+      "git_blob_sha": "f1864503190602e79dc616b50d401a58331ad925",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/pyproject.toml"
+    },
+    {
+      "source_path": "bin/ffn.py",
+      "local_path": "california_housing_benchmark/reference/upstream/bin/ffn.py",
+      "sha256": "067f12c1656c10602ce14511cebef2b7a4d4353519db2e6333beb8369613726a",
+      "git_blob_sha": "1d7f63e34c0945b970d4d103c547cdf382efe807",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/bin/ffn.py"
+    },
+    {
+      "source_path": "lib/data.py",
+      "local_path": "california_housing_benchmark/reference/upstream/lib/data.py",
+      "sha256": "6416f904cc808c1a5e2807cb0e1ccc890b49865e8b36708db0980f2f8c2e7950",
+      "git_blob_sha": "7663cf4a1545d0ce3769603b326864cda255c601",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/lib/data.py"
+    },
+    {
+      "source_path": "lib/metrics.py",
+      "local_path": "california_housing_benchmark/reference/upstream/lib/metrics.py",
+      "sha256": "8018c8f286860dbcf5511017e570e560d1aabaca22eaa04d74ad76b32fa44d7e",
+      "git_blob_sha": "ba9ccbfcf589dbce225c700762f5e75664ece7b9",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/lib/metrics.py"
+    },
+    {
+      "source_path": "exp/mlp/adamw/california/evaluation/config.toml",
+      "local_path": "california_housing_benchmark/reference/upstream/exp/mlp/adamw/california/evaluation/config.toml",
+      "sha256": "a4c31addc54510adfb81c01cb77beb93a363567c5693d5730726b886d8c141d1",
+      "git_blob_sha": "f478324baedef5d8f7dfad475825cde71b8b7691",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/exp/mlp/adamw/california/evaluation/config.toml"
+    },
+    {
+      "source_path": "exp/mlp/adamw/california/evaluation/report.json",
+      "local_path": "california_housing_benchmark/reference/upstream/exp/mlp/adamw/california/evaluation/report.json",
+      "sha256": "f3ee0e01f1559c5c0acc963d19cb322fc44949a800d895f24e40fd096d80a406",
+      "git_blob_sha": "5dec0ecacf75f505b949cfde06c08a7e5085ac7f",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/exp/mlp/adamw/california/evaluation/report.json"
+    },
+    {
+      "source_path": "exp/mlp/sgd/california/evaluation/config.toml",
+      "local_path": "california_housing_benchmark/reference/upstream/exp/mlp/sgd/california/evaluation/config.toml",
+      "sha256": "75eec5d8e6cd840c6292199d13f6aff7ffe27b2bee7687bd74a60706d6e81d55",
+      "git_blob_sha": "f08e5a1d74563688f4360e9299c53b292d6c0bf9",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/exp/mlp/sgd/california/evaluation/config.toml"
+    },
+    {
+      "source_path": "exp/mlp/sgd/california/evaluation/report.json",
+      "local_path": "california_housing_benchmark/reference/upstream/exp/mlp/sgd/california/evaluation/report.json",
+      "sha256": "5fa9eae3a48af916e1dd1415badabbf03bd26d3991c97602dbbd941cc2a41a3c",
+      "git_blob_sha": "3c330372365e792a43a54dd0f3b7851ecf4a1539",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/exp/mlp/sgd/california/evaluation/report.json"
+    },
+    {
+      "source_path": "exp/mlp/muon-ema/california/evaluation/config.toml",
+      "local_path": "california_housing_benchmark/reference/upstream/exp/mlp/muon-ema/california/evaluation/config.toml",
+      "sha256": "515a59dd46023c190612b3f78ff7ebe53fc24fb91837faf268fcaa4849f8af02",
+      "git_blob_sha": "a45bd47272f230422801a704a5a87d3d872d8438",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/exp/mlp/muon-ema/california/evaluation/config.toml"
+    },
+    {
+      "source_path": "exp/mlp/muon-ema/california/evaluation/report.json",
+      "local_path": "california_housing_benchmark/reference/upstream/exp/mlp/muon-ema/california/evaluation/report.json",
+      "sha256": "1e9f7e83f40caee16ded42e79201a676df3b85725ad753e8ee0625da35ae44c4",
+      "git_blob_sha": "df1dc1322ac58b8d9f89f50bc4333833c6a8a691",
+      "source_url": "https://github.com/yandex-research/tabular-dl-optimizers/blob/c34e33152db9eea8ed4b2d742b9bef5628d71fb5/exp/mlp/muon-ema/california/evaluation/report.json"
+    }
+  ],
+  "protocol": {
+    "preprocessing": "Training-only noisy quantile normalization, preprocessing seed 0, with mean/std target standardization from float32 author arrays",
+    "checkpoint_selection": "Best validation RMSE before first 16-epoch patience stop",
+    "batch_size": 256,
+    "schedule": "Constant optimizer learning rate; no warmup or cosine decay",
+    "gradient_clip_norm": 1,
+    "evaluation": "Full validation each epoch; final test report uses the selected validation checkpoint",
+    "author_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "published_runtime": "NVIDIA A100-SXM4-80GB; CPU reproduction need not be numerically identical"
+  },
+  "comparison_scope": "Native AdamW is the published-recipe reproduction target on its exact 623281-parameter architecture. Published SGDM and Muon-EMA use separately tuned architectures, and are contextual references. A common-architecture SGDM or modified AdamW comparison is not a reproduction of their separately tuned published recipes.",
+  "strongest_plain_mlp_in_this_table": "Muon-EMA RMSE 0.47080791348863854, sample SD 0.0026432028997803126; this is not a claim of universal California Housing state of the art.",
+  "recovery_note": "Reconstructed from exact stored upstream source/config/report fetches at the pinned commit. No published metrics are inferred from memory. The ancillary original-row-index lookup is regenerated at data preparation time because its local JSON was lost."
+}

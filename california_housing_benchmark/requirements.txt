@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.1+cpu
+numpy==2.3.1
+scipy==1.16.0
+scikit-learn==1.7.0
+tabm==0.0.3
+delu==0.0.26
+rtdl_num_embeddings==0.0.12
+pandas==2.3.1
+matplotlib==3.10.3
+weightwatcher==0.7.7
+powerlaw==2.0.0
+pytest==8.4.1
