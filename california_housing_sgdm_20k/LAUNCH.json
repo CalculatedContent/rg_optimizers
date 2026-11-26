@@ -1,0 +1,16 @@
+{
+  "experiment_id": "2026-11-26_sgdm_20k",
+  "maximum_updates": 20000,
+  "development_training": "none: reuse64archived20kobservations",
+  "confirmation_seeds": [
+    3340,
+    3341,
+    3342,
+    3343,
+    3344
+  ],
+  "superseded_runs": [
+    45758895218,
+    45762869296
+  ]
+}

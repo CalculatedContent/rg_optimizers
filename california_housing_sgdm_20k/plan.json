@@ -1,0 +1,497 @@
+{
+  "schema_version": 1,
+  "experiment_id": "2026-11-26_sgdm_20k",
+  "authorization": "User superseded the 50k/100k/200k studies on 2026-11-26: stop training beyond 20,000 updates and limit every SGDM grid and confirmation run to 20,000 updates.",
+  "amendment": "The original trajectories already contain 20k measurements. Reuse only observations at or before20k, preserve their actual original longer-run provenance, and perform zero further development training.",
+  "maximum_updates": 20000,
+  "development_updates": 20000,
+  "total_updates": 20000,
+  "model": {
+    "n_blocks": 2,
+    "d_block": 784,
+    "dropout": 0.3690073279296028
+  },
+  "batch_size": 256,
+  "grad_clip": 1,
+  "eval_every": 5000,
+  "checkpoint_updates": [
+    2000,
+    20000
+  ],
+  "schedule": "constant learning rate; hard20k update cap; no early stopping; no longer continuation",
+  "development_seeds": [
+    3338,
+    3339
+  ],
+  "confirmation_seeds": [
+    3340,
+    3341,
+    3342,
+    3343,
+    3344
+  ],
+  "grid": {
+    "lr": [
+      0.003,
+      0.01,
+      0.03,
+      0.1
+    ],
+    "momentum": [
+      0.9,
+      0.99
+    ],
+    "weight_decay": [
+      0,
+      0.001
+    ],
+    "dropout": [
+      0,
+      0.3690073279296028
+    ]
+  },
+  "candidates": [
+    {
+      "id": "sgdm_00",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_01",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_02",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_03",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_04",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_05",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_06",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_07",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_08",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_09",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_10",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_11",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_12",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_13",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_14",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_15",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_16",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_17",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_18",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_19",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_20",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_21",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_22",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_23",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_24",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_25",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_26",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_27",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_28",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_29",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_30",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_31",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    }
+  ],
+  "selection": "Lowest equal-weight mean over both development seeds of minimum validation RMSE at initialization, completed training epochs through20k, and the fixed20k endpoint; ties by fixed candidateID. No observation after20k, test metric, or alpha enters selection.",
+  "selection_measurements": [
+    "initialization",
+    "completed_epochs_at_or_before_20000",
+    "fixed_20000_endpoint"
+  ],
+  "spectral": {
+    "minimum_matrix_dimension": 64,
+    "weight": "sqrt(num_pl_spikes)/(D+0.02)",
+    "eligible_matrices": 1,
+    "note": "The 784x784 hidden matrix is the sole eligible matrix. The weighted average equals its ordinary fitted alpha; no layer dispersion is defined."
+  },
+  "parent_source": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "branch": "california-housing-sgdm-long-search-20261126",
+    "run_id": "45758895218",
+    "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+    "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+    "results_root": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search",
+    "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+  },
+  "controls_source": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "run_id": "45753214421",
+    "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+    "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+    "results_root": "california_housing_benchmark/results/2026-11-26_published_mlp",
+    "seeds": [
+      2340,
+      2341,
+      2342,
+      2343,
+      2344
+    ],
+    "optimizers": [
+      "sgdm",
+      "adamw",
+      "modified_adamw"
+    ]
+  },
+  "comparison_policy": {
+    "primary": "Fixed20,000-update confirmation results, five fresh seeds3340\u20133344. The original three optimizer controls at20k remain historical independent-seed comparisons. Tuning and possibly dropout differ; do not claim an optimizer-only causal effect.",
+    "supplementary": "Validation-selected checkpoints within0..20k; report separately from the fixed20k primary.",
+    "grid_plot": "Fixed20k validation RMSE and alpha from identical weights; include all64 performance observations. Failed spectralfits keep performance and alpha=null; do not substitute another statistic.",
+    "uncertainty": "Equal-weight seed means, sample SD, and95%Student-t confidence intervals across five confirmation seeds. Development has two seeds; report individualvalues and means as calibration evidence.",
+    "data_usage": "Development data never evaluate test. Use all32prespecifiedsettings. No test or spectralvalue selects parameters."
+  },
+  "resource_policy": {
+    "maximum_parallel_jobs": 5,
+    "training_timeout_minutes": 45,
+    "numerical_threads_per_worker": 1,
+    "runner": "ubuntu-24.04",
+    "new_development_updates": 0,
+    "maximum_new_updates": 100000,
+    "no_training_above": 20000,
+    "artifact_retention_days": 7
+  },
+  "results_root": "california_housing_sgdm_20k/results/2026-11-26_sgdm_20k"
+}
