@@ -1,0 +1,174 @@
+{
+  "name": "MAGIC SGDM 20k to 40k paired validation continuation",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-telescope-sgdm-40k-20261126"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-magic-sgdm-40k.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "magic-sgdm-40k",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0",
+    "DS": "experiments/single_matrix_benchmarks/magic_sgdm_40k",
+    "BASE": "experiments/single_matrix_benchmarks/magic"
+  },
+  "jobs": {
+    "gate": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 20,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/results/analysis/summary.json\n/experiments/single_matrix_benchmarks/magic/results/frozen_selection.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3470/\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3471/\n/experiments/single_matrix_benchmarks/magic_sgdm_40k/",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned original dependencies",
+          "run": "python -m pip install -r \"$BASE/requirements.txt\""
+        },
+        {
+          "name": "Verify saved optimizer and weights, baseline metrics, no training",
+          "run": "python -m py_compile \"$DS/run.py\" \"$DS/calibration.py\" \"$DS/audit.py\"\npython \"$DS/run.py\" --seed 3470\npython \"$DS/run.py\" --seed 3471"
+        }
+      ]
+    },
+    "continue": {
+      "needs": "gate",
+      "if": "${{ github.run_attempt == 1 }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 2,
+        "matrix": {
+          "seed": [
+            3470,
+            3471
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/results/analysis/summary.json\n/experiments/single_matrix_benchmarks/magic/results/frozen_selection.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3470/\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3471/\n/experiments/single_matrix_benchmarks/magic_sgdm_40k/",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned original dependencies",
+          "run": "python -m pip install -r \"$BASE/requirements.txt\""
+        },
+        {
+          "name": "Continue frozen checkpoint for exactly 20000 additional updates",
+          "timeout-minutes": 40,
+          "run": "python \"$DS/run.py\" --execute-training --seed \"${{ matrix.seed }}\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "continuation-s0-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/magic_sgdm_40k/results/s0-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "archive": {
+      "needs": [
+        "gate",
+        "continue"
+      ],
+      "if": "${{ always() && !cancelled() }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 30,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/results/analysis/summary.json\n/experiments/single_matrix_benchmarks/magic/results/frozen_selection.json\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3470/\n/experiments/single_matrix_benchmarks/magic/results/grid/s0-3471/\n/experiments/single_matrix_benchmarks/magic_sgdm_40k/",
+            "sparse-checkout-cone-mode": false,
+            "ref": "magic-telescope-sgdm-40k-20261126"
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned original dependencies",
+          "run": "python -m pip install -r \"$BASE/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "continuation-*",
+            "path": "experiments/single_matrix_benchmarks/magic_sgdm_40k/results",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize artifact directories",
+          "run": "set -euo pipefail\nfor dir in \"$DS\"/results/continuation-*; do\n [ -d \"$dir\" ] || continue\n dest=\"$DS/results/$(basename \"$dir\" | sed s/^continuation-//)\"\n [ ! -e \"$dest\" ] || exit 1\n mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "name": "Audit trajectories and paired endpoint changes",
+          "run": "python \"$DS/audit.py\"",
+          "continue-on-error": true
+        },
+        {
+          "name": "Preserve complete or partial records",
+          "run": "git config user.name \"github-actions[bot]\"\ngit config user.email \"41898282+github-actions[bot]@users.noreply.github.com\"\nif [ -d \"$DS/results\" ]; then git add -f \"$DS/results\"; git diff --cached --quiet || git commit -m \"Archive MAGIC SGDM 40k validation continuation\"; git push origin HEAD:\"$GITHUB_REF_NAME\"; fi"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "continuation-analysis",
+            "path": "experiments/single_matrix_benchmarks/magic_sgdm_40k/results/analysis/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        },
+        {
+          "name": "Require both continuations complete",
+          "run": "python -c 'import json,sys; j=json.load(open(sys.argv[1])); assert j[\"complete\"] and j[\"n_complete\"]==2 and j[\"verified_additional_updates\"]==40000 and not j[\"audit_errors\"]' \"$DS/results/analysis/summary.json\""
+        }
+      ]
+    }
+  }
+}
