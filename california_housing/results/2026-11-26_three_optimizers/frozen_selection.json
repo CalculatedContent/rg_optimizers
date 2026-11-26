@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "experiment_id": "california_housing_three_optimizers_20261126",
+  "plan_file_sha256": "645cb46636171a1505244badc26eb731f47ff5c00013cc8f51d6c61956dcefc1",
+  "data_manifest_sha256": "9f0bef4a9edeebfd6d7ac44ed46801cedd5ac980d9fd08106e7b396f3ddc0688",
+  "source_manifest_sha256": "bcb883ac7ced4d135fc95c4d87280c110c09367dfc5af9ad96dab95dd28e652b",
+  "calibration_complete": true,
+  "development_seed": 1339,
+  "confirmation_seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "selection": "full validation RMSE at update 2000; no test or alpha selection",
+  "selected": {
+    "sgdm": {
+      "optimizer": "sgdm",
+      "peak_lr": 0.003,
+      "reference_lr_ratio": null
+    },
+    "adamw": {
+      "optimizer": "adamw",
+      "peak_lr": 0.003,
+      "reference_lr_ratio": null
+    },
+    "modified_adamw": {
+      "optimizer": "modified_adamw",
+      "peak_lr": 0.001,
+      "reference_lr_ratio": 30.0
+    }
+  },
+  "trials": [
+    {
+      "optimizer": "sgdm",
+      "candidate_index": 0,
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.577598816213909
+    },
+    {
+      "optimizer": "sgdm",
+      "candidate_index": 1,
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.01,
+        "reference_lr_ratio": null
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5792986877853096
+    },
+    {
+      "optimizer": "sgdm",
+      "candidate_index": 2,
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.03,
+        "reference_lr_ratio": null
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5832586967396279
+    },
+    {
+      "optimizer": "adamw",
+      "candidate_index": 0,
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.0003,
+        "reference_lr_ratio": null
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.553811505157221
+    },
+    {
+      "optimizer": "adamw",
+      "candidate_index": 1,
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": null
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5586529863292645
+    },
+    {
+      "optimizer": "adamw",
+      "candidate_index": 2,
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5313200793426486
+    },
+    {
+      "optimizer": "modified_adamw",
+      "candidate_index": 0,
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 3.0
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5645238747604757
+    },
+    {
+      "optimizer": "modified_adamw",
+      "candidate_index": 1,
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 10.0
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5552779121385517
+    },
+    {
+      "optimizer": "modified_adamw",
+      "candidate_index": 2,
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 30.0
+      },
+      "seed": 1339,
+      "status": "complete",
+      "validation_rmse": 0.5426510223285957
+    }
+  ],
+  "github_run_id": "45744352135",
+  "launch_commit": "e30e7389f68b040bb8298e4fcdcc972ee8f36167",
+  "comparison_scope": "separately calibrated optimizer recipes; modified Adam base LR fixed at 0.001"
+}

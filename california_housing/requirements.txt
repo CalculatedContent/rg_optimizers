@@ -1,0 +1,10 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.6.0+cpu
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.2.3
+scikit-learn==1.5.2
+matplotlib==3.9.4
+weightwatcher==0.7.7
+powerlaw==2.0.0
+pytest==8.3.5

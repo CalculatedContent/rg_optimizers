@@ -1,0 +1,12 @@
+{
+  "experiment_id": "california_housing_three_optimizers_20261126",
+  "requested_by": "Charles Martin",
+  "purpose": "Run the authorized CPU California Housing comparison with SGDM, AdamW, and the established modified AdamW magnitude graft",
+  "branch": "california-housing-three-optimizers-20261126",
+  "calibration_runs": 9,
+  "confirmation_runs": 15,
+  "confirmation_updates": 20000,
+  "primary_checkpoints": [2000, 20000],
+  "resume_existing_matching_runs": true,
+  "publish_results_and_checkpoints_to_repository": true
+}

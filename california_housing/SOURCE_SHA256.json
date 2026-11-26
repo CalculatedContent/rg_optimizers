@@ -1,0 +1,24 @@
+{
+  "files": {
+    ".github/workflows/california-housing.yml": "dd85510a100c653593ee006737cc3583c3626ea198a57f444df15492b636b199",
+    "california_housing/.gitignore": "7dc159366d5a4455ae9cd8348243f6266e47de4406fa53e16d9ce6ac8447c25a",
+    "california_housing/LAUNCH.json": "1add8fa83ca7c0ff6d2bf6e97109e59e3a26864dc7d11a378d0226817b4f1908",
+    "california_housing/README.md": "712aa2d848ed1504f0dcd43d7e9a9658cbd33f6d1993d833195da538eaf83bf7",
+    "california_housing/__init__.py": "f2626aa172cb272372ad45d8b32d4f35550f59be91c6b9fd12e4c5a8e1a8e876",
+    "california_housing/analyze.py": "73a212560b3cda6afd161efb41f2459539ec95dbbd62242a4f2da10139e2f625",
+    "california_housing/calibrate.py": "af98903be8c9526594e5f55642e51b037c879758a5767db7c266cbc76bbc2cac",
+    "california_housing/data.py": "febf6356c217639e2960ed8abec35fb50efed73a0be6cefa84a9946cb495e542",
+    "california_housing/optimizer.py": "cbb973e86b5873011d468197f224853151f9b341ed1e4c2df61e7bd8bc764f59",
+    "california_housing/plan.json": "645cb46636171a1505244badc26eb731f47ff5c00013cc8f51d6c61956dcefc1",
+    "california_housing/publish.py": "9527c7c0acced03b17d9f9ec619a3fcd705ba6318f44631555aaed744b5bf897",
+    "california_housing/requirements.txt": "dd83c2a8d3e038e8405aa3f3a40ac466a0fdbc901ccd408358b59bf4a67e1185",
+    "california_housing/run_seed.py": "95a58483fb55c8ce86dd9e8effdd0442c30a31c99b11d4f78d2cf56779d572bb",
+    "california_housing/spectral.py": "0c8b4d14e81b06545a0352ba810d0e899e849c253cc5a55cbbd11b643810cbd3",
+    "california_housing/tests/test_protocol_review.py": "4d6c2e00df262279538330f01ecc605dc27e94a6bc1d6d5602664696bec80869",
+    "california_housing/tests/test_spectral_analysis.py": "06d61872ec7a66cd1f799c278d0ebe5bf8fae75c21318e82fe9baab0e09d2288",
+    "california_housing/tests/test_training.py": "f67cf1da326bf2d485c827e82717b28ae93d975c4f10102410affcdc85593747",
+    "california_housing/train.py": "782e8ba05ddffc6510fac0379d48376e9e5541ae5f927eb9cac78d4a23a6d350",
+    "california_housing/verify.py": "915c918015edfb6be95c18cf05c4d9733248dfd13f0b3dbb13580f50055e598f"
+  },
+  "schema_version": 1
+}

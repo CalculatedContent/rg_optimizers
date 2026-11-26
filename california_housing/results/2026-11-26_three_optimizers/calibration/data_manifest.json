@@ -1,0 +1,73 @@
+{
+  "dataset": "California Housing",
+  "feature_names": [
+    "MedInc",
+    "HouseAge",
+    "AveRooms",
+    "AveBedrms",
+    "Population",
+    "AveOccup",
+    "Latitude",
+    "Longitude"
+  ],
+  "n_examples": 20640,
+  "n_features": 8,
+  "normalization": {
+    "ddof": 0,
+    "fit_on": "train only",
+    "output_dtype": "float32",
+    "x_mean": [
+      3.8816802083333557,
+      28.561349321705425,
+      5.431966186698644,
+      1.0957884931645747,
+      1425.6597625968993,
+      3.028158467157702,
+      35.63244549418609,
+      -119.57284823158912
+    ],
+    "x_scale": [
+      1.9049049086407641,
+      12.550122023753856,
+      2.394103884555903,
+      0.4350438026958661,
+      1128.265332339452,
+      6.423300142659811,
+      2.1348101367441745,
+      2.0051753616186034
+    ],
+    "y_mean": 2.074171251816861,
+    "y_scale": 1.1548019793364357
+  },
+  "prepared_npz_sha256": "f0f46e718a2230011981ce8a938af5a77cef836ea53951e2c97ec8978d6aff5f",
+  "raw_array_sha256": {
+    "features_float64": "c421ed6f763a8fd739a451a314d865c110a75bec4acff40094c54831d56490a8",
+    "target_float64": "8912ef082b877383730c13f640ddd0c8de104190698bacc376071c45ca4a30db"
+  },
+  "schema_version": 1,
+  "sklearn_version": "1.5.2",
+  "source": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_california_housing.html",
+  "source_archive_check": "scikit-learn fetcher verifies the archive checksum on download",
+  "source_archive_expected_sha256": "aaa5c9a6afe2225cc2aed2723682ae403280c4a3695a2ddda4ffb5d8215ea681",
+  "source_archive_url": "https://ndownloader.figshare.com/files/5976036",
+  "split": {
+    "counts": {
+      "test": 2064,
+      "train": 16512,
+      "validation": 2064
+    },
+    "fractions": [
+      0.8,
+      0.1,
+      0.1
+    ],
+    "generator": "numpy.random.default_rng / PCG64",
+    "indices_sha256": {
+      "test": "f298d5913c16e16c41dfa3a58ddf39692e55abccc885448e933dc6773cd5fc32",
+      "train": "9bcd884e1cd9f5b4dbea4bf0dae40f6d819d3546af4bbb066f0b05a5d189674e",
+      "validation": "bbe3edb94d6ec6123a9b7289a8ad9421ced1a1b8c6c17c5c66d4ffafe644ce52"
+    },
+    "seed": 20261126
+  },
+  "target_unit": "100000 USD"
+}
