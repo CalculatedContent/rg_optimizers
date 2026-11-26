@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "repository": "CalculatedContent/rg_optimizers",
+  "github_run_id": "45753214421",
+  "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+  "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+  "archive_tree": "c6a6d4b7bd407ad246fee64cda831a3335ab192c",
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "seeds": {
+    "2340": {
+      "seed": 2340,
+      "result_sha256": "31ac2fdfa3b6792f84209a0eac0d772b6519eca0e625fcdfce5e3a3a5c0083e6",
+      "result_git_blob_sha": "0a5abcc63accdde16df49ec05e4cd2388e3c449f",
+      "result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/result.json",
+      "checkpoint_sha256": "469fbba0f35bb6479d58edc71dcad784c29d2a2f7dfcc939e2e865cd36a65e3f",
+      "checkpoint_git_blob_sha": "98dfc1f43aaf00d22b4adc8b53bb548dc372316a",
+      "checkpoint_bytes": 8051631,
+      "checkpoint_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_20000.pt",
+      "native_adamw_result_sha256": "5432c4982bbc0c6c4d6b6dde9c93df77923329b128098217de47f7d2b4ad473c",
+      "native_adamw_result_git_blob_sha": "2eb3e847554fcc7358f527f5576256516649ca79",
+      "native_adamw_result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/result.json"
+    },
+    "2341": {
+      "seed": 2341,
+      "result_sha256": "2544e3f75e54ffb354b844ab0b27ed7023d42d2b67dc66aadd56921e693aab12",
+      "result_git_blob_sha": "5c67884e5af1abf2fabcdc91d28dfc60be372e22",
+      "result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/result.json",
+      "checkpoint_sha256": "1a48f61e8d22ff070993e64376b0969616e22f46640437c79612e31a8ae5ed46",
+      "checkpoint_git_blob_sha": "bc97adfbbf219c209f6f69951cccd30deeccb2f0",
+      "checkpoint_bytes": 8051631,
+      "checkpoint_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_20000.pt",
+      "native_adamw_result_sha256": "bbad409f03850b2ee77285f355aa18901fe39dea60944612a9a86967b8d2851c",
+      "native_adamw_result_git_blob_sha": "c4d1e9b499219e38c6d04197a3649fefe9306805",
+      "native_adamw_result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/result.json"
+    },
+    "2342": {
+      "seed": 2342,
+      "result_sha256": "519cf7680262802013c06897f221a7b29e3e2dfcd2c3e471c0985ef9a9386877",
+      "result_git_blob_sha": "f32e2f582ec271632dd69f0b200ef0b3c9e24098",
+      "result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/result.json",
+      "checkpoint_sha256": "21592922c3d715891b33b83b097365df66cb9b07f0acc14ee11638ebc57925fb",
+      "checkpoint_git_blob_sha": "1ab8260a451712a9579d05ee4c8b2755cd0f6b75",
+      "checkpoint_bytes": 8051695,
+      "checkpoint_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_20000.pt",
+      "native_adamw_result_sha256": "cfd53d0070b1ea4b7d765b5db7d514606f4581e0c15e9077c833daffe793157e",
+      "native_adamw_result_git_blob_sha": "6198c294122b819d66948e5a2cbddd800eada1a8",
+      "native_adamw_result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/result.json"
+    },
+    "2343": {
+      "seed": 2343,
+      "result_sha256": "d3b04b228569b6fbcbaf75e10c2a61e90526d61f5e6563ed4f901070fe0f54af",
+      "result_git_blob_sha": "b4c60681453ee3a3a2e1b438f741d5bf633875d9",
+      "result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/result.json",
+      "checkpoint_sha256": "c5723f4a540b12f2ba1327ad9490622c0f3d8b6389c510458627610df4060cf1",
+      "checkpoint_git_blob_sha": "a477607bf983edbd84583e9a2632e604eeaedeb0",
+      "checkpoint_bytes": 8051695,
+      "checkpoint_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_20000.pt",
+      "native_adamw_result_sha256": "34b2dfab539c12ae3734058f59b782f292df006389144ebe7d786d52d27f9177",
+      "native_adamw_result_git_blob_sha": "1bc0f4f7476c41ab5c87cdcb46d7d1f0c2dbeb70",
+      "native_adamw_result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/result.json"
+    },
+    "2344": {
+      "seed": 2344,
+      "result_sha256": "403ece3cc9d1e224e673d7d2739f35e89e1bf2e7662ed3a80de9663c7936b7cb",
+      "result_git_blob_sha": "52e1bad23e9cabaaab905d8a2f8c563a612ee5b4",
+      "result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/result.json",
+      "checkpoint_sha256": "8312f6fe96535c254801d7953a622904098364531850a7302bfe1dbb87cb7be4",
+      "checkpoint_git_blob_sha": "17ff32daf5ef3cf00444c5475a0dedafb97a30ad",
+      "checkpoint_bytes": 8051631,
+      "checkpoint_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_20000.pt",
+      "native_adamw_result_sha256": "41c128a723793d753fda1f385974cc37f98e0a2fce73d6b30f0bfdcd5fb26a88",
+      "native_adamw_result_git_blob_sha": "7986abc2ddc23ac4130f297f375973084ee0e6b2",
+      "native_adamw_result_repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/result.json"
+    }
+  }
+}

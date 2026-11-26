@@ -1,0 +1,20 @@
+{
+  "complete": true,
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "github_run_id": "45758895218",
+  "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+  "parent_archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+  "parent_manifest_sha256": "d721c7353abe386c3c03f25acb26b22dda9d33231b8b56ce5b81cbb8cf6c4d27",
+  "parent_seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "plan_file_sha256": "cf290b570f103e02e417efb838f72b8e069814e63a0962390ebe54be6370f76d",
+  "prepared_npz_sha256": "d546ac115ae7bd9e49a20adae63c949db6052a225d45294a58dabdd516ee1314",
+  "preprocessing": "Restored exact parent prepared bytes; no split or transform was refitted.",
+  "schema_version": 1,
+  "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+}

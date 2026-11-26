@@ -1,0 +1,535 @@
+{
+  "schema_version": 1,
+  "experiment_id": "2026-11-26_sgdm_long_search",
+  "hypothesis": "The initial SGDM performance deficit may reflect limited hyperparameter search and insufficient training. Test longer training separately from new settings.",
+  "model": {
+    "n_blocks": 2,
+    "d_block": 784,
+    "dropout": 0.3690073279296028
+  },
+  "development_updates": 50000,
+  "total_updates": 100000,
+  "batch_size": 256,
+  "grad_clip": 1,
+  "eval_every": 5000,
+  "checkpoint_updates": [
+    2000,
+    20000,
+    50000,
+    100000
+  ],
+  "schedule": "constant learning rate; no early stopping; best validation checkpoint within the explicitly declared window",
+  "development_seeds": [
+    3338,
+    3339
+  ],
+  "confirmation_seeds": [
+    3340,
+    3341,
+    3342,
+    3343,
+    3344
+  ],
+  "continuation_seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "selection": "Select the candidate with the lowest equal-weight mean of minimum validation RMSE through 50,000 updates over both development seeds. Evaluate every candidate; ties use the fixed candidate ID.",
+  "grid": {
+    "lr": [
+      0.003,
+      0.01,
+      0.03,
+      0.1
+    ],
+    "momentum": [
+      0.9,
+      0.99
+    ],
+    "weight_decay": [
+      0,
+      0.001
+    ],
+    "dropout": [
+      0,
+      0.3690073279296028
+    ]
+  },
+  "continuation_config": {
+    "optimizer": "sgdm",
+    "lr": 0.03,
+    "momentum": 0.9,
+    "weight_decay": 0,
+    "dampening": 0,
+    "nesterov": false,
+    "dropout": 0.3690073279296028
+  },
+  "comparison_policy": {
+    "continuation_primary": "Paired same-seed fixed 20,000 versus 100,000 updates with unchanged SGDM settings. Start from the retained full 20,000-update checkpoint without replaying earlier updates.",
+    "continuation_selected": "Optional minimum-validation model only in the continued window [20,000,100,000]. Do not claim the best model among earlier weights that were not retained.",
+    "fresh_tuned_primary": "Best validation checkpoint through 100,000 updates for five fresh seeds, with hyperparameters frozen from development.",
+    "reference": "Original native AdamW at 20,000 updates is context. The 100,000-update SGDM comparison has unequal budget and tuning, and may change dropout. Independent Welch intervals do not establish an optimizer-only causal effect.",
+    "uncertainty": "Equal-weight seed means, sample SD, and two-sided 95% Student-t confidence intervals across five seeds, conditional on the fixed data split."
+  },
+  "spectral": {
+    "minimum_matrix_dimension": 64,
+    "weight": "sqrt(num_pl_spikes)/(D+0.02)",
+    "eligible_matrices": 1,
+    "note": "The 784x784 hidden matrix is the sole eligible matrix. The weighted average equals its ordinary fitted alpha; no layer dispersion is defined."
+  },
+  "candidates": [
+    {
+      "id": "sgdm_00",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_01",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_02",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_03",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_04",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_05",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_06",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_07",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_08",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_09",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_10",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_11",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_12",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_13",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_14",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_15",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_16",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_17",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_18",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_19",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_20",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_21",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_22",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_23",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_24",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_25",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_26",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_27",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_28",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_29",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_30",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_31",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    }
+  ],
+  "grid_plot_policy": {
+    "x": "Confidence-weighted, tail-adjusted alpha from the same checkpoint as the performance metric",
+    "y": "Validation RMSE for the full development grid; test RMSE only for frozen confirmation and unchanged continuations",
+    "development_endpoints": [
+      2000,
+      20000,
+      50000
+    ],
+    "include_validation_selected": true,
+    "grid_error_bars": "Show both development seeds individually or explicitly labeled mean/sample SD. Do not treat hyperparameter settings as independent training seeds.",
+    "primary_error_bars": "95% Student-t confidence intervals over five seeds",
+    "invalid_results": "Record and display numerical failures or invalid fits; never silently select surviving results."
+  },
+  "continuation": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "run_id": "45753214421",
+    "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+    "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+    "checkpoint_step": 20000,
+    "checkpoints": {
+      "2340": {
+        "sha256": "469fbba0f35bb6479d58edc71dcad784c29d2a2f7dfcc939e2e865cd36a65e3f",
+        "git_blob_sha": "98dfc1f43aaf00d22b4adc8b53bb548dc372316a",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_20000.pt"
+      },
+      "2341": {
+        "sha256": "1a48f61e8d22ff070993e64376b0969616e22f46640437c79612e31a8ae5ed46",
+        "git_blob_sha": "bc97adfbbf219c209f6f69951cccd30deeccb2f0",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_20000.pt"
+      },
+      "2342": {
+        "sha256": "21592922c3d715891b33b83b097365df66cb9b07f0acc14ee11638ebc57925fb",
+        "git_blob_sha": "1ab8260a451712a9579d05ee4c8b2755cd0f6b75",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_20000.pt"
+      },
+      "2343": {
+        "sha256": "c5723f4a540b12f2ba1327ad9490622c0f3d8b6389c510458627610df4060cf1",
+        "git_blob_sha": "a477607bf983edbd84583e9a2632e604eeaedeb0",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_20000.pt"
+      },
+      "2344": {
+        "sha256": "8312f6fe96535c254801d7953a622904098364531850a7302bfe1dbb87cb7be4",
+        "git_blob_sha": "17ff32daf5ef3cf00444c5475a0dedafb97a30ad",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_20000.pt"
+      }
+    }
+  },
+  "parent_results_root": "california_housing_benchmark/results/2026-11-26_published_mlp",
+  "parent_manifest": "PARENT_MANIFEST.json",
+  "execution_budget": {
+    "runner": "standard GitHub-hosted ubuntu-24.04 CPU; no larger runner or GPU",
+    "repository_visibility_checked": "public",
+    "max_parallel_development": 16,
+    "development_job_count": 64,
+    "development_budget_updates_each": 50000,
+    "continuation_job_count": 5,
+    "new_confirmation_job_count": 5,
+    "final_budget_updates_each": 100000,
+    "job_timeout_minutes": 90,
+    "artifact_retention_days": 7,
+    "artifact_policy": "Upload lightweight measurements and logs; full recovery state only on failure. Retain selected development weights and full final-run checkpoints in the repository.",
+    "cost_note": "Standard runners in this public repository have no Actions compute charge under GitHub's current pricing. Artifact/cache charges depend on account allowance and retained storage.",
+    "max_parallel_continuation": 4,
+    "max_parallel_confirmation": 5,
+    "maximum_simultaneous_campaign_jobs": 20
+  }
+}
