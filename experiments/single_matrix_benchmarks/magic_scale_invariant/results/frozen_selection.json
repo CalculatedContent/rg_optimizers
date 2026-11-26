@@ -1,0 +1,125 @@
+{
+  "complete_grid": true,
+  "audit_errors": [],
+  "plan_sha256": "fbe90c69cc4f7d2460ed273ae7c1e2d468b52cbde97a4faf1e8b9b646f63e313",
+  "selected": {
+    "sgdm_wd0": {
+      "id": "s3",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    "adamw_wd0": {
+      "id": "a0",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0001,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08
+    }
+  },
+  "scores": [
+    {
+      "config": {
+        "id": "s0",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0
+      },
+      "accuracy": 0.8532194480946123,
+      "ce": 0.6736361086368561
+    },
+    {
+      "config": {
+        "id": "s1",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0
+      },
+      "accuracy": 0.8387647831800262,
+      "ce": 1.692684531211853
+    },
+    {
+      "config": {
+        "id": "s2",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0
+      },
+      "accuracy": 0.8466491458607096,
+      "ce": 1.9595056772232056
+    },
+    {
+      "config": {
+        "id": "s3",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0
+      },
+      "accuracy": 0.854533508541393,
+      "ce": 2.254700183868408
+    },
+    {
+      "config": {
+        "id": "a0",
+        "track": "adamw_wd0",
+        "optimizer": "adamw",
+        "lr": 0.0001,
+        "weight_decay": 0,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08
+      },
+      "accuracy": 0.8533508541392905,
+      "ce": 0.6409029364585876
+    },
+    {
+      "config": {
+        "id": "a1",
+        "track": "adamw_wd0",
+        "optimizer": "adamw",
+        "lr": 0.0003,
+        "weight_decay": 0,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08
+      },
+      "accuracy": 0.8462549277266754,
+      "ce": 1.8743199110031128
+    },
+    {
+      "config": {
+        "id": "a2",
+        "track": "adamw_wd0",
+        "optimizer": "adamw",
+        "lr": 0.001,
+        "weight_decay": 0,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08
+      },
+      "accuracy": 0.8505913272010512,
+      "ce": 1.7776196599006653
+    }
+  ]
+}
