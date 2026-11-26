@@ -227,80 +227,309 @@
     },
     {
       "id": "sgdm_12",
-      "config":…4213 tokens truncated…ore reusing its
-    # prepared archive. Recover those arrays without refitting anything.
-    if recover_raw is None:
-        from california_housing_benchmark.data import ensure_raw_data
-        recover_raw = ensure_raw_data
-    recover_raw(data_dir)
-    for name, expected in manifest["raw_file_sha256"].items():
-        if Path(name).name != name or sha256(data_dir / "raw" / name) != expected:
-            raise ValueError(f"Original raw array changed: {name}")
-    original_source = PACKAGE.parent / "california_housing_benchmark" / "data.py"
-    if sha256(original_source) != manifest["preparation_source_sha256"]:
-        raise ValueError("Original preprocessing source differs from the parent data manifest")
-
-    tasks = []
-    for seed in seeds:
-        row = parent["seeds"][str(seed)]
-        if row["seed"] != seed:
-            raise ValueError("Manifest row has a different seed")
-        checkpoint = continuation["checkpoints"][str(seed)]
-        if (checkpoint["sha256"] != row["checkpoint_sha256"]
-                or checkpoint["git_blob_sha"] != row["checkpoint_git_blob_sha"]
-                or checkpoint["repository_path"] != row["checkpoint_repository_path"]):
-            raise ValueError("Plan and parent checkpoint identities disagree")
-        directory = root / "parent" / f"seed_{seed}"
-        for filename, path_key, sha_key, blob_key, size in (
-            ("result.json", "result_repository_path", "result_sha256", "result_git_blob_sha", None),
-            ("checkpoint20k.pt", "checkpoint_repository_path", "checkpoint_sha256",
-             "checkpoint_git_blob_sha", row["checkpoint_bytes"]),
-            ("native_adamw_result.json", "native_adamw_result_repository_path",
-             "native_adamw_result_sha256", "native_adamw_result_git_blob_sha", None),
-        ):
-            tasks.append((REPOSITORY, parent["archive_commit"], row[path_key],
-                          directory / filename, row[sha_key], row[blob_key], size))
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        list(executor.map(lambda args: downloader(*args), tasks))
-
-    for seed in seeds:
-        for name, optimizer in (("result.json", "sgdm"), ("native_adamw_result.json", "adamw")):
-            result = json.loads((root / "parent" / f"seed_{seed}" / name).read_text())
-            github = result["execution"]["github"]
-            if (result["seed"] != seed or result["optimizer"] != optimizer
-                    or result["status"] != "complete" or result["completed_updates"] < 20000
-                    or result["data_manifest_sha256"] != parent["data_manifest_sha256"]
-                    or str(github["GITHUB_RUN_ID"]) != str(parent["github_run_id"])
-                    or github["GITHUB_SHA"] != parent["launch_commit"]):
-                raise ValueError(f"Parent result provenance differs: {seed}/{optimizer}")
-
-    provenance = {
-        "schema_version": 1, "complete": True,
-        "github_run_id": os.environ.get("GITHUB_RUN_ID"),
-        "launch_commit": os.environ.get("GITHUB_SHA"),
-        "plan_file_sha256": sha256(plan_path),
-        "source_manifest_sha256": sha256(source_manifest_path),
-        "parent_manifest_sha256": sha256(parent_manifest_path),
-        "data_manifest_sha256": parent["data_manifest_sha256"],
-        "prepared_npz_sha256": manifest["prepared_npz_sha256"],
-        "parent_archive_commit": parent["archive_commit"],
-        "parent_seeds": seeds,
-        "preprocessing": "Restored exact parent prepared bytes; no split or transform was refitted.",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_13",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_14",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_15",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_16",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_17",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_18",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_19",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_20",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_21",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_22",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_23",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_24",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_25",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_26",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_27",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_28",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_29",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_30",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_31",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.1,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
     }
-    write_immutable(cohort_path, (json.dumps(provenance, indent=2, sort_keys=True) + "\n").encode())
-    print(json.dumps(provenance, indent=2), flush=True)
-    return provenance
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", required=True)
-    parser.add_argument("--plan")
-    parser.add_argument("--parent-manifest")
-    parser.add_argument("--source-manifest")
-    args = parser.parse_args()
-    prepare(args.root, args.plan, args.parent_manifest, args.source_manifest)
-
-
-if __name__ == "__main__":
-    main()
+  ],
+  "grid_plot_policy": {
+    "x": "Confidence-weighted, tail-adjusted alpha from the same checkpoint as the performance metric",
+    "y": "Validation RMSE for the full development grid; test RMSE only for frozen confirmation and unchanged continuations",
+    "development_endpoints": [
+      2000,
+      20000,
+      50000
+    ],
+    "include_validation_selected": true,
+    "grid_error_bars": "Show both development seeds individually or explicitly labeled mean/sample SD. Do not treat hyperparameter settings as independent training seeds.",
+    "primary_error_bars": "95% Student-t confidence intervals over five seeds",
+    "invalid_results": "Record and display numerical failures or invalid fits; never silently select surviving results."
+  },
+  "continuation": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "run_id": "45753214421",
+    "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+    "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+    "checkpoint_step": 20000,
+    "checkpoints": {
+      "2340": {
+        "sha256": "469fbba0f35bb6479d58edc71dcad784c29d2a2f7dfcc939e2e865cd36a65e3f",
+        "git_blob_sha": "98dfc1f43aaf00d22b4adc8b53bb548dc372316a",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_20000.pt"
+      },
+      "2341": {
+        "sha256": "1a48f61e8d22ff070993e64376b0969616e22f46640437c79612e31a8ae5ed46",
+        "git_blob_sha": "bc97adfbbf219c209f6f69951cccd30deeccb2f0",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_20000.pt"
+      },
+      "2342": {
+        "sha256": "21592922c3d715891b33b83b097365df66cb9b07f0acc14ee11638ebc57925fb",
+        "git_blob_sha": "1ab8260a451712a9579d05ee4c8b2755cd0f6b75",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_20000.pt"
+      },
+      "2343": {
+        "sha256": "c5723f4a540b12f2ba1327ad9490622c0f3d8b6389c510458627610df4060cf1",
+        "git_blob_sha": "a477607bf983edbd84583e9a2632e604eeaedeb0",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_20000.pt"
+      },
+      "2344": {
+        "sha256": "8312f6fe96535c254801d7953a622904098364531850a7302bfe1dbb87cb7be4",
+        "git_blob_sha": "17ff32daf5ef3cf00444c5475a0dedafb97a30ad",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_20000.pt"
+      }
+    }
+  },
+  "parent_results_root": "california_housing_benchmark/results/2026-11-26_published_mlp",
+  "parent_manifest": "PARENT_MANIFEST.json",
+  "execution_budget": {
+    "runner": "standard GitHub-hosted ubuntu-24.04 CPU; no larger runner or GPU",
+    "repository_visibility_checked": "public",
+    "max_parallel_development": 16,
+    "development_job_count": 64,
+    "development_budget_updates_each": 50000,
+    "continuation_job_count": 5,
+    "new_confirmation_job_count": 5,
+    "final_budget_updates_each": 100000,
+    "job_timeout_minutes": 90,
+    "artifact_retention_days": 7,
+    "artifact_policy": "Upload lightweight measurements and logs; full recovery state only on failure. Retain selected development weights and full final-run checkpoints in the repository.",
+    "cost_note": "Standard runners in this public repository have no Actions compute charge under GitHub's current pricing. Artifact/cache charges depend on account allowance and retained storage.",
+    "max_parallel_continuation": 4,
+    "max_parallel_confirmation": 5,
+    "maximum_simultaneous_campaign_jobs": 20
+  }
+}

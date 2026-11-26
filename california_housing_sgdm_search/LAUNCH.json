@@ -16,5 +16,11 @@
     "training_started": false,
     "error": "Parent source manifest byte hash differed due to an extra newline in the local source-manifest copy. All33 parent source files passed verification.",
     "repair": "Restore the exact authoritative parent SOURCE_SHA256.json and update the extension manifest; no training code, grid, seed or optimizer setting changed."
+  },
+  "execution_transfer_repair": {
+    "superseded_preflight_run": 45758576446,
+    "training_started": false,
+    "error": "Bulk source transfer was truncated before commit; the source-integrity gate stopped execution.",
+    "repair": "Transfer each immutable local source as bounded base64 chunks; verify returned Git blob SHA before assembling the corrected source tree. Scientific source and plan remain unchanged."
   }
 }
