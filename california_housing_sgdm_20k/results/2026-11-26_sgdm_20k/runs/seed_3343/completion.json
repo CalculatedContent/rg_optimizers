@@ -1,0 +1,24 @@
+{
+  "completed_updates": 20000,
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "frozen_selection_sha256": "7dad7170fb278bef723c17c405a2529c7944e38951e9a4ca3d6f776ced784ecb",
+  "github_run_id": "45765869826",
+  "launch_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+  "new_updates": 20000,
+  "orchestration_source_manifest_sha256": "57b74b11afecb2408f49bbe521c0e582420d3c567ac91a66824733cbc30f171f",
+  "phase": "confirmation",
+  "plan_file_sha256": "5fb270e84173e9d8a5855b175911e5848eb5b958fd02d29317e3096d933ab47b",
+  "result_sha256": "e7a6287ae2ef2ef8cd3ff4a7a671db3eaadce4280cc0332f64ddb021a1ded654",
+  "retained_files": {
+    "best_checkpoint.pt": "d1894231fd28b75568ace76b3e7b6f12b06ba4b317634624044cedb0b89ac0a1",
+    "checkpoint_step_2000.pt": "954a725355190d345a1f3b1a19808c7a3016eab49d3f9390f938e113a352f344",
+    "checkpoint_step_20000.pt": "cb6056373aeb9a6ddbc23c023805f68e78413fbfc579a363388555d00141d36f",
+    "final_weights.pt": "05f07fc62b6fc6e7b64ce67df1f183949aa7f44f7879e6e213fcdef1f1ebcc7a",
+    "resume.pt": "74dcf63d6f764c8d60b7d20b2eb201fb1154318acd53099fd5c61a7050e22a33"
+  },
+  "seed": 3343,
+  "source_inventory_sha256": "65e7b7bd524289cb083862fa9270b9e1a801289fdc2aea33cf179c1c61b9aebc",
+  "source_manifest_sha256": "57b74b11afecb2408f49bbe521c0e582420d3c567ac91a66824733cbc30f171f",
+  "status": "complete",
+  "training_source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+}
