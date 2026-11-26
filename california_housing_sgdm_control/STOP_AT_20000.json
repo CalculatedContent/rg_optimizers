@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "authorized_change": "User requested stopping all SGD-with-momentum runs beyond 20,000 updates and limiting every grid run to 20,000.",
+  "maximum_updates": 20000,
+  "superseded_runs": [
+    45758895218,
+    45762869296
+  ],
+  "preserve_all_archived_results": true,
+  "reuse_valid_measurements_at_or_before_20000": true,
+  "do_not_restart_long_horizon_workflows": true
+}

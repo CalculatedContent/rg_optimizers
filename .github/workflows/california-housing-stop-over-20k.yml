@@ -1,0 +1,33 @@
+{
+  "name": "Stop California Housing runs beyond 20,000 updates",
+  "on": {
+    "push": {
+      "branches": [
+        "california-housing-sgdm-long-search-20261126"
+      ],
+      "paths": [
+        "california_housing_sgdm_control/STOP_AT_20000.json"
+      ]
+    },
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "concurrency": {
+    "group": "california-housing-sgdm-long-search-20261126",
+    "cancel-in-progress": true
+  },
+  "jobs": {
+    "record_stop": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 5,
+      "steps": [
+        {
+          "name": "Record the user-authorized 20,000-update ceiling",
+          "run": "echo 'The 50k/100k workflow and queued 200k continuation are superseded. All new SGDM grid training must stop at 20,000 updates. Preserve archived work.'"
+        }
+      ]
+    }
+  }
+}
