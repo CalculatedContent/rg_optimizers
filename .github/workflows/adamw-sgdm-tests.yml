@@ -1,0 +1,61 @@
+name: AdamW SGDM package tests
+
+on:
+  pull_request:
+    paths:
+      - 'adamw_sgdm/**'
+      - '.github/workflows/adamw-sgdm-tests.yml'
+  push:
+    branches: [main, 'adamw-sgdm-*']
+    paths:
+      - 'adamw_sgdm/**'
+      - '.github/workflows/adamw-sgdm-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the verified CPU runtime and package
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --no-deps --no-build-isolation -e ./adamw_sgdm
+      - name: Numerical tests (CUDA explicitly skips without hardware)
+        run: python -m unittest discover -s adamw_sgdm/tests -v
+      - name: CPU and mixed precision examples
+        run: |
+          python adamw_sgdm/examples/train.py --device cpu --steps 100
+          python adamw_sgdm/examples/train.py --device cpu --amp bf16 --steps 30
+
+  xla-cpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PJRT_DEVICE: CPU
+      OMP_NUM_THREADS: '1'
+      TF_NUM_INTEROP_THREADS: '1'
+      TF_NUM_INTRAOP_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install the matching legacy XLA runtime on CPU
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install torch_xla==2.6.0 absl-py numpy
+          python -m pip install --no-deps --no-build-isolation -e ./adamw_sgdm
+      - name: XLA lazy update and checkpoint continuation (CPU backend)
+        run: |
+          python adamw_sgdm/examples/train.py --device xla --steps 10 --checkpoint "$RUNNER_TEMP/xla.pt"
+          python adamw_sgdm/examples/train.py --device xla --steps 20 --resume "$RUNNER_TEMP/xla.pt"

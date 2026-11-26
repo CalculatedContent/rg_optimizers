@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rg-adamw-sgdm"
+version = "0.1.0"
+description = "AdamW with the per-tensor SGD-momentum magnitude graft used in the RG optimizer experiments"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.6"]
+
+[project.urls]
+Repository = "https://github.com/CalculatedContent/rg_optimizers"
+
+[tool.setuptools.packages.find]
+where = ["src"]

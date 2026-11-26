@@ -5,6 +5,15 @@ spectral renormalization-group program. The repository keeps the unmodified
 reference baselines separate from every RG intervention so optimizer claims can
 be tested against strong, restartable, statistically controlled experiments.
 
+## Reusable AdamW with the SGD-momentum magnitude graft
+
+[`adamw_sgdm/`](adamw_sgdm/README.md) provides the `AdamWSGDM` PyTorch optimizer
+used to package the existing magnitude-graft modification independently of the
+experiment runners. It keeps AdamW's adaptive direction and substitutes the
+same-history SGD-momentum step length per selected tensor. The folder includes
+CPU, CUDA, native TorchTPU and legacy PyTorch/XLA examples, installation and
+checkpoint instructions, exact historical recipe notes, and automated tests.
+
 ## nanoGPT speedrun: repeated-seed comparison
 
 For the **latest leaderboard implementation**, see the separate
