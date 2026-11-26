@@ -1,0 +1,682 @@
+{
+  "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+  "github_run_id": "45753214421",
+  "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+  "schema_version": 1,
+  "experiment_id": "2026-11-26_published_mlp",
+  "calibration_complete": true,
+  "development_seeds": [
+    2338,
+    2339
+  ],
+  "confirmation_seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "selected": {
+    "adamw": {
+      "optimizer": "adamw",
+      "lr": 0.0002722214565241805,
+      "weight_decay": 0.4555843429087667,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08
+    },
+    "sgdm": {
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "weight_decay": 0,
+      "momentum": 0.9,
+      "dampening": 0,
+      "nesterov": false
+    },
+    "modified_adamw": {
+      "optimizer": "modified_adamw",
+      "lr": 0.0002722214565241805,
+      "weight_decay": 0.4555843429087667,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "reference_lr": 0.01,
+      "reference_lr_ratio": 36.73479720402471
+    }
+  },
+  "trials": [
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "sgdm_0",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "weight_decay": 0,
+        "momentum": 0.9,
+        "dampening": 0,
+        "nesterov": false
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5683478914654164,
+          "completed_updates": 2600,
+          "paper_stopping": {
+            "reached": true,
+            "step": 2600,
+            "epoch": 50,
+            "best_step": 1768,
+            "best_epoch": 34,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "c00d214bedb936c403349bcc3d715c23baa122d53fb5ae73d4bf4b540c587d85"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5647837584572866,
+          "completed_updates": 3588,
+          "paper_stopping": {
+            "reached": true,
+            "step": 3588,
+            "epoch": 69,
+            "best_step": 2756,
+            "best_epoch": 53,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "40110e079ef9e59f5e913f55d9389b4fa1057357d94e253db5ac0f899e954c58"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5665658249613514
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "sgdm_1",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "weight_decay": 0.005277362486160341,
+        "momentum": 0.9,
+        "dampening": 0,
+        "nesterov": false
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5470010612153214,
+          "completed_updates": 6916,
+          "paper_stopping": {
+            "reached": true,
+            "step": 6916,
+            "epoch": 133,
+            "best_step": 6084,
+            "best_epoch": 117,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "6ce73959a92c3ebb57105dc893bacf0892da6934dd8ffb68f9185227d2b8d839"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5359006007089895,
+          "completed_updates": 15600,
+          "paper_stopping": {
+            "reached": true,
+            "step": 15600,
+            "epoch": 300,
+            "best_step": 14768,
+            "best_epoch": 284,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "b5543b309fea97e0ef80733d7d56a4f95581ed6787514228920e242d16c78bb9"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5414508309621555
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "sgdm_2",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "weight_decay": 0,
+        "momentum": 0.9,
+        "dampening": 0,
+        "nesterov": false
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5657570110565951,
+          "completed_updates": 1716,
+          "paper_stopping": {
+            "reached": true,
+            "step": 1716,
+            "epoch": 33,
+            "best_step": 884,
+            "best_epoch": 17,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "fce17857451308cd9a77e2cc98a0c2ab7f056a4ea47946977ec9056fa08a44ac"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5618467776601355,
+          "completed_updates": 1924,
+          "paper_stopping": {
+            "reached": true,
+            "step": 1924,
+            "epoch": 37,
+            "best_step": 1092,
+            "best_epoch": 21,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "0ab4e24b7d47b414cad5fcd0861e7a172a49ed2fabfe87f002da6b54141fd15c"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5638018943583654
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "sgdm_3",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "weight_decay": 0.005277362486160341,
+        "momentum": 0.9,
+        "dampening": 0,
+        "nesterov": false
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5321525872292816,
+          "completed_updates": 8944,
+          "paper_stopping": {
+            "reached": true,
+            "step": 8944,
+            "epoch": 172,
+            "best_step": 8112,
+            "best_epoch": 156,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "a79ed5aaeada82ad54def44af5c7f060d97ab88e2089f77eb0c0b1ff19923a6d"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5348570885473019,
+          "completed_updates": 7176,
+          "paper_stopping": {
+            "reached": true,
+            "step": 7176,
+            "epoch": 138,
+            "best_step": 6344,
+            "best_epoch": 122,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "83b3610faeb7890c3febf4e85dc200cf2fc305443f92fa282d46e1998ce3edd0"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5335048378882917
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "sgdm_4",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "weight_decay": 0,
+        "momentum": 0.9,
+        "dampening": 0,
+        "nesterov": false
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5202552225473122,
+          "completed_updates": 6760,
+          "paper_stopping": {
+            "reached": true,
+            "step": 6760,
+            "epoch": 130,
+            "best_step": 5928,
+            "best_epoch": 114,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "89715c9ca532e7ca4a1dfacd8832844fa70f8967c168298d01e980db4f11ec70"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5327131933926229,
+          "completed_updates": 4056,
+          "paper_stopping": {
+            "reached": true,
+            "step": 4056,
+            "epoch": 78,
+            "best_step": 3224,
+            "best_epoch": 62,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "d2c3ad2a50f57aee359aea788ad65e40a90151a0af225ca430f4e2dc3ac95d8c"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5264842079699675
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "sgdm_5",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "weight_decay": 0.005277362486160341,
+        "momentum": 0.9,
+        "dampening": 0,
+        "nesterov": false
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5354199838597393,
+          "completed_updates": 6396,
+          "paper_stopping": {
+            "reached": true,
+            "step": 6396,
+            "epoch": 123,
+            "best_step": 5564,
+            "best_epoch": 107,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "d7acfb0b92d8c0ab36e396794ef205384be5101550ac8b2f864aa64830358b5e"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5386673958241529,
+          "completed_updates": 4368,
+          "paper_stopping": {
+            "reached": true,
+            "step": 4368,
+            "epoch": 84,
+            "best_step": 3536,
+            "best_epoch": 68,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "e034f64eeaa5f11411f2407d174ebd85732055a33aada955f9b606c3e408fdce"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5370436898419462
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "graft_0",
+      "config": {
+        "optimizer": "modified_adamw",
+        "lr": 0.0002722214565241805,
+        "weight_decay": 0.4555843429087667,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "reference_lr": 0.001,
+        "reference_lr_ratio": 3.673479720402471
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5488685783057482,
+          "completed_updates": 20000,
+          "paper_stopping": {
+            "reached": false,
+            "step": 20000,
+            "epoch": 384,
+            "best_step": 19708,
+            "best_epoch": 379,
+            "patience": 16,
+            "censored": true,
+            "reason": "calibration_update_cap"
+          },
+          "result_sha256": "efd01f6941a2b23de37ecec247778712e4726b8d662c4725930a1d027b43beb3"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5506134859888184,
+          "completed_updates": 20000,
+          "paper_stopping": {
+            "reached": false,
+            "step": 20000,
+            "epoch": 384,
+            "best_step": 19708,
+            "best_epoch": 379,
+            "patience": 16,
+            "censored": true,
+            "reason": "calibration_update_cap"
+          },
+          "result_sha256": "b948df0d281eead52192c00e13a7db64d6b4d30e6e1ebe38fe00edc447bc63fe"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5497410321472833
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "graft_1",
+      "config": {
+        "optimizer": "modified_adamw",
+        "lr": 0.0002722214565241805,
+        "weight_decay": 0.4555843429087667,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "reference_lr": 0.003,
+        "reference_lr_ratio": 11.020439161207413
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.5075749648684088,
+          "completed_updates": 20000,
+          "paper_stopping": {
+            "reached": false,
+            "step": 20000,
+            "epoch": 384,
+            "best_step": 19708,
+            "best_epoch": 379,
+            "patience": 16,
+            "censored": true,
+            "reason": "calibration_update_cap"
+          },
+          "result_sha256": "26c095903fbb87e6f861fdc1813d192752d9ffd821398928d21fc32c90cfad31"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.5088894208749594,
+          "completed_updates": 20000,
+          "paper_stopping": {
+            "reached": false,
+            "step": 20000,
+            "epoch": 384,
+            "best_step": 19760,
+            "best_epoch": 380,
+            "patience": 16,
+            "censored": true,
+            "reason": "calibration_update_cap"
+          },
+          "result_sha256": "09fd0c37252c745977c6eb7a39e04c28b050566631235a157be5ff489525f522"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.5082321928716841
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "graft_2",
+      "config": {
+        "optimizer": "modified_adamw",
+        "lr": 0.0002722214565241805,
+        "weight_decay": 0.4555843429087667,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "reference_lr": 0.01,
+        "reference_lr_ratio": 36.73479720402471
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.48625662097983197,
+          "completed_updates": 13468,
+          "paper_stopping": {
+            "reached": true,
+            "step": 13468,
+            "epoch": 259,
+            "best_step": 12636,
+            "best_epoch": 243,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "7c1d9716a4a14e0dd1e8002963e9a726f2153d9d3969c256a32ff23d4fcb3995"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.4818782909938978,
+          "completed_updates": 18824,
+          "paper_stopping": {
+            "reached": true,
+            "step": 18824,
+            "epoch": 362,
+            "best_step": 17992,
+            "best_epoch": 346,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "53228a0804c0e2df82d08e414092a37931d6dac39a6232933dafb1e502d095e8"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.48406745598686485
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "graft_3",
+      "config": {
+        "optimizer": "modified_adamw",
+        "lr": 0.0002722214565241805,
+        "weight_decay": 0.4555843429087667,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "reference_lr": 0.03,
+        "reference_lr_ratio": 110.20439161207413
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.49091110027388474,
+          "completed_updates": 7540,
+          "paper_stopping": {
+            "reached": true,
+            "step": 7540,
+            "epoch": 145,
+            "best_step": 6708,
+            "best_epoch": 129,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "5386e06685a384fc08f5cbbd1dae292ce7fc67d3ef9f3adb8aeeae3f04be389b"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.4889791917381439,
+          "completed_updates": 8840,
+          "paper_stopping": {
+            "reached": true,
+            "step": 8840,
+            "epoch": 170,
+            "best_step": 8008,
+            "best_epoch": 154,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "37c9adf76f1d8c05d214873c55e450f0e7adffe12b04c05e36beb6a591d96725"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.48994514600601435
+    },
+    {
+      "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+      "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+      "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+      "github_run_id": "45753214421",
+      "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+      "candidate_id": "graft_4",
+      "config": {
+        "optimizer": "modified_adamw",
+        "lr": 0.0002722214565241805,
+        "weight_decay": 0.4555843429087667,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "reference_lr": 0.1,
+        "reference_lr_ratio": 367.3479720402471
+      },
+      "status": "complete",
+      "seed_results": [
+        {
+          "seed": 2338,
+          "status": "complete",
+          "best_validation_rmse": 0.49466086884058724,
+          "completed_updates": 6812,
+          "paper_stopping": {
+            "reached": true,
+            "step": 6812,
+            "epoch": 131,
+            "best_step": 5980,
+            "best_epoch": 115,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "8161c29acc32b7aa0e0a61def605d1ea27ae80a0a36941335f92fcd9f1766cd9"
+        },
+        {
+          "seed": 2339,
+          "status": "complete",
+          "best_validation_rmse": 0.504085242839738,
+          "completed_updates": 3640,
+          "paper_stopping": {
+            "reached": true,
+            "step": 3640,
+            "epoch": 70,
+            "best_step": 2808,
+            "best_epoch": 54,
+            "patience": 16,
+            "censored": false,
+            "reason": "first_validation_patience_stop"
+          },
+          "result_sha256": "439c32a10061a11199842f6e5e5cad6587418e23f1d948ff8a0b3be4ab358772"
+        }
+      ],
+      "eligible": true,
+      "mean_best_validation_rmse": 0.4993730558401626
+    }
+  ],
+  "selection": "mean over two development seeds of best validation RMSE before first patience-16 stop, capped at 20000 updates; ties by fixed candidate ID",
+  "comparison_scope": "Common published AdamW architecture; native AdamW recipe fixed from literature; modified AdamW differs only in matrix-update magnitudes; SGDM LR/weight decay calibrated on development seeds."
+}

@@ -1,0 +1,8 @@
+{
+  "optimizer": "sgdm",
+  "lr": 0.03,
+  "weight_decay": 0,
+  "momentum": 0.9,
+  "dampening": 0,
+  "nesterov": false
+}

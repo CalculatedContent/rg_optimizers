@@ -1,0 +1,12 @@
+{
+  "optimizer": "modified_adamw",
+  "lr": 0.0002722214565241805,
+  "weight_decay": 0.4555843429087667,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "eps": 1e-08,
+  "reference_lr": 0.01,
+  "reference_lr_ratio": 36.73479720402471
+}
