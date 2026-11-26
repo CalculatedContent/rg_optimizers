@@ -1,0 +1,412 @@
+{
+  "name": "Power Plant fixed 20k no-dropout SGDM / AdamW",
+  "on": {
+    "push": {
+      "branches": [
+        "single-matrix-benchmark-suite-20261126"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-power-plant.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "single-matrix-power-plant-primary",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0",
+    "BENCH": "experiments/single_matrix_benchmarks",
+    "DS": "experiments/single_matrix_benchmarks/power_plant"
+  },
+  "jobs": {
+    "grid": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "include": [
+            {
+              "case": "s0",
+              "seed": 3370
+            },
+            {
+              "case": "s0",
+              "seed": 3371
+            },
+            {
+              "case": "s1",
+              "seed": 3370
+            },
+            {
+              "case": "s1",
+              "seed": 3371
+            },
+            {
+              "case": "s2",
+              "seed": 3370
+            },
+            {
+              "case": "s2",
+              "seed": 3371
+            },
+            {
+              "case": "s3",
+              "seed": 3370
+            },
+            {
+              "case": "s3",
+              "seed": 3371
+            },
+            {
+              "case": "s4",
+              "seed": 3370
+            },
+            {
+              "case": "s4",
+              "seed": 3371
+            },
+            {
+              "case": "s5",
+              "seed": 3370
+            },
+            {
+              "case": "s5",
+              "seed": 3371
+            },
+            {
+              "case": "a6",
+              "seed": 3370
+            },
+            {
+              "case": "a6",
+              "seed": 3371
+            },
+            {
+              "case": "a7",
+              "seed": 3370
+            },
+            {
+              "case": "a7",
+              "seed": 3371
+            },
+            {
+              "case": "a8",
+              "seed": 3370
+            },
+            {
+              "case": "a8",
+              "seed": 3371
+            },
+            {
+              "case": "a9",
+              "seed": 3370
+            },
+            {
+              "case": "a9",
+              "seed": 3371
+            },
+            {
+              "case": "a10",
+              "seed": 3370
+            },
+            {
+              "case": "a10",
+              "seed": 3371
+            },
+            {
+              "case": "a11",
+              "seed": 3370
+            },
+            {
+              "case": "a11",
+              "seed": 3371
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BENCH/requirements.txt\""
+        },
+        {
+          "name": "Train one frozen development case",
+          "run": "python \"$BENCH/run_power.py\" --execute-training --phase grid --case '${{ matrix.case }}' --seed '${{ matrix.seed }}'"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "grid-${{ matrix.case }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/grid/${{ matrix.case }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "select": {
+      "needs": "grid",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 15,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BENCH/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/grid",
+            "merge-multiple": false
+          }
+        },
+        {
+          "name": "Verify checkpoint contents and freeze validation-only selection",
+          "run": "python \"$BENCH/audit_power.py\" select"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "power-selection",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/frozen_selection.json",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "confirm": {
+      "needs": "select",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "include": [
+            {
+              "track": "sgdm_wd0",
+              "seed": 3372
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3373
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3374
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3375
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3376
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3372
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3373
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3374
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3375
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3376
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3372
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3373
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3374
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3375
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3376
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BENCH/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "power-selection",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results"
+          }
+        },
+        {
+          "name": "Refit one frozen configuration on full published outer training partition",
+          "run": "python \"$BENCH/run_power.py\" --execute-training --phase confirm --case '${{ matrix.track }}' --seed '${{ matrix.seed }}'"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "confirm-${{ matrix.track }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/confirm/${{ matrix.track }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "archive": {
+      "if": "${{ always() && !cancelled() }}",
+      "needs": [
+        "grid",
+        "select",
+        "confirm"
+      ],
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 35,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks",
+            "sparse-checkout-cone-mode": true,
+            "ref": "single-matrix-benchmark-suite-20261126"
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BENCH/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/grid",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "power-selection",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results"
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "confirm-*",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/confirm",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Audit complete or partial records",
+          "id": "audit",
+          "run": "python \"$BENCH/audit_power.py\" summarize",
+          "continue-on-error": true
+        },
+        {
+          "name": "Archive recovered results in repository",
+          "run": "git config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\ngit add -f \"$DS/results\"\ngit diff --cached --quiet || git commit -m 'Archive Power Plant capped SGDM / AdamW results'\ngit push origin HEAD:\"$GITHUB_REF_NAME\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "power-analysis",
+            "path": "experiments/single_matrix_benchmarks/power_plant/results/analysis/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Require complete audit",
+          "run": "python -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d[\"complete\"] and d[\"n_grid\"]==24 and d[\"n_confirm\"]==15 and not d[\"audit_errors\"], d' \"$DS/results/analysis/summary.json\""
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "Power Plant data and source preflight — zero training",
+  "on": {
+    "push": {
+      "branches": [
+        "single-matrix-benchmark-suite-20261126"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-power-plant-preflight.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0",
+    "BENCH": "experiments/single_matrix_benchmarks",
+    "DS": "experiments/single_matrix_benchmarks/power_plant"
+  },
+  "jobs": {
+    "verify": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 10,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Install NumPy only",
+          "run": "python -m pip install numpy==2.3.1"
+        },
+        {
+          "name": "Compile and audit data and dry run (no training)",
+          "run": "python -m py_compile \"$BENCH/prepare_power.py\" \"$BENCH/run_power.py\" \"$BENCH/audit_power.py\"\npython \"$BENCH/prepare_power.py\"\npython \"$BENCH/run_power.py\" > \"$DS/prepared/dry_run.json\"\npython -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d[\"status\"]==\"dry_run_no_training\" and len(d[\"grid\"])==24 and all(x[\"updates\"]==20000 for x in d[\"grid\"])' \"$DS/prepared/dry_run.json\""
+        },
+        {
+          "name": "Archive validated prepared dataset and manifest",
+          "run": "git config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\ngit add -f \"$DS/prepared\"\ngit commit -m 'Archive Power Plant data preflight; zero training updates'\ngit push origin HEAD:\"$GITHUB_REF_NAME\""
+        }
+      ]
+    }
+  }
+}

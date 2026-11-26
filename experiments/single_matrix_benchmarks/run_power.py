@@ -1,4 +1,4 @@
-"""Single-matrix regression/classification trainer; power-plant adapter first. Dry-run by default."""
+"""Single-matrix regression trainer; Power Plant adapter first. Dry-run by default."""
 import argparse, contextlib, hashlib, importlib.metadata, io, json, math, os, pathlib, platform, random, statistics, sys
 HERE=pathlib.Path(__file__).resolve().parent
 DS=HERE/"power_plant"

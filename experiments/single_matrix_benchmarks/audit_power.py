@@ -15,6 +15,18 @@ def read(phase,case,seed,cfg,selection_sha=None):
         if sha(d/h["checkpoint_file"])!=h["checkpoint_sha256"] or h["weights_sha256"]!=h["spectral_weights_sha256"]:raise ValueError("Weight binding differs")
         if "test" in h["metrics"] and (phase=="grid" or h["step"]!=CAP):raise ValueError("Test access outside protocol")
     if sha(d/"final_resume.pt")!=j["final_resume_sha256"]:raise ValueError("Resume hash differs")
+    expected_p=P["dropout_extension"] if phase=="dropout" else 0.0
+    if j["dropout"]!=expected_p:raise ValueError("Dropout probability mismatch")
+    if j["threads"]!=1 or j["versions"].get("weightwatcher")!="0.7.7" or j["versions"].get("torch")!="2.7.1+cpu":raise ValueError("Numerical runtime differs")
+    import torch
+    def weight_hash(state):
+        h=hashlib.sha256()
+        for k,v in sorted(state.items()):
+            h.update(k.encode());h.update(str(tuple(v.shape)).encode());h.update(str(v.dtype).encode());h.update(v.detach().cpu().contiguous().numpy().tobytes())
+        return h.hexdigest()
+    for h in j["history"]:
+        checkpoint=torch.load(d/h["checkpoint_file"],map_location="cpu",weights_only=True)
+        if checkpoint["step"]!=h["step"] or checkpoint["weights_sha256"]!=h["weights_sha256"] or weight_hash(checkpoint["model"])!=h["weights_sha256"]:raise ValueError("Checkpoint content identity mismatch")
     if (phase=="grid" and "validation" not in j["history"][-1]["metrics"]) or (phase!="grid" and "test" not in j["history"][-1]["metrics"]):raise ValueError("Missing primary metric")
     return j
 def grid():
@@ -71,8 +83,18 @@ def summary(include_dropout):
                 a=[r[metric] for r in fixed if r["phase"]==phase and r["track"]==t]
                 s.append(dict(phase=phase,track=t,metric=metric,**stats(a)))
     csvout(out/"statistics.csv",s)
+    pairs=[]
+    if include_dropout:
+        zero={(r["track"],r["seed"]):r for r in fixed if r["phase"]=="confirm"}
+        for r in fixed:
+            if r["phase"]!="dropout" or (r["track"],r["seed"]) not in zero:continue
+            target=zero[(r["track"],r["seed"])]["alpha"];raw=r["alpha"];corrected=r["corrected_alpha"]
+            pairs.append(dict(track=r["track"],seed=r["seed"],p=r["dropout"],no_dropout_alpha=target,raw_alpha=raw,corrected_alpha=corrected,
+              raw_error=abs(raw-target) if raw is not None and target is not None else None,corrected_error=abs(corrected-target) if corrected is not None and target is not None else None))
+        csvout(out/"paired_dropout_comparison.csv",pairs)
     failed=sum(h["spectral"]["raw"]["status"]!="success" for j in records for h in j["history"])
-    result={"complete":not e,"n_grid":len(g),"n_confirm":sum(j["phase"]=="confirm" for j in records),"n_dropout":sum(j["phase"]=="dropout" for j in records),"audit_errors":e,"raw_fit_failures":failed,"selection":sel,"statistics":s}
+    mask_failed=sum(f["status"]!="success" for j in records for h in j["history"] for f in h["spectral"]["corrected_fits"] if j["dropout"]>0)
+    result={"complete":not e,"n_grid":len(g),"n_confirm":sum(j["phase"]=="confirm" for j in records),"n_dropout":sum(j["phase"]=="dropout" for j in records),"audit_errors":e,"raw_fit_failures":failed,"masked_fit_failures":mask_failed,"paired_dropout":pairs,"selection":sel,"statistics":s}
     dump(out/"summary.json",result)
     import matplotlib
     matplotlib.use("Agg")
