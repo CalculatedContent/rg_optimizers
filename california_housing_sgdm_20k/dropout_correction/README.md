@@ -4,23 +4,23 @@
 
 ## Equation and interpretation
 
-Let training dropout be (p), keep probability (q=1-p), and let (X=W^T W). For independent input-neuron dropout with a Bernoulli diagonal mask (M) and inverted-dropout scaling, the normalized expected Gram operator is
-[
+Let training dropout be $p$, keep probability $q=1-p$, and let $X=W^T W$. For independent input-neuron dropout with a Bernoulli diagonal mask $M$ and inverted-dropout scaling, the normalized expected Gram operator is
+$$
 \mathcal D_p(X)=(1-p)X+p\operatorname{diag}(X).
-]
-It leaves diagonal entries intact and attenuates off-diagonal correlations by (q). Its composition law is (\mathcal D_{p_1}\mathcal D_{p_2}=\mathcal D_{p_1+p_2-p_1p_2}).
+$$
+It leaves diagonal entries intact and attenuates off-diagonal correlations by $q$. Its composition law is $\mathcal D_{p_1}\mathcal D_{p_2}=\mathcal D_{p_1+p_2-p_1p_2}$.
 
 Our candidate diagnostic is **elementwise zero masking** with a fixed probability:
-[
+$$
 \boxed{r(p)=1-\sqrt{1-p}},\qquad \widetilde W_{ij}=W_{ij}B_{ij},\quad B_{ij}\sim\mathrm{Bernoulli}(\sqrt{1-p}).
-]
-Fit the ordinary power-law exponent to the positive squared singular values of each masked copy and average across masks within each model, then equally across independently trained seeds. Do not fit (r), tune to 2, mutate the model, or apply this transformation to FC1 (no input dropout). FC1 has eight singular values and uses the shipped WeightWatcher small-N fit with `min_evals=8`; FC3 is not power-law measurable.
+$$
+Fit the ordinary power-law exponent to the positive squared singular values of each masked copy and average across masks within each model, then equally across independently trained seeds. Do not fit $r$, tune to 2, mutate the model, or apply this transformation to FC1 (no input dropout). FC1 has eight singular values and uses the shipped WeightWatcher small-N fit with `min_evals=8`; FC3 is not power-law measurable.
 
-The square root follows exactly for **independent variance-preserving replacement** with centered, independent replacements whose column second moments equal those of the original weights: its off-diagonal expected Gram terms are multiplied by ((1-r)^2=q), and diagonal expectations are preserved. This motivates, but does not prove, the same (r) for elementwise *zero masking*. Zero masking instead has normalized expected Gram operator (\mathcal D_r), not (\mathcal D_p). Neither method is an exact inverse of training with activation dropout. The measured exponent depends on the full distribution, not just the expected Gram matrix.
+The square root follows exactly for **independent variance-preserving replacement** with centered, independent replacements whose column second moments equal those of the original weights: its off-diagonal expected Gram terms are multiplied by $(1-r)^2=q$, and diagonal expectations are preserved. This motivates, but does not prove, the same $r$ for elementwise *zero masking*. Zero masking instead has normalized expected Gram operator $\mathcal D_r$, not $\mathcal D_p$. Neither method is an exact inverse of training with activation dropout. The measured exponent depends on the full distribution, not just the expected Gram matrix.
 
 ## Measured results (not interpolated)
 
-Original training dropout (p=0.3690073279296028); fixed candidate (r=0.20564952818645776). Seeds 3340–3344, five immutable 20k checkpoints; 20 independent diagnostic masks/noise realizations per seed in the final formula audit (100 total per stochastic method). SD is the sample SD of the five seed means, not 100 independent models.
+Original training dropout $p=0.3690073279296028$; fixed candidate $r=0.20564952818645776$. Seeds 3340–3344, five immutable 20k checkpoints; 20 independent diagnostic masks/noise realizations per seed in the final formula audit (100 total per stochastic method). SD is the sample SD of the five seed means, not 100 independent models.
 
 | Method | Mean alpha | SD across seeds | Mean KS D | Mean tail size |
 |---|---:|---:|---:|---:|
