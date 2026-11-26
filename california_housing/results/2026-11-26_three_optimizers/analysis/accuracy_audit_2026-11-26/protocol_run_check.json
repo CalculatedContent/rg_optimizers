@@ -1,0 +1,253 @@
+{
+  "graft_step_ast_identical_to_frozen_shakespeare_graft": true,
+  "n_frozen_source_files": 19,
+  "primary_run_checks": [
+    {
+      "seed": 1340,
+      "optimizer": "adamw",
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "1f17789e1c86f99560daedcf093557521c8b8aa95f9205f300431197907c9ae1",
+      "batch_hash": "5fcaf0940d366f06ccce83bbf71f5ba23436c2b67e6e9c8323b8ca4c24348459"
+    },
+    {
+      "seed": 1340,
+      "optimizer": "modified_adamw",
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 30.0
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "1f17789e1c86f99560daedcf093557521c8b8aa95f9205f300431197907c9ae1",
+      "batch_hash": "5fcaf0940d366f06ccce83bbf71f5ba23436c2b67e6e9c8323b8ca4c24348459"
+    },
+    {
+      "seed": 1340,
+      "optimizer": "sgdm",
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "1f17789e1c86f99560daedcf093557521c8b8aa95f9205f300431197907c9ae1",
+      "batch_hash": "5fcaf0940d366f06ccce83bbf71f5ba23436c2b67e6e9c8323b8ca4c24348459"
+    },
+    {
+      "seed": 1341,
+      "optimizer": "adamw",
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "5f118d6ef715f7c0ffedd774ce35f993ff817630144bd53c85426b1ab69fed55",
+      "batch_hash": "03af7b7a1d61ad44fd839dd08e3898e8085906491cf5d5c45b43fd9f0c136327"
+    },
+    {
+      "seed": 1341,
+      "optimizer": "modified_adamw",
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 30.0
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "5f118d6ef715f7c0ffedd774ce35f993ff817630144bd53c85426b1ab69fed55",
+      "batch_hash": "03af7b7a1d61ad44fd839dd08e3898e8085906491cf5d5c45b43fd9f0c136327"
+    },
+    {
+      "seed": 1341,
+      "optimizer": "sgdm",
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "5f118d6ef715f7c0ffedd774ce35f993ff817630144bd53c85426b1ab69fed55",
+      "batch_hash": "03af7b7a1d61ad44fd839dd08e3898e8085906491cf5d5c45b43fd9f0c136327"
+    },
+    {
+      "seed": 1342,
+      "optimizer": "adamw",
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "4007d71994ab8549e6701b9f5f36da13ca5854fe67e5116dc987a11895c222cd",
+      "batch_hash": "80aff0e01fafd5429c92411125c8b9cd7b5373ee86f5a591f1724f132fc57ef8"
+    },
+    {
+      "seed": 1342,
+      "optimizer": "modified_adamw",
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 30.0
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "4007d71994ab8549e6701b9f5f36da13ca5854fe67e5116dc987a11895c222cd",
+      "batch_hash": "80aff0e01fafd5429c92411125c8b9cd7b5373ee86f5a591f1724f132fc57ef8"
+    },
+    {
+      "seed": 1342,
+      "optimizer": "sgdm",
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "4007d71994ab8549e6701b9f5f36da13ca5854fe67e5116dc987a11895c222cd",
+      "batch_hash": "80aff0e01fafd5429c92411125c8b9cd7b5373ee86f5a591f1724f132fc57ef8"
+    },
+    {
+      "seed": 1343,
+      "optimizer": "adamw",
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "0b905ef9bd9e1d341a8f99df49d15bc81be6c4758f9caeba55f76253ecb5a6fd",
+      "batch_hash": "399a1dbb75081999a3aa1ab42fc2ebc86e5f0deace261291a339f27a29587a12"
+    },
+    {
+      "seed": 1343,
+      "optimizer": "modified_adamw",
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 30.0
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "0b905ef9bd9e1d341a8f99df49d15bc81be6c4758f9caeba55f76253ecb5a6fd",
+      "batch_hash": "399a1dbb75081999a3aa1ab42fc2ebc86e5f0deace261291a339f27a29587a12"
+    },
+    {
+      "seed": 1343,
+      "optimizer": "sgdm",
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "0b905ef9bd9e1d341a8f99df49d15bc81be6c4758f9caeba55f76253ecb5a6fd",
+      "batch_hash": "399a1dbb75081999a3aa1ab42fc2ebc86e5f0deace261291a339f27a29587a12"
+    },
+    {
+      "seed": 1344,
+      "optimizer": "adamw",
+      "config": {
+        "optimizer": "adamw",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "b34fec3b1ad2605de1fdc535b4a7c94c0043dc50cacf5f2139549ab23fb29879",
+      "batch_hash": "ad56426bb42c9322fa357f55d3a5081188d4a15fe057df9d541435c0a88f22ba"
+    },
+    {
+      "seed": 1344,
+      "optimizer": "modified_adamw",
+      "config": {
+        "optimizer": "modified_adamw",
+        "peak_lr": 0.001,
+        "reference_lr_ratio": 30.0
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "b34fec3b1ad2605de1fdc535b4a7c94c0043dc50cacf5f2139549ab23fb29879",
+      "batch_hash": "ad56426bb42c9322fa357f55d3a5081188d4a15fe057df9d541435c0a88f22ba"
+    },
+    {
+      "seed": 1344,
+      "optimizer": "sgdm",
+      "config": {
+        "optimizer": "sgdm",
+        "peak_lr": 0.003,
+        "reference_lr_ratio": null
+      },
+      "phase": "confirmation",
+      "status": "complete",
+      "updates": 20000,
+      "source_sha_matches": true,
+      "init_hash": "b34fec3b1ad2605de1fdc535b4a7c94c0043dc50cacf5f2139549ab23fb29879",
+      "batch_hash": "ad56426bb42c9322fa357f55d3a5081188d4a15fe057df9d541435c0a88f22ba"
+    }
+  ],
+  "seed_pairing": {
+    "1340": {
+      "identical_init": true,
+      "identical_minibatch_order": true
+    },
+    "1341": {
+      "identical_init": true,
+      "identical_minibatch_order": true
+    },
+    "1342": {
+      "identical_init": true,
+      "identical_minibatch_order": true
+    },
+    "1343": {
+      "identical_init": true,
+      "identical_minibatch_order": true
+    },
+    "1344": {
+      "identical_init": true,
+      "identical_minibatch_order": true
+    }
+  }
+}

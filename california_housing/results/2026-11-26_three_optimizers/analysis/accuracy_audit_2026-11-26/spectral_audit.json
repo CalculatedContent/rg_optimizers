@@ -1,0 +1,350 @@
+{
+  "purpose": "Independent numerical audit of archived primary results; no new training or changed fits",
+  "source_manifest_matches": true,
+  "n_runs": 15,
+  "n_model_averages": 615,
+  "n_matrix_fits": 1845,
+  "all_expected_fits_valid": true,
+  "errors": [],
+  "max_absolute_stored_weight_difference": 0.0,
+  "max_absolute_stored_model_alpha_difference": 1.7763568394002505e-15,
+  "max_absolute_stored_layer_sd_difference": 4.440892098500626e-16,
+  "max_absolute_seed_statistics_difference": 2.6645352591003757e-15,
+  "t95_df4": 2.7764451051977987,
+  "diagnostic_refit_max_alpha_difference": 4.9971138338378296e-11,
+  "diagnostic_refit_tail_count_mismatches": 0,
+  "endpoints": [
+    {
+      "optimizer": "sgdm",
+      "step": 2000,
+      "alpha_seed_statistics": {
+        "n": 5,
+        "mean": 5.586905131350618,
+        "sample_sd": 0.25860616192028296,
+        "ci95_half_width": 0.32110196097006916,
+        "ci95_low": 5.265803170380549,
+        "ci95_high": 5.9080070923206875
+      },
+      "seed_alphas": {
+        "1340": 5.541816314624603,
+        "1341": 5.902881878195109,
+        "1342": 5.512402818440199,
+        "1343": 5.7540423361641135,
+        "1344": 5.2233823093290725
+      },
+      "n_matrix_fits": 15,
+      "tail_counts": {
+        "min": 9.0,
+        "median": 13.0,
+        "max": 20.0
+      },
+      "tail_fraction": {
+        "min": 0.0703125,
+        "median": 0.1015625,
+        "max": 0.15625
+      },
+      "KS_D": {
+        "min": 0.0540019728,
+        "median": 0.0796595314,
+        "max": 0.1001966951
+      },
+      "individual_matrix_alpha": {
+        "min": 4.4819357261,
+        "median": 5.6002012278,
+        "max": 6.6358975171
+      },
+      "tail_log10_span": {
+        "min": 0.3481254746783159,
+        "median": 0.43454773592861495,
+        "max": 0.5517033541479621
+      },
+      "fit_sigma": {
+        "min": 0.7785844977,
+        "median": 1.2911143096,
+        "max": 1.8786325057
+      },
+      "n_tail_less_than_20": 14,
+      "n_span_less_than_one_decade": 15,
+      "n_diagnostic_refit_cutoff_mismatches": 0,
+      "max_diagnostic_refit_alpha_difference": 4.845812640041913e-11
+    },
+    {
+      "optimizer": "adamw",
+      "step": 2000,
+      "alpha_seed_statistics": {
+        "n": 5,
+        "mean": 2.072576291120547,
+        "sample_sd": 0.03918280220295506,
+        "ci95_half_width": 0.04865187484414853,
+        "ci95_low": 2.0239244162763983,
+        "ci95_high": 2.1212281659646957
+      },
+      "seed_alphas": {
+        "1340": 2.0587768288162565,
+        "1341": 2.1058238035668673,
+        "1342": 2.091580248264556,
+        "1343": 2.0966222003706143,
+        "1344": 2.0100783745844413
+      },
+      "n_matrix_fits": 15,
+      "tail_counts": {
+        "min": 24.0,
+        "median": 42.0,
+        "max": 55.0
+      },
+      "tail_fraction": {
+        "min": 0.1875,
+        "median": 0.328125,
+        "max": 0.4296875
+      },
+      "KS_D": {
+        "min": 0.0334904858,
+        "median": 0.0589928045,
+        "max": 0.0783977388
+      },
+      "individual_matrix_alpha": {
+        "min": 1.7502690975,
+        "median": 2.0947935158,
+        "max": 2.4142822425
+      },
+      "tail_log10_span": {
+        "min": 1.3596405808081533,
+        "median": 1.6389231714602983,
+        "max": 1.7635164686212754
+      },
+      "fit_sigma": {
+        "min": 0.1011662645,
+        "median": 0.1725208042,
+        "max": 0.2473402315
+      },
+      "n_tail_less_than_20": 0,
+      "n_span_less_than_one_decade": 0,
+      "n_diagnostic_refit_cutoff_mismatches": 0,
+      "max_diagnostic_refit_alpha_difference": 4.7170933825668726e-11
+    },
+    {
+      "optimizer": "modified_adamw",
+      "step": 2000,
+      "alpha_seed_statistics": {
+        "n": 5,
+        "mean": 3.061146929148414,
+        "sample_sd": 0.09754087652734748,
+        "ci95_half_width": 0.1211129947372462,
+        "ci95_low": 2.940033934411168,
+        "ci95_high": 3.18225992388566
+      },
+      "seed_alphas": {
+        "1340": 3.0675456481521284,
+        "1341": 3.082275661273633,
+        "1342": 2.9802355884672362,
+        "1343": 2.9661878185117367,
+        "1344": 3.2094899293373373
+      },
+      "n_matrix_fits": 15,
+      "tail_counts": {
+        "min": 14.0,
+        "median": 23.0,
+        "max": 40.0
+      },
+      "tail_fraction": {
+        "min": 0.109375,
+        "median": 0.1796875,
+        "max": 0.3125
+      },
+      "KS_D": {
+        "min": 0.0420478093,
+        "median": 0.0596004754,
+        "max": 0.0715638485
+      },
+      "individual_matrix_alpha": {
+        "min": 2.2579580209,
+        "median": 3.2770108324,
+        "max": 4.0663626054
+      },
+      "tail_log10_span": {
+        "min": 0.7261978368034951,
+        "median": 0.8530987376976946,
+        "max": 1.2546576264594806
+      },
+      "fit_sigma": {
+        "min": 0.1989006273,
+        "median": 0.5062853517,
+        "max": 0.8195198781
+      },
+      "n_tail_less_than_20": 4,
+      "n_span_less_than_one_decade": 11,
+      "n_diagnostic_refit_cutoff_mismatches": 0,
+      "max_diagnostic_refit_alpha_difference": 4.9536375001935085e-11
+    },
+    {
+      "optimizer": "sgdm",
+      "step": 20000,
+      "alpha_seed_statistics": {
+        "n": 5,
+        "mean": 4.379192523614278,
+        "sample_sd": 0.12168808146748719,
+        "ci95_half_width": 0.1510957097686658,
+        "ci95_low": 4.228096813845612,
+        "ci95_high": 4.530288233382944
+      },
+      "seed_alphas": {
+        "1340": 4.484502748422078,
+        "1341": 4.364331990458325,
+        "1342": 4.2536511503669985,
+        "1343": 4.522326039632917,
+        "1344": 4.27115068919107
+      },
+      "n_matrix_fits": 15,
+      "tail_counts": {
+        "min": 14.0,
+        "median": 18.0,
+        "max": 22.0
+      },
+      "tail_fraction": {
+        "min": 0.109375,
+        "median": 0.140625,
+        "max": 0.171875
+      },
+      "KS_D": {
+        "min": 0.0511191315,
+        "median": 0.0734251319,
+        "max": 0.1109684693
+      },
+      "individual_matrix_alpha": {
+        "min": 4.0466041104,
+        "median": 4.4025949302,
+        "max": 4.7424542351
+      },
+      "tail_log10_span": {
+        "min": 0.4975433399911439,
+        "median": 0.661377778279707,
+        "max": 0.8409104895545221
+      },
+      "fit_sigma": {
+        "min": 0.6648235214,
+        "median": 0.8044702022,
+        "max": 1.0002129667
+      },
+      "n_tail_less_than_20": 12,
+      "n_span_less_than_one_decade": 15,
+      "n_diagnostic_refit_cutoff_mismatches": 0,
+      "max_diagnostic_refit_alpha_difference": 4.618705418124591e-11
+    },
+    {
+      "optimizer": "adamw",
+      "step": 20000,
+      "alpha_seed_statistics": {
+        "n": 5,
+        "mean": 2.644823444357931,
+        "sample_sd": 0.11193260382256251,
+        "ci95_half_width": 0.13898268439168118,
+        "ci95_low": 2.50584075996625,
+        "ci95_high": 2.783806128749612
+      },
+      "seed_alphas": {
+        "1340": 2.723692154816863,
+        "1341": 2.4677816981767355,
+        "1342": 2.696165300787755,
+        "1343": 2.601834923005538,
+        "1344": 2.734643145002764
+      },
+      "n_matrix_fits": 15,
+      "tail_counts": {
+        "min": 9.0,
+        "median": 15.0,
+        "max": 27.0
+      },
+      "tail_fraction": {
+        "min": 0.0703125,
+        "median": 0.1171875,
+        "max": 0.2109375
+      },
+      "KS_D": {
+        "min": 0.049295659,
+        "median": 0.0753596826,
+        "max": 0.1216956894
+      },
+      "individual_matrix_alpha": {
+        "min": 2.0986770087,
+        "median": 2.9453426463,
+        "max": 3.6168840618
+      },
+      "tail_log10_span": {
+        "min": 0.5132941874581108,
+        "median": 0.7920508793827647,
+        "max": 1.5097109761230239
+      },
+      "fit_sigma": {
+        "min": 0.2114404889,
+        "median": 0.5178393216,
+        "max": 0.8722946873
+      },
+      "n_tail_less_than_20": 9,
+      "n_span_less_than_one_decade": 10,
+      "n_diagnostic_refit_cutoff_mismatches": 0,
+      "max_diagnostic_refit_alpha_difference": 4.6410431053800494e-11
+    },
+    {
+      "optimizer": "modified_adamw",
+      "step": 20000,
+      "alpha_seed_statistics": {
+        "n": 5,
+        "mean": 2.5494315281881565,
+        "sample_sd": 0.1370092631639619,
+        "ci95_half_width": 0.17011946949111695,
+        "ci95_low": 2.3793120586970398,
+        "ci95_high": 2.7195509976792733
+      },
+      "seed_alphas": {
+        "1340": 2.716713286993105,
+        "1341": 2.6656417698111197,
+        "1342": 2.5215577333658468,
+        "1343": 2.4303075773032106,
+        "1344": 2.4129372734675005
+      },
+      "n_matrix_fits": 15,
+      "tail_counts": {
+        "min": 10.0,
+        "median": 29.0,
+        "max": 34.0
+      },
+      "tail_fraction": {
+        "min": 0.078125,
+        "median": 0.2265625,
+        "max": 0.265625
+      },
+      "KS_D": {
+        "min": 0.0411458053,
+        "median": 0.0862567172,
+        "max": 0.1227615205
+      },
+      "individual_matrix_alpha": {
+        "min": 2.1494723465,
+        "median": 2.4411228981,
+        "max": 3.8550940193
+      },
+      "tail_log10_span": {
+        "min": 0.5549775873810716,
+        "median": 0.902992238115665,
+        "max": 1.6271967147395388
+      },
+      "fit_sigma": {
+        "min": 0.2031999228,
+        "median": 0.2588333134,
+        "max": 0.9028600035
+      },
+      "n_tail_less_than_20": 3,
+      "n_span_less_than_one_decade": 9,
+      "n_diagnostic_refit_cutoff_mismatches": 0,
+      "max_diagnostic_refit_alpha_difference": 4.845102097306153e-11
+    }
+  ],
+  "interpretation": [
+    "All reported averages and seed intervals are arithmetically consistent with recorded ordinary fitted alpha, tail counts, and KS distances.",
+    "The five-seed Student-t interval measures initialization/minibatch uncertainty on this fixed split and fixed recipe; it does not quantify dataset sampling or systematic PL-model/fit-cutoff uncertainty.",
+    "128 eigenvalues satisfy both the frozen minimum-dimension64 rule and WeightWatcher0.7.7 default min_evals8; this does not establish a broad asymptotic power-law regime.",
+    "Short fitted tails and automatic KS cutoff selection limit asymptotic interpretation. Low KS distance alone is not a calibrated goodness-of-fit p-value.",
+    "Default WeightWatcher0.7.7 PL backend is its own WW Pareto MLE/KS implementation; powerlaw2.0.0 is an installed dependency. No alpha_weighted is used.",
+    "Diagnostic eigenvalues were saved from a float64 SVD. Cross-check fits can differ slightly from WeightWatcher's working SVD; these cross-checks do not replace frozen estimates."
+  ]
+}

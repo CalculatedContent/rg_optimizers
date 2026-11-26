@@ -1,0 +1,33 @@
+{
+  "n_total": 20640,
+  "n_unique": 20640,
+  "all_rows_exactly_once": true,
+  "split_matches_declared_rng": true,
+  "scaler_errors": {
+    "x_mean": 0.0,
+    "x_scale": 0.0,
+    "y_mean": 0.0,
+    "y_scale": 0.0
+  },
+  "splits": {
+    "train": {
+      "n": 16512,
+      "max_feature_error": 0.0,
+      "max_standard_target_error": 0.0,
+      "max_original_target_error": 0.0
+    },
+    "validation": {
+      "n": 2064,
+      "max_feature_error": 0.0,
+      "max_standard_target_error": 0.0,
+      "max_original_target_error": 0.0
+    },
+    "test": {
+      "n": 2064,
+      "max_feature_error": 0.0,
+      "max_standard_target_error": 0.0,
+      "max_original_target_error": 0.0
+    }
+  },
+  "prepared_hash_match": true
+}

@@ -1,0 +1,349 @@
+{
+  "posthoc_descriptive_only": true,
+  "no_observations_excluded": true,
+  "seed": 1341,
+  "optimizer": "modified_adamw",
+  "step": 2000,
+  "n_test": 2064,
+  "rmse": 0.6647545230088491,
+  "top_1_fraction_test_sse": 0.36659916111265195,
+  "top_5_fraction_test_sse": 0.4137369109347023,
+  "top_5_residuals": [
+    {
+      "test_position": 343,
+      "original_dataset_row_index": 19006,
+      "target": 1.375,
+      "prediction": -16.910712232125594,
+      "error_dollars": -1828571.2232125595,
+      "fraction_test_sse": 0.36659916111265195,
+      "features": {
+        "MedInc": 10.2264,
+        "HouseAge": 45.0,
+        "AveRooms": 3.1666666666666665,
+        "AveBedrms": 0.8333333333333334,
+        "Population": 7460.0,
+        "AveOccup": 1243.3333333333333,
+        "Latitude": 38.32,
+        "Longitude": -121.98
+      },
+      "standardized_features": {
+        "MedInc": 3.3307278156280518,
+        "HouseAge": 1.3098399639129639,
+        "AveRooms": -0.946199357509613,
+        "AveBedrms": -0.6032844185829163,
+        "Population": 5.348334312438965,
+        "AveOccup": 193.09469604492188,
+        "Latitude": 1.2589197158813477,
+        "Longitude": -1.2004694938659668
+      }
+    },
+    {
+      "test_position": 888,
+      "original_dataset_row_index": 11912,
+      "target": 1.125,
+      "prediction": 4.532364931458972,
+      "error_dollars": 340736.49314589717,
+      "fraction_test_sse": 0.012729314123847122,
+      "features": {
+        "MedInc": 12.5381,
+        "HouseAge": 29.0,
+        "AveRooms": 6.888888888888889,
+        "AveBedrms": 1.2222222222222223,
+        "Population": 50.0,
+        "AveOccup": 2.7777777777777777,
+        "Latitude": 33.96,
+        "Longitude": -117.44
+      },
+      "standardized_features": {
+        "MedInc": 4.544279098510742,
+        "HouseAge": 0.03495190665125847,
+        "AveRooms": 0.6085461378097534,
+        "AveBedrms": 0.2906229794025421,
+        "Population": -1.2192697525024414,
+        "AveOccup": -0.03898007050156593,
+        "Latitude": -0.7834165096282959,
+        "Longitude": 1.0636717081069946
+      }
+    },
+    {
+      "test_position": 556,
+      "original_dataset_row_index": 89,
+      "target": 5.00001,
+      "prediction": 1.6149738771876763,
+      "error_dollars": -338503.6122812323,
+      "fraction_test_sse": 0.012563027782605188,
+      "features": {
+        "MedInc": 1.2434,
+        "HouseAge": 52.0,
+        "AveRooms": 2.929411764705882,
+        "AveBedrms": 0.9176470588235294,
+        "Population": 396.0,
+        "AveOccup": 4.658823529411765,
+        "Latitude": 37.8,
+        "Longitude": -122.27
+      },
+      "standardized_features": {
+        "MedInc": -1.384993076324463,
+        "HouseAge": 1.8676034212112427,
+        "AveRooms": -1.0452990531921387,
+        "AveBedrms": -0.4094793200492859,
+        "Population": -0.9126042723655701,
+        "AveOccup": 0.25386717915534973,
+        "Latitude": 1.0153383016586304,
+        "Longitude": -1.345095157623291
+      }
+    },
+    {
+      "test_position": 1585,
+      "original_dataset_row_index": 10415,
+      "target": 5.00001,
+      "prediction": 1.6613369931556994,
+      "error_dollars": -333867.30068443,
+      "fraction_test_sse": 0.012221245741660957,
+      "features": {
+        "MedInc": 3.375,
+        "HouseAge": 4.0,
+        "AveRooms": 3.7699530516431925,
+        "AveBedrms": 1.1690140845070423,
+        "Population": 815.0,
+        "AveOccup": 1.9131455399061033,
+        "Latitude": 33.65,
+        "Longitude": -117.58
+      },
+      "standardized_features": {
+        "MedInc": -0.2659871280193329,
+        "HouseAge": -1.9570605754852295,
+        "AveRooms": -0.694210946559906,
+        "AveBedrms": 0.1683177500963211,
+        "Population": -0.5412377119064331,
+        "AveOccup": -0.1735887974500656,
+        "Latitude": -0.9286285042762756,
+        "Longitude": 0.9938523173332214
+      }
+    },
+    {
+      "test_position": 1005,
+      "original_dataset_row_index": 17321,
+      "target": 5.00001,
+      "prediction": 2.037242215516084,
+      "error_dollars": -296276.77844839153,
+      "fraction_test_sse": 0.00962416217393695,
+      "features": {
+        "MedInc": 3.0185,
+        "HouseAge": 17.0,
+        "AveRooms": 4.205479452054795,
+        "AveBedrms": 0.863013698630137,
+        "Population": 434.0,
+        "AveOccup": 1.9817351598173516,
+        "Latitude": 34.61,
+        "Longitude": -120.16
+      },
+      "standardized_features": {
+        "MedInc": -0.45313557982444763,
+        "HouseAge": -0.9212141036987305,
+        "AveRooms": -0.5122947096824646,
+        "AveBedrms": -0.5350605845451355,
+        "Population": -0.8789242506027222,
+        "AveOccup": -0.16291053593158722,
+        "Latitude": -0.4789397716522217,
+        "Longitude": -0.292818158864975
+      }
+    }
+  ],
+  "ave_occupancy_maximum_by_split": {
+    "train": {
+      "raw_maximum": 599.7142857142857,
+      "standardized_maximum": 92.89401245117188
+    },
+    "validation": {
+      "raw_maximum": 63.75,
+      "standardized_maximum": 9.453371047973633
+    },
+    "test": {
+      "raw_maximum": 1243.3333333333333,
+      "standardized_maximum": 193.09469604492188
+    }
+  },
+  "same_row_comparators": [
+    {
+      "seed": 1340,
+      "optimizer": "sgdm",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 3.988898727719278
+    },
+    {
+      "seed": 1340,
+      "optimizer": "sgdm",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 4.122395339151096
+    },
+    {
+      "seed": 1340,
+      "optimizer": "adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 2.229868055240836
+    },
+    {
+      "seed": 1340,
+      "optimizer": "adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 3.3847124864429903
+    },
+    {
+      "seed": 1340,
+      "optimizer": "modified_adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -0.8870019069352018
+    },
+    {
+      "seed": 1340,
+      "optimizer": "modified_adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 5.235387651240681
+    },
+    {
+      "seed": 1341,
+      "optimizer": "sgdm",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -0.262758836876424
+    },
+    {
+      "seed": 1341,
+      "optimizer": "sgdm",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 0.4394055533300849
+    },
+    {
+      "seed": 1341,
+      "optimizer": "adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 0.04210220735494641
+    },
+    {
+      "seed": 1341,
+      "optimizer": "adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 2.02673756845491
+    },
+    {
+      "seed": 1341,
+      "optimizer": "modified_adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -16.91071002951562
+    },
+    {
+      "seed": 1341,
+      "optimizer": "modified_adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 2.8405113681183396
+    },
+    {
+      "seed": 1342,
+      "optimizer": "sgdm",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -0.7580798410982368
+    },
+    {
+      "seed": 1342,
+      "optimizer": "sgdm",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 3.340989301779093
+    },
+    {
+      "seed": 1342,
+      "optimizer": "adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -0.5030118239733836
+    },
+    {
+      "seed": 1342,
+      "optimizer": "adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 1.7377096031637351
+    },
+    {
+      "seed": 1342,
+      "optimizer": "modified_adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -0.9397073350830887
+    },
+    {
+      "seed": 1342,
+      "optimizer": "modified_adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 2.2931014944631434
+    },
+    {
+      "seed": 1343,
+      "optimizer": "sgdm",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 6.294289368833436
+    },
+    {
+      "seed": 1343,
+      "optimizer": "sgdm",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 2.205723449064345
+    },
+    {
+      "seed": 1343,
+      "optimizer": "adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 5.97399408584454
+    },
+    {
+      "seed": 1343,
+      "optimizer": "adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 5.698700602610875
+    },
+    {
+      "seed": 1343,
+      "optimizer": "modified_adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": -0.9331339209346012
+    },
+    {
+      "seed": 1343,
+      "optimizer": "modified_adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 3.72406213534884
+    },
+    {
+      "seed": 1344,
+      "optimizer": "sgdm",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 0.3911572441326814
+    },
+    {
+      "seed": 1344,
+      "optimizer": "sgdm",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 1.6660952846046821
+    },
+    {
+      "seed": 1344,
+      "optimizer": "adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 4.668445755045667
+    },
+    {
+      "seed": 1344,
+      "optimizer": "adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 1.0047054726192124
+    },
+    {
+      "seed": 1344,
+      "optimizer": "modified_adamw",
+      "step": 2000,
+      "prediction_on_largest_residual_row": 3.7281417820146086
+    },
+    {
+      "seed": 1344,
+      "optimizer": "modified_adamw",
+      "step": 20000,
+      "prediction_on_largest_residual_row": 1.2065428079483556
+    }
+  ]
+}
