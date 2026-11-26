@@ -1,0 +1,76 @@
+{
+  "status": "dry_run_no_training",
+  "grid": [
+    {
+      "case": "s0",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "s0",
+      "seed": 3471,
+      "updates": 20000
+    },
+    {
+      "case": "s1",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "s1",
+      "seed": 3471,
+      "updates": 20000
+    },
+    {
+      "case": "s2",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "s2",
+      "seed": 3471,
+      "updates": 20000
+    },
+    {
+      "case": "s3",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "s3",
+      "seed": 3471,
+      "updates": 20000
+    },
+    {
+      "case": "a0",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "a0",
+      "seed": 3471,
+      "updates": 20000
+    },
+    {
+      "case": "a1",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "a1",
+      "seed": 3471,
+      "updates": 20000
+    },
+    {
+      "case": "a2",
+      "seed": 3470,
+      "updates": 20000
+    },
+    {
+      "case": "a2",
+      "seed": 3471,
+      "updates": 20000
+    }
+  ],
+  "confirmation": []
+}

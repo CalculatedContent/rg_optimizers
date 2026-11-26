@@ -1,0 +1,23 @@
+{
+  "status": "verified_zero_training",
+  "plan_sha256": "4cc941286116815be1ce3e67f4ba2351586e857203d9ca5433fa53c48876d616",
+  "data_sha256": "c42ba2691997b884dae5d738bcb2b5bb5a5b07fbca0f0c83afae12ce76812d73",
+  "manifest_sha256": "26cc2d30485301f72087e88a59c0b044f374b4987abe1e176a308a32e2cc2473",
+  "symmetry": {
+    "torch.float32": {
+      "max_weight_initial_error": 1.4901161193847656e-08,
+      "max_logit_rescale_error": 4.172325134277344e-07,
+      "max_loss_rescale_error": 5.960464477539063e-08,
+      "max_radial_residual": 1.9242342799968658e-08
+    },
+    "torch.float64": {
+      "max_weight_initial_error": 2.7755575615628914e-17,
+      "max_logit_rescale_error": 7.771561172376096e-16,
+      "max_loss_rescale_error": 1.1102230246251565e-16,
+      "max_radial_residual": 8.095358041450487e-18
+    }
+  },
+  "new_grid": 14,
+  "new_confirmation": 0,
+  "max_new_updates": 280000
+}
