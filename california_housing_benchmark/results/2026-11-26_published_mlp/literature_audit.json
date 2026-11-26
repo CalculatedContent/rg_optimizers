@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-11-26",
+  "question": "Find the strongest reported California Housing result relevant to a small neural-network optimizer comparison, and select a verifiable reproduction anchor.",
+  "scope": "Reported scores are not a universal leaderboard across architectures, splits, target transformations, and training protocols.",
+  "selected_reproduction_anchor": {
+    "paper": "Benchmarking Optimizers for MLPs in Tabular Deep Learning (2026)",
+    "paper_url": "https://arxiv.org/html/2604.15297v2",
+    "repository": "https://github.com/yandex-research/tabular-dl-optimizers",
+    "commit": "c34e33152db9eea8ed4b2d742b9bef5628d71fb5",
+    "optimizer": "adamw",
+    "test_rmse_mean": 0.4935855175879661,
+    "test_rmse_sample_sd": 0.011003265043117574,
+    "n_seeds": 10,
+    "units": "100000 USD",
+    "architecture": [
+      8,
+      784,
+      784,
+      1
+    ],
+    "parameters": 623281,
+    "reason": "Archived exact data partitions, code, configuration, and individual seed reports permit a source-checked native AdamW replication and common-architecture optimizer comparison."
+  },
+  "reported_comparators": [
+    {
+      "model": "Plain MLP with Muon and EMA",
+      "mean_rmse": 0.47080791348863854,
+      "sample_sd": 0.0026432028997803126,
+      "n_seeds": 10,
+      "parameters": 1410145,
+      "architecture": [
+        8,
+        592,
+        592,
+        592,
+        592,
+        592,
+        1
+      ],
+      "source": "https://arxiv.org/html/2604.15297v2",
+      "scope": "Best plain-MLP score in this 2026 optimizer benchmark; separately tuned architecture and weight averaging; not the same model as the AdamW control."
+    },
+    {
+      "model": "Plain MLP with SGDM",
+      "mean_rmse": 0.5176658376359122,
+      "sample_sd": 0.006416209204506472,
+      "n_seeds": 10,
+      "parameters": 299745,
+      "architecture": [
+        8,
+        272,
+        272,
+        272,
+        272,
+        272,
+        1
+      ],
+      "source": "https://arxiv.org/html/2604.15297v2",
+      "scope": "Published recipe uses momentum0.9 and dampening0.9. Our common-architecture arm uses ordinary zero-dampening momentum and separately calibrated LR/decay."
+    },
+    {
+      "model": "TabR ensemble",
+      "mean_rmse": 0.3964,
+      "reported_sd": 0.0013,
+      "source": "https://arxiv.org/pdf/2410.24210",
+      "table": "18",
+      "scope": "Stronger retrieval architecture and ensembling on established California partitions; not a plain MLP."
+    },
+    {
+      "model": "Fine-tuned pretrained TabPFN",
+      "reported_test_mse": 0.1328,
+      "reported_test_r2": 0.9034,
+      "rmse_from_sqrt_reported_mse": 0.36441734316577196,
+      "source": "https://github.com/PriorLabs/TabPFN/pull/1101",
+      "code": "https://github.com/PriorLabs/TabPFN/blob/6fce03db341f5c4652acbbb9f46548a1e87c8c85/examples/finetune_regressor.py",
+      "scope": "Official example uses a different90/10split and4GPUexecution; not a CPU plain-MLP reproduction target."
+    }
+  ],
+  "lower_mlp_claim_audit": {
+    "paper": "NeuronSeek: On Stability and Expressivity of Task-driven Neurons",
+    "source": "https://arxiv.org/html/2506.15715v2",
+    "reported_mse_mean": 0.089,
+    "reported_mse_sd": 0.0021,
+    "reported_parameters": 833,
+    "paper_protocol": {
+      "train_test": "80/20",
+      "optimizer": "RMSProp",
+      "runs": 10
+    },
+    "official_code_commit": "d6c21eeff837d81dd0fb3ed3012bd7cc9d2d2559",
+    "released_defaults": {
+      "hidden_widths": [
+        6,
+        3
+      ],
+      "calculated_plain_mlp_parameters": 79,
+      "optimizer": "Adam",
+      "train_validation_test": "70/10/20",
+      "trials": 3,
+      "target_transform": "No target scaling in the released California loader"
+    },
+    "code_sources": [
+      {
+        "path": "experiments/exp2_benchmark/config.py",
+        "url": "https://github.com/HanyuPei22/NeuronSeek/blob/d6c21eeff837d81dd0fb3ed3012bd7cc9d2d2559/experiments/exp2_benchmark/config.py"
+      },
+      {
+        "path": "experiments/exp2_benchmark/run_comparison.py",
+        "url": "https://github.com/HanyuPei22/NeuronSeek/blob/d6c21eeff837d81dd0fb3ed3012bd7cc9d2d2559/experiments/exp2_benchmark/run_comparison.py"
+      },
+      {
+        "path": "neuronseek/utils/tabular_data_loader.py",
+        "url": "https://github.com/HanyuPei22/NeuronSeek/blob/d6c21eeff837d81dd0fb3ed3012bd7cc9d2d2559/neuronseek/utils/tabular_data_loader.py"
+      }
+    ],
+    "decision": "The paper reports this number, but its released defaults differ materially from the paper. We could not verify it as a reproducible raw-unit benchmark. This does not establish that the reported result is false or that it necessarily uses normalized targets."
+  },
+  "new_experiment": {
+    "workflow_run": 45753214421,
+    "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+    "reference_seed0_result": {
+      "test_rmse": 0.4894726523289034,
+      "test_mae": 0.3304884433746338,
+      "test_r2": 0.8162639737129211,
+      "selected_update": 10088,
+      "first_patience_stop_update": 10920,
+      "scope": "Separate CPU reference run; excluded from primary five-seed statistics."
+    },
+    "confirmation_seeds": [
+      2340,
+      2341,
+      2342,
+      2343,
+      2344
+    ],
+    "scope": "Common published AdamW architecture; fixed native recipe; development-only SGDM/graft calibration. No confirmation outcome may change settings. Statistical agreement is not a formal equivalence test."
+  }
+}
