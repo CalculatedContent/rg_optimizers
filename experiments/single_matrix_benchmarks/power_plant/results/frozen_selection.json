@@ -1,0 +1,222 @@
+{
+  "complete_grid": true,
+  "n_grid": 24,
+  "audit_errors": [],
+  "plan_sha256": "808ff383b66f85c3bd9d6400f0da6c158907b28cd1f46c9b48464cf1fa9cfc77",
+  "selected": {
+    "sgdm_wd0": {
+      "id": "s0",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    "adamw_wd0": {
+      "id": "a6",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": 0
+    },
+    "adamw_wd001": {
+      "id": "a9",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": 0.001
+    }
+  },
+  "scores": [
+    {
+      "case": "s0",
+      "track": "sgdm_wd0",
+      "mean_val_rmse": 3.747097442487151,
+      "config": {
+        "id": "s0",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "s1",
+      "track": "sgdm_wd0",
+      "mean_val_rmse": 3.910793818018104,
+      "config": {
+        "id": "s1",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "s2",
+      "track": "sgdm_wd0",
+      "mean_val_rmse": 3.7658008982990667,
+      "config": {
+        "id": "s2",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "s3",
+      "track": "sgdm_wd0",
+      "mean_val_rmse": 3.910871940713861,
+      "config": {
+        "id": "s3",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.99,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "s4",
+      "track": "sgdm_wd0",
+      "mean_val_rmse": 3.754048038847296,
+      "config": {
+        "id": "s4",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.9,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "s5",
+      "track": "sgdm_wd0",
+      "mean_val_rmse": 3.983839113497067,
+      "config": {
+        "id": "s5",
+        "track": "sgdm_wd0",
+        "optimizer": "sgdm",
+        "lr": 0.03,
+        "momentum": 0.99,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "a6",
+      "track": "adamw_wd0",
+      "mean_val_rmse": 3.8326255031720216,
+      "config": {
+        "id": "a6",
+        "track": "adamw_wd0",
+        "optimizer": "adamw",
+        "lr": 0.0003,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "a7",
+      "track": "adamw_wd0",
+      "mean_val_rmse": 3.9616404135868732,
+      "config": {
+        "id": "a7",
+        "track": "adamw_wd0",
+        "optimizer": "adamw",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "a8",
+      "track": "adamw_wd0",
+      "mean_val_rmse": 3.906757399784569,
+      "config": {
+        "id": "a8",
+        "track": "adamw_wd0",
+        "optimizer": "adamw",
+        "lr": 0.003,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0
+      }
+    },
+    {
+      "case": "a9",
+      "track": "adamw_wd001",
+      "mean_val_rmse": 3.8344925797060947,
+      "config": {
+        "id": "a9",
+        "track": "adamw_wd001",
+        "optimizer": "adamw",
+        "lr": 0.0003,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0.001
+      }
+    },
+    {
+      "case": "a10",
+      "track": "adamw_wd001",
+      "mean_val_rmse": 3.8419941206478825,
+      "config": {
+        "id": "a10",
+        "track": "adamw_wd001",
+        "optimizer": "adamw",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0.001
+      }
+    },
+    {
+      "case": "a11",
+      "track": "adamw_wd001",
+      "mean_val_rmse": 3.9980378459891677,
+      "config": {
+        "id": "a11",
+        "track": "adamw_wd001",
+        "optimizer": "adamw",
+        "lr": 0.003,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0.001
+      }
+    }
+  ]
+}
