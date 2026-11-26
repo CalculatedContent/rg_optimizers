@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "experiment_id": "2026-11-26_sgdm_200k",
+  "hypothesis": "Continue the same five SGDM trajectories with fixed settings to 200,000 total updates to measure long-horizon predictive performance and confidence-tail-weighted alpha.",
+  "authorization": "User requested a very long SGD plus momentum experiment to 200,000 updates on 2026-11-26. This is a prespecified horizon extension, not a new hyperparameter search.",
+  "model": {
+    "n_blocks": 2,
+    "d_block": 784,
+    "dropout": 0.3690073279296028
+  },
+  "start_step": 100000,
+  "total_updates": 200000,
+  "batch_size": 256,
+  "grad_clip": 1,
+  "eval_every": 5000,
+  "checkpoint_updates": [
+    100000,
+    125000,
+    150000,
+    175000,
+    200000
+  ],
+  "schedule": "constant learning rate; no early stopping; continue full optimizer, RNG, sampler, and model state from 100,000 updates",
+  "continuation_seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "continuation_config": {
+    "optimizer": "sgdm",
+    "lr": 0.03,
+    "momentum": 0.9,
+    "weight_decay": 0,
+    "dampening": 0,
+    "nesterov": false,
+    "dropout": 0.3690073279296028
+  },
+  "spectral": {
+    "minimum_matrix_dimension": 64,
+    "weight": "sqrt(num_pl_spikes)/(D+0.02)",
+    "eligible_matrices": 1,
+    "note": "The 784x784 hidden matrix is the sole eligible matrix. The weighted average equals its ordinary fitted alpha; no layer dispersion is defined."
+  },
+  "parent_source": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "branch": "california-housing-sgdm-long-search-20261126",
+    "run_id": "45758895218",
+    "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+    "results_root": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search",
+    "checkpoint_step": 100000
+  },
+  "original_source": {
+    "repository": "CalculatedContent/rg_optimizers",
+    "run_id": "45753214421",
+    "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+    "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+    "checkpoint_step": 20000,
+    "checkpoints": {
+      "2340": {
+        "sha256": "469fbba0f35bb6479d58edc71dcad784c29d2a2f7dfcc939e2e865cd36a65e3f",
+        "git_blob_sha": "98dfc1f43aaf00d22b4adc8b53bb548dc372316a",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/checkpoint_step_20000.pt"
+      },
+      "2341": {
+        "sha256": "1a48f61e8d22ff070993e64376b0969616e22f46640437c79612e31a8ae5ed46",
+        "git_blob_sha": "bc97adfbbf219c209f6f69951cccd30deeccb2f0",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/checkpoint_step_20000.pt"
+      },
+      "2342": {
+        "sha256": "21592922c3d715891b33b83b097365df66cb9b07f0acc14ee11638ebc57925fb",
+        "git_blob_sha": "1ab8260a451712a9579d05ee4c8b2755cd0f6b75",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/checkpoint_step_20000.pt"
+      },
+      "2343": {
+        "sha256": "c5723f4a540b12f2ba1327ad9490622c0f3d8b6389c510458627610df4060cf1",
+        "git_blob_sha": "a477607bf983edbd84583e9a2632e604eeaedeb0",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/checkpoint_step_20000.pt"
+      },
+      "2344": {
+        "sha256": "8312f6fe96535c254801d7953a622904098364531850a7302bfe1dbb87cb7be4",
+        "git_blob_sha": "17ff32daf5ef3cf00444c5475a0dedafb97a30ad",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/checkpoint_step_20000.pt"
+      }
+    }
+  },
+  "comparison_policy": {
+    "primary": "Fixed 200,000-update results from all five unchanged original SGDM seeds. Compare paired 20,000, 100,000, and 200,000 checkpoints.",
+    "selection_window": "Optional minimum-validation model in [100,000,200,000] only, reported separately from fixed-budget endpoints; no test or alpha selection.",
+    "reference": "The original native and modified AdamW runs stop at 20,000; any 200,000-update SGDM comparison has unequal compute and is not an optimizer-only causal comparison.",
+    "uncertainty": "Equal-weight seed means, sample SD, and two-sided 95% Student-t confidence intervals across five seeds, conditional on the fixed data split.",
+    "runtime": "Restore exact saved model/optimizer/RNG/sampler state. Verify numerical package/precision/thread settings; record any CPU/hardware change without claiming cross-hardware bitwise identity."
+  },
+  "resource_policy": {
+    "runner": "ubuntu-24.04 standard GitHub-hosted CPU",
+    "numerical_threads_per_worker": 1,
+    "maximum_parallel_jobs": 5,
+    "training_timeout_minutes": 90,
+    "workflow_concurrency_group": "california-housing-sgdm-long-search-20261126",
+    "waits_behind_existing_workflow": true,
+    "no_duplicate_training": true,
+    "artifact_retention_days": 7
+  },
+  "results_root": "california_housing_sgdm_200k/results/2026-11-26_sgdm_200k"
+}
