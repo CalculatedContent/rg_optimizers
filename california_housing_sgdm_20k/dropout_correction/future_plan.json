@@ -1,0 +1,57 @@
+{
+  "status": "prepared_not_authorized_not_launched",
+  "experiment_id": "california_housing_dropout_probability_validation",
+  "source_archive_commit": "95cf2d49400c258588398383a9a041e5603e5837",
+  "data_dir": "california_housing_sgdm_20k/results/2026-11-26_sgdm_20k/data",
+  "training": {
+    "model": {
+      "d_in": 8,
+      "n_blocks": 2,
+      "d_block": 784
+    },
+    "development_updates": 20000,
+    "total_updates": 20000,
+    "batch_size": 256,
+    "grad_clip": 1,
+    "eval_every": 5000,
+    "checkpoint_updates": [
+      2000,
+      20000
+    ],
+    "measure_spectra": true
+  },
+  "optimizer": {
+    "optimizer": "sgdm",
+    "lr": 0.01,
+    "momentum": 0.99,
+    "weight_decay": 0.001,
+    "dampening": 0,
+    "nesterov": false
+  },
+  "dropout_probabilities": [
+    0,
+    0.1,
+    0.2,
+    0.3690073279296028,
+    0.5
+  ],
+  "fresh_seeds": [
+    3350,
+    3351,
+    3352,
+    3353,
+    3354
+  ],
+  "mask_repetitions": 20,
+  "primary_layer": "backbone.blocks.1.0.weight",
+  "primary_step": 20000,
+  "planned_runs": 25,
+  "maximum_updates_per_run": 20000,
+  "maximum_total_updates_if_separately_authorized": 500000,
+  "maximum_parallel_workers": 5,
+  "job_timeout_minutes": 45,
+  "primary_endpoint": "Matched-seed absolute error relative to p=0 FC2 exponent at fixed 20k, comparing uncorrected, full-p mask and r(p)=1-sqrt(1-p) mask. Report all rates and failures, not just agreement with alpha=2.",
+  "hypothesis": "Prespecified square-root element masking improves agreement with matched no-dropout controls without adjusting r, and preserves any near-marginal behavior when present.",
+  "test_policy": "Fixed endpoint RMSE/MAE only; no selection, retuning, or excluding on test/alpha.",
+  "no_dispatch": true
+}
