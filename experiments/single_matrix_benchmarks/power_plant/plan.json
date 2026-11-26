@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "status": "prepared_not_launched",
+  "dataset": "power_plant",
+  "task": "regression",
+  "architecture": [
+    4,
+    784,
+    784,
+    1
+  ],
+  "features": 4,
+  "outputs": 1,
+  "source_commit": "6eb4497628d12b0f300f4b4f6bdc386bebad565c",
+  "source_files": {
+    "data.txt": {
+      "git_blob_sha": "f374a576bd2e873ab500f0a76f6965ebf1faec39",
+      "url": "https://github.com/yaringal/DropoutUncertaintyExps/blob/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/power-plant/data/data.txt"
+    },
+    "index_features.txt": {
+      "git_blob_sha": "bc856dafab0941942ccea4202bfa3a5b02bf4371",
+      "url": "https://github.com/yaringal/DropoutUncertaintyExps/blob/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/power-plant/data/index_features.txt"
+    },
+    "index_target.txt": {
+      "git_blob_sha": "b8626c4cff2849624fb67f87cd0ad72b163671ad",
+      "url": "https://github.com/yaringal/DropoutUncertaintyExps/blob/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/power-plant/data/index_target.txt"
+    },
+    "index_train_0.txt": {
+      "git_blob_sha": "5b5e224c726048b1785b968dfe1bf6d1f56c24a2",
+      "url": "https://github.com/yaringal/DropoutUncertaintyExps/blob/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/power-plant/data/index_train_0.txt"
+    },
+    "index_test_0.txt": {
+      "git_blob_sha": "90c88720da5c39cb57f7da21d68887c09c7970a3",
+      "url": "https://github.com/yaringal/DropoutUncertaintyExps/blob/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/power-plant/data/index_test_0.txt"
+    },
+    "n_splits.txt": {
+      "git_blob_sha": "209e3ef4b6247ce746048d5711befda46206d235",
+      "url": "https://github.com/yaringal/DropoutUncertaintyExps/blob/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/power-plant/data/n_splits.txt"
+    }
+  },
+  "outer_fold": 0,
+  "outer_train": 8611,
+  "outer_test": 957,
+  "inner_validation_fraction": 0.2,
+  "inner_split_seed": 20261126,
+  "duplicate_policy": "preserve published outer split; exact full-row overlap count is 11 test rows; disclose and propose separate duplicate-grouped sensitivity, never silently change benchmark",
+  "preprocess": "z-score X and y using training rows only; confirm refit full outer train; report original target MW",
+  "dev_seeds": [
+    3370,
+    3371
+  ],
+  "confirmation_seeds": [
+    3372,
+    3373,
+    3374,
+    3375,
+    3376
+  ],
+  "grid": [
+    {
+      "id": "s0",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s1",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.99,
+      "weight_decay": 0
+    },
+    {
+      "id": "s2",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.01,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s3",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.01,
+      "momentum": 0.99,
+      "weight_decay": 0
+    },
+    {
+      "id": "s4",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "s5",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.03,
+      "momentum": 0.99,
+      "weight_decay": 0
+    },
+    {
+      "id": "a6",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 0
+    },
+    {
+      "id": "a7",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 0
+    },
+    {
+      "id": "a8",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.003,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 0
+    },
+    {
+      "id": "a9",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 0.001
+    },
+    {
+      "id": "a10",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 0.001
+    },
+    {
+      "id": "a11",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.003,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 0.001
+    }
+  ],
+  "selection": "per track lowest equal-seed mean fixed-20k validation RMSE; ties by candidate id; no test or alpha",
+  "dropout_primary": 0,
+  "dropout_extension": 0.3690073279296028,
+  "dropout_extension_authorized": false,
+  "cap": 20000,
+  "batch_size": 256,
+  "clip": 1,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "mask_repetitions": 20,
+  "max_parallel": 5,
+  "job_timeout_minutes": 45,
+  "development_runs": 24,
+  "confirmation_runs": 15,
+  "optional_dropout_runs": 15,
+  "max_primary_updates": 780000,
+  "max_optional_updates": 300000,
+  "reference": {
+    "source": "https://github.com/yaringal/DropoutUncertaintyExps/tree/6eb4497628d12b0f300f4b4f6bdc386bebad565c",
+    "published_grid_mc_dropout_rmse": 4.01,
+    "standard_error": 0.04,
+    "protocol": "20 published outer splits, MC predictive averaging, different architecture; this single-fold study is not an exact reproduction",
+    "dataset_paper": "https://doi.org/10.1016/j.ijepes.2014.02.027"
+  },
+  "execution": "manual one dataset at a time; no live training workflow in this branch"
+}

@@ -1,0 +1,172 @@
+[
+  {
+    "id": "california_housing",
+    "name": "California Housing",
+    "n": 20640,
+    "d": 8,
+    "k": 1,
+    "task": "regression",
+    "source": "https://github.com/CalculatedContent/rg_optimizers/tree/95cf2d49400c258588398383a9a041e5603e5837/california_housing_sgdm_20k/results/2026-11-26_sgdm_20k",
+    "note": "completed capped SGDM and AdamW controls; dropout correction remains empirical",
+    "architecture": [
+      8,
+      784,
+      784,
+      1
+    ],
+    "status": "existing_study"
+  },
+  {
+    "id": "power_plant",
+    "name": "Combined Cycle Power Plant",
+    "n": 9568,
+    "d": 4,
+    "k": 1,
+    "task": "regression",
+    "source": "https://archive.ics.uci.edu/dataset/294/combined%2Bcycle%2Bpower%2Bplant",
+    "note": "next: verified published outer split 0; original-data duplicates documented",
+    "architecture": [
+      4,
+      784,
+      784,
+      1
+    ],
+    "status": "prepared_not_launched"
+  },
+  {
+    "id": "magic",
+    "name": "MAGIC Gamma Telescope",
+    "n": 19020,
+    "d": 10,
+    "k": 2,
+    "task": "classification",
+    "source": "https://archive.ics.uci.edu/dataset/159/magic%2Bgamma%2Btelescope",
+    "note": "Monte Carlo particle events; keep original dataset distinct from rebalanced OpenML variants; freeze task and baseline before training",
+    "architecture": [
+      10,
+      784,
+      784,
+      2
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "dry_bean",
+    "name": "Dry Bean",
+    "n": 13611,
+    "d": 16,
+    "k": 7,
+    "task": "classification",
+    "source": "https://archive.ics.uci.edu/dataset/602/dry%2Bbean%2Bdataset",
+    "note": "Koklu and Ozkan 2020 MLP 91.73%, SVM 93.13%, 10-fold CV; exact author folds not yet verified",
+    "architecture": [
+      16,
+      784,
+      784,
+      7
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "protein",
+    "name": "Protein tertiary structure",
+    "n": 45730,
+    "d": 9,
+    "k": 1,
+    "task": "regression",
+    "source": "https://archive.ics.uci.edu/dataset/265/physicochemical%2Bproperties%2Bof%2Bprotein%2Btertiary%2Bst",
+    "note": "CASP-derived decoys; published benchmark split; do not infer generalization to unseen proteins",
+    "architecture": [
+      9,
+      784,
+      784,
+      1
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "kin8nm",
+    "name": "Kin8nm",
+    "n": 8192,
+    "d": 8,
+    "k": 1,
+    "task": "regression",
+    "source": "https://github.com/yaringal/DropoutUncertaintyExps/tree/6eb4497628d12b0f300f4b4f6bdc386bebad565c/UCI_Datasets/kin8nm",
+    "note": "simulated robot dynamics; canonical published UCI-regression split archive",
+    "architecture": [
+      8,
+      784,
+      784,
+      1
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "concrete",
+    "name": "Concrete compressive strength",
+    "n": 1030,
+    "d": 8,
+    "k": 1,
+    "task": "regression",
+    "source": "https://archive.ics.uci.edu/dataset/165/concrete%2Bcompressive%2Bstrength",
+    "note": "small-n overfitting stress test; use published indices",
+    "architecture": [
+      8,
+      784,
+      784,
+      1
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "wine_red",
+    "name": "Wine Quality Red",
+    "n": 1599,
+    "d": 11,
+    "k": 1,
+    "task": "regression",
+    "source": "https://archive.ics.uci.edu/dataset/186/wine%2Bquality",
+    "note": "ordinal target treated as regression; red only; duplicate checks",
+    "architecture": [
+      11,
+      784,
+      784,
+      1
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "letter",
+    "name": "Letter Recognition",
+    "n": 20000,
+    "d": 16,
+    "k": 26,
+    "task": "classification",
+    "source": "https://archive.ics.uci.edu/dataset/59/letter%2Brecognition",
+    "note": "UCI documented first 16000 training / final 4000 test",
+    "architecture": [
+      16,
+      784,
+      784,
+      26
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  },
+  {
+    "id": "satimage",
+    "name": "Statlog Landsat Satellite",
+    "n": 6435,
+    "d": 36,
+    "k": 6,
+    "task": "classification",
+    "source": "https://archive.ics.uci.edu/dataset/146/statlog%2Blandsat%2Bsatellite",
+    "note": "official supplied train/test files; spatial correlation caveat",
+    "architecture": [
+      36,
+      784,
+      784,
+      6
+    ],
+    "status": "candidate_requires_data_and_reference_audit"
+  }
+]
