@@ -1,0 +1,1174 @@
+{
+  "schema_version": 1,
+  "job": "grid-sgdm_06-3359",
+  "phase": "grid",
+  "seed": 3359,
+  "config": {
+    "id": "sgdm_06",
+    "lr": 0.03,
+    "momentum": 0.99,
+    "dropout_index": 0,
+    "dropout": 0,
+    "weight_decay": 0
+  },
+  "planned_updates": 20000,
+  "completed_updates": 20000,
+  "status": "complete",
+  "plan_sha256": "f39b52ddbea65afec8617dc96babd6daf8c31c894bb3d8bc2d6a015b5ad2961a",
+  "data_manifest_sha256": "9dfee80d0dc92d8ff8c7f16364f96f8ae6323a217870be814f7ea8b1c940660b",
+  "prepared_sha256": "bddcbb4773a6f2d614052b068a7b6a085749bf60fb61cfa11fcd851617f0d01c",
+  "selection_sha256": null,
+  "initial_weights_sha256": "7e7b1dc0f447c8c948113c87cba23f1ee29ae1f5d91eb6b1cf695ff73a9f983b",
+  "source_commit": "14ce8bb7c9bc91c6216f1d8feda299cad9da4bfa",
+  "run_id": "45810491969",
+  "versions": {
+    "torch": "2.7.1+cpu",
+    "numpy": "2.3.1",
+    "scipy": "1.16.0",
+    "pandas": "2.3.1",
+    "weightwatcher": "0.7.7",
+    "powerlaw": "2.0.0"
+  },
+  "cpu": "Intel(R) Xeon(R) 6975P-C",
+  "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+  "python": "3.12.9",
+  "threads": 1,
+  "parameter_count": 165256,
+  "history": [
+    {
+      "step": 0,
+      "weights_sha256": "7e7b1dc0f447c8c948113c87cba23f1ee29ae1f5d91eb6b1cf695ff73a9f983b",
+      "spectral_weights_sha256": "7e7b1dc0f447c8c948113c87cba23f1ee29ae1f5d91eb6b1cf695ff73a9f983b",
+      "checkpoint_file": "checkpoint_step_0.pt",
+      "checkpoint_sha256": "fa6d07bea8ee4755b097f1390d9cc5591b31e23407095996f45098233447e3f0",
+      "metrics": {
+        "train": {
+          "loss": 2.080630073805559,
+          "accuracy": 0.1251377302062018,
+          "n": 6353
+        },
+        "validation": {
+          "loss": 2.080690692124378,
+          "accuracy": 0.12646370023419204,
+          "n": 854
+        }
+      },
+      "spectral": {
+        "raw_alpha": 9.003103332050717,
+        "raw_alpha_all_four": 8.381469285978298,
+        "corrected_alpha": 9.003103332050717,
+        "corrected_alpha_all_four": 8.381469285978298,
+        "corrected_aggregate_replicates": [
+          9.003103332050717
+        ],
+        "corrected_all_four_replicates": [
+          8.381469285978298
+        ],
+        "layers": [
+          {
+            "layer": "fc1",
+            "shape": [
+              128,
+              1024
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0,
+            "raw": {
+              "alpha": 27.4370869067,
+              "D": 0.137206924,
+              "tail": 6,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "under-trained",
+              "xmin": 0.5565444016,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 10.7928955345
+            },
+            "corrected_alpha": 27.4370869067,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 27.4370869067,
+                "D": 0.137206924,
+                "tail": 6,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "under-trained",
+                "xmin": 0.5565444016,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 10.7928955345
+              }
+            ]
+          },
+          {
+            "layer": "fc2",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 3.9021381516,
+              "D": 0.1449702088,
+              "tail": 29,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 0.6049799376,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.5389135255
+            },
+            "corrected_alpha": 3.9021381516,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 3.9021381516,
+                "D": 0.1449702088,
+                "tail": 29,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 0.6049799376,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.5389135255
+              }
+            ]
+          },
+          {
+            "layer": "fc3",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 4.7403833564,
+              "D": 0.1493537881,
+              "tail": 23,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 0.6830866065,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.7799238439
+            },
+            "corrected_alpha": 4.7403833564,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 4.7403833564,
+                "D": 0.1493537881,
+                "tail": 23,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 0.6830866065,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.7799238439
+              }
+            ]
+          },
+          {
+            "layer": "fc4",
+            "shape": [
+              8,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 2.9873656685,
+              "D": 0.3006447198,
+              "tail": 8,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 0.2106091634,
+              "matrix_rank": 8,
+              "num_evals": 8,
+              "sigma": 0.7026398705
+            },
+            "corrected_alpha": 2.9873656685,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 2.9873656685,
+                "D": 0.3006447198,
+                "tail": 8,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 0.2106091634,
+                "matrix_rank": 8,
+                "num_evals": 8,
+                "sigma": 0.7026398705
+              }
+            ]
+          }
+        ],
+        "primary_layers": [
+          "fc1",
+          "fc2",
+          "fc3"
+        ],
+        "mask_reps": 1,
+        "method": "direct WeightWatcher 0.7.7; ordinary alpha, sqrt(tail)/(D+0.02); no size factor"
+      },
+      "elapsed_seconds": 0.04027302100007546
+    },
+    {
+      "step": 2000,
+      "weights_sha256": "35129846c5221a8afb23764f02e3f3841f9d8d2ab20941de181a125f74632221",
+      "spectral_weights_sha256": "35129846c5221a8afb23764f02e3f3841f9d8d2ab20941de181a125f74632221",
+      "checkpoint_file": "checkpoint_step_2000.pt",
+      "checkpoint_sha256": "b24754e427047e8393848054599c0910d6e62dca5fbdf8163eeb4a219773022a",
+      "metrics": {
+        "train": {
+          "loss": 1.9571542858458233,
+          "accuracy": 0.2584605698095388,
+          "n": 6353
+        },
+        "validation": {
+          "loss": 2.1666480607115415,
+          "accuracy": 0.27985948477751754,
+          "n": 854
+        }
+      },
+      "spectral": {
+        "raw_alpha": 1.666660344857767,
+        "raw_alpha_all_four": 1.6563789587581716,
+        "corrected_alpha": 1.666660344857767,
+        "corrected_alpha_all_four": 1.6563789587581716,
+        "corrected_aggregate_replicates": [
+          1.666660344857767
+        ],
+        "corrected_all_four_replicates": [
+          1.6563789587581716
+        ],
+        "layers": [
+          {
+            "layer": "fc1",
+            "shape": [
+              128,
+              1024
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0,
+            "raw": {
+              "alpha": 1.4648854752,
+              "D": 0.0422352875,
+              "tail": 121,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.4461084929,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.0422623159
+            },
+            "corrected_alpha": 1.4648854752,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.4648854752,
+                "D": 0.0422352875,
+                "tail": 121,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.4461084929,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.0422623159
+              }
+            ]
+          },
+          {
+            "layer": "fc2",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.9798467386,
+              "D": 0.0641621464,
+              "tail": 20,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 18.6476205481,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.2191003915
+            },
+            "corrected_alpha": 1.9798467386,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.9798467386,
+                "D": 0.0641621464,
+                "tail": 20,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 18.6476205481,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.2191003915
+              }
+            ]
+          },
+          {
+            "layer": "fc3",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 2.0038389634,
+              "D": 0.0770898214,
+              "tail": 30,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 7.8790196327,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.1832750815
+            },
+            "corrected_alpha": 2.0038389634,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 2.0038389634,
+                "D": 0.0770898214,
+                "tail": 30,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 7.8790196327,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.1832750815
+              }
+            ]
+          },
+          {
+            "layer": "fc4",
+            "shape": [
+              8,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.2285952905,
+              "D": 0.3910518056,
+              "tail": 8,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.2845875538,
+              "matrix_rank": 8,
+              "num_evals": 8,
+              "sigma": 0.08082064
+            },
+            "corrected_alpha": 1.2285952905,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.2285952905,
+                "D": 0.3910518056,
+                "tail": 8,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.2845875538,
+                "matrix_rank": 8,
+                "num_evals": 8,
+                "sigma": 0.08082064
+              }
+            ]
+          }
+        ],
+        "primary_layers": [
+          "fc1",
+          "fc2",
+          "fc3"
+        ],
+        "mask_reps": 1,
+        "method": "direct WeightWatcher 0.7.7; ordinary alpha, sqrt(tail)/(D+0.02); no size factor"
+      },
+      "elapsed_seconds": 2.9946678139999676
+    },
+    {
+      "step": 5000,
+      "weights_sha256": "bcb033cd8e5776829d9c7e14201dc19db5ceb2115f9e3e4261b14f591446a124",
+      "spectral_weights_sha256": "bcb033cd8e5776829d9c7e14201dc19db5ceb2115f9e3e4261b14f591446a124",
+      "checkpoint_file": "checkpoint_step_5000.pt",
+      "checkpoint_sha256": "9f8a328a7f915200f58cff20e3b6138bf633c2e408ed7428c90d16d1dc08fb3c",
+      "metrics": {
+        "train": {
+          "loss": 1.9196463857657062,
+          "accuracy": 0.21328506217535023,
+          "n": 6353
+        },
+        "validation": {
+          "loss": 3.8658071334803132,
+          "accuracy": 0.20725995316159251,
+          "n": 854
+        }
+      },
+      "spectral": {
+        "raw_alpha": 1.6363395179697944,
+        "raw_alpha_all_four": 1.6265171508529734,
+        "corrected_alpha": 1.6363395179697944,
+        "corrected_alpha_all_four": 1.6265171508529734,
+        "corrected_aggregate_replicates": [
+          1.6363395179697944
+        ],
+        "corrected_all_four_replicates": [
+          1.6265171508529734
+        ],
+        "layers": [
+          {
+            "layer": "fc1",
+            "shape": [
+              128,
+              1024
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0,
+            "raw": {
+              "alpha": 1.4563962766,
+              "D": 0.0438937762,
+              "tail": 119,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.500253849,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.0418377781
+            },
+            "corrected_alpha": 1.4563962766,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.4563962766,
+                "D": 0.0438937762,
+                "tail": 119,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.500253849,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.0418377781
+              }
+            ]
+          },
+          {
+            "layer": "fc2",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.8072506503,
+              "D": 0.0670425482,
+              "tail": 33,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 8.6354840886,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.140524301
+            },
+            "corrected_alpha": 1.8072506503,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.8072506503,
+                "D": 0.0670425482,
+                "tail": 33,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 8.6354840886,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.140524301
+              }
+            ]
+          },
+          {
+            "layer": "fc3",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.9807168499,
+              "D": 0.0770163517,
+              "tail": 30,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 7.9314683417,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.1790535804
+            },
+            "corrected_alpha": 1.9807168499,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.9807168499,
+                "D": 0.0770163517,
+                "tail": 30,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 7.9314683417,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.1790535804
+              }
+            ]
+          },
+          {
+            "layer": "fc4",
+            "shape": [
+              8,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.2199679363,
+              "D": 0.3792995971,
+              "tail": 8,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.2849741512,
+              "matrix_rank": 8,
+              "num_evals": 8,
+              "sigma": 0.0777704097
+            },
+            "corrected_alpha": 1.2199679363,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.2199679363,
+                "D": 0.3792995971,
+                "tail": 8,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.2849741512,
+                "matrix_rank": 8,
+                "num_evals": 8,
+                "sigma": 0.0777704097
+              }
+            ]
+          }
+        ],
+        "primary_layers": [
+          "fc1",
+          "fc2",
+          "fc3"
+        ],
+        "mask_reps": 1,
+        "method": "direct WeightWatcher 0.7.7; ordinary alpha, sqrt(tail)/(D+0.02); no size factor"
+      },
+      "elapsed_seconds": 7.220459821000077
+    },
+    {
+      "step": 10000,
+      "weights_sha256": "235f7f881acb1e849f43068b595d48555fa7bb547eacc04a381ba90c965fa130",
+      "spectral_weights_sha256": "235f7f881acb1e849f43068b595d48555fa7bb547eacc04a381ba90c965fa130",
+      "checkpoint_file": "checkpoint_step_10000.pt",
+      "checkpoint_sha256": "a337bce8154014fbb6d1ab40c05791972d9da19fbde3948a51cfc6d51bb4e8d8",
+      "metrics": {
+        "train": {
+          "loss": 1.8164785016752052,
+          "accuracy": 0.2150165276247442,
+          "n": 6353
+        },
+        "validation": {
+          "loss": 1.8006683278139637,
+          "accuracy": 0.22833723653395785,
+          "n": 854
+        }
+      },
+      "spectral": {
+        "raw_alpha": 1.665423828665016,
+        "raw_alpha_all_four": 1.6534594596540442,
+        "corrected_alpha": 1.665423828665016,
+        "corrected_alpha_all_four": 1.6534594596540442,
+        "corrected_aggregate_replicates": [
+          1.665423828665016
+        ],
+        "corrected_all_four_replicates": [
+          1.6534594596540442
+        ],
+        "layers": [
+          {
+            "layer": "fc1",
+            "shape": [
+              128,
+              1024
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0,
+            "raw": {
+              "alpha": 1.4540249542,
+              "D": 0.0454492919,
+              "tail": 114,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.5847824161,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.042523333
+            },
+            "corrected_alpha": 1.4540249542,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.4540249542,
+                "D": 0.0454492919,
+                "tail": 114,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.5847824161,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.042523333
+              }
+            ]
+          },
+          {
+            "layer": "fc2",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.8325878007,
+              "D": 0.0639393082,
+              "tail": 25,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 13.1882050307,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.1665175601
+            },
+            "corrected_alpha": 1.8325878007,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.8325878007,
+                "D": 0.0639393082,
+                "tail": 25,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 13.1882050307,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.1665175601
+              }
+            ]
+          },
+          {
+            "layer": "fc3",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 2.3848323376,
+              "D": 0.0772723497,
+              "tail": 11,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 27.4551626456,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.4175426601
+            },
+            "corrected_alpha": 2.3848323376,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 2.3848323376,
+                "D": 0.0772723497,
+                "tail": 11,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 27.4551626456,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.4175426601
+              }
+            ]
+          },
+          {
+            "layer": "fc4",
+            "shape": [
+              8,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.2182581695,
+              "D": 0.3806390859,
+              "tail": 8,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.2844602811,
+              "matrix_rank": 8,
+              "num_evals": 8,
+              "sigma": 0.0771659159
+            },
+            "corrected_alpha": 1.2182581695,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.2182581695,
+                "D": 0.3806390859,
+                "tail": 8,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.2844602811,
+                "matrix_rank": 8,
+                "num_evals": 8,
+                "sigma": 0.0771659159
+              }
+            ]
+          }
+        ],
+        "primary_layers": [
+          "fc1",
+          "fc2",
+          "fc3"
+        ],
+        "mask_reps": 1,
+        "method": "direct WeightWatcher 0.7.7; ordinary alpha, sqrt(tail)/(D+0.02); no size factor"
+      },
+      "elapsed_seconds": 14.624899526000036
+    },
+    {
+      "step": 15000,
+      "weights_sha256": "ce8389ac00e4a25e966ad46f7f494f6537064e822c6154b28c8ecfd4e8957416",
+      "spectral_weights_sha256": "ce8389ac00e4a25e966ad46f7f494f6537064e822c6154b28c8ecfd4e8957416",
+      "checkpoint_file": "checkpoint_step_15000.pt",
+      "checkpoint_sha256": "47a6ea44048a6fe98c64eb559607691f4bb72dba9e1172dfed6321a779601989",
+      "metrics": {
+        "train": {
+          "loss": 1.789843280203189,
+          "accuracy": 0.24586809381394617,
+          "n": 6353
+        },
+        "validation": {
+          "loss": 1.77355921296381,
+          "accuracy": 0.23185011709601874,
+          "n": 854
+        }
+      },
+      "spectral": {
+        "raw_alpha": 1.6719777528169646,
+        "raw_alpha_all_four": 1.6598033045913017,
+        "corrected_alpha": 1.6719777528169646,
+        "corrected_alpha_all_four": 1.6598033045913017,
+        "corrected_aggregate_replicates": [
+          1.6719777528169646
+        ],
+        "corrected_all_four_replicates": [
+          1.6598033045913017
+        ],
+        "layers": [
+          {
+            "layer": "fc1",
+            "shape": [
+              128,
+              1024
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0,
+            "raw": {
+              "alpha": 1.4465041651,
+              "D": 0.0466488257,
+              "tail": 117,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.5705756926,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.0412793247
+            },
+            "corrected_alpha": 1.4465041651,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.4465041651,
+                "D": 0.0466488257,
+                "tail": 117,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.5705756926,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.0412793247
+              }
+            ]
+          },
+          {
+            "layer": "fc2",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.9051459762,
+              "D": 0.0602140922,
+              "tail": 19,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 21.819388946,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.2076547284
+            },
+            "corrected_alpha": 1.9051459762,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.9051459762,
+                "D": 0.0602140922,
+                "tail": 19,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 21.819388946,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.2076547284
+              }
+            ]
+          },
+          {
+            "layer": "fc3",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 2.3360230568,
+              "D": 0.0761580425,
+              "tail": 12,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 25.6629349265,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.3856766357
+            },
+            "corrected_alpha": 2.3360230568,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 2.3360230568,
+                "D": 0.0761580425,
+                "tail": 12,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 25.6629349265,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.3856766357
+              }
+            ]
+          },
+          {
+            "layer": "fc4",
+            "shape": [
+              8,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.219625549,
+              "D": 0.3847518016,
+              "tail": 8,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.2853971007,
+              "matrix_rank": 8,
+              "num_evals": 8,
+              "sigma": 0.0776493575
+            },
+            "corrected_alpha": 1.219625549,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.219625549,
+                "D": 0.3847518016,
+                "tail": 8,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.2853971007,
+                "matrix_rank": 8,
+                "num_evals": 8,
+                "sigma": 0.0776493575
+              }
+            ]
+          }
+        ],
+        "primary_layers": [
+          "fc1",
+          "fc2",
+          "fc3"
+        ],
+        "mask_reps": 1,
+        "method": "direct WeightWatcher 0.7.7; ordinary alpha, sqrt(tail)/(D+0.02); no size factor"
+      },
+      "elapsed_seconds": 23.19513025299989
+    },
+    {
+      "step": 20000,
+      "weights_sha256": "7f171bcfd245312e0f5d59b439cd3066edd27214b8170962dd8b8be4b3c3308e",
+      "spectral_weights_sha256": "7f171bcfd245312e0f5d59b439cd3066edd27214b8170962dd8b8be4b3c3308e",
+      "checkpoint_file": "checkpoint_step_20000.pt",
+      "checkpoint_sha256": "2afa42f4db3f67f20fb6002e0255df3024ef1cbd59f669070e2d22ac16e9a55f",
+      "metrics": {
+        "train": {
+          "loss": 1.7409921769511882,
+          "accuracy": 0.27908074925232174,
+          "n": 6353
+        },
+        "validation": {
+          "loss": 3.6052470508727312,
+          "accuracy": 0.2775175644028103,
+          "n": 854
+        }
+      },
+      "spectral": {
+        "raw_alpha": 1.6594500408227701,
+        "raw_alpha_all_four": 1.6473825706830711,
+        "corrected_alpha": 1.6594500408227701,
+        "corrected_alpha_all_four": 1.6473825706830711,
+        "corrected_aggregate_replicates": [
+          1.6594500408227701
+        ],
+        "corrected_all_four_replicates": [
+          1.6473825706830711
+        ],
+        "layers": [
+          {
+            "layer": "fc1",
+            "shape": [
+              128,
+              1024
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0,
+            "raw": {
+              "alpha": 1.4506294558,
+              "D": 0.0467576273,
+              "tail": 114,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.641642001,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.0422053155
+            },
+            "corrected_alpha": 1.4506294558,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.4506294558,
+                "D": 0.0467576273,
+                "tail": 114,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.641642001,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.0422053155
+              }
+            ]
+          },
+          {
+            "layer": "fc2",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.8327025188,
+              "D": 0.0563069532,
+              "tail": 20,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 19.4742659201,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.1861979437
+            },
+            "corrected_alpha": 1.8327025188,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.8327025188,
+                "D": 0.0563069532,
+                "tail": 20,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 19.4742659201,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.1861979437
+              }
+            ]
+          },
+          {
+            "layer": "fc3",
+            "shape": [
+              128,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 2.3528705059,
+              "D": 0.083339686,
+              "tail": 12,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "",
+              "xmin": 26.6751842019,
+              "matrix_rank": 128,
+              "num_evals": 128,
+              "sigma": 0.3905400754
+            },
+            "corrected_alpha": 2.3528705059,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 2.3528705059,
+                "D": 0.083339686,
+                "tail": 12,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "",
+                "xmin": 26.6751842019,
+                "matrix_rank": 128,
+                "num_evals": 128,
+                "sigma": 0.3905400754
+              }
+            ]
+          },
+          {
+            "layer": "fc4",
+            "shape": [
+              8,
+              128
+            ],
+            "input_dropout": 0,
+            "mask_probability": 0.0,
+            "raw": {
+              "alpha": 1.2181145067,
+              "D": 0.3791553557,
+              "tail": 8,
+              "status": "success",
+              "ww_status": "success",
+              "warning": "over-trained",
+              "xmin": 0.2837510376,
+              "matrix_rank": 8,
+              "num_evals": 8,
+              "sigma": 0.0771151234
+            },
+            "corrected_alpha": 1.2181145067,
+            "corrected_alpha_sd": 0.0,
+            "corrected_fits": [
+              {
+                "alpha": 1.2181145067,
+                "D": 0.3791553557,
+                "tail": 8,
+                "status": "success",
+                "ww_status": "success",
+                "warning": "over-trained",
+                "xmin": 0.2837510376,
+                "matrix_rank": 8,
+                "num_evals": 8,
+                "sigma": 0.0771151234
+              }
+            ]
+          }
+        ],
+        "primary_layers": [
+          "fc1",
+          "fc2",
+          "fc3"
+        ],
+        "mask_reps": 1,
+        "method": "direct WeightWatcher 0.7.7; ordinary alpha, sqrt(tail)/(D+0.02); no size factor"
+      },
+      "elapsed_seconds": 31.73251104299993
+    }
+  ],
+  "final_resume_sha256": "29e64137455a9cbb88bb52fe1d48e200de92ac08aa4b4d49090106d564fba675"
+}

@@ -1,0 +1,59 @@
+{
+  "source": "https://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
+  "license": "CC BY; Google Speech Commands, Pete Warden (2018)",
+  "archive_sha256": "49650f2341b26d886b46b3f4fb8fed59e30300b17550f1ee4a768b3106cf93a0",
+  "archive_bytes": 182082353,
+  "prepared_sha256": "bddcbb4773a6f2d614052b068a7b6a085749bf60fb61cfa11fcd851617f0d01c",
+  "split_csv_sha256": "dab37da43bdea8d3c191985e9c3cd6e3ced1a2afac8483a53e1717950e1bcebb",
+  "labels": [
+    "down",
+    "go",
+    "left",
+    "no",
+    "right",
+    "stop",
+    "up",
+    "yes"
+  ],
+  "counts_by_class": {
+    "train": [
+      817,
+      796,
+      792,
+      795,
+      786,
+      801,
+      779,
+      787
+    ],
+    "validation": [
+      91,
+      99,
+      113,
+      101,
+      113,
+      111,
+      111,
+      115
+    ],
+    "test": [
+      92,
+      105,
+      95,
+      104,
+      101,
+      88,
+      110,
+      98
+    ]
+  },
+  "speaker_counts": {
+    "train": 1404,
+    "validation": 174,
+    "test": 172
+  },
+  "features": "32 mel bands x 32 time bins; train-only feature normalization",
+  "split_rule": "speaker-disjoint SHA256('mini-speech-commands-v1:'+speaker) first 8 hex digits modulo 1000: <800 train, <900 validation, otherwise test",
+  "preprocessor_sha256": "6cc438eb50932100ba130ae92e726733ae20b031897d3924337c348dfbec1861",
+  "n_clips": 8000
+}

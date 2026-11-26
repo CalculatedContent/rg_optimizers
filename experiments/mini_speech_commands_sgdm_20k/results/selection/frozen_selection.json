@@ -1,0 +1,51 @@
+{
+  "complete_grid": true,
+  "n_grid": 24,
+  "audit_errors": [],
+  "plan_sha256": "f39b52ddbea65afec8617dc96babd6daf8c31c894bb3d8bc2d6a015b5ad2961a",
+  "selected": {
+    "lr": 0.03,
+    "momentum": 0.9,
+    "mean_validation_loss": 1.521195690860793,
+    "mean_validation_accuracy": 0.8199648711943794
+  },
+  "all_scores": [
+    {
+      "lr": 0.03,
+      "momentum": 0.9,
+      "mean_validation_loss": 1.521195690860793,
+      "mean_validation_accuracy": 0.8199648711943794
+    },
+    {
+      "lr": 0.01,
+      "momentum": 0.9,
+      "mean_validation_loss": 1.795148858421022,
+      "mean_validation_accuracy": 0.8085480093676816
+    },
+    {
+      "lr": 0.1,
+      "momentum": 0.99,
+      "mean_validation_loss": 2.088158422108277,
+      "mean_validation_accuracy": 0.1252927400468384
+    },
+    {
+      "lr": 0.03,
+      "momentum": 0.99,
+      "mean_validation_loss": 3.4514426559698386,
+      "mean_validation_accuracy": 0.24765807962529274
+    },
+    {
+      "lr": 0.1,
+      "momentum": 0.9,
+      "mean_validation_loss": 3.500016706051257,
+      "mean_validation_accuracy": 0.802400468384075
+    },
+    {
+      "lr": 0.01,
+      "momentum": 0.99,
+      "mean_validation_loss": 4.471305534487865,
+      "mean_validation_accuracy": 0.803864168618267
+    }
+  ],
+  "selection_rule": "minimum equal-weight fixed-20k validation cross entropy across both dropout rates and both development seeds for each matched LR/momentum pair; tie by LR then momentum; no test or alpha"
+}
