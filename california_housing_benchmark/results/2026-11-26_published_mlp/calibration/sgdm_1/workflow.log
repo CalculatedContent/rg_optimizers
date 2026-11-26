@@ -1,0 +1,488 @@
+calibration sgdm seed=2338 epoch=1 step=52 val_RMSE=0.649428 best=0.649428 paper_stop=False
+calibration sgdm seed=2338 epoch=2 step=104 val_RMSE=0.607924 best=0.607924 paper_stop=False
+calibration sgdm seed=2338 epoch=3 step=156 val_RMSE=0.594725 best=0.594725 paper_stop=False
+calibration sgdm seed=2338 epoch=4 step=208 val_RMSE=0.591397 best=0.591397 paper_stop=False
+calibration sgdm seed=2338 epoch=5 step=260 val_RMSE=0.593012 best=0.591397 paper_stop=False
+calibration sgdm seed=2338 epoch=6 step=312 val_RMSE=0.591190 best=0.591190 paper_stop=False
+calibration sgdm seed=2338 epoch=7 step=364 val_RMSE=0.584404 best=0.584404 paper_stop=False
+calibration sgdm seed=2338 epoch=8 step=416 val_RMSE=0.580610 best=0.580610 paper_stop=False
+calibration sgdm seed=2338 epoch=9 step=468 val_RMSE=0.580626 best=0.580610 paper_stop=False
+calibration sgdm seed=2338 epoch=10 step=520 val_RMSE=0.582175 best=0.580610 paper_stop=False
+calibration sgdm seed=2338 epoch=11 step=572 val_RMSE=0.578709 best=0.578709 paper_stop=False
+calibration sgdm seed=2338 epoch=12 step=624 val_RMSE=0.581591 best=0.578709 paper_stop=False
+calibration sgdm seed=2338 epoch=13 step=676 val_RMSE=0.574389 best=0.574389 paper_stop=False
+calibration sgdm seed=2338 epoch=14 step=728 val_RMSE=0.588108 best=0.574389 paper_stop=False
+calibration sgdm seed=2338 epoch=15 step=780 val_RMSE=0.577609 best=0.574389 paper_stop=False
+calibration sgdm seed=2338 epoch=16 step=832 val_RMSE=0.576361 best=0.574389 paper_stop=False
+calibration sgdm seed=2338 epoch=17 step=884 val_RMSE=0.570946 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=18 step=936 val_RMSE=0.577878 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=19 step=988 val_RMSE=0.571491 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=20 step=1040 val_RMSE=0.575662 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=21 step=1092 val_RMSE=0.579257 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=22 step=1144 val_RMSE=0.574610 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=23 step=1196 val_RMSE=0.572998 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=24 step=1248 val_RMSE=0.581870 best=0.570946 paper_stop=False
+calibration sgdm seed=2338 epoch=25 step=1300 val_RMSE=0.569315 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=26 step=1352 val_RMSE=0.569770 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=27 step=1404 val_RMSE=0.572420 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=28 step=1456 val_RMSE=0.572772 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=29 step=1508 val_RMSE=0.572093 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=30 step=1560 val_RMSE=0.569660 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=31 step=1612 val_RMSE=0.570223 best=0.569315 paper_stop=False
+calibration sgdm seed=2338 epoch=32 step=1664 val_RMSE=0.568755 best=0.568755 paper_stop=False
+calibration sgdm seed=2338 epoch=33 step=1716 val_RMSE=0.568392 best=0.568392 paper_stop=False
+calibration sgdm seed=2338 epoch=34 step=1768 val_RMSE=0.566140 best=0.566140 paper_stop=False
+calibration sgdm seed=2338 epoch=35 step=1820 val_RMSE=0.570294 best=0.566140 paper_stop=False
+calibration sgdm seed=2338 epoch=36 step=1872 val_RMSE=0.566678 best=0.566140 paper_stop=False
+calibration sgdm seed=2338 epoch=37 step=1924 val_RMSE=0.563792 best=0.563792 paper_stop=False
+calibration sgdm seed=2338 epoch=38 step=1976 val_RMSE=0.565014 best=0.563792 paper_stop=False
+calibration sgdm seed=2338 epoch=39 step=2028 val_RMSE=0.567027 best=0.563792 paper_stop=False
+calibration sgdm seed=2338 epoch=40 step=2080 val_RMSE=0.572259 best=0.563792 paper_stop=False
+calibration sgdm seed=2338 epoch=41 step=2132 val_RMSE=0.563377 best=0.563377 paper_stop=False
+calibration sgdm seed=2338 epoch=42 step=2184 val_RMSE=0.563351 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=43 step=2236 val_RMSE=0.566441 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=44 step=2288 val_RMSE=0.567758 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=45 step=2340 val_RMSE=0.564434 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=46 step=2392 val_RMSE=0.564139 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=47 step=2444 val_RMSE=0.565400 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=48 step=2496 val_RMSE=0.567002 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=49 step=2548 val_RMSE=0.565117 best=0.563351 paper_stop=False
+calibration sgdm seed=2338 epoch=50 step=2600 val_RMSE=0.561101 best=0.561101 paper_stop=False
+calibration sgdm seed=2338 epoch=51 step=2652 val_RMSE=0.565089 best=0.561101 paper_stop=False
+calibration sgdm seed=2338 epoch=52 step=2704 val_RMSE=0.563082 best=0.561101 paper_stop=False
+calibration sgdm seed=2338 epoch=53 step=2756 val_RMSE=0.560302 best=0.560302 paper_stop=False
+calibration sgdm seed=2338 epoch=54 step=2808 val_RMSE=0.563387 best=0.560302 paper_stop=False
+calibration sgdm seed=2338 epoch=55 step=2860 val_RMSE=0.560656 best=0.560302 paper_stop=False
+calibration sgdm seed=2338 epoch=56 step=2912 val_RMSE=0.566887 best=0.560302 paper_stop=False
+calibration sgdm seed=2338 epoch=57 step=2964 val_RMSE=0.558333 best=0.558333 paper_stop=False
+calibration sgdm seed=2338 epoch=58 step=3016 val_RMSE=0.560644 best=0.558333 paper_stop=False
+calibration sgdm seed=2338 epoch=59 step=3068 val_RMSE=0.560029 best=0.558333 paper_stop=False
+calibration sgdm seed=2338 epoch=60 step=3120 val_RMSE=0.558216 best=0.558216 paper_stop=False
+calibration sgdm seed=2338 epoch=61 step=3172 val_RMSE=0.560264 best=0.558216 paper_stop=False
+calibration sgdm seed=2338 epoch=62 step=3224 val_RMSE=0.559211 best=0.558216 paper_stop=False
+calibration sgdm seed=2338 epoch=63 step=3276 val_RMSE=0.567373 best=0.558216 paper_stop=False
+calibration sgdm seed=2338 epoch=64 step=3328 val_RMSE=0.557718 best=0.557718 paper_stop=False
+calibration sgdm seed=2338 epoch=65 step=3380 val_RMSE=0.560045 best=0.557718 paper_stop=False
+calibration sgdm seed=2338 epoch=66 step=3432 val_RMSE=0.555118 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=67 step=3484 val_RMSE=0.557530 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=68 step=3536 val_RMSE=0.557864 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=69 step=3588 val_RMSE=0.556550 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=70 step=3640 val_RMSE=0.556094 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=71 step=3692 val_RMSE=0.556075 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=72 step=3744 val_RMSE=0.556595 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=73 step=3796 val_RMSE=0.556125 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=74 step=3848 val_RMSE=0.557131 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=75 step=3900 val_RMSE=0.559718 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=76 step=3952 val_RMSE=0.555794 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=77 step=4004 val_RMSE=0.555842 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=78 step=4056 val_RMSE=0.555775 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=79 step=4108 val_RMSE=0.556036 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=80 step=4160 val_RMSE=0.556994 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=81 step=4212 val_RMSE=0.555391 best=0.555118 paper_stop=False
+calibration sgdm seed=2338 epoch=82 step=4264 val_RMSE=0.554587 best=0.554587 paper_stop=False
+calibration sgdm seed=2338 epoch=83 step=4316 val_RMSE=0.553115 best=0.553115 paper_stop=False
+calibration sgdm seed=2338 epoch=84 step=4368 val_RMSE=0.552901 best=0.552901 paper_stop=False
+calibration sgdm seed=2338 epoch=85 step=4420 val_RMSE=0.551811 best=0.551811 paper_stop=False
+calibration sgdm seed=2338 epoch=86 step=4472 val_RMSE=0.551859 best=0.551811 paper_stop=False
+calibration sgdm seed=2338 epoch=87 step=4524 val_RMSE=0.554447 best=0.551811 paper_stop=False
+calibration sgdm seed=2338 epoch=88 step=4576 val_RMSE=0.552254 best=0.551811 paper_stop=False
+calibration sgdm seed=2338 epoch=89 step=4628 val_RMSE=0.551872 best=0.551811 paper_stop=False
+calibration sgdm seed=2338 epoch=90 step=4680 val_RMSE=0.551179 best=0.551179 paper_stop=False
+calibration sgdm seed=2338 epoch=91 step=4732 val_RMSE=0.551469 best=0.551179 paper_stop=False
+calibration sgdm seed=2338 epoch=92 step=4784 val_RMSE=0.554277 best=0.551179 paper_stop=False
+calibration sgdm seed=2338 epoch=93 step=4836 val_RMSE=0.555173 best=0.551179 paper_stop=False
+calibration sgdm seed=2338 epoch=94 step=4888 val_RMSE=0.550998 best=0.550998 paper_stop=False
+calibration sgdm seed=2338 epoch=95 step=4940 val_RMSE=0.554088 best=0.550998 paper_stop=False
+calibration sgdm seed=2338 epoch=96 step=4992 val_RMSE=0.551857 best=0.550998 paper_stop=False
+calibration sgdm seed=2338 epoch=97 step=5044 val_RMSE=0.554369 best=0.550998 paper_stop=False
+calibration sgdm seed=2338 epoch=98 step=5096 val_RMSE=0.553959 best=0.550998 paper_stop=False
+calibration sgdm seed=2338 epoch=99 step=5148 val_RMSE=0.550489 best=0.550489 paper_stop=False
+calibration sgdm seed=2338 epoch=100 step=5200 val_RMSE=0.553646 best=0.550489 paper_stop=False
+calibration sgdm seed=2338 epoch=101 step=5252 val_RMSE=0.549929 best=0.549929 paper_stop=False
+calibration sgdm seed=2338 epoch=102 step=5304 val_RMSE=0.549860 best=0.549860 paper_stop=False
+calibration sgdm seed=2338 epoch=103 step=5356 val_RMSE=0.549129 best=0.549129 paper_stop=False
+calibration sgdm seed=2338 epoch=104 step=5408 val_RMSE=0.548344 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=105 step=5460 val_RMSE=0.548752 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=106 step=5512 val_RMSE=0.551161 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=107 step=5564 val_RMSE=0.548616 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=108 step=5616 val_RMSE=0.548676 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=109 step=5668 val_RMSE=0.549048 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=110 step=5720 val_RMSE=0.548522 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=111 step=5772 val_RMSE=0.548855 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=112 step=5824 val_RMSE=0.549140 best=0.548344 paper_stop=False
+calibration sgdm seed=2338 epoch=113 step=5876 val_RMSE=0.548314 best=0.548314 paper_stop=False
+calibration sgdm seed=2338 epoch=114 step=5928 val_RMSE=0.548183 best=0.548183 paper_stop=False
+calibration sgdm seed=2338 epoch=115 step=5980 val_RMSE=0.549083 best=0.548183 paper_stop=False
+calibration sgdm seed=2338 epoch=116 step=6032 val_RMSE=0.550245 best=0.548183 paper_stop=False
+calibration sgdm seed=2338 epoch=117 step=6084 val_RMSE=0.547001 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=118 step=6136 val_RMSE=0.548568 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=119 step=6188 val_RMSE=0.547837 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=120 step=6240 val_RMSE=0.548271 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=121 step=6292 val_RMSE=0.547116 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=122 step=6344 val_RMSE=0.550697 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=123 step=6396 val_RMSE=0.547263 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=124 step=6448 val_RMSE=0.548796 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=125 step=6500 val_RMSE=0.547187 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=126 step=6552 val_RMSE=0.547953 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=127 step=6604 val_RMSE=0.547969 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=128 step=6656 val_RMSE=0.547940 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=129 step=6708 val_RMSE=0.547558 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=130 step=6760 val_RMSE=0.547178 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=131 step=6812 val_RMSE=0.547993 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=132 step=6864 val_RMSE=0.547864 best=0.547001 paper_stop=False
+calibration sgdm seed=2338 epoch=133 step=6916 val_RMSE=0.551789 best=0.547001 paper_stop=True
+calibration sgdm seed=2339 epoch=1 step=52 val_RMSE=0.642236 best=0.642236 paper_stop=False
+calibration sgdm seed=2339 epoch=2 step=104 val_RMSE=0.603538 best=0.603538 paper_stop=False
+calibration sgdm seed=2339 epoch=3 step=156 val_RMSE=0.605898 best=0.603538 paper_stop=False
+calibration sgdm seed=2339 epoch=4 step=208 val_RMSE=0.599732 best=0.599732 paper_stop=False
+calibration sgdm seed=2339 epoch=5 step=260 val_RMSE=0.591674 best=0.591674 paper_stop=False
+calibration sgdm seed=2339 epoch=6 step=312 val_RMSE=0.588841 best=0.588841 paper_stop=False
+calibration sgdm seed=2339 epoch=7 step=364 val_RMSE=0.590564 best=0.588841 paper_stop=False
+calibration sgdm seed=2339 epoch=8 step=416 val_RMSE=0.582494 best=0.582494 paper_stop=False
+calibration sgdm seed=2339 epoch=9 step=468 val_RMSE=0.578935 best=0.578935 paper_stop=False
+calibration sgdm seed=2339 epoch=10 step=520 val_RMSE=0.579595 best=0.578935 paper_stop=False
+calibration sgdm seed=2339 epoch=11 step=572 val_RMSE=0.587129 best=0.578935 paper_stop=False
+calibration sgdm seed=2339 epoch=12 step=624 val_RMSE=0.577784 best=0.577784 paper_stop=False
+calibration sgdm seed=2339 epoch=13 step=676 val_RMSE=0.579511 best=0.577784 paper_stop=False
+calibration sgdm seed=2339 epoch=14 step=728 val_RMSE=0.577654 best=0.577654 paper_stop=False
+calibration sgdm seed=2339 epoch=15 step=780 val_RMSE=0.575980 best=0.575980 paper_stop=False
+calibration sgdm seed=2339 epoch=16 step=832 val_RMSE=0.572787 best=0.572787 paper_stop=False
+calibration sgdm seed=2339 epoch=17 step=884 val_RMSE=0.574501 best=0.572787 paper_stop=False
+calibration sgdm seed=2339 epoch=18 step=936 val_RMSE=0.573893 best=0.572787 paper_stop=False
+calibration sgdm seed=2339 epoch=19 step=988 val_RMSE=0.582040 best=0.572787 paper_stop=False
+calibration sgdm seed=2339 epoch=20 step=1040 val_RMSE=0.572476 best=0.572476 paper_stop=False
+calibration sgdm seed=2339 epoch=21 step=1092 val_RMSE=0.584722 best=0.572476 paper_stop=False
+calibration sgdm seed=2339 epoch=22 step=1144 val_RMSE=0.571299 best=0.571299 paper_stop=False
+calibration sgdm seed=2339 epoch=23 step=1196 val_RMSE=0.575079 best=0.571299 paper_stop=False
+calibration sgdm seed=2339 epoch=24 step=1248 val_RMSE=0.570417 best=0.570417 paper_stop=False
+calibration sgdm seed=2339 epoch=25 step=1300 val_RMSE=0.572581 best=0.570417 paper_stop=False
+calibration sgdm seed=2339 epoch=26 step=1352 val_RMSE=0.574391 best=0.570417 paper_stop=False
+calibration sgdm seed=2339 epoch=27 step=1404 val_RMSE=0.569924 best=0.569924 paper_stop=False
+calibration sgdm seed=2339 epoch=28 step=1456 val_RMSE=0.569429 best=0.569429 paper_stop=False
+calibration sgdm seed=2339 epoch=29 step=1508 val_RMSE=0.566420 best=0.566420 paper_stop=False
+calibration sgdm seed=2339 epoch=30 step=1560 val_RMSE=0.576303 best=0.566420 paper_stop=False
+calibration sgdm seed=2339 epoch=31 step=1612 val_RMSE=0.567822 best=0.566420 paper_stop=False
+calibration sgdm seed=2339 epoch=32 step=1664 val_RMSE=0.568468 best=0.566420 paper_stop=False
+calibration sgdm seed=2339 epoch=33 step=1716 val_RMSE=0.570486 best=0.566420 paper_stop=False
+calibration sgdm seed=2339 epoch=34 step=1768 val_RMSE=0.565298 best=0.565298 paper_stop=False
+calibration sgdm seed=2339 epoch=35 step=1820 val_RMSE=0.563574 best=0.563574 paper_stop=False
+calibration sgdm seed=2339 epoch=36 step=1872 val_RMSE=0.571852 best=0.563574 paper_stop=False
+calibration sgdm seed=2339 epoch=37 step=1924 val_RMSE=0.566915 best=0.563574 paper_stop=False
+calibration sgdm seed=2339 epoch=38 step=1976 val_RMSE=0.565044 best=0.563574 paper_stop=False
+calibration sgdm seed=2339 epoch=39 step=2028 val_RMSE=0.568183 best=0.563574 paper_stop=False
+calibration sgdm seed=2339 epoch=40 step=2080 val_RMSE=0.566567 best=0.563574 paper_stop=False
+calibration sgdm seed=2339 epoch=41 step=2132 val_RMSE=0.562801 best=0.562801 paper_stop=False
+calibration sgdm seed=2339 epoch=42 step=2184 val_RMSE=0.572229 best=0.562801 paper_stop=False
+calibration sgdm seed=2339 epoch=43 step=2236 val_RMSE=0.563268 best=0.562801 paper_stop=False
+calibration sgdm seed=2339 epoch=44 step=2288 val_RMSE=0.567462 best=0.562801 paper_stop=False
+calibration sgdm seed=2339 epoch=45 step=2340 val_RMSE=0.564416 best=0.562801 paper_stop=False
+calibration sgdm seed=2339 epoch=46 step=2392 val_RMSE=0.563798 best=0.562801 paper_stop=False
+calibration sgdm seed=2339 epoch=47 step=2444 val_RMSE=0.562617 best=0.562617 paper_stop=False
+calibration sgdm seed=2339 epoch=48 step=2496 val_RMSE=0.565746 best=0.562617 paper_stop=False
+calibration sgdm seed=2339 epoch=49 step=2548 val_RMSE=0.565567 best=0.562617 paper_stop=False
+calibration sgdm seed=2339 epoch=50 step=2600 val_RMSE=0.560959 best=0.560959 paper_stop=False
+calibration sgdm seed=2339 epoch=51 step=2652 val_RMSE=0.560798 best=0.560798 paper_stop=False
+calibration sgdm seed=2339 epoch=52 step=2704 val_RMSE=0.561036 best=0.560798 paper_stop=False
+calibration sgdm seed=2339 epoch=53 step=2756 val_RMSE=0.558366 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=54 step=2808 val_RMSE=0.566176 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=55 step=2860 val_RMSE=0.558477 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=56 step=2912 val_RMSE=0.566084 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=57 step=2964 val_RMSE=0.559619 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=58 step=3016 val_RMSE=0.558636 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=59 step=3068 val_RMSE=0.560143 best=0.558366 paper_stop=False
+calibration sgdm seed=2339 epoch=60 step=3120 val_RMSE=0.557795 best=0.557795 paper_stop=False
+calibration sgdm seed=2339 epoch=61 step=3172 val_RMSE=0.558599 best=0.557795 paper_stop=False
+calibration sgdm seed=2339 epoch=62 step=3224 val_RMSE=0.560012 best=0.557795 paper_stop=False
+calibration sgdm seed=2339 epoch=63 step=3276 val_RMSE=0.558094 best=0.557795 paper_stop=False
+calibration sgdm seed=2339 epoch=64 step=3328 val_RMSE=0.559659 best=0.557795 paper_stop=False
+calibration sgdm seed=2339 epoch=65 step=3380 val_RMSE=0.555682 best=0.555682 paper_stop=False
+calibration sgdm seed=2339 epoch=66 step=3432 val_RMSE=0.556790 best=0.555682 paper_stop=False
+calibration sgdm seed=2339 epoch=67 step=3484 val_RMSE=0.557083 best=0.555682 paper_stop=False
+calibration sgdm seed=2339 epoch=68 step=3536 val_RMSE=0.554918 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=69 step=3588 val_RMSE=0.555095 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=70 step=3640 val_RMSE=0.565701 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=71 step=3692 val_RMSE=0.559033 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=72 step=3744 val_RMSE=0.558815 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=73 step=3796 val_RMSE=0.555912 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=74 step=3848 val_RMSE=0.555660 best=0.554918 paper_stop=False
+calibration sgdm seed=2339 epoch=75 step=3900 val_RMSE=0.554140 best=0.554140 paper_stop=False
+calibration sgdm seed=2339 epoch=76 step=3952 val_RMSE=0.555515 best=0.554140 paper_stop=False
+calibration sgdm seed=2339 epoch=77 step=4004 val_RMSE=0.557012 best=0.554140 paper_stop=False
+calibration sgdm seed=2339 epoch=78 step=4056 val_RMSE=0.559739 best=0.554140 paper_stop=False
+calibration sgdm seed=2339 epoch=79 step=4108 val_RMSE=0.553829 best=0.553829 paper_stop=False
+calibration sgdm seed=2339 epoch=80 step=4160 val_RMSE=0.560096 best=0.553829 paper_stop=False
+calibration sgdm seed=2339 epoch=81 step=4212 val_RMSE=0.553116 best=0.553116 paper_stop=False
+calibration sgdm seed=2339 epoch=82 step=4264 val_RMSE=0.553206 best=0.553116 paper_stop=False
+calibration sgdm seed=2339 epoch=83 step=4316 val_RMSE=0.552609 best=0.552609 paper_stop=False
+calibration sgdm seed=2339 epoch=84 step=4368 val_RMSE=0.554632 best=0.552609 paper_stop=False
+calibration sgdm seed=2339 epoch=85 step=4420 val_RMSE=0.555909 best=0.552609 paper_stop=False
+calibration sgdm seed=2339 epoch=86 step=4472 val_RMSE=0.554458 best=0.552609 paper_stop=False
+calibration sgdm seed=2339 epoch=87 step=4524 val_RMSE=0.554252 best=0.552609 paper_stop=False
+calibration sgdm seed=2339 epoch=88 step=4576 val_RMSE=0.552306 best=0.552306 paper_stop=False
+calibration sgdm seed=2339 epoch=89 step=4628 val_RMSE=0.551433 best=0.551433 paper_stop=False
+calibration sgdm seed=2339 epoch=90 step=4680 val_RMSE=0.550916 best=0.550916 paper_stop=False
+calibration sgdm seed=2339 epoch=91 step=4732 val_RMSE=0.554592 best=0.550916 paper_stop=False
+calibration sgdm seed=2339 epoch=92 step=4784 val_RMSE=0.552634 best=0.550916 paper_stop=False
+calibration sgdm seed=2339 epoch=93 step=4836 val_RMSE=0.550790 best=0.550790 paper_stop=False
+calibration sgdm seed=2339 epoch=94 step=4888 val_RMSE=0.550276 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=95 step=4940 val_RMSE=0.554570 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=96 step=4992 val_RMSE=0.556160 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=97 step=5044 val_RMSE=0.555854 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=98 step=5096 val_RMSE=0.554358 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=99 step=5148 val_RMSE=0.562735 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=100 step=5200 val_RMSE=0.551503 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=101 step=5252 val_RMSE=0.550365 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=102 step=5304 val_RMSE=0.551137 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=103 step=5356 val_RMSE=0.552591 best=0.550276 paper_stop=False
+calibration sgdm seed=2339 epoch=104 step=5408 val_RMSE=0.549513 best=0.549513 paper_stop=False
+calibration sgdm seed=2339 epoch=105 step=5460 val_RMSE=0.549985 best=0.549513 paper_stop=False
+calibration sgdm seed=2339 epoch=106 step=5512 val_RMSE=0.549868 best=0.549513 paper_stop=False
+calibration sgdm seed=2339 epoch=107 step=5564 val_RMSE=0.550444 best=0.549513 paper_stop=False
+calibration sgdm seed=2339 epoch=108 step=5616 val_RMSE=0.548652 best=0.548652 paper_stop=False
+calibration sgdm seed=2339 epoch=109 step=5668 val_RMSE=0.550848 best=0.548652 paper_stop=False
+calibration sgdm seed=2339 epoch=110 step=5720 val_RMSE=0.548584 best=0.548584 paper_stop=False
+calibration sgdm seed=2339 epoch=111 step=5772 val_RMSE=0.550619 best=0.548584 paper_stop=False
+calibration sgdm seed=2339 epoch=112 step=5824 val_RMSE=0.550188 best=0.548584 paper_stop=False
+calibration sgdm seed=2339 epoch=113 step=5876 val_RMSE=0.548096 best=0.548096 paper_stop=False
+calibration sgdm seed=2339 epoch=114 step=5928 val_RMSE=0.548512 best=0.548096 paper_stop=False
+calibration sgdm seed=2339 epoch=115 step=5980 val_RMSE=0.547494 best=0.547494 paper_stop=False
+calibration sgdm seed=2339 epoch=116 step=6032 val_RMSE=0.548430 best=0.547494 paper_stop=False
+calibration sgdm seed=2339 epoch=117 step=6084 val_RMSE=0.547283 best=0.547283 paper_stop=False
+calibration sgdm seed=2339 epoch=118 step=6136 val_RMSE=0.547372 best=0.547283 paper_stop=False
+calibration sgdm seed=2339 epoch=119 step=6188 val_RMSE=0.547636 best=0.547283 paper_stop=False
+calibration sgdm seed=2339 epoch=120 step=6240 val_RMSE=0.547513 best=0.547283 paper_stop=False
+calibration sgdm seed=2339 epoch=121 step=6292 val_RMSE=0.547143 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=122 step=6344 val_RMSE=0.547548 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=123 step=6396 val_RMSE=0.547358 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=124 step=6448 val_RMSE=0.547488 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=125 step=6500 val_RMSE=0.547703 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=126 step=6552 val_RMSE=0.548765 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=127 step=6604 val_RMSE=0.548330 best=0.547143 paper_stop=False
+calibration sgdm seed=2339 epoch=128 step=6656 val_RMSE=0.546687 best=0.546687 paper_stop=False
+calibration sgdm seed=2339 epoch=129 step=6708 val_RMSE=0.547636 best=0.546687 paper_stop=False
+calibration sgdm seed=2339 epoch=130 step=6760 val_RMSE=0.546638 best=0.546638 paper_stop=False
+calibration sgdm seed=2339 epoch=131 step=6812 val_RMSE=0.547610 best=0.546638 paper_stop=False
+calibration sgdm seed=2339 epoch=132 step=6864 val_RMSE=0.550016 best=0.546638 paper_stop=False
+calibration sgdm seed=2339 epoch=133 step=6916 val_RMSE=0.547376 best=0.546638 paper_stop=False
+calibration sgdm seed=2339 epoch=134 step=6968 val_RMSE=0.552169 best=0.546638 paper_stop=False
+calibration sgdm seed=2339 epoch=135 step=7020 val_RMSE=0.546029 best=0.546029 paper_stop=False
+calibration sgdm seed=2339 epoch=136 step=7072 val_RMSE=0.544980 best=0.544980 paper_stop=False
+calibration sgdm seed=2339 epoch=137 step=7124 val_RMSE=0.545459 best=0.544980 paper_stop=False
+calibration sgdm seed=2339 epoch=138 step=7176 val_RMSE=0.546532 best=0.544980 paper_stop=False
+calibration sgdm seed=2339 epoch=139 step=7228 val_RMSE=0.545322 best=0.544980 paper_stop=False
+calibration sgdm seed=2339 epoch=140 step=7280 val_RMSE=0.546480 best=0.544980 paper_stop=False
+calibration sgdm seed=2339 epoch=141 step=7332 val_RMSE=0.546391 best=0.544980 paper_stop=False
+calibration sgdm seed=2339 epoch=142 step=7384 val_RMSE=0.544537 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=143 step=7436 val_RMSE=0.547799 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=144 step=7488 val_RMSE=0.546084 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=145 step=7540 val_RMSE=0.548746 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=146 step=7592 val_RMSE=0.546167 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=147 step=7644 val_RMSE=0.545958 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=148 step=7696 val_RMSE=0.546389 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=149 step=7748 val_RMSE=0.546124 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=150 step=7800 val_RMSE=0.544603 best=0.544537 paper_stop=False
+calibration sgdm seed=2339 epoch=151 step=7852 val_RMSE=0.543750 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=152 step=7904 val_RMSE=0.544468 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=153 step=7956 val_RMSE=0.544969 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=154 step=8008 val_RMSE=0.544148 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=155 step=8060 val_RMSE=0.544320 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=156 step=8112 val_RMSE=0.544935 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=157 step=8164 val_RMSE=0.547216 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=158 step=8216 val_RMSE=0.544993 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=159 step=8268 val_RMSE=0.544891 best=0.543750 paper_stop=False
+calibration sgdm seed=2339 epoch=160 step=8320 val_RMSE=0.543477 best=0.543477 paper_stop=False
+calibration sgdm seed=2339 epoch=161 step=8372 val_RMSE=0.542979 best=0.542979 paper_stop=False
+calibration sgdm seed=2339 epoch=162 step=8424 val_RMSE=0.545876 best=0.542979 paper_stop=False
+calibration sgdm seed=2339 epoch=163 step=8476 val_RMSE=0.543014 best=0.542979 paper_stop=False
+calibration sgdm seed=2339 epoch=164 step=8528 val_RMSE=0.544871 best=0.542979 paper_stop=False
+calibration sgdm seed=2339 epoch=165 step=8580 val_RMSE=0.544665 best=0.542979 paper_stop=False
+calibration sgdm seed=2339 epoch=166 step=8632 val_RMSE=0.545031 best=0.542979 paper_stop=False
+calibration sgdm seed=2339 epoch=167 step=8684 val_RMSE=0.542924 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=168 step=8736 val_RMSE=0.543612 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=169 step=8788 val_RMSE=0.543163 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=170 step=8840 val_RMSE=0.543240 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=171 step=8892 val_RMSE=0.543689 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=172 step=8944 val_RMSE=0.543617 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=173 step=8996 val_RMSE=0.543118 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=174 step=9048 val_RMSE=0.543948 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=175 step=9100 val_RMSE=0.543241 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=176 step=9152 val_RMSE=0.544374 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=177 step=9204 val_RMSE=0.545492 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=178 step=9256 val_RMSE=0.544283 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=179 step=9308 val_RMSE=0.543427 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=180 step=9360 val_RMSE=0.543399 best=0.542924 paper_stop=False
+calibration sgdm seed=2339 epoch=181 step=9412 val_RMSE=0.542073 best=0.542073 paper_stop=False
+calibration sgdm seed=2339 epoch=182 step=9464 val_RMSE=0.541805 best=0.541805 paper_stop=False
+calibration sgdm seed=2339 epoch=183 step=9516 val_RMSE=0.541706 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=184 step=9568 val_RMSE=0.543577 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=185 step=9620 val_RMSE=0.542608 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=186 step=9672 val_RMSE=0.542300 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=187 step=9724 val_RMSE=0.542802 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=188 step=9776 val_RMSE=0.543378 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=189 step=9828 val_RMSE=0.543950 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=190 step=9880 val_RMSE=0.542342 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=191 step=9932 val_RMSE=0.544089 best=0.541706 paper_stop=False
+calibration sgdm seed=2339 epoch=192 step=9984 val_RMSE=0.541462 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=193 step=10036 val_RMSE=0.542758 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=194 step=10088 val_RMSE=0.543721 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=195 step=10140 val_RMSE=0.546394 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=196 step=10192 val_RMSE=0.542573 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=197 step=10244 val_RMSE=0.541700 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=198 step=10296 val_RMSE=0.543996 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=199 step=10348 val_RMSE=0.546153 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=200 step=10400 val_RMSE=0.543686 best=0.541462 paper_stop=False
+calibration sgdm seed=2339 epoch=201 step=10452 val_RMSE=0.541059 best=0.541059 paper_stop=False
+calibration sgdm seed=2339 epoch=202 step=10504 val_RMSE=0.542756 best=0.541059 paper_stop=False
+calibration sgdm seed=2339 epoch=203 step=10556 val_RMSE=0.542573 best=0.541059 paper_stop=False
+calibration sgdm seed=2339 epoch=204 step=10608 val_RMSE=0.540885 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=205 step=10660 val_RMSE=0.542314 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=206 step=10712 val_RMSE=0.543177 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=207 step=10764 val_RMSE=0.545144 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=208 step=10816 val_RMSE=0.548784 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=209 step=10868 val_RMSE=0.541726 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=210 step=10920 val_RMSE=0.540897 best=0.540885 paper_stop=False
+calibration sgdm seed=2339 epoch=211 step=10972 val_RMSE=0.540731 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=212 step=11024 val_RMSE=0.542702 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=213 step=11076 val_RMSE=0.541978 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=214 step=11128 val_RMSE=0.542512 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=215 step=11180 val_RMSE=0.541232 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=216 step=11232 val_RMSE=0.541705 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=217 step=11284 val_RMSE=0.541261 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=218 step=11336 val_RMSE=0.541363 best=0.540731 paper_stop=False
+calibration sgdm seed=2339 epoch=219 step=11388 val_RMSE=0.540052 best=0.540052 paper_stop=False
+calibration sgdm seed=2339 epoch=220 step=11440 val_RMSE=0.540573 best=0.540052 paper_stop=False
+calibration sgdm seed=2339 epoch=221 step=11492 val_RMSE=0.542917 best=0.540052 paper_stop=False
+calibration sgdm seed=2339 epoch=222 step=11544 val_RMSE=0.540072 best=0.540052 paper_stop=False
+calibration sgdm seed=2339 epoch=223 step=11596 val_RMSE=0.540972 best=0.540052 paper_stop=False
+calibration sgdm seed=2339 epoch=224 step=11648 val_RMSE=0.543790 best=0.540052 paper_stop=False
+calibration sgdm seed=2339 epoch=225 step=11700 val_RMSE=0.539403 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=226 step=11752 val_RMSE=0.540116 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=227 step=11804 val_RMSE=0.539821 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=228 step=11856 val_RMSE=0.541637 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=229 step=11908 val_RMSE=0.541282 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=230 step=11960 val_RMSE=0.545795 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=231 step=12012 val_RMSE=0.541434 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=232 step=12064 val_RMSE=0.539425 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=233 step=12116 val_RMSE=0.540414 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=234 step=12168 val_RMSE=0.540113 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=235 step=12220 val_RMSE=0.543457 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=236 step=12272 val_RMSE=0.541310 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=237 step=12324 val_RMSE=0.541766 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=238 step=12376 val_RMSE=0.543781 best=0.539403 paper_stop=False
+calibration sgdm seed=2339 epoch=239 step=12428 val_RMSE=0.538628 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=240 step=12480 val_RMSE=0.539491 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=241 step=12532 val_RMSE=0.539841 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=242 step=12584 val_RMSE=0.538703 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=243 step=12636 val_RMSE=0.538930 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=244 step=12688 val_RMSE=0.538975 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=245 step=12740 val_RMSE=0.538793 best=0.538628 paper_stop=False
+calibration sgdm seed=2339 epoch=246 step=12792 val_RMSE=0.538573 best=0.538573 paper_stop=False
+calibration sgdm seed=2339 epoch=247 step=12844 val_RMSE=0.540155 best=0.538573 paper_stop=False
+calibration sgdm seed=2339 epoch=248 step=12896 val_RMSE=0.540057 best=0.538573 paper_stop=False
+calibration sgdm seed=2339 epoch=249 step=12948 val_RMSE=0.540023 best=0.538573 paper_stop=False
+calibration sgdm seed=2339 epoch=250 step=13000 val_RMSE=0.539561 best=0.538573 paper_stop=False
+calibration sgdm seed=2339 epoch=251 step=13052 val_RMSE=0.537939 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=252 step=13104 val_RMSE=0.538204 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=253 step=13156 val_RMSE=0.539388 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=254 step=13208 val_RMSE=0.538975 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=255 step=13260 val_RMSE=0.538186 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=256 step=13312 val_RMSE=0.541767 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=257 step=13364 val_RMSE=0.539096 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=258 step=13416 val_RMSE=0.540678 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=259 step=13468 val_RMSE=0.538605 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=260 step=13520 val_RMSE=0.538181 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=261 step=13572 val_RMSE=0.540054 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=262 step=13624 val_RMSE=0.537999 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=263 step=13676 val_RMSE=0.541914 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=264 step=13728 val_RMSE=0.538073 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=265 step=13780 val_RMSE=0.538937 best=0.537939 paper_stop=False
+calibration sgdm seed=2339 epoch=266 step=13832 val_RMSE=0.537813 best=0.537813 paper_stop=False
+calibration sgdm seed=2339 epoch=267 step=13884 val_RMSE=0.539042 best=0.537813 paper_stop=False
+calibration sgdm seed=2339 epoch=268 step=13936 val_RMSE=0.539439 best=0.537813 paper_stop=False
+calibration sgdm seed=2339 epoch=269 step=13988 val_RMSE=0.537647 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=270 step=14040 val_RMSE=0.539213 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=271 step=14092 val_RMSE=0.539233 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=272 step=14144 val_RMSE=0.538764 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=273 step=14196 val_RMSE=0.538112 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=274 step=14248 val_RMSE=0.540641 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=275 step=14300 val_RMSE=0.538725 best=0.537647 paper_stop=False
+calibration sgdm seed=2339 epoch=276 step=14352 val_RMSE=0.537442 best=0.537442 paper_stop=False
+calibration sgdm seed=2339 epoch=277 step=14404 val_RMSE=0.538900 best=0.537442 paper_stop=False
+calibration sgdm seed=2339 epoch=278 step=14456 val_RMSE=0.536296 best=0.536296 paper_stop=False
+calibration sgdm seed=2339 epoch=279 step=14508 val_RMSE=0.536427 best=0.536296 paper_stop=False
+calibration sgdm seed=2339 epoch=280 step=14560 val_RMSE=0.538104 best=0.536296 paper_stop=False
+calibration sgdm seed=2339 epoch=281 step=14612 val_RMSE=0.537273 best=0.536296 paper_stop=False
+calibration sgdm seed=2339 epoch=282 step=14664 val_RMSE=0.537375 best=0.536296 paper_stop=False
+calibration sgdm seed=2339 epoch=283 step=14716 val_RMSE=0.536606 best=0.536296 paper_stop=False
+calibration sgdm seed=2339 epoch=284 step=14768 val_RMSE=0.535901 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=285 step=14820 val_RMSE=0.536988 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=286 step=14872 val_RMSE=0.537060 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=287 step=14924 val_RMSE=0.538940 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=288 step=14976 val_RMSE=0.538121 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=289 step=15028 val_RMSE=0.537257 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=290 step=15080 val_RMSE=0.536101 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=291 step=15132 val_RMSE=0.537586 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=292 step=15184 val_RMSE=0.537276 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=293 step=15236 val_RMSE=0.536511 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=294 step=15288 val_RMSE=0.536165 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=295 step=15340 val_RMSE=0.538606 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=296 step=15392 val_RMSE=0.537973 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=297 step=15444 val_RMSE=0.536404 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=298 step=15496 val_RMSE=0.536800 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=299 step=15548 val_RMSE=0.538490 best=0.535901 paper_stop=False
+calibration sgdm seed=2339 epoch=300 step=15600 val_RMSE=0.537287 best=0.535901 paper_stop=True
+{
+  "plan_file_sha256": "b9da4ce40b4e880116ee34a1bb90560c00f64f17917b2e40056cf799cceafbdb",
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "source_manifest_sha256": "42d874c7a885f58e06589fd06054c73ba240dd51b5ba09ea13b4d7ea88e471cc",
+  "github_run_id": "45753214421",
+  "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+  "candidate_id": "sgdm_1",
+  "config": {
+    "optimizer": "sgdm",
+    "lr": 0.003,
+    "weight_decay": 0.005277362486160341,
+    "momentum": 0.9,
+    "dampening": 0,
+    "nesterov": false
+  },
+  "status": "complete",
+  "seed_results": [
+    {
+      "seed": 2338,
+      "status": "complete",
+      "best_validation_rmse": 0.5470010612153214,
+      "completed_updates": 6916,
+      "paper_stopping": {
+        "reached": true,
+        "step": 6916,
+        "epoch": 133,
+        "best_step": 6084,
+        "best_epoch": 117,
+        "patience": 16,
+        "censored": false,
+        "reason": "first_validation_patience_stop"
+      },
+      "result_sha256": "6ce73959a92c3ebb57105dc893bacf0892da6934dd8ffb68f9185227d2b8d839"
+    },
+    {
+      "seed": 2339,
+      "status": "complete",
+      "best_validation_rmse": 0.5359006007089895,
+      "completed_updates": 15600,
+      "paper_stopping": {
+        "reached": true,
+        "step": 15600,
+        "epoch": 300,
+        "best_step": 14768,
+        "best_epoch": 284,
+        "patience": 16,
+        "censored": false,
+        "reason": "first_validation_patience_stop"
+      },
+      "result_sha256": "b5543b309fea97e0ef80733d7d56a4f95581ed6787514228920e242d16c78bb9"
+    }
+  ],
+  "eligible": true,
+  "mean_best_validation_rmse": 0.5414508309621555
+}
