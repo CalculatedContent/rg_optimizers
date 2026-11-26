@@ -1,0 +1,474 @@
+{
+  "name": "MAGIC fixed 20k primary SGDM / AdamW and XGBoost",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-telescope-single-matrix-20261126"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-magic-primary.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "single-matrix-magic-primary",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0",
+    "DS": "experiments/single_matrix_benchmarks/magic"
+  },
+  "jobs": {
+    "grid": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "if": "${{ github.run_attempt == 1 }}",
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "include": [
+            {
+              "case": "s0",
+              "seed": 3470
+            },
+            {
+              "case": "s0",
+              "seed": 3471
+            },
+            {
+              "case": "s1",
+              "seed": 3470
+            },
+            {
+              "case": "s1",
+              "seed": 3471
+            },
+            {
+              "case": "s2",
+              "seed": 3470
+            },
+            {
+              "case": "s2",
+              "seed": 3471
+            },
+            {
+              "case": "s3",
+              "seed": 3470
+            },
+            {
+              "case": "s3",
+              "seed": 3471
+            },
+            {
+              "case": "s4",
+              "seed": 3470
+            },
+            {
+              "case": "s4",
+              "seed": 3471
+            },
+            {
+              "case": "s5",
+              "seed": 3470
+            },
+            {
+              "case": "s5",
+              "seed": 3471
+            },
+            {
+              "case": "a0",
+              "seed": 3470
+            },
+            {
+              "case": "a0",
+              "seed": 3471
+            },
+            {
+              "case": "a1",
+              "seed": 3470
+            },
+            {
+              "case": "a1",
+              "seed": 3471
+            },
+            {
+              "case": "a2",
+              "seed": 3470
+            },
+            {
+              "case": "a2",
+              "seed": 3471
+            },
+            {
+              "case": "a3",
+              "seed": 3470
+            },
+            {
+              "case": "a3",
+              "seed": 3471
+            },
+            {
+              "case": "a4",
+              "seed": 3470
+            },
+            {
+              "case": "a4",
+              "seed": 3471
+            },
+            {
+              "case": "a5",
+              "seed": 3470
+            },
+            {
+              "case": "a5",
+              "seed": 3471
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$DS/requirements.txt\""
+        },
+        {
+          "name": "One frozen development case",
+          "timeout-minutes": 40,
+          "run": "python \"$DS/run.py\" --execute-training --phase grid --case \"${{ matrix.case }}\" --seed \"${{ matrix.seed }}\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "grid-${{ matrix.case }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/magic/results/grid/${{ matrix.case }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "select": {
+      "needs": "grid",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 20,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$DS/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/magic/results/grid",
+            "merge-multiple": false
+          }
+        },
+        {
+          "name": "Normalize grid artifact directory names",
+          "run": "set -euo pipefail\nroot=\"$DS/results/grid\"\nfor dir in \"$root\"/grid-*; do\n  [ -d \"$dir\" ] || continue\n  name=\"$(basename \"$dir\")\"\n  dest=\"$root/${name#grid-}\"\n  [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n  mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "name": "Audit checkpoint contents and freeze validation selection",
+          "run": "python \"$DS/audit.py\" select"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "magic-selection",
+            "path": "experiments/single_matrix_benchmarks/magic/results/frozen_selection.json",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "confirm": {
+      "needs": "select",
+      "if": "${{ github.run_attempt == 1 }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "include": [
+            {
+              "track": "sgdm_wd0",
+              "seed": 3472
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3473
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3474
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3475
+            },
+            {
+              "track": "sgdm_wd0",
+              "seed": 3476
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3472
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3473
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3474
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3475
+            },
+            {
+              "track": "adamw_wd0",
+              "seed": 3476
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3472
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3473
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3474
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3475
+            },
+            {
+              "track": "adamw_wd001",
+              "seed": 3476
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$DS/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "magic-selection",
+            "path": "experiments/single_matrix_benchmarks/magic/results"
+          }
+        },
+        {
+          "name": "Refit one validation-selected configuration",
+          "timeout-minutes": 40,
+          "run": "python \"$DS/run.py\" --execute-training --phase confirm --case \"${{ matrix.track }}\" --seed \"${{ matrix.seed }}\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "confirm-${{ matrix.track }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/magic/results/confirm/${{ matrix.track }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "xgb": {
+      "needs": "confirm",
+      "if": "${{ github.run_attempt == 1 }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 20,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned XGBoost baseline dependencies",
+          "run": "python -m pip install numpy==2.3.1 scipy==1.16.0 scikit-learn==1.7.0 xgboost==3.0.2"
+        },
+        {
+          "name": "Tune and refit same-split XGBoost baseline",
+          "run": "python \"$DS/xgb_baseline.py\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "magic-xgb",
+            "path": "experiments/single_matrix_benchmarks/magic/results/xgb/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "archive": {
+      "needs": [
+        "grid",
+        "select",
+        "confirm",
+        "xgb"
+      ],
+      "if": "${{ always() && !cancelled() }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 40,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic",
+            "sparse-checkout-cone-mode": true,
+            "ref": "magic-telescope-single-matrix-20261126"
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$DS/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/magic/results/grid",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize grid artifact directory names",
+          "run": "set -euo pipefail\nroot=\"$DS/results/grid\"\nfor dir in \"$root\"/grid-*; do\n  [ -d \"$dir\" ] || continue\n  name=\"$(basename \"$dir\")\"\n  dest=\"$root/${name#grid-}\"\n  [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n  mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "magic-selection",
+            "path": "experiments/single_matrix_benchmarks/magic/results"
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "confirm-*",
+            "path": "experiments/single_matrix_benchmarks/magic/results/confirm",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize confirm artifact directory names",
+          "run": "set -euo pipefail\nroot=\"$DS/results/confirm\"\nfor dir in \"$root\"/confirm-*; do\n  [ -d \"$dir\" ] || continue\n  name=\"$(basename \"$dir\")\"\n  dest=\"$root/${name#confirm-}\"\n  [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n  mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "magic-xgb",
+            "path": "experiments/single_matrix_benchmarks/magic/results/xgb"
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Audit complete or partial records",
+          "run": "python \"$DS/audit.py\" summarize",
+          "continue-on-error": true
+        },
+        {
+          "name": "Permanent repository archive",
+          "run": "git config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\ngit add -f \"$DS/results\"\ngit diff --cached --quiet || git commit -m 'Archive MAGIC fixed-20k results and same-split tree baseline'\ngit push origin HEAD:\"$GITHUB_REF_NAME\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "magic-analysis",
+            "path": "experiments/single_matrix_benchmarks/magic/results/analysis/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        },
+        {
+          "name": "Require complete audit",
+          "run": "python -c 'import json,sys; j=json.load(open(sys.argv[1])); assert j[\"complete\"] and j[\"n_grid\"]==24 and j[\"n_confirm\"]==15 and not j[\"audit_errors\"]' \"$DS/results/analysis/summary.json\""
+        }
+      ]
+    }
+  }
+}
