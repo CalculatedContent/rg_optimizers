@@ -1,0 +1,332 @@
+{
+  "name": "MAGIC scale-invariant MLP fixed-20k",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-scale-invariant-20261127"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-magic-scale-invariant.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "magic-scale-invariant-training",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0"
+  },
+  "jobs": {
+    "gate": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 25,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/\n/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/source/\n/experiments/single_matrix_benchmarks/magic/results/analysis/statistics.csv",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned dependencies",
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "name": "Verify exact archive and numerical radial symmetry; zero training",
+          "run": "set -euo pipefail\npython -m py_compile \"experiments/single_matrix_benchmarks/magic_scale_invariant/run.py\" \"experiments/single_matrix_benchmarks/magic_scale_invariant/preflight.py\" \"experiments/single_matrix_benchmarks/magic_scale_invariant/audit.py\" \"experiments/single_matrix_benchmarks/magic_scale_invariant/model.py\"\npython \"experiments/single_matrix_benchmarks/magic_scale_invariant/run.py\" > \"$RUNNER_TEMP/dry_run.json\"\npython \"experiments/single_matrix_benchmarks/magic_scale_invariant/preflight.py\" | tee \"$RUNNER_TEMP/preflight.json\"\npython -c 'import json,sys; j=json.load(open(sys.argv[1])); assert len(j[\"grid\"])==14 and len(j[\"confirmation\"])==10 and all(x[\"updates\"]==20000 for x in j[\"grid\"]+j[\"confirmation\"])' \"$RUNNER_TEMP/dry_run.json\""
+        },
+        {
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "scale-invariant-preflight",
+            "path": "${{ runner.temp }}/preflight.json\n${{ runner.temp }}/dry_run.json",
+            "if-no-files-found": "error",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "grid": {
+      "needs": "gate",
+      "if": "${{ github.run_attempt == 1 }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "case": [
+            "s0",
+            "s1",
+            "s2",
+            "s3",
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "seed": [
+            3470,
+            3471
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/\n/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/source/\n/experiments/single_matrix_benchmarks/magic/results/analysis/statistics.csv",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned dependencies",
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "name": "One fixed-20k grid run",
+          "timeout-minutes": 40,
+          "run": "python \"experiments/single_matrix_benchmarks/magic_scale_invariant/run.py\" --execute-training --phase grid --case \"${{ matrix.case }}\" --seed \"${{ matrix.seed }}\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "grid-${{ matrix.case }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid/${{ matrix.case }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "select": {
+      "needs": [
+        "gate",
+        "grid"
+      ],
+      "if": "${{ always() && !cancelled() && needs.gate.result == 'success' }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 30,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/\n/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/source/\n/experiments/single_matrix_benchmarks/magic/results/analysis/statistics.csv",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned dependencies",
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize grid artifact directories",
+          "run": "set -euo pipefail\nroot=\"experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid\"\nmkdir -p \"$root\"\nfor dir in \"$root\"/grid-*; do\n [ -d \"$dir\" ] || continue\n name=\"$(basename \"$dir\")\"; dest=\"$root/${name#grid-}\"\n [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "name": "Freeze validation-only winners",
+          "run": "python \"experiments/single_matrix_benchmarks/magic_scale_invariant/audit.py\" select"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "frozen-selection",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/frozen_selection.json\nexperiments/single_matrix_benchmarks/magic_scale_invariant/results/grid_audit.json",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "confirm": {
+      "needs": "select",
+      "if": "${{ github.run_attempt == 1 }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "case": [
+            "sgdm_wd0",
+            "adamw_wd0"
+          ],
+          "seed": [
+            3472,
+            3473,
+            3474,
+            3475,
+            3476
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/\n/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/source/\n/experiments/single_matrix_benchmarks/magic/results/analysis/statistics.csv",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned dependencies",
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "frozen-selection",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results"
+          }
+        },
+        {
+          "name": "One fixed-20k confirm run",
+          "timeout-minutes": 40,
+          "run": "python \"experiments/single_matrix_benchmarks/magic_scale_invariant/run.py\" --execute-training --phase confirm --case \"${{ matrix.case }}\" --seed \"${{ matrix.seed }}\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "confirm-${{ matrix.case }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm/${{ matrix.case }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "archive": {
+      "needs": [
+        "gate",
+        "grid",
+        "select",
+        "confirm"
+      ],
+      "if": "${{ always() && !cancelled() }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 40,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/\n/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/source/\n/experiments/single_matrix_benchmarks/magic/results/analysis/statistics.csv",
+            "sparse-checkout-cone-mode": false,
+            "ref": "magic-scale-invariant-20261127"
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned dependencies",
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize grid artifact directories",
+          "run": "set -euo pipefail\nroot=\"experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid\"\nmkdir -p \"$root\"\nfor dir in \"$root\"/grid-*; do\n [ -d \"$dir\" ] || continue\n name=\"$(basename \"$dir\")\"; dest=\"$root/${name#grid-}\"\n [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "frozen-selection",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results"
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "confirm-*",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize confirm artifact directories",
+          "run": "set -euo pipefail\nroot=\"experiments/single_matrix_benchmarks/magic_scale_invariant/results/confirm\"\nmkdir -p \"$root\"\nfor dir in \"$root\"/confirm-*; do\n [ -d \"$dir\" ] || continue\n name=\"$(basename \"$dir\")\"; dest=\"$root/${name#confirm-}\"\n [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "name": "Audit hashes, metrics, plots and partial results",
+          "run": "python \"experiments/single_matrix_benchmarks/magic_scale_invariant/audit.py\" summarize",
+          "continue-on-error": true
+        },
+        {
+          "name": "Permanently commit available results",
+          "run": "set -euo pipefail\ngit config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\nif [ -d \"experiments/single_matrix_benchmarks/magic_scale_invariant/results\" ]; then git add -f \"experiments/single_matrix_benchmarks/magic_scale_invariant/results\"; git diff --cached --quiet || git commit -m 'Archive MAGIC scale-invariant MLP results'; git push origin HEAD:\"$GITHUB_REF_NAME\"; fi"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "scale-invariant-analysis",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/analysis/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        },
+        {
+          "name": "Require complete terminal audit",
+          "run": "python -c 'import json,sys; j=json.load(open(sys.argv[1])); assert j[\"complete\"] and j[\"n_grid\"]==14 and j[\"n_confirm\"]==10 and not j[\"audit_errors\"]' \"experiments/single_matrix_benchmarks/magic_scale_invariant/results/analysis/summary.json\""
+        }
+      ]
+    }
+  }
+}
