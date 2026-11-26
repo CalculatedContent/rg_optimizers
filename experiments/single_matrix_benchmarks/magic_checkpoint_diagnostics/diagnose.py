@@ -23,11 +23,22 @@ def dot(a,b):return float(torch.sum(a.double()*b.double()))
 def norms(a):return math.sqrt(dot(a,a))
 def quantiles(x):
     return [float(v) for v in np.quantile(x,[.01,.1,.5,.9,.99])] if len(x) else None
-def predict(m,xx):
+def predict_logits(m,xx):
     m.eval()
     with torch.no_grad():
-        z=torch.cat([m(b) for b in xx.split(1024)]).double().numpy()
+        return torch.cat([m(b) for b in xx.split(1024)])
+def margin_logits(logits):
+    z=logits.double().numpy()
     return z[:,1]-z[:,0]
+def predict(m,xx):
+    return margin_logits(predict_logits(m,xx))
+def archive_metrics(logits,y):
+    # Replay the original run.py evaluator, including float32 softmax ties.
+    # Logit-based AUC remains the separate scientific diagnostic.
+    yy=torch.as_tensor(y,dtype=torch.int64)
+    return dict(ce=float(nn.functional.cross_entropy(logits,yy)),
+                accuracy=float((logits.argmax(-1)==yy).double().mean()),
+                auc=float(roc_auc_score(yy.numpy(),logits.softmax(-1)[:,1].numpy())))
 def metrics(z,y):
     signed=z*(2*y-1);good=signed>0;wrong=~good
     # Torch argmax tie picks class 0; use exact decision convention for accuracy.
@@ -123,7 +134,7 @@ def truncation(m,xx,y,k1,k2):
         z=predict(m,xx);out[name]={"rank":int(k),**metrics(z,y)}
     m.load_state_dict(state);return out
 def main():
-    torch.set_num_threads(1);torch.set_num_interop_threads(1);torch.manual_seed(0)
+    torch.set_num_threads(1);torch.set_num_interop_threads(1);torch.use_deterministic_algorithms(True);torch.manual_seed(0)
     P=json.loads((O/"plan.json").read_text());man=json.loads((O/"prepared/manifest.json").read_text())
     assert sha(O/"prepared/data.npz")==man["prepared_sha256"]==EXPECTED
     assert sha(O/"plan.json")==man["plan_sha256"]
@@ -157,10 +168,19 @@ def main():
                     if prev_eig is not None:
                         spec["normalized_log_quantile_drift"]=float(np.abs(np.log(np.maximum(eig/eig.mean(),1e-300))-np.log(np.maximum(prev_eig/prev_eig.mean(),1e-300))).mean())
                     prev_eig=eig
-                    z=predict(m,xv);v=metrics(z,yv);t=metrics(predict(m,xt),yt.numpy())
-                    for part,a0 in (("validation",v),("train",t)):
-                        old=h["metrics"][part]
-                        assert abs(a0["ce"]-old["ce"])<3e-6 and abs(a0["accuracy"]-old["accuracy"])<=1/old["n"]+1e-9 and abs(a0["auc"]-old["auc"])<1e-5,(case,seed,h["step"],part,a0["ce"],old["ce"])
+                    lv=predict_logits(m,xv);lt=predict_logits(m,xt)
+                    z=margin_logits(lv);v=metrics(z,yv);t=metrics(margin_logits(lt),yt.numpy())
+                    for part,a0,logits,labels in (("validation",v,lv,yv),("train",t,lt,yt.numpy())):
+                        old=h["metrics"][part];replay=archive_metrics(logits,labels)
+                        # Preserve original tolerances but compare like with like; do not
+                        # mistake saturation ties in archived probabilities for checkpoint drift.
+                        for key,tol in (("ce",3e-6),("accuracy",1/old["n"]+1e-9),("auc",1e-5)):
+                            err=abs(replay[key]-old[key])
+                            assert err<=tol,(case,seed,h["step"],part,key,replay[key],old[key],err,tol)
+                            a0["archive_replay_"+key]=replay[key]
+                            a0["archive_replay_"+key+"_abs_error"]=err
+                        assert abs(a0["ce"]-old["ce"])<3e-6 and abs(a0["accuracy"]-old["accuracy"])<=1/old["n"]+1e-9,(case,seed,h["step"],part,"diagnostic CE/accuracy",a0["ce"],old["ce"],a0["accuracy"],old["accuracy"])
+                        a0["logit_minus_archived_auc"]=a0["auc"]-old["auc"]
                     v.update(temperature_crossfit(z,yv,folds))
                     if prev_z is not None:
                         v["prediction_flip_fraction_since_previous"]=float(((z>0)!=(prev_z>0)).mean())
