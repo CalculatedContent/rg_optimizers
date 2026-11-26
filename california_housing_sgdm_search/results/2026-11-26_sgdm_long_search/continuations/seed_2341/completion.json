@@ -1,0 +1,18 @@
+{
+  "completed_updates": 100000,
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "frozen_selection_sha256": null,
+  "github_run_id": "45758895218",
+  "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+  "parent_checkpoint_sha256": "1a48f61e8d22ff070993e64376b0969616e22f46640437c79612e31a8ae5ed46",
+  "phase": "continuation",
+  "plan_file_sha256": "cf290b570f103e02e417efb838f72b8e069814e63a0962390ebe54be6370f76d",
+  "result_sha256": "92db6f773f307a6726aa5c218ac4f7d3232c1ce78cbda142c87e0ef885e6716a",
+  "retained_files": {
+    "best_checkpoint.pt": "9d37caa0316b000f0f2602fcdf1bacff1bfbbb688b2686db680a88f83625d973",
+    "final_weights.pt": "109d9d57d00c017332cc59b2b33be8c39227a0e3979174cac2aea6fca9c7b395"
+  },
+  "seed": 2341,
+  "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+  "status": "complete"
+}
