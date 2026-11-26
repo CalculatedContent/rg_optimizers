@@ -1,0 +1,89 @@
+{
+  "name": "MAGIC frozen checkpoint calibration",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-scale-invariant-calibration-20261127"
+      ],
+      "paths": [
+        ".github/workflows/magic-scale-invariant-calibration.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write",
+    "actions": "read"
+  },
+  "concurrency": {
+    "group": "magic-frozen-calibration",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1"
+  },
+  "jobs": {
+    "calibrate": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 30,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic_scale_invariant/\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/requirements.txt\n/experiments/single_matrix_benchmarks/magic/plan.json",
+            "sparse-checkout-cone-mode": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Install pinned dependencies",
+          "run": "python -m pip install -r \"experiments/single_matrix_benchmarks/magic/requirements.txt\""
+        },
+        {
+          "name": "Wait for fourteen original development artifacts only",
+          "env": {
+            "GH_TOKEN": "${{ github.token }}"
+          },
+          "run": "set -euo pipefail\nfor i in $(seq 1 60); do\n n=$(gh api repos/CalculatedContent/rg_optimizers/actions/runs/45890691961/artifacts?per_page=100 --jq '[.artifacts[] | select(.name|startswith(\"grid-\")) | select(.expired==false)] | length')\n echo \"Grid artifacts: $n/14\"\n if [ \"$n\" = 14 ]; then exit 0; fi\n sleep 15\ndone\nexit 1"
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "github-token": "${{ github.token }}",
+            "run-id": "45890691961",
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid",
+            "merge-multiple": false
+          }
+        },
+        {
+          "name": "Normalize and verify frozen checkpoint coverage",
+          "run": "set -euo pipefail\nroot=\"experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid\"\nfor d in \"$root\"/grid-*; do mv \"$d\" \"$root/$(basename \"$d\" | sed 's/^grid-//')\"; done\npython - <<'PY'\nimport pathlib,json\nroot=pathlib.Path(\"experiments/single_matrix_benchmarks/magic_scale_invariant/results/grid\")\nexpected={f\"{c}-{s}\" for c in (\"s0\",\"s1\",\"s2\",\"s3\",\"a0\",\"a1\",\"a2\") for s in (3470,3471)}\nassert {p.parent.name for p in root.glob(\"*/result.json\")}==expected\nfor p in root.glob(\"*/result.json\"):\n r=json.loads(p.read_text());assert r[\"status\"]==\"complete\" and r[\"completed_updates\"]==20000\n assert [h[\"step\"] for h in r[\"history\"]]==[0,2000,5000,10000,15000,20000]\nPY"
+        },
+        {
+          "name": "Cross-fit temperature on validation; no training or test access",
+          "run": "python \"experiments/single_matrix_benchmarks/magic_scale_invariant/calibrate.py\"\npython -c 'import json; assert json.load(open(\"experiments/single_matrix_benchmarks/magic_scale_invariant/calibration/summary.json\"))[\"n_checkpoints\"]==84'"
+        },
+        {
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "calibration-results",
+            "path": "experiments/single_matrix_benchmarks/magic_scale_invariant/calibration/",
+            "if-no-files-found": "error"
+          }
+        },
+        {
+          "name": "Permanently archive diagnostic only",
+          "run": "set -euo pipefail\ngit config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\ngit add -f \"experiments/single_matrix_benchmarks/magic_scale_invariant/calibration\"\ngit commit -m 'Archive frozen MAGIC temperature calibration'\ngit push origin HEAD:\"$GITHUB_REF_NAME\""
+        }
+      ]
+    }
+  }
+}
