@@ -8,5 +8,8 @@
     2344
   ],
   "authorization": "User requested a published benchmark reproduction followed by SGDM, AdamW, and modified AdamW comparison.",
-  "created_date": "2026-11-26"
+  "created_date": "2026-11-26",
+  "preflight_revision": 2,
+  "supersedes_pretraining_run": 45752961770,
+  "repair_note": "Align reporting with recovered authoritative reference-manifest field names and repository-relative paths. Prior run stopped at preflight before any training; scientific design unchanged."
 }

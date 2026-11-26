@@ -326,8 +326,8 @@ def published_comparison(statistics_rows, errors):
     try:
         raw = path.read_bytes()
         manifest = json.loads(raw)
-        for item in manifest["files"]:
-            source = path.parent / item["local_path"]
+        for item in manifest["copied_files"]:
+            source = path.parent.parent / item["local_path"]
             if hashlib.sha256(source.read_bytes()).hexdigest() != item["sha256"]:
                 errors.append(f"published source hash mismatch: {item['local_path']}")
         references = []
@@ -337,7 +337,7 @@ def published_comparison(statistics_rows, errors):
             experiments = sorted(report["experiments"], key=lambda entry: entry["config"]["seed"])
             published_seeds = [entry["config"]["seed"] for entry in experiments]
             values = [entry["report"]["metrics"]["test"]["rmse"] for entry in experiments]
-            if published_seeds != item["seeds"] or values != item["individual_test_rmse"]:
+            if published_seeds != item["seeds"] or values != item["test_rmse"]:
                 errors.append(f"published {item['optimizer']} manifest disagrees with author per-seed report")
             stats = seed_statistics(values, expected_n=item["n_seeds"])
             for stored, actual in (("test_rmse_mean", "mean"), ("test_rmse_sample_sd", "sample_sd")):
@@ -349,7 +349,7 @@ def published_comparison(statistics_rows, errors):
         original = next(item for item in references if item["optimizer"] == "adamw")
         return {"paper": manifest["paper"], "upstream_repository": manifest["upstream_repository"],
                 "upstream_commit": manifest["upstream_commit"], "manifest_sha256": hashlib.sha256(raw).hexdigest(),
-                "unit": manifest["unit"], "references": references,
+                "unit": manifest["target_unit"], "references": references,
                 "native_replication_minus_published_adamw": independent_difference(native, original["recalculated_test_rmse"]),
                 "interpretation": ("Published results use validation stopping and different training seeds/runtime. "
                     "The current native AdamW recipe matches the published architecture and settings; CPU results "
