@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "dataset": "MAGIC Gamma Telescope",
+  "primary_run": 45831716594,
+  "primary_launch_commit": "9571f954a2070e717123f499ec9f41340a56b9ef",
+  "primary_plan_sha256": "7a91ecde85613937a054e9feccc108760ac98e4f724da398806892b16a3a4915",
+  "primary_prepared_sha256": "c42ba2691997b884dae5d738bcb2b5a5b07fbca0f0c83afae12ce76812d73",
+  "architecture": [
+    10,
+    784,
+    784,
+    2
+  ],
+  "primary_matrix": "fc2",
+  "dropout": 0,
+  "preprocessing": "train-only z-score numerical features; no target rescaling or oversampling",
+  "dev_seeds": [
+    3470,
+    3471
+  ],
+  "grid": [
+    {
+      "id": "es0",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.0003,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "es1",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.001,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "es2",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.002,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "es3",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.001,
+      "momentum": 0.8,
+      "weight_decay": 0
+    },
+    {
+      "id": "es4",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.001,
+      "momentum": 0.95,
+      "weight_decay": 0
+    },
+    {
+      "id": "es5",
+      "track": "sgdm_wd0",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.95,
+      "weight_decay": 0
+    },
+    {
+      "id": "ea0",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.00001,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "ea1",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.00003,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "ea2",
+      "track": "adamw_wd0",
+      "optimizer": "adamw",
+      "lr": 0.00006,
+      "weight_decay": 0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "ea3",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.00001,
+      "weight_decay": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "ea4",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.00003,
+      "weight_decay": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    },
+    {
+      "id": "ea5",
+      "track": "adamw_wd001",
+      "optimizer": "adamw",
+      "lr": 0.00006,
+      "weight_decay": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-8
+    }
+  ],
+  "cap": 20000,
+  "batch_size": 256,
+  "clip": 1,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "roc_fpr": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "development_runs": 24,
+  "reused_development_runs": 24,
+  "confirmation_runs": 0,
+  "max_additional_updates": 480000,
+  "max_parallel": 5,
+  "job_timeout_minutes": 45,
+  "selection": "report distinct per-track winners by mean validation accuracy and by mean validation CE; show accuracy–CE Pareto frontier; never select by alpha, test or calibration",
+  "test_protocol": "validation-only extension; original test already inspected; no new test access or fresh confirmation training",
+  "calibration": {
+    "ece_bins": 15,
+    "confidence_threshold": 0.9,
+    "brier": "binary mean (p_gamma-y)^2",
+    "interval": "nominal two-seed Student-t 95% interval with df=1, not a test-population uncertainty interval"
+  }
+}

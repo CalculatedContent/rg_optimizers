@@ -1,0 +1,302 @@
+{
+  "name": "MAGIC expanded fixed-20k validation grid",
+  "on": {
+    "push": {
+      "branches": [
+        "magic-telescope-grid-extension-20261126"
+      ],
+      "paths": [
+        ".github/workflows/single-matrix-magic-grid-extension.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "magic-expanded-validation-grid",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0",
+    "DS": "experiments/single_matrix_benchmarks/magic_grid_extension",
+    "BASE": "experiments/single_matrix_benchmarks/magic",
+    "PRIMARY_ARCHIVE_SHA": "__PRIMARY_ARCHIVE_COMMIT__"
+  },
+  "jobs": {
+    "gate": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 25,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic\nexperiments/single_matrix_benchmarks/magic_grid_extension",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Checkout only original archived endpoint files",
+          "uses": "actions/checkout@v4",
+          "with": {
+            "ref": "__PRIMARY_ARCHIVE_COMMIT__",
+            "path": "primary_archive",
+            "persist-credentials": false,
+            "sparse-checkout-cone-mode": false,
+            "sparse-checkout": "/experiments/single_matrix_benchmarks/magic/plan.json\n/experiments/single_matrix_benchmarks/magic/prepared/\n/experiments/single_matrix_benchmarks/magic/results/analysis/summary.json\n/experiments/single_matrix_benchmarks/magic/results/frozen_selection.json\n/experiments/single_matrix_benchmarks/magic/results/grid/*/result.json\n/experiments/single_matrix_benchmarks/magic/results/grid/*/checkpoint_20000.pt"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BASE/requirements.txt\""
+        },
+        {
+          "name": "Compile and verify exact dry-run cap",
+          "run": "python -m py_compile \"$DS/run.py\" \"$DS/calibration.py\" \"$DS/audit_extension.py\"\npython \"$DS/run.py\" > /tmp/magic-extension-dry.json\npython -c 'import json,sys; j=json.load(open(sys.argv[1])); assert len(j[\"grid\"])==24 and all(x[\"updates\"]==20000 for x in j[\"grid\"])' /tmp/magic-extension-dry.json"
+        },
+        {
+          "name": "Re-evaluate original validation endpoints for calibration; zero training",
+          "run": "test \"$(git -C primary_archive rev-parse HEAD)\" = \"$PRIMARY_ARCHIVE_SHA\"\npython \"$DS/audit_extension.py\" baseline --primary-root \"primary_archive/$BASE\" --primary-sha \"$PRIMARY_ARCHIVE_SHA\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "extension-original-baseline",
+            "path": "experiments/single_matrix_benchmarks/magic_grid_extension/results/baseline.json",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "grid": {
+      "needs": "gate",
+      "if": "${{ github.run_attempt == 1 }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 5,
+        "matrix": {
+          "include": [
+            {
+              "case": "es0",
+              "seed": 3470
+            },
+            {
+              "case": "es0",
+              "seed": 3471
+            },
+            {
+              "case": "es1",
+              "seed": 3470
+            },
+            {
+              "case": "es1",
+              "seed": 3471
+            },
+            {
+              "case": "es2",
+              "seed": 3470
+            },
+            {
+              "case": "es2",
+              "seed": 3471
+            },
+            {
+              "case": "es3",
+              "seed": 3470
+            },
+            {
+              "case": "es3",
+              "seed": 3471
+            },
+            {
+              "case": "es4",
+              "seed": 3470
+            },
+            {
+              "case": "es4",
+              "seed": 3471
+            },
+            {
+              "case": "es5",
+              "seed": 3470
+            },
+            {
+              "case": "es5",
+              "seed": 3471
+            },
+            {
+              "case": "ea0",
+              "seed": 3470
+            },
+            {
+              "case": "ea0",
+              "seed": 3471
+            },
+            {
+              "case": "ea1",
+              "seed": 3470
+            },
+            {
+              "case": "ea1",
+              "seed": 3471
+            },
+            {
+              "case": "ea2",
+              "seed": 3470
+            },
+            {
+              "case": "ea2",
+              "seed": 3471
+            },
+            {
+              "case": "ea3",
+              "seed": 3470
+            },
+            {
+              "case": "ea3",
+              "seed": 3471
+            },
+            {
+              "case": "ea4",
+              "seed": 3470
+            },
+            {
+              "case": "ea4",
+              "seed": 3471
+            },
+            {
+              "case": "ea5",
+              "seed": 3470
+            },
+            {
+              "case": "ea5",
+              "seed": 3471
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic\nexperiments/single_matrix_benchmarks/magic_grid_extension",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BASE/requirements.txt\""
+        },
+        {
+          "name": "One new frozen development case",
+          "timeout-minutes": 40,
+          "run": "python \"$DS/run.py\" --execute-training --phase grid --case \"${{ matrix.case }}\" --seed \"${{ matrix.seed }}\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "grid-${{ matrix.case }}-${{ matrix.seed }}",
+            "path": "experiments/single_matrix_benchmarks/magic_grid_extension/results/grid/${{ matrix.case }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        }
+      ]
+    },
+    "archive": {
+      "needs": [
+        "gate",
+        "grid"
+      ],
+      "if": "${{ always() && !cancelled() }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 35,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/single_matrix_benchmarks/magic\nexperiments/single_matrix_benchmarks/magic_grid_extension",
+            "sparse-checkout-cone-mode": true,
+            "ref": "magic-telescope-grid-extension-20261126"
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Pinned numerical dependencies",
+          "run": "python -m pip install -r \"$BASE/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "extension-original-baseline",
+            "path": "experiments/single_matrix_benchmarks/magic_grid_extension/results"
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/single_matrix_benchmarks/magic_grid_extension/results/grid",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Normalize grid artifact directories",
+          "run": "set -euo pipefail\nroot=\"$DS/results/grid\"\nfor dir in \"$root\"/grid-*; do\n  [ -d \"$dir\" ] || continue\n  name=\"$(basename \"$dir\")\"\n  dest=\"$root/${name#grid-}\"\n  [ ! -e \"$dest\" ] || { echo \"Artifact collision\"; exit 1; }\n  mv -- \"$dir\" \"$dest\"\ndone"
+        },
+        {
+          "name": "Audit full expanded grid and generate diagnostics",
+          "run": "python \"$DS/audit_extension.py\" summarize --primary-sha \"$PRIMARY_ARCHIVE_SHA\"",
+          "continue-on-error": true
+        },
+        {
+          "name": "Commit complete or partial results",
+          "run": "git config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\nif [ -d \"$DS/results\" ]; then git add -f \"$DS/results\"; git diff --cached --quiet || git commit -m 'Archive MAGIC expanded validation grid and calibration diagnostics'; git push origin HEAD:\"$GITHUB_REF_NAME\"; fi"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "extension-analysis",
+            "path": "experiments/single_matrix_benchmarks/magic_grid_extension/results/analysis/",
+            "if-no-files-found": "warn",
+            "retention-days": 14
+          }
+        },
+        {
+          "name": "Require complete audit",
+          "run": "python -c 'import json,sys; j=json.load(open(sys.argv[1])); assert j[\"complete\"] and j[\"n_original\"]==24 and j[\"n_new\"]==24 and not j[\"audit_errors\"]' \"$DS/results/analysis/summary.json\""
+        }
+      ]
+    }
+  }
+}
