@@ -1,0 +1,30 @@
+{
+  "best_validation_rmse": 0.5532771434701563,
+  "best_validation_step": 2860,
+  "best_weights_sha256": "19ad6b7199fac6c0466207970a1cfa7387947a3871046c3d6dded968ba0bd115",
+  "candidate_id": "sgdm_21",
+  "completed_updates": 50000,
+  "config": {
+    "dampening": 0,
+    "dropout": 0.3690073279296028,
+    "lr": 0.03,
+    "momentum": 0.99,
+    "nesterov": false,
+    "optimizer": "sgdm",
+    "weight_decay": 0
+  },
+  "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+  "final_weights_sha256": "63faee94157a6af431d46bf60fb51bd85fade7d28d366eea698dc2202f23b5f0",
+  "github_run_id": "45758895218",
+  "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+  "plan_file_sha256": "cf290b570f103e02e417efb838f72b8e069814e63a0962390ebe54be6370f76d",
+  "result_sha256": "ee72f701b9b9e28d1bf51be8eced6d0e3fdf671d671fe9af1597f9910928256d",
+  "retained_files": {
+    "best_checkpoint.pt": "d4de0300e60ca0cf6bf5ad23754802885577ba613563f50d6726e37e5dbea64e",
+    "final_weights.pt": "60ed046c560c8eb9eddbd6663d9ee3b108c71f10ba42fac510bd45d9c77dc290"
+  },
+  "schema_version": 1,
+  "seed": 3338,
+  "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+  "status": "complete"
+}

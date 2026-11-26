@@ -1,0 +1,59 @@
+{
+  "additional_development_updates": 0,
+  "analysis_max_step": 20000,
+  "audit_errors": [],
+  "complete_grid": true,
+  "invalid_spectral_fits": [
+    {
+      "candidate_id": "sgdm_30",
+      "fit_status": "failed",
+      "seed": 3338,
+      "spectral_diagnostic": "WW result failed the prespecified validity conditions",
+      "validation_rmse": 1.1742478824537097
+    },
+    {
+      "candidate_id": "sgdm_30",
+      "fit_status": "failed",
+      "seed": 3339,
+      "spectral_diagnostic": "WW result failed the prespecified validity conditions",
+      "validation_rmse": 1.1499221443690661
+    },
+    {
+      "candidate_id": "sgdm_31",
+      "fit_status": "failed",
+      "seed": 3338,
+      "spectral_diagnostic": "WW result failed the prespecified validity conditions",
+      "validation_rmse": 1.1742478824537097
+    },
+    {
+      "candidate_id": "sgdm_31",
+      "fit_status": "failed",
+      "seed": 3339,
+      "spectral_diagnostic": "WW result failed the prespecified validity conditions",
+      "validation_rmse": 1.1499221443690661
+    }
+  ],
+  "n_candidates": 32,
+  "n_development_records": 64,
+  "n_valid_fixed20000_alpha": 60,
+  "selected": {
+    "dampening": 0,
+    "dropout": 0.3690073279296028,
+    "lr": 0.01,
+    "momentum": 0.9,
+    "nesterov": false,
+    "optimizer": "sgdm",
+    "weight_decay": 0.001
+  },
+  "selected_candidate_id": "sgdm_11",
+  "selected_mean_min_validation_rmse": 0.4879211076580656,
+  "source_provenance": {
+    "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+    "branch": "california-housing-sgdm-long-search-20261126",
+    "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+    "repository": "CalculatedContent/rg_optimizers",
+    "results_root": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search",
+    "run_id": "45758895218",
+    "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+  }
+}

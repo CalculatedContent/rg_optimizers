@@ -1,0 +1,3246 @@
+{
+  "additional_development_updates": 0,
+  "all_have_20000_measurement": true,
+  "analysis_max_step": 20000,
+  "controls": [
+    {
+      "optimizer": "sgdm",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1500134,
+        "git_blob_sha": "0a5abcc63accdde16df49ec05e4cd2388e3c449f",
+        "local_path": "inputs/controls/seed_2340/sgdm/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/result.json",
+        "sha256": "31ac2fdfa3b6792f84209a0eac0d772b6519eca0e625fcdfce5e3a3a5c0083e6"
+      },
+      "seed": 2340
+    },
+    {
+      "optimizer": "adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1515817,
+        "git_blob_sha": "2eb3e847554fcc7358f527f5576256516649ca79",
+        "local_path": "inputs/controls/seed_2340/adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/result.json",
+        "sha256": "5432c4982bbc0c6c4d6b6dde9c93df77923329b128098217de47f7d2b4ad473c"
+      },
+      "seed": 2340
+    },
+    {
+      "optimizer": "modified_adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1530855,
+        "git_blob_sha": "50570c5829c06aed287d137fadcc488a8638c50d",
+        "local_path": "inputs/controls/seed_2340/modified_adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/result.json",
+        "sha256": "db4bb72570308baa7c0301c653df2a0cf4838bb04892dc026f60d302bf053e9c"
+      },
+      "seed": 2340
+    },
+    {
+      "optimizer": "sgdm",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1500291,
+        "git_blob_sha": "5c67884e5af1abf2fabcdc91d28dfc60be372e22",
+        "local_path": "inputs/controls/seed_2341/sgdm/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/result.json",
+        "sha256": "2544e3f75e54ffb354b844ab0b27ed7023d42d2b67dc66aadd56921e693aab12"
+      },
+      "seed": 2341
+    },
+    {
+      "optimizer": "adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1515806,
+        "git_blob_sha": "c4d1e9b499219e38c6d04197a3649fefe9306805",
+        "local_path": "inputs/controls/seed_2341/adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/result.json",
+        "sha256": "bbad409f03850b2ee77285f355aa18901fe39dea60944612a9a86967b8d2851c"
+      },
+      "seed": 2341
+    },
+    {
+      "optimizer": "modified_adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1531119,
+        "git_blob_sha": "99d639557d7870af1c3824af78d3786cd363bc31",
+        "local_path": "inputs/controls/seed_2341/modified_adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/result.json",
+        "sha256": "4dbc273bf22eebcfd92e0c35269384a37d53e673b0ab77bfa8f49b984d104f8a"
+      },
+      "seed": 2341
+    },
+    {
+      "optimizer": "sgdm",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1500352,
+        "git_blob_sha": "f32e2f582ec271632dd69f0b200ef0b3c9e24098",
+        "local_path": "inputs/controls/seed_2342/sgdm/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/result.json",
+        "sha256": "519cf7680262802013c06897f221a7b29e3e2dfcd2c3e471c0985ef9a9386877"
+      },
+      "seed": 2342
+    },
+    {
+      "optimizer": "adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1515892,
+        "git_blob_sha": "6198c294122b819d66948e5a2cbddd800eada1a8",
+        "local_path": "inputs/controls/seed_2342/adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/result.json",
+        "sha256": "cfd53d0070b1ea4b7d765b5db7d514606f4581e0c15e9077c833daffe793157e"
+      },
+      "seed": 2342
+    },
+    {
+      "optimizer": "modified_adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1531018,
+        "git_blob_sha": "4131cde04de2209d4fb8286697d5b19a9cd288bc",
+        "local_path": "inputs/controls/seed_2342/modified_adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/result.json",
+        "sha256": "67e437ee3aa49f54cac8a897ceed9c8cbb2faee10fe273b62675fa39ff688f14"
+      },
+      "seed": 2342
+    },
+    {
+      "optimizer": "sgdm",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1500141,
+        "git_blob_sha": "b4c60681453ee3a3a2e1b438f741d5bf633875d9",
+        "local_path": "inputs/controls/seed_2343/sgdm/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/result.json",
+        "sha256": "d3b04b228569b6fbcbaf75e10c2a61e90526d61f5e6563ed4f901070fe0f54af"
+      },
+      "seed": 2343
+    },
+    {
+      "optimizer": "adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1515673,
+        "git_blob_sha": "1bc0f4f7476c41ab5c87cdcb46d7d1f0c2dbeb70",
+        "local_path": "inputs/controls/seed_2343/adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/result.json",
+        "sha256": "34b2dfab539c12ae3734058f59b782f292df006389144ebe7d786d52d27f9177"
+      },
+      "seed": 2343
+    },
+    {
+      "optimizer": "modified_adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1529996,
+        "git_blob_sha": "8ea3c4600ec91083ea91f6ed3c555b3b6a09ab9b",
+        "local_path": "inputs/controls/seed_2343/modified_adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/result.json",
+        "sha256": "8189c0fd0c476f4212d19b100b829a0ebb24a98fa82e735df4a586d880a194d1"
+      },
+      "seed": 2343
+    },
+    {
+      "optimizer": "sgdm",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1500403,
+        "git_blob_sha": "52e1bad23e9cabaaab905d8a2f8c563a612ee5b4",
+        "local_path": "inputs/controls/seed_2344/sgdm/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/result.json",
+        "sha256": "403ece3cc9d1e224e673d7d2739f35e89e1bf2e7662ed3a80de9663c7936b7cb"
+      },
+      "seed": 2344
+    },
+    {
+      "optimizer": "adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1516115,
+        "git_blob_sha": "7986abc2ddc23ac4130f297f375973084ee0e6b2",
+        "local_path": "inputs/controls/seed_2344/adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/result.json",
+        "sha256": "41c128a723793d753fda1f385974cc37f98e0a2fce73d6b30f0bfdcd5fb26a88"
+      },
+      "seed": 2344
+    },
+    {
+      "optimizer": "modified_adamw",
+      "result": {
+        "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+        "bytes": 1531067,
+        "git_blob_sha": "e336c4ed18b576f896a0b0dc6d595df92ca01e36",
+        "local_path": "inputs/controls/seed_2344/modified_adamw/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/result.json",
+        "sha256": "877e4546be20f77dbf1c35832aeacab6dfa2500e429e3c910f2a806b8c685fcc"
+      },
+      "seed": 2344
+    }
+  ],
+  "controls_source": {
+    "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+    "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+    "optimizers": [
+      "sgdm",
+      "adamw",
+      "modified_adamw"
+    ],
+    "repository": "CalculatedContent/rg_optimizers",
+    "results_root": "california_housing_benchmark/results/2026-11-26_published_mlp",
+    "run_id": "45753214421",
+    "seeds": [
+      2340,
+      2341,
+      2342,
+      2343,
+      2344
+    ]
+  },
+  "development": [
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 5.1773613952,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_00",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "4a60329f69736d98697d1d044aea8c25ad28e85f",
+        "local_path": "inputs/development/sgdm_00/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3338/github_execution.json",
+        "sha256": "60b31090e89acdb5174726849fe920fdf9cf1208e59dac2479a0f14f470adb02"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561605,
+        "git_blob_sha": "f0e6f6419f9a1679e706da09f60cf04db3b05144",
+        "local_path": "inputs/development/sgdm_00/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3338/result.json",
+        "sha256": "e12346f2f155793f2f8512b5dfd1adf8d221e2409a60bc04ef0107c2d93f8cd5"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1232,
+        "git_blob_sha": "52215d272b16f44c10a19711e5f87ba14f5d7681",
+        "local_path": "inputs/development/sgdm_00/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3338/trial.json",
+        "sha256": "9857f6c423fd34c59824ad7b03808d90694ca83f769ed23dd396904b34bb0278"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 5.504800517,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_00",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "c4c5364fcd469ae10f57d291bb7b622686bf0d09",
+        "local_path": "inputs/development/sgdm_00/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3339/github_execution.json",
+        "sha256": "cab62f74a7b6aa76838cb49e1b82e0f02eee26464f24123e2255a791ee2eb0a8"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561020,
+        "git_blob_sha": "8c30280621ff218ca9b1970403461f564c178f85",
+        "local_path": "inputs/development/sgdm_00/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3339/result.json",
+        "sha256": "2556c64e83b20588ed95ffc653674905a5334370b92d374d8261d063fdf73190"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1231,
+        "git_blob_sha": "ba0c5607578305d9c1bf365d4dedf5b6ac6b6d9b",
+        "local_path": "inputs/development/sgdm_00/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_00/seed_3339/trial.json",
+        "sha256": "4bcae4af80fdd70a3e7bf6a8712718d3a618f4983494744616bdc2e350f0299e"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 4.2604534112,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_01",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "1c3fc20301a01e8aae87042b7866bd47ed4c6e8d",
+        "local_path": "inputs/development/sgdm_01/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3338/github_execution.json",
+        "sha256": "4c485dc4192c26b74f57817a5f8594430ead7a38ea0a8c5b6aa6da186521b1f9"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561495,
+        "git_blob_sha": "1114556a1772eea08c423a50fbda0677d00ef014",
+        "local_path": "inputs/development/sgdm_01/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3338/result.json",
+        "sha256": "fd3580ce01ca579821b806e1db91df0556c3391f321fa3a2a3c642a9be196045"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1249,
+        "git_blob_sha": "1cac21e9d94710fc624e8adba1ec1404e60fccc8",
+        "local_path": "inputs/development/sgdm_01/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3338/trial.json",
+        "sha256": "d710c92721accfde74fc46676b2835b03b26be4f171fe36190f79b354b9a2146"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 4.3833807559,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_01",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "39fcf8374406979a7fb6b8ed30ba453bd235e2f6",
+        "local_path": "inputs/development/sgdm_01/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3339/github_execution.json",
+        "sha256": "88bd71736a1c681b8332d6e24436c286ab4a798f6b38fcbccf76526f80eb0853"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561672,
+        "git_blob_sha": "bfd347270f5d464865998d43de28f88e97b1ec4e",
+        "local_path": "inputs/development/sgdm_01/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3339/result.json",
+        "sha256": "aef86ca4bf9faa2e2a92c365e057934f178bc3d9992899583c81486fb899b8d1"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1249,
+        "git_blob_sha": "060f9b060f4cb5076796f76edf70b236d9ea19d9",
+        "local_path": "inputs/development/sgdm_01/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_01/seed_3339/trial.json",
+        "sha256": "b11cd63b75b84c3122e07d69ad2549506e9652f3d6c2189a42576e16a8a1541c"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 3.4767246645,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_02",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "e2766aaf91bed1d9aa0a08cd02e2847fbf2deae4",
+        "local_path": "inputs/development/sgdm_02/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3338/github_execution.json",
+        "sha256": "7be3e4c559455d1c7e590cb8f4ab75ec07e6d1d7a0af630a188356108a9e8c9a"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 564350,
+        "git_blob_sha": "f28155964013c8ab3d7cec940940862715e69334",
+        "local_path": "inputs/development/sgdm_02/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3338/result.json",
+        "sha256": "a5b5864ccd1e0b92e62fa4537848ef48634773716b0525cf40a3378e099b6199"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "8395dd51bc1f7d13898da1d2551d0312e718b632",
+        "local_path": "inputs/development/sgdm_02/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3338/trial.json",
+        "sha256": "11d0537e9fdfc75778cbe8846e45371f21c86dabae45cb22e3a32fc1f386159c"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 3.4396924646,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_02",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "179f3da4d0928bbb0676c473bcf755cb6450a08a",
+        "local_path": "inputs/development/sgdm_02/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3339/github_execution.json",
+        "sha256": "cd99b7a5a5d004e8c84602856baaaa2f828b62c467648faa6dc784609b0325e3"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 564378,
+        "git_blob_sha": "e3ef2751750716fcba5ec685b6c22176434288cd",
+        "local_path": "inputs/development/sgdm_02/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3339/result.json",
+        "sha256": "3fa30e488a10fb4acf2164b010f29914adbe15d5f1cde25d95c8b9b06bca87d8"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "823058d6cafcf009b14f7f4782e116e79286ab9a",
+        "local_path": "inputs/development/sgdm_02/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_02/seed_3339/trial.json",
+        "sha256": "e6ece08d23ae690974c4565b1fc5a0e7c40961d89760df91d275973c4aceb5b3"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 3.2921272719,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_03",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "a89c7e1d483bb21230ab95abefc80f9eb34ba7e4",
+        "local_path": "inputs/development/sgdm_03/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3338/github_execution.json",
+        "sha256": "7d17941b5cadfe548e4cf261db46c59869bef61868f18756ae8a5dd663d11adc"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 565097,
+        "git_blob_sha": "4fea1438bf587782dc4ce5973807a62771642643",
+        "local_path": "inputs/development/sgdm_03/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3338/result.json",
+        "sha256": "a5b0c74d50f736e342dc614d0a70c0d9500df628c5f5b768607c9ba507086de6"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1254,
+        "git_blob_sha": "68aac4bb5d00d1421a70eb36bcfd290a6059ed42",
+        "local_path": "inputs/development/sgdm_03/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3338/trial.json",
+        "sha256": "271d0154757fa3568423983a75ad0130138f810ea06e9bf4a897d13a3eed40a2"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.477654817,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_03",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "31ae8a594450fae6ede7f1209b04a7e15222af60",
+        "local_path": "inputs/development/sgdm_03/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3339/github_execution.json",
+        "sha256": "53c45792603082df0ef906a24b51a0998cb152d0646151d132262a700735e5ef"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 565251,
+        "git_blob_sha": "45bd7a5183708a76b7a07990764c2244ebdf1bac",
+        "local_path": "inputs/development/sgdm_03/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3339/result.json",
+        "sha256": "8acd4536f30cf29703fcc547c8da1eeeee29588e7846eb4ce96e8597e51a6bac"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1254,
+        "git_blob_sha": "1da96aaf6aca58af6f78b164d13d75f7edec9263",
+        "local_path": "inputs/development/sgdm_03/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_03/seed_3339/trial.json",
+        "sha256": "7d7e5dd160e4ad6fb9d9132713435c34d62af5a80118f4c895bf7389fc0a1bf9"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.236803066,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_04",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "ef80a9d1048bb3ac1a3ebc81dfe79c3a698a645c",
+        "local_path": "inputs/development/sgdm_04/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3338/github_execution.json",
+        "sha256": "0cf2d9c875ef32821540ea0619e704c14716de451e2d483b9a711f159317281b"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561005,
+        "git_blob_sha": "0f48457650370c72551634fea440bca66ef18945",
+        "local_path": "inputs/development/sgdm_04/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3338/result.json",
+        "sha256": "3a97661922b88389b085a6958e359c23228bd4b8b6b3eaafea59fc4f931d6fa6"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1232,
+        "git_blob_sha": "ee8160d00310765ae8551fa958e08da689bfb3ef",
+        "local_path": "inputs/development/sgdm_04/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3338/trial.json",
+        "sha256": "75093bbe4c4c522fb6176a7a6d9ce626a683c26f309be0ed640cbf1951a3f093"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.258727948,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_04",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "6259bc50f93a97f3fd86614e2a080d0ac2597886",
+        "local_path": "inputs/development/sgdm_04/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3339/github_execution.json",
+        "sha256": "53d8917848abd2dffeab0437f1983cf3375df6639bc81187cc9a98c359c20e62"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561058,
+        "git_blob_sha": "ef5b86a41c1ebbee540e14115ad6477586ee050b",
+        "local_path": "inputs/development/sgdm_04/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3339/result.json",
+        "sha256": "aee690f7ae2efe5e5942867fa2c98872d84f74ee381a5212c798c029a00676d5"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1232,
+        "git_blob_sha": "2eab8618c0f6248b41a34645e6fe9c4929c87829",
+        "local_path": "inputs/development/sgdm_04/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_04/seed_3339/trial.json",
+        "sha256": "ff1db32f9f8f4ee7de8724caa8c5df366340164918e6f4cc16f986b2eda8086b"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.2827128541,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_05",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "4ab0c8038bafdff968208c0bab7762321d8016b8",
+        "local_path": "inputs/development/sgdm_05/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3338/github_execution.json",
+        "sha256": "3b8f0ce553f0bd3b2bb96acc9a925b819dbb602989a926720a42fca2a791cbd0"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561561,
+        "git_blob_sha": "3026234f349fe7d8b2c655c295c3b7b14765e6a4",
+        "local_path": "inputs/development/sgdm_05/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3338/result.json",
+        "sha256": "e71cc59116267b2101d10200a1d47c8d0842fb69f2e2a9f277b602bbaffd6328"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1251,
+        "git_blob_sha": "76cffeeb828073cb000303392b7c83a41811b964",
+        "local_path": "inputs/development/sgdm_05/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3338/trial.json",
+        "sha256": "13cbecd180d31d0e6c570fcf9d5be43fc12137f8b532596b40ae300576729b1d"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.2851731736,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_05",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "12ea953f6c32a02f8fd0984aa9344f6f6f8527d8",
+        "local_path": "inputs/development/sgdm_05/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3339/github_execution.json",
+        "sha256": "d8d2d7cdd4a9981bdadc09e571235ce3d64337ed8acb06490c488ac215f6d02d"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561450,
+        "git_blob_sha": "893b2734d2969cfdbcb5f15c5591387da13f22f3",
+        "local_path": "inputs/development/sgdm_05/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3339/result.json",
+        "sha256": "479d80e116fc87501755fccffffd5c5e0c702ae174c9c5a5d9afb6c5ca3d3390"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1250,
+        "git_blob_sha": "65c95b151c0822a1347503d079d0093b006680ed",
+        "local_path": "inputs/development/sgdm_05/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_05/seed_3339/trial.json",
+        "sha256": "4e8dd4522dc0f13e85729ae4b85495d6cfb3b14e6dda8a6a96fe7bc6c5f0c946"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.9988920211,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_06",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "0dcfd0ece3c6e0ddea3e555d6ec25b008d59bfb5",
+        "local_path": "inputs/development/sgdm_06/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3338/github_execution.json",
+        "sha256": "0954c822c01f0a221d763f737b5cc030a673470336af9837283bac563daff74d"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568556,
+        "git_blob_sha": "0e74ced058e2dea25a10c6695e030f33492b3eb5",
+        "local_path": "inputs/development/sgdm_06/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3338/result.json",
+        "sha256": "bb387b445d8912fdb36b7d83ca6f78d0fdb92716af5a34d9f2972d035832f3b0"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1238,
+        "git_blob_sha": "a642c085a8cd39642589bee252e7a8a0659c73b9",
+        "local_path": "inputs/development/sgdm_06/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3338/trial.json",
+        "sha256": "385ef7636efb4072dfea547012377965f8935e2cda6ebdbb9393bbbfa3e64600"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.4314756114,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_06",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3e9a68aeee7415daf6674f2c219a42136f15c859",
+        "local_path": "inputs/development/sgdm_06/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3339/github_execution.json",
+        "sha256": "ad6da6a73101521c507f23bc297c183f9b113c61bc0640360f529203c761bff6"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568393,
+        "git_blob_sha": "d1165c795e2dc7f03ec8a89c4c1d74cc527fb872",
+        "local_path": "inputs/development/sgdm_06/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3339/result.json",
+        "sha256": "da63863b283881a0fe63c317d28ff02ac910a4eb41cae873f6e16ed235f63889"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1237,
+        "git_blob_sha": "ee447640f0412128281e05d849368348ba415867",
+        "local_path": "inputs/development/sgdm_06/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_06/seed_3339/trial.json",
+        "sha256": "4453afe160da6bd3615ba45737dcb7df56f130e8e25bca1a85397454e1692c94"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6763898823,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_07",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3e85cebe5e78a15ea336cac5f558e8efb43faad3",
+        "local_path": "inputs/development/sgdm_07/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3338/github_execution.json",
+        "sha256": "8a584327d347aa5d55f6ecc4ecb14219a9eb1a3cd0cb0633b3170414b2bc39a4"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568112,
+        "git_blob_sha": "7dc67e5c6954b5036c7b6bd8d59cf9d21ccde6cd",
+        "local_path": "inputs/development/sgdm_07/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3338/result.json",
+        "sha256": "1d208123ce0cc9474d5c3fd0cacca5f1904293eea17a7be9b02da576cac06003"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1254,
+        "git_blob_sha": "1844f1964864dd9f88fa86cbfdc28e78e73a0a3f",
+        "local_path": "inputs/development/sgdm_07/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3338/trial.json",
+        "sha256": "93fa1384613a42cfcfb71db02460bd632fe374051ded671c7b7a6d0ea7ec770e"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6873420121,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_07",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "d81b93943887b46e8678dd505b71d1ed8fc24335",
+        "local_path": "inputs/development/sgdm_07/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3339/github_execution.json",
+        "sha256": "a3b54e4c08da17949aaaf74eac05d22cd15507b8771da5ad9cf7cf7d12042120"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568171,
+        "git_blob_sha": "1626ffd9348ab64b03ec60cedafd5958631b516b",
+        "local_path": "inputs/development/sgdm_07/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3339/result.json",
+        "sha256": "a6039be297e951c94030c50b47a1333eeb10487916f8cc0c9ecf12f6d4b32a3c"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1254,
+        "git_blob_sha": "46d23cf28b4cfbeabfb533d6a4fd8ad388e1eb74",
+        "local_path": "inputs/development/sgdm_07/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_07/seed_3339/trial.json",
+        "sha256": "37a57784cf78e9d89b876d0fd80b20aa72aeee7ef8a65916b1d72c29359a65aa"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 3.4573955669,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_08",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "865368ba404056c73e7869a1789ad0ab5f81f09e",
+        "local_path": "inputs/development/sgdm_08/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3338/github_execution.json",
+        "sha256": "3ead3ad8acc24abbf1c97d77c7c34c3e41c62c4c3f812082fb6759e646b600eb"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560866,
+        "git_blob_sha": "56419534c5e31d838b028a658c6ca75b6cb4caf6",
+        "local_path": "inputs/development/sgdm_08/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3338/result.json",
+        "sha256": "74ebbfe012ffd21180893d5483836d779148d855c78933d30f89ae09351023f1"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1230,
+        "git_blob_sha": "930b81228a3c49cceef906ca3e6f27dd82af754f",
+        "local_path": "inputs/development/sgdm_08/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3338/trial.json",
+        "sha256": "7d2a21caa09d33ef5f6eb01992a15ef219fe56f0b7b70a0dfaa8ab74f76d42f7"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 3.3957374557,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_08",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "b260556b00b916da5a416d2c6a8327d9ecad513c",
+        "local_path": "inputs/development/sgdm_08/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3339/github_execution.json",
+        "sha256": "4c91c99093cefd6a51d6db96ca3b980e81fcd057c75a562fa8eacf9feac3497a"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560946,
+        "git_blob_sha": "1b0c7dbf13205c5a84ae1a3cdf6af5317b9f54a6",
+        "local_path": "inputs/development/sgdm_08/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3339/result.json",
+        "sha256": "2c9cf3edad6bb0f3d508d2d06939c38aef92b38fa3babcf8589fa1b17410e0f9"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1230,
+        "git_blob_sha": "6bdc2d59242dfb49125c58ae3c718e7e8ec171b6",
+        "local_path": "inputs/development/sgdm_08/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_08/seed_3339/trial.json",
+        "sha256": "422ac87438115eae924bb42218996a50d6e098044622e2de670bf89e9ad0b94d"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.5765178649,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_09",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "aeae8c80663ac8ca16dd14e51c4d503fc07c8a6b",
+        "local_path": "inputs/development/sgdm_09/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3338/github_execution.json",
+        "sha256": "fea2f1141dd1abe9fd6c8196493a5b6fa321a6230e5f8ce794bae030d90e95f4"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561384,
+        "git_blob_sha": "2964ba02c98bb35a4942c61264c2f384e66e133f",
+        "local_path": "inputs/development/sgdm_09/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3338/result.json",
+        "sha256": "87bc7ab734ed177fd81c6f4ce23c6039c1448f694e79c162e53f46f1f19fa142"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1248,
+        "git_blob_sha": "41cd96a05d8e999eeecf9e2a3f579de0d80ae947",
+        "local_path": "inputs/development/sgdm_09/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3338/trial.json",
+        "sha256": "43c29883ea0e4e1aefab90419056bfab68b43b1fef5499ce45acfb7206a08dd1"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.5325183382,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_09",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "bb5756b48159e1ae17bd3a8bff89ed8d421f1218",
+        "local_path": "inputs/development/sgdm_09/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3339/github_execution.json",
+        "sha256": "13d26e4ad11b03fc2ceb4ddd2538cc1d1773cbf183b003d82f9e1be5303af97b"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561654,
+        "git_blob_sha": "587fe6e74947e15d6d3749f53911cd09dab62966",
+        "local_path": "inputs/development/sgdm_09/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3339/result.json",
+        "sha256": "15c3abca2a2c6a86454550b4072c57bc953578c332cdb9a72d677cd41ba724f7"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1248,
+        "git_blob_sha": "1f82784f904958404aeda9521a3725609cadcdae",
+        "local_path": "inputs/development/sgdm_09/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_09/seed_3339/trial.json",
+        "sha256": "e140da3cce3bdaa1b37db56c6f8099cdfa9b16b77a157d4d9e1cd29dbe49ee0b"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.773890867,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_10",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "46a5283a71844e44f1b6f3c1f38a0ddbb7b7697e",
+        "local_path": "inputs/development/sgdm_10/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3338/github_execution.json",
+        "sha256": "b8463b0609932e64f863b4a16b15412388596943727f3cd7c7d7e5112c12712d"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 567724,
+        "git_blob_sha": "da346912adaf3882a338671d8d2825d417a1d632",
+        "local_path": "inputs/development/sgdm_10/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3338/result.json",
+        "sha256": "4d66fbec290e359916f55e9b1268382e4c0a5c35ce16351fff0fa2cef081e038"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1235,
+        "git_blob_sha": "a84cb4352c84902b596e2f255c12b23da59d09cc",
+        "local_path": "inputs/development/sgdm_10/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3338/trial.json",
+        "sha256": "d4d897acf33f23c69a199d8f413a4badcb52611ab627c0353e7f5f5171fde528"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.7574012878,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_10",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "71b2a6d7da0565233af99cdca3828ae35cee3ba0",
+        "local_path": "inputs/development/sgdm_10/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3339/github_execution.json",
+        "sha256": "20f0ccbec722187daf07983dab4926d42c7d3da5f881a41b5f5128afabcb8199"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 567570,
+        "git_blob_sha": "2edac3a7c978780ccb4a69b97729c927e56bfc1a",
+        "local_path": "inputs/development/sgdm_10/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3339/result.json",
+        "sha256": "a9436d9a2cdd1a2c561f030779dc9fe85b04e8083d4fc6a5c45df403ebbdfa6d"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "fce41c78287754ab09d6d744ba325c14cad04977",
+        "local_path": "inputs/development/sgdm_10/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_10/seed_3339/trial.json",
+        "sha256": "650b1ceaba348fff863041601d8bfe19b68870e01f9d3083ddd648de07ca848f"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6801919078,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_11",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3154f1a424e0031963d19e27f84406210e8edaf4",
+        "local_path": "inputs/development/sgdm_11/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3338/github_execution.json",
+        "sha256": "db475ddc3f842a8ed072ae44e04a86344d69a78b4c81e10b97e16f9db0143204"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 567996,
+        "git_blob_sha": "1c45c01693f981e083fa3500d51bb5db40d0e97b",
+        "local_path": "inputs/development/sgdm_11/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3338/result.json",
+        "sha256": "b09ff1e6ab2417b4c19e124f5529ebdceacf7fc61ddef6121a5ac51028a2c2dd"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1253,
+        "git_blob_sha": "2c8f9d4d8824355c830c2721d9c758b4e847603e",
+        "local_path": "inputs/development/sgdm_11/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3338/trial.json",
+        "sha256": "9250c965a519a9be4647ebee4197f89f65725aee9f7e40ee1aab614c26d1df86"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6821092241,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_11",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3a433f2891461b69f2c99dd2d64fdd82551db2da",
+        "local_path": "inputs/development/sgdm_11/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3339/github_execution.json",
+        "sha256": "31211af7f3465ba03c4c342cf046e19c8684c83e0eed63703b143bd50ed6b655"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 567866,
+        "git_blob_sha": "8b90459891e0eb085c4a708ccdb9d74c70fdf6af",
+        "local_path": "inputs/development/sgdm_11/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3339/result.json",
+        "sha256": "e5ec0e81450d6749623d0b77d38d3e61cfe941613b59a406ada7c6264d2fa720"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1252,
+        "git_blob_sha": "90758793e2b555cad3aa739d223003921fc51cca",
+        "local_path": "inputs/development/sgdm_11/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_11/seed_3339/trial.json",
+        "sha256": "a0317e69ce78045d1ff2b5bdde86ccc7d801efcab338033779e3ef7204534382"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.7662682573,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_12",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "0e5edae7f66924f8835b6d18e968c9bc29061cc6",
+        "local_path": "inputs/development/sgdm_12/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3338/github_execution.json",
+        "sha256": "1b4a7c243f8d79739a09705170f4a6bbe9944949f95d36b32d30c65eada6f142"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560909,
+        "git_blob_sha": "9edab8e474fc9dbdfc743616239c784a391eda48",
+        "local_path": "inputs/development/sgdm_12/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3338/result.json",
+        "sha256": "43c8f7cdf37bc4ed5c948fda902dc107bbdba5deb22e9767a55c8a4ad574ab80"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1231,
+        "git_blob_sha": "e63b432a385464c467adf59ca86c5f672553683e",
+        "local_path": "inputs/development/sgdm_12/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3338/trial.json",
+        "sha256": "bdddbde3812b76fedba56c61cc1565180c557a26173018e6722cabfb4a6a56c2"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.7693798734,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_12",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "fb861c9cf8449ae7a84cd368351444d5774abecd",
+        "local_path": "inputs/development/sgdm_12/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3339/github_execution.json",
+        "sha256": "9da83ffdb4400dd818f48a102c339a4d65b9bd316a0bb653476089fd4166a008"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561006,
+        "git_blob_sha": "44831775a8a931acc11f4070dd88e46e81e3b076",
+        "local_path": "inputs/development/sgdm_12/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3339/result.json",
+        "sha256": "8e67969a504d944a78a644599d84491b5818b9dcf7b3e0f3cb999d638a3d3ba0"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1231,
+        "git_blob_sha": "ac9e14653a4e2ae7f962e0f03beb7eeaa33c78a7",
+        "local_path": "inputs/development/sgdm_12/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_12/seed_3339/trial.json",
+        "sha256": "98a74fa59871da8a28e5d39f7bc031c4382989d7d0f050fb920fab57b55e9d11"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.0405103573,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_13",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "0a33b6e7d8460f1aea3cc27847fdbe0ca6464d94",
+        "local_path": "inputs/development/sgdm_13/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3338/github_execution.json",
+        "sha256": "bee3f6557576969665933634e4756fe2696b9ace97f50c3e34be2cfa68a7c012"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560390,
+        "git_blob_sha": "f313fa68c604028aee22441ef01ad8129464d0c0",
+        "local_path": "inputs/development/sgdm_13/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3338/result.json",
+        "sha256": "a174c6b02d4cee8e19fa029ea299871b0a39cbbe95a6bbba33b5d2affe25b7c5"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1250,
+        "git_blob_sha": "6819300d45a1e2d60902b92ec350fe5c2f36c96b",
+        "local_path": "inputs/development/sgdm_13/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3338/trial.json",
+        "sha256": "f5b091c3c80d78035bde8b3b62c19e9576cb0191207f9992e124b35df2676826"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.0372859744,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_13",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "679f42c41f2926615862d4051d9adcb462927c11",
+        "local_path": "inputs/development/sgdm_13/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3339/github_execution.json",
+        "sha256": "d0bd37ba3f3c3c9bb79b705672d93d6eb350b1302d51f9fea8b2218237a9fee6"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560292,
+        "git_blob_sha": "37e84a083a7dba5e5a7bc5a33467af8f992a1801",
+        "local_path": "inputs/development/sgdm_13/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3339/result.json",
+        "sha256": "ab77924d8ec828d2fdf7d7811757f4db213ff8bfe67883e7ccc954ef4341fad5"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1249,
+        "git_blob_sha": "6eade66fff1fc8f21fbe531ac641a415441b9bdd",
+        "local_path": "inputs/development/sgdm_13/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_13/seed_3339/trial.json",
+        "sha256": "cdd994b43991e0e679abffd3fb93c84fb885147db0c242489dcdc5f8a9da375b"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.8991054063,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_14",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "584db387f374fc94092472cc18b460ac3d4132f1",
+        "local_path": "inputs/development/sgdm_14/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3338/github_execution.json",
+        "sha256": "0cde5f19153b8dca9276e4fc1551943711996e3fbfe51b0a90578613dcb49906"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 569965,
+        "git_blob_sha": "34e20a407e75b22bcb90ff103d0f4f226f5551dd",
+        "local_path": "inputs/development/sgdm_14/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3338/result.json",
+        "sha256": "fe276f6d9f5c6dc3c0afe51865ba2e596d2ebb5b577ef2ff34176ee9997bebf7"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "0bbbf7abad9821278a767c3c82ef7232ae5dedcc",
+        "local_path": "inputs/development/sgdm_14/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3338/trial.json",
+        "sha256": "94fb90e301bee66fff04778cc5ad08eee6fe15d6c8b80d2ea1ac9d282f4f1426"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.1342005573,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_14",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "fbc0d5ea9f0e78eb678084e41e99ebf4dfa883f3",
+        "local_path": "inputs/development/sgdm_14/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3339/github_execution.json",
+        "sha256": "77ec6fc8ed0a62a68e905cda0002c29c0ecee632724c2cb27e15f6fdd864933b"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 569761,
+        "git_blob_sha": "3ee0ddcf31d96f586f62cd82012bd8cdc3ecae8f",
+        "local_path": "inputs/development/sgdm_14/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3339/result.json",
+        "sha256": "0ebbc57db04a3b8da9aa845acfe11764f51339f6900c5eda127b1f9b3764e5f3"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "3f9f315222a163fe993b461416c03f128e01a61b",
+        "local_path": "inputs/development/sgdm_14/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_14/seed_3339/trial.json",
+        "sha256": "b9755ac8440304657190d4d5ab20a341bf5cba7733807f7622d354b5d36b5859"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.8524309467,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_15",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "6b8380f0235baea3651db28a2f1188ba2f820344",
+        "local_path": "inputs/development/sgdm_15/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3338/github_execution.json",
+        "sha256": "24aa6d578e53bbe3f9b924da9a82b72270b60761810fb3f7ad763069751f6cf3"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568171,
+        "git_blob_sha": "3cc2a90e4f8c79fb93b72fe3500c347f7b7a1430",
+        "local_path": "inputs/development/sgdm_15/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3338/result.json",
+        "sha256": "8505d0bc18fefbb7a1505d6fcc2f73c1db27e36a0ad371cf99ad195943d142d6"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1252,
+        "git_blob_sha": "78b7dfae6cd17ade2d0fe1f6ac4c8d1befa6cc32",
+        "local_path": "inputs/development/sgdm_15/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3338/trial.json",
+        "sha256": "2f0a6a473136011429956a6cec597d528e901f1c9f0a8a7003f2e39ff2736e5a"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.8461074845,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_15",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "70ddb01fbd0862c9a0bfe57830d3e256c14dcab7",
+        "local_path": "inputs/development/sgdm_15/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3339/github_execution.json",
+        "sha256": "81a293e8d485d754f9602ba5a62e78696a7d87b69bcb9d9bfc53dd292e986489"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 569169,
+        "git_blob_sha": "8e2bc08240351ad3b9a0f7aadd611773512fb505",
+        "local_path": "inputs/development/sgdm_15/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3339/result.json",
+        "sha256": "5ee058b5b7b351040516c94f166bde3c614df98d14df15ca5754ebf57edc987c"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1253,
+        "git_blob_sha": "f6095dd6105dc5619e0f5973ce9815eb85fc9e34",
+        "local_path": "inputs/development/sgdm_15/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_15/seed_3339/trial.json",
+        "sha256": "1a602b78c239a9530e486b85b1ac20267ad3575cb0f5272d1478f541ace150fe"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.2092590236,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_16",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "8726819b2f6c2ded4390557bfafb1a763e128fae",
+        "local_path": "inputs/development/sgdm_16/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3338/github_execution.json",
+        "sha256": "abd61c20a998d07c877c33597a892bc2a4cee971c74e24c64cbd2a89f5384763"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561004,
+        "git_blob_sha": "2f7ec271285c7b767fc55f69e873d02f42dfe717",
+        "local_path": "inputs/development/sgdm_16/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3338/result.json",
+        "sha256": "7e305326e2bacd6e9b248768b1a2eaa79f677efda4dd8ddd67efd9e797993ca6"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1230,
+        "git_blob_sha": "404d264cc994ae33843bca8ca325a13e1b349614",
+        "local_path": "inputs/development/sgdm_16/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3338/trial.json",
+        "sha256": "3b6674316db7cefa3c39104be72f0f57a7a338682ae2010e872b7b97610f58a6"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.2150838484,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_16",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "1e7d5dca05e5b352c1c516a7fd655121e9a20672",
+        "local_path": "inputs/development/sgdm_16/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3339/github_execution.json",
+        "sha256": "0284909d3cbeb733952eb3363015329880b17b6ea86feafd33bdaf3468a4e257"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561175,
+        "git_blob_sha": "a20fa059d6fe333bcf0a6ff4d2652e6902ea3ee9",
+        "local_path": "inputs/development/sgdm_16/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3339/result.json",
+        "sha256": "66c1f3be2bf2ae531259d6cb154b2011302109929d0009b9970075821caa92c0"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1230,
+        "git_blob_sha": "78e3bd8ea5f8cdd935bc7d286d1128b395e23c21",
+        "local_path": "inputs/development/sgdm_16/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_16/seed_3339/trial.json",
+        "sha256": "c791c4478a150e7af61408c71043ae464244018e16ebd678d43cd1d7f9a950f5"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.2888296747,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_17",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "a0c697c71d4d6b88873420ff3b2479c0e0583037",
+        "local_path": "inputs/development/sgdm_17/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3338/github_execution.json",
+        "sha256": "acec3c93f506c82997734747e2ea271f197a98f53a8b9af18ab46d44f38343e1"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561384,
+        "git_blob_sha": "bd85af147b405e6ee6a0c86a0ee80b30e885f374",
+        "local_path": "inputs/development/sgdm_17/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3338/result.json",
+        "sha256": "fbc602eaeb9db0c715312b90e7f015b7a75a837cdf23bbfb1221f49e77b56d6c"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1249,
+        "git_blob_sha": "61f27e2f9dc2a797d7f82c044db5e6f647eb055b",
+        "local_path": "inputs/development/sgdm_17/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3338/trial.json",
+        "sha256": "3590dd97009d06886d4c09e8cdd073dc973ef4513c35f10fe098dbe8bbbad6d2"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.2703632006,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_17",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3ad7ac57b87184cc847efd2d41ceb217c5fe367d",
+        "local_path": "inputs/development/sgdm_17/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3339/github_execution.json",
+        "sha256": "66b4c3558a7d4e58dd219dff7958f7f4fc44d2a5e3361be91ab36eeb5f3d480c"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561208,
+        "git_blob_sha": "edbcf9108dd7bf6d683cb8c611e72e230249a3fb",
+        "local_path": "inputs/development/sgdm_17/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3339/result.json",
+        "sha256": "2cf473816a7668c88dfda5c3d6113e2a43cdf4778fbfea7971b66f781f3359db"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1249,
+        "git_blob_sha": "6403091922664fda4e2d95602370178f00c9c787",
+        "local_path": "inputs/development/sgdm_17/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_17/seed_3339/trial.json",
+        "sha256": "3177245256186aff0f8f48005bbb789859a1438b5bc32c243a52be336d239ca8"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.4335867536,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_18",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3a0dbd1e00bbb9ce2076c86bcd6e64ddca82ba6e",
+        "local_path": "inputs/development/sgdm_18/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3338/github_execution.json",
+        "sha256": "7a67ea9a21e1e31869b93085cf0263124b977faae640ce97788f271b9135fc42"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568541,
+        "git_blob_sha": "6ad2c639c5a74e929c9199f31171a34f54e94aca",
+        "local_path": "inputs/development/sgdm_18/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3338/result.json",
+        "sha256": "85258ff8808700435251f29efecce5ba129d50887a0ad3373a28b626016bde74"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "2a97d734de3e6e4314f32171c959de826567ddfa",
+        "local_path": "inputs/development/sgdm_18/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3338/trial.json",
+        "sha256": "0df7d8659d56fa38fdb68e64c26ee59160adc5843acc81c77390a69f8e8e7e25"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.4135374768,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_18",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "8af7ddd28a68f9588368b1c56d3db38bcf2656f2",
+        "local_path": "inputs/development/sgdm_18/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3339/github_execution.json",
+        "sha256": "30964aece4217aa1cf94fff023e18df05f55c12f4aaa52b59015c96ce5ee6829"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568462,
+        "git_blob_sha": "c36d98e465be84b847432c0f0a10004f0b747ff9",
+        "local_path": "inputs/development/sgdm_18/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3339/result.json",
+        "sha256": "69f27fff56f1fe7c9826fa5405a01fc2a915a3996b9b15b81bbb32e90a3a7688"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "465647949ed21c3f72ffe84519c93d2433044fb5",
+        "local_path": "inputs/development/sgdm_18/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_18/seed_3339/trial.json",
+        "sha256": "334457d3eab3e96e0e785d3cdffbbf6bb059550600299e8de0cd64dddf978131"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6779875778,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_19",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "3c018ba4feffac28177087c27eb1f8bbc5879796",
+        "local_path": "inputs/development/sgdm_19/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3338/github_execution.json",
+        "sha256": "40490e56e20ca26be539c5d068c8efb926baa37863b4aca0433a1b773cef550b"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 568034,
+        "git_blob_sha": "577dd84ee19fc0db7d8f24d6f98989793e4c81c7",
+        "local_path": "inputs/development/sgdm_19/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3338/result.json",
+        "sha256": "8c179ae2de26237c8e5d10a889e634393aa683560260d02361b090c5a1a7f79b"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1252,
+        "git_blob_sha": "7519f283b5d03377b134ae34b8c98eab83795f2d",
+        "local_path": "inputs/development/sgdm_19/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3338/trial.json",
+        "sha256": "56e903d2460d7f27aa6120325bd9a3d41b917a8bf8b48a849b194c3447d96352"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6748750452,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_19",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "5ce8434017c48f5a44e1dd0fafedc18a14cfaa49",
+        "local_path": "inputs/development/sgdm_19/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3339/github_execution.json",
+        "sha256": "d284024948107aea92916c722a6e344f546d1b252bad4dc56a3071db19d6f0c7"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 567990,
+        "git_blob_sha": "7a75dec565d99e192bcfce4a471e4837d6cb5eeb",
+        "local_path": "inputs/development/sgdm_19/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3339/result.json",
+        "sha256": "33892e2aa5e203b8818d679fad398ea6f3de00aeab2b832c234c70e24b059497"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1252,
+        "git_blob_sha": "93390124efe33f4c0a821a08bd04b64317ce1694",
+        "local_path": "inputs/development/sgdm_19/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_19/seed_3339/trial.json",
+        "sha256": "8366c4878e0992f10b13b9b1c4bea9aeb9c65d0480b3abf6c5d23cd0a589a4ed"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6486459304,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_20",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "6ea78c629f95407836f734d35a5b2ab0bcbe707e",
+        "local_path": "inputs/development/sgdm_20/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3338/github_execution.json",
+        "sha256": "801a9ad6722fb3af6d1ea2ba5985e67a8e0e925c413cd2a17100f22474d4f5e2"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560853,
+        "git_blob_sha": "cca0ebd7d2d15826aa3000a3e55de8d26f51ad0f",
+        "local_path": "inputs/development/sgdm_20/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3338/result.json",
+        "sha256": "35610bebe00f7952e5539fa21c68ec27dd465fe14dbc75005bfb9cd3fd4dc6ea"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1231,
+        "git_blob_sha": "f49efb2383f913aea12a5d08134a9707004b3209",
+        "local_path": "inputs/development/sgdm_20/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3338/trial.json",
+        "sha256": "97e9585ae8e8c79d018e74c4b8a5292ac902e6934efec7c94b71ab7a8fb0082b"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.6583067281,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_20",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "f768ed579fe627064302a588ca747303ef5d06ac",
+        "local_path": "inputs/development/sgdm_20/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3339/github_execution.json",
+        "sha256": "be2f31124ae89f015a65a5d4afa7a31e2040e99aa92c520ad203405ae059bc9f"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 560741,
+        "git_blob_sha": "834960091d100bf4bab172dba835bcb9e7f8b895",
+        "local_path": "inputs/development/sgdm_20/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3339/result.json",
+        "sha256": "1891ca4ae1132eff9a5627fb5d26c85c59f6a2e5c331c886e8f6542e1dfc576e"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1231,
+        "git_blob_sha": "76376f4ebecbab71d947e5decf6fd36897af23f8",
+        "local_path": "inputs/development/sgdm_20/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_20/seed_3339/trial.json",
+        "sha256": "eb484509f3cbbc03bcb0e4f08cbb64e4d31b358eb9ada080b2e2eb44b57beb9a"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.627080907,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_21",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "502ce8f307d831cc00d7f613cdd9b3f0348e4e26",
+        "local_path": "inputs/development/sgdm_21/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3338/github_execution.json",
+        "sha256": "e0704cffeb37e61b2ba566d149a2ebd6937325f7ed43d701a644d43847b11daf"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 557860,
+        "git_blob_sha": "e49db8e7b10cdb1056a03aaec90a3ac45e368246",
+        "local_path": "inputs/development/sgdm_21/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3338/result.json",
+        "sha256": "ee72f701b9b9e28d1bf51be8eced6d0e3fdf671d671fe9af1597f9910928256d"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1248,
+        "git_blob_sha": "a2fd5964027f7c97955072858601fb0f975ff00e",
+        "local_path": "inputs/development/sgdm_21/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3338/trial.json",
+        "sha256": "3634f6ed724638a82eb29cb6afd1e816d55e50f3c412492eb6be162a7614ff0e"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.5949346614,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_21",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "2456e2cdc6fa9e19df309aba7009c863a8aa40c8",
+        "local_path": "inputs/development/sgdm_21/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3339/github_execution.json",
+        "sha256": "7a76bf5f66a25a86b5c9786684223b921138bdd78637721bff782ff991516b5b"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 557756,
+        "git_blob_sha": "bdd3e652b21d505af911317818424117b3a3f6d4",
+        "local_path": "inputs/development/sgdm_21/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3339/result.json",
+        "sha256": "bcd83c3f4a287554d12c7033a97ff018489ee4ca0233557e76ae1b13841692a0"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1248,
+        "git_blob_sha": "368f860cd47b5b44cb6cfe4f1aba30e4a083a951",
+        "local_path": "inputs/development/sgdm_21/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_21/seed_3339/trial.json",
+        "sha256": "9c209e2c8c41d3c3e2896ccc63218f8585ef6aad4951c8e29ba228fc0bfde64d"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.4617961707,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_22",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "fdf785f2d98f692ad7dedd8dd2eb9fbb2c3b1fa4",
+        "local_path": "inputs/development/sgdm_22/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3338/github_execution.json",
+        "sha256": "0ec590f768f34a780f0664aaa6a0cb6e5636c3a596c4f0ab8cd4012685ad92ce"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 570691,
+        "git_blob_sha": "0ae2ebfeeec288dbc0e399f1e36cf7fe2d7df8b0",
+        "local_path": "inputs/development/sgdm_22/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3338/result.json",
+        "sha256": "6088bcbebd30649813fa07410aac265c6433f343f87200bf74822f8a31256159"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1235,
+        "git_blob_sha": "858d5d13918d5bd57dc0e251bcf9dd7157600388",
+        "local_path": "inputs/development/sgdm_22/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3338/trial.json",
+        "sha256": "66bbacef4d4b0cdb66e55460c2ecea564eff870c52faf05c4156768cabe9ae67"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.3563306041,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_22",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "8e69b0267498c2cad653171c796c7033001bbb62",
+        "local_path": "inputs/development/sgdm_22/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3339/github_execution.json",
+        "sha256": "06468299c991af8a2cf7d04b85363ef6e93bcd4c58ae6fb34b7092cf77141dda"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 571498,
+        "git_blob_sha": "769184e411e89064f645fb60e946a469bf4da758",
+        "local_path": "inputs/development/sgdm_22/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3339/result.json",
+        "sha256": "f052feb1bbecfed75a30e1173be6f018afd86b19431f86ccb5b82be82471e1bc"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1236,
+        "git_blob_sha": "41d4fb6007820c866536693419b019a0b9636517",
+        "local_path": "inputs/development/sgdm_22/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_22/seed_3339/trial.json",
+        "sha256": "a10579bf457fc2d4a4e5f583569f1c317bdae525afb6e0207eb0b572ec81d02d"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.4969743703,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_23",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703983,
+        "git_blob_sha": "98aca0165a77324b131750653600851b51896e6b",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "2f55fb0fbfb825b5e39d33cfb131cbe7924f37cf",
+        "local_path": "inputs/development/sgdm_23/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3338/github_execution.json",
+        "sha256": "f0dd7bc1fe75bad0ba1db1f21d7b672ed8676989459045a5a33b461ea15cace8"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 387612,
+        "git_blob_sha": "cb30a85186b01d437e28a66f23552ebefc37abe8",
+        "local_path": "inputs/development/sgdm_23/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3338/result.json",
+        "sha256": "92d042086922561fbf022979c1bc7019a35d3d1ce87edd8dc1aabfab0d8a13a4"
+      },
+      "seed": 3338,
+      "source_completed_updates": 39416,
+      "source_status": "running",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 657,
+        "git_blob_sha": "0bd7a35b7bab042fe72c07749c5f0f21045994a2",
+        "local_path": "inputs/development/sgdm_23/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3338/trial.json",
+        "sha256": "956109e6470c54ab5cc3c8dbae6b2ec9aae9e2c6ac6076cf1190a7365ebaaebd"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.5563411813,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_23",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703983,
+        "git_blob_sha": "2c185e373c1993dfcedbddccb18741ca2fac2509",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "f2acd6b3f8f295b1dddc7959f771016453343565",
+        "local_path": "inputs/development/sgdm_23/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3339/github_execution.json",
+        "sha256": "e77987c8c134b1bc6e11c8eb449dc44d2805f13c0eef236087c2ae58039eddf6"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 430038,
+        "git_blob_sha": "56cee02c8d45cc54d4ebb81264a4f88a7e727dd2",
+        "local_path": "inputs/development/sgdm_23/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3339/result.json",
+        "sha256": "dd8a03f0c382f2de782bb950cdc2ffd31b1f3b7374e79330ed636d9199089fd0"
+      },
+      "seed": 3339,
+      "source_completed_updates": 44824,
+      "source_status": "running",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 657,
+        "git_blob_sha": "f29c9c986d66fdf948b25ce0c041308f732f779d",
+        "local_path": "inputs/development/sgdm_23/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_23/seed_3339/trial.json",
+        "sha256": "a73ab2eb93b0dcdc330256fdd603047862c6f0934182127073ef9c6d3c6a0b14"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.9186526099,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_24",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "768b80726858ec5e52fb9bb34528ceebef2d922b",
+        "local_path": "inputs/development/sgdm_24/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3338/github_execution.json",
+        "sha256": "0a7289b28a62cb72fe2354640c8fe7c7d5fd6e649f5ffff7f1cc69523f49d887"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561315,
+        "git_blob_sha": "76a186f6334d4d62a4666ed5ff663f4519e729f5",
+        "local_path": "inputs/development/sgdm_24/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3338/result.json",
+        "sha256": "44bb4fe281f6aa85fd1270054a83d279376fbc7e79857ddbdc0b5c2909c2a2fa"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1229,
+        "git_blob_sha": "54ba9dd3e2357a2f03c4d802cfb56fc43cb0d020",
+        "local_path": "inputs/development/sgdm_24/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3338/trial.json",
+        "sha256": "2ab813e30a4aa01c98fd73faa5ed3805a9f137f469c2c10331e6a439e033dbbb"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.7727487799,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_24",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "5a6226aadc024518e1e1fa02575c529c2421766d",
+        "local_path": "inputs/development/sgdm_24/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3339/github_execution.json",
+        "sha256": "1ee8a8faa26905b7b413c56b3180468999c25f0d4d72edc2f4d8fd9f37848465"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 561086,
+        "git_blob_sha": "3ebac223d518fe85184dd1757f533d86745578fe",
+        "local_path": "inputs/development/sgdm_24/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3339/result.json",
+        "sha256": "64d4a1ecfaaceb86fa1b2ca3f8e9a0dd2a24f46493912e9c789114b0b9fea4e9"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1229,
+        "git_blob_sha": "41f98582340d0914cbae975fc08f5209e2c252e5",
+        "local_path": "inputs/development/sgdm_24/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_24/seed_3339/trial.json",
+        "sha256": "02ff240269252786b2f00ffd1c89e0a8d1797577ea04a650cdbd913429085721"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.0161038871,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_25",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "146c1920227610fb1f38754a3fb6c187da9cb9ec",
+        "local_path": "inputs/development/sgdm_25/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3338/github_execution.json",
+        "sha256": "4fbd63168b44df37007eaee2246b20f87e5f29f85e1b920c40b4a3cddfa45373"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 559597,
+        "git_blob_sha": "775121fd67466955bf7a30f067680a0f4881447d",
+        "local_path": "inputs/development/sgdm_25/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3338/result.json",
+        "sha256": "89b6d0773576b4f921cffc87df932b9c94e55b22eb2c2d842c439881be4ddb70"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1247,
+        "git_blob_sha": "de77ccb5f2a554b525ecb671c9a3f16de7c79c89",
+        "local_path": "inputs/development/sgdm_25/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3338/trial.json",
+        "sha256": "9642d8d05afb7358844d887b6c949d94052e21536e0a57a6ae0707973ff08d8a"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.0194426008,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_25",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "837c4e7a37b572e6d39fa56138ea8c4c03d94467",
+        "local_path": "inputs/development/sgdm_25/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3339/github_execution.json",
+        "sha256": "adbe25ca70538c967fc46d2f4b21a8792ca82adc9988e1ae8112d9c9af05ecd1"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 559605,
+        "git_blob_sha": "e4112ebb605299d7156a179e9c4df9b8de3a6891",
+        "local_path": "inputs/development/sgdm_25/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3339/result.json",
+        "sha256": "659710e655ae92a6f9d5c21f7031891b11feb763f2c93abc97630fcd6fb43e6a"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1247,
+        "git_blob_sha": "32c1fa5c99de492dade4fec921f9522af126d512",
+        "local_path": "inputs/development/sgdm_25/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_25/seed_3339/trial.json",
+        "sha256": "800c11e015621d07e5abd327d252cd5304e2b1c7268812783210b31d9c726ce0"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.2870698626,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_26",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "a8848e2d0812e6e15935a7cb404c288bfa39870a",
+        "local_path": "inputs/development/sgdm_26/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3338/github_execution.json",
+        "sha256": "16b004f05ac71c1b61f74ca6e85d15e4f9414b9d8433a523d87b7edf531736a2"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 569475,
+        "git_blob_sha": "3f5cd779950a23c86aadef502ed1d01778a5fbb2",
+        "local_path": "inputs/development/sgdm_26/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3338/result.json",
+        "sha256": "24ce32c583eae00e3d6a4477617d2819387312342d3c440a64e5c87127aadb80"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1235,
+        "git_blob_sha": "d5c0eeee8c3f8a11eec33243eafc1dd79ee874d1",
+        "local_path": "inputs/development/sgdm_26/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3338/trial.json",
+        "sha256": "629c350599270c54a83d4586a12ede6b0f25b929255c1ce711c59f176bc82a59"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.3023775308,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_26",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "c351c8145d22b142e897e62d62d9312304f501ee",
+        "local_path": "inputs/development/sgdm_26/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3339/github_execution.json",
+        "sha256": "f30edbb5e07ca793ee58321a066b13153922f1887471e72a7f2083f9cb9247cd"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 569801,
+        "git_blob_sha": "756480c3a43e4f0987aa08b10b284e43fd932aa6",
+        "local_path": "inputs/development/sgdm_26/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3339/result.json",
+        "sha256": "97af6f44d32d1a0a1eee24ad8abb91fa813037597ebbf16544a386fd9c751eae"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1235,
+        "git_blob_sha": "846eef49205aa978296e5d065fec70065d1b35c5",
+        "local_path": "inputs/development/sgdm_26/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_26/seed_3339/trial.json",
+        "sha256": "1d0ac39d7de69bc9c12b59704355b7c457677bb17937bb7e8c4b0f8645ae630a"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.834460998,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_27",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703919,
+        "git_blob_sha": "dbf9ecc62b15f26b18f031e7bce84fb3854bed58",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "0e9f29e628475c4347e323d79e8c64bb7b7b1f14",
+        "local_path": "inputs/development/sgdm_27/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3338/github_execution.json",
+        "sha256": "45879661501a6e609c9d0ce951b44c9b6be524fd230208c41a34a81e63206f74"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 405250,
+        "git_blob_sha": "c562d3eeb0bba64b5fc5eecfc456f427af3609a6",
+        "local_path": "inputs/development/sgdm_27/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3338/result.json",
+        "sha256": "9701be2236363135725f583045d45f0f4d9059db6c4426090d607bba6cd3206a"
+      },
+      "seed": 3338,
+      "source_completed_updates": 41496,
+      "source_status": "running",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 655,
+        "git_blob_sha": "277fbc087f0d679edd40bdbbc8e3cb41eac35f84",
+        "local_path": "inputs/development/sgdm_27/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3338/trial.json",
+        "sha256": "e9a8c5d176e3662d2fe8ec112f239afaf447a419852983fa996ebb56abdcf4c2"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.84904645,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_27",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "fece9cf050ddae06dd200c54a1559ee55f9209cc",
+        "local_path": "inputs/development/sgdm_27/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3339/github_execution.json",
+        "sha256": "91f96827bf0e123b052273c7a6380a6985fff3a547e129edd94e1e309a8764be"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 567372,
+        "git_blob_sha": "cc27d775ded43ee0c98ffde475219eef6541c5fb",
+        "local_path": "inputs/development/sgdm_27/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3339/result.json",
+        "sha256": "0202abdbe24022409066853e8046b617761e5b06a1b0e4ba55793e6f7b9c9e0e"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1249,
+        "git_blob_sha": "23e8658f4ea29c4661b4f875c28332c7c616e209",
+        "local_path": "inputs/development/sgdm_27/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_27/seed_3339/trial.json",
+        "sha256": "e222418b3b426d995fc26baf0fd6462fcf70cd75ee645d3ac1a5f7b86286181a"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.8510447963,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_28",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "8888401e8fc01af2a9fab8d388d66ac87103d21c",
+        "local_path": "inputs/development/sgdm_28/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3338/github_execution.json",
+        "sha256": "a60d68b617b97822003d546595b63d22f70a8f78de68b074854b1d763fae5188"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 557727,
+        "git_blob_sha": "fdb3dc052860e58ef8c047c1534a41849013df53",
+        "local_path": "inputs/development/sgdm_28/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3338/result.json",
+        "sha256": "d678ca033efb2aa15476333e3ec8f8b153bd6bc244d5fef3ee0e5fcc56c3aee7"
+      },
+      "seed": 3338,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1229,
+        "git_blob_sha": "3305ebacd28548603fedf80dbb3c967b12bea555",
+        "local_path": "inputs/development/sgdm_28/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3338/trial.json",
+        "sha256": "f6bee605f36679cc6f1f6547ec02b6af15d85188b61afd9d3d51e4299aa7706d"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 1.7332955972,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_28",
+      "checkpoint_20000": {
+        "available_in_parent_archive": false,
+        "bytes": null,
+        "git_blob_sha": null,
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "d863d5c732747ca37047140d320dbcbc3415f1a2",
+        "local_path": "inputs/development/sgdm_28/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3339/github_execution.json",
+        "sha256": "5edbfcf82b543fd4b5820d37830da39cf1c7429b80e111c7b58010f9fa033881"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 558146,
+        "git_blob_sha": "deb3094cb969f8ac442ad079f4968b7a2f63b8f7",
+        "local_path": "inputs/development/sgdm_28/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3339/result.json",
+        "sha256": "4b3ca0a21ad4c951add02041bfd20c29e945075062679e36865c1f0480fcc3db"
+      },
+      "seed": 3339,
+      "source_completed_updates": 50000,
+      "source_status": "complete",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 1228,
+        "git_blob_sha": "16f03c67d162278bc5fed9e73b5fcf484371b917",
+        "local_path": "inputs/development/sgdm_28/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_28/seed_3339/trial.json",
+        "sha256": "9402a8be8ecce0fdce163cac598c75183e326cd34e7c7b90948d9aceeb829263"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.1171811394,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_29",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703471,
+        "git_blob_sha": "358ff98d65f020f55426cf33e77a3e80ce93e6f9",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "cc88ddd04426fe6735168490a309513833ae5add",
+        "local_path": "inputs/development/sgdm_29/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3338/github_execution.json",
+        "sha256": "e03480ba132440594dd9779467b17a88e5c0b5165ef983b92fc699bcdcd35119"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 371945,
+        "git_blob_sha": "fd9b9d508fd9d69cad1b4871bfae06579d8e346e",
+        "local_path": "inputs/development/sgdm_29/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3338/result.json",
+        "sha256": "97413cf48b829ab45cb7d3abb3de29e28fc699f83eb5c872f25248a8d432fea1"
+      },
+      "seed": 3338,
+      "source_completed_updates": 38168,
+      "source_status": "running",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 652,
+        "git_blob_sha": "095c28a7e16fab3c73c51b1ac97937895089cada",
+        "local_path": "inputs/development/sgdm_29/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3338/trial.json",
+        "sha256": "6b65947014648a54ff9423fed055c6db9477b8a632e102f8319aedfd6b1080af"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": 2.0805607918,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_29",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703535,
+        "git_blob_sha": "861c9bb7b1efd295d4555f8c7049f614ebb5e0e7",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "7c95cf4bcf44e93006e8c0e25ade06184fa27f2b",
+        "local_path": "inputs/development/sgdm_29/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3339/github_execution.json",
+        "sha256": "960bf6c43a28eb35b6d86c0aca4c511d71dfad6a2bfb8a0cb09fa9ad563e7f01"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 289087,
+        "git_blob_sha": "48f21fdd1778bf38e27985fc3940f17c5696a8fe",
+        "local_path": "inputs/development/sgdm_29/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3339/result.json",
+        "sha256": "5218f62ebfe3bdd087c09c013757527226581a3d60eed4ba8346cc0c7dfe97fa"
+      },
+      "seed": 3339,
+      "source_completed_updates": 27768,
+      "source_status": "running",
+      "spectral_valid_at_cap": true,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 652,
+        "git_blob_sha": "7854703c8ec700b1a20596f3c1203b1a56155d87",
+        "local_path": "inputs/development/sgdm_29/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_29/seed_3339/trial.json",
+        "sha256": "255a6dba31d7268964f314be82dd0181b39fb3e820932dce9e1e26f5174270e2"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": null,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_30",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703983,
+        "git_blob_sha": "f766889df16668f0878fcedf985f9d048d0ca263",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "30f23dc706acfc2143fc5df00a72361f7133e3d2",
+        "local_path": "inputs/development/sgdm_30/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3338/github_execution.json",
+        "sha256": "c548f109392b42144bf6cd89471f2f404d31f81e7d452c6f45fa89507c3fd61f"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 352845,
+        "git_blob_sha": "05ae0d4f4406e88faa5fc270787606c44c51c340",
+        "local_path": "inputs/development/sgdm_30/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3338/result.json",
+        "sha256": "2e06e8582bd5e39a31bed9867627f83c3196cda47efd139fd7e2796f39d8fd12"
+      },
+      "seed": 3338,
+      "source_completed_updates": 35000,
+      "source_status": "running",
+      "spectral_valid_at_cap": false,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 639,
+        "git_blob_sha": "66a4594be378f9cb5594a0ad547c6ee2cd2a6df7",
+        "local_path": "inputs/development/sgdm_30/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3338/trial.json",
+        "sha256": "6c7e71ce1ff793f5ccb7ba09cff3f8f89eb395b9c86006abd83dfbf858f54003"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": null,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_30",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703983,
+        "git_blob_sha": "a73b8be9d9bfe56dace4852b2eac5c217451f445",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "6996c4cd69455fb1939c209d195d6625e89f632e",
+        "local_path": "inputs/development/sgdm_30/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3339/github_execution.json",
+        "sha256": "a754a654cda3271ff0cf4d750adb6d5682ea0fe17adbaa723cda8c85f18e74b7"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 293251,
+        "git_blob_sha": "5b7ddfe2776c1ac90655c7a3c07116b17f9dbb04",
+        "local_path": "inputs/development/sgdm_30/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3339/result.json",
+        "sha256": "6ecfd611c994fbffb91eef0e385ef877d2c6cba96a2396698c158e97d5700ec7"
+      },
+      "seed": 3339,
+      "source_completed_updates": 27664,
+      "source_status": "running",
+      "spectral_valid_at_cap": false,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 639,
+        "git_blob_sha": "329efc4e9d3f099f353148a43cb6fbcf3d3535ce",
+        "local_path": "inputs/development/sgdm_30/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_30/seed_3339/trial.json",
+        "sha256": "44725794dd634eef96657767d8af7934604b8e51d5bcc65f4dc4d57afe5cba22"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": null,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_31",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703599,
+        "git_blob_sha": "301ae737fe2fb1dba0f5e64211ce9c6fe84d3230",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3338/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "de073491adec3f6d55b1e10583788ab026949c98",
+        "local_path": "inputs/development/sgdm_31/seed_3338/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3338/github_execution.json",
+        "sha256": "df634be908dd8d8693f55d4835b2177769360b04bddfe61efcd9861756079a57"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 259910,
+        "git_blob_sha": "44362e2bee51ec63b74cd144ea4d3de502b496e8",
+        "local_path": "inputs/development/sgdm_31/seed_3338/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3338/result.json",
+        "sha256": "44ec7f57bac774469a92b38c17ff24f1d512ce54abdd742a92b0d9a29155074b"
+      },
+      "seed": 3338,
+      "source_completed_updates": 23556,
+      "source_status": "running",
+      "spectral_valid_at_cap": false,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 656,
+        "git_blob_sha": "23d9cecbe699caed284bb8c3173e5e5feaa4f5d5",
+        "local_path": "inputs/development/sgdm_31/seed_3338/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3338/trial.json",
+        "sha256": "ae1920932d983a5016cb9782e0cb97294e7366f5e5a683612f934ed9b04589f0"
+      }
+    },
+    {
+      "action": "reuse_20k_history",
+      "alpha_at_cap": null,
+      "analysis_max_step": 20000,
+      "candidate_id": "sgdm_31",
+      "checkpoint_20000": {
+        "available_in_parent_archive": true,
+        "bytes": 7703599,
+        "git_blob_sha": "900da1009c120c711a0bf9cf9072ef1d2c81a455",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3339/checkpoint_step_20000.pt"
+      },
+      "completion": null,
+      "github_execution": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 511,
+        "git_blob_sha": "503b38b11ee5add15f4201f8497bcbb685744ab1",
+        "local_path": "inputs/development/sgdm_31/seed_3339/github_execution.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3339/github_execution.json",
+        "sha256": "80b0af2bf591acc82695ec0e74576ee36721f344abd43be8bb16e60fa4ea21a6"
+      },
+      "n_epoch_observations_through_cap": 384,
+      "n_validation_observations_through_cap": 386,
+      "new_updates": 0,
+      "result": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 256975,
+        "git_blob_sha": "8af9134f5b6ef963ea0efcc03865d2b03f2841b9",
+        "local_path": "inputs/development/sgdm_31/seed_3339/result.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3339/result.json",
+        "sha256": "204462ec2949d5f17dcee6e451a61757ffd5cc02d644b59b9f18d0196caa1d5b"
+      },
+      "seed": 3339,
+      "source_completed_updates": 23192,
+      "source_status": "running",
+      "spectral_valid_at_cap": false,
+      "trial": {
+        "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+        "bytes": 656,
+        "git_blob_sha": "5304e5fbb8d1dc02b78c36ab57a78c2418c3e2f1",
+        "local_path": "inputs/development/sgdm_31/seed_3339/trial.json",
+        "repository": "CalculatedContent/rg_optimizers",
+        "repository_path": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search/development/sgdm_31/seed_3339/trial.json",
+        "sha256": "d9f1c167bf7892f47ad63fb67d90927c3744b678072691fbc5794eac4882b12d"
+      }
+    }
+  ],
+  "interpretation": "A post hoc restriction of previously authorized longer trajectories to observations at or before 20,000 updates. Original source completion counts and failures remain unchanged. No development updates are repeated.",
+  "n_development_records": 64,
+  "n_failed_20000_spectral_fits": 4,
+  "n_retained_full_20000_checkpoints": 9,
+  "n_valid_20000_spectral_fits": 60,
+  "parent_source": {
+    "archive_commit": "ff1cf0fb3fd4252f34041a2e74c75887db85f80c",
+    "branch": "california-housing-sgdm-long-search-20261126",
+    "launch_commit": "f89e5e00a3b9ad09c906b272fbc1d627ccecd714",
+    "repository": "CalculatedContent/rg_optimizers",
+    "results_root": "california_housing_sgdm_search/results/2026-11-26_sgdm_long_search",
+    "run_id": "45758895218",
+    "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+  },
+  "schema_version": 1
+}
