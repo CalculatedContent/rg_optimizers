@@ -1,0 +1,457 @@
+{
+  "name": "Mini Speech Commands paired SGDM dropout 20k",
+  "on": {
+    "push": {
+      "branches": [
+        "mini-speech-commands-sgdm-20261126"
+      ],
+      "paths": [
+        ".github/workflows/mini-speech-commands-sgdm-20k.yml"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "write"
+  },
+  "concurrency": {
+    "group": "mini-speech-commands-sgdm-20261126",
+    "cancel-in-progress": false
+  },
+  "env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "MPLBACKEND": "Agg",
+    "PYTHONHASHSEED": "0",
+    "STUDY": "experiments/mini_speech_commands_sgdm_20k"
+  },
+  "jobs": {
+    "prepare": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 20,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/mini_speech_commands_sgdm_20k",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Install pinned CPU dependencies",
+          "run": "python -m pip install -r \"$STUDY/requirements.txt\""
+        },
+        {
+          "name": "Verify source and WeightWatcher small-N",
+          "run": "python -m py_compile \"$STUDY/prepare.py\" \"$STUDY/run.py\" \"$STUDY/analysis.py\"\npython \"$STUDY/run.py\" --smoke"
+        },
+        {
+          "name": "Prepare immutable speaker-disjoint split",
+          "run": "python \"$STUDY/prepare.py\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "speech-prepared",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/data/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "grid": {
+      "needs": "prepare",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 12,
+        "matrix": {
+          "include": [
+            {
+              "case": "sgdm_00",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_00",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_01",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_01",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_02",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_02",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_03",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_03",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_04",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_04",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_05",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_05",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_06",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_06",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_07",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_07",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_08",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_08",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_09",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_09",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_10",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_10",
+              "seed": 3359
+            },
+            {
+              "case": "sgdm_11",
+              "seed": 3358
+            },
+            {
+              "case": "sgdm_11",
+              "seed": 3359
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/mini_speech_commands_sgdm_20k",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Install pinned CPU dependencies",
+          "run": "python -m pip install -r \"$STUDY/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "speech-prepared",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/data"
+          }
+        },
+        {
+          "name": "Train capped development SGDM",
+          "run": "python \"$STUDY/run.py\" --phase grid --case '${{ matrix.case }}' --seed '${{ matrix.seed }}'"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "grid-${{ matrix.case }}-${{ matrix.seed }}",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/grid/grid-${{ matrix.case }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "select": {
+      "needs": "grid",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 10,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/mini_speech_commands_sgdm_20k",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "speech-prepared",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/data"
+          }
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/grid",
+            "merge-multiple": false
+          }
+        },
+        {
+          "name": "Audit and freeze matched pair selection",
+          "run": "python \"$STUDY/analysis.py\" select"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "speech-selection",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/selection/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "confirm": {
+      "needs": "select",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 10,
+        "matrix": {
+          "include": [
+            {
+              "dropout_index": 0,
+              "seed": 3360
+            },
+            {
+              "dropout_index": 0,
+              "seed": 3361
+            },
+            {
+              "dropout_index": 0,
+              "seed": 3362
+            },
+            {
+              "dropout_index": 0,
+              "seed": 3363
+            },
+            {
+              "dropout_index": 0,
+              "seed": 3364
+            },
+            {
+              "dropout_index": 1,
+              "seed": 3360
+            },
+            {
+              "dropout_index": 1,
+              "seed": 3361
+            },
+            {
+              "dropout_index": 1,
+              "seed": 3362
+            },
+            {
+              "dropout_index": 1,
+              "seed": 3363
+            },
+            {
+              "dropout_index": 1,
+              "seed": 3364
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/mini_speech_commands_sgdm_20k",
+            "sparse-checkout-cone-mode": true
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Install pinned CPU dependencies",
+          "run": "python -m pip install -r \"$STUDY/requirements.txt\""
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "speech-prepared",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/data"
+          }
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "speech-selection",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/selection"
+          }
+        },
+        {
+          "name": "Train fixed-pair 20k confirmation",
+          "run": "python \"$STUDY/run.py\" --phase confirm --dropout-index '${{ matrix.dropout_index }}' --seed '${{ matrix.seed }}'"
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "confirm-p${{ matrix.dropout_index }}-${{ matrix.seed }}",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/confirm/confirm-p${{ matrix.dropout_index }}-${{ matrix.seed }}/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "archive": {
+      "if": "${{ always() && !cancelled() }}",
+      "needs": [
+        "prepare",
+        "grid",
+        "select",
+        "confirm"
+      ],
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 20,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4",
+          "with": {
+            "sparse-checkout": "experiments/mini_speech_commands_sgdm_20k",
+            "sparse-checkout-cone-mode": true,
+            "ref": "mini-speech-commands-sgdm-20261126"
+          }
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12.9"
+          }
+        },
+        {
+          "name": "Install plotting dependencies",
+          "run": "python -m pip install numpy==2.3.1 matplotlib==3.10.3"
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "speech-prepared",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/data"
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "grid-*",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/grid",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "name": "speech-selection",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/selection"
+          },
+          "continue-on-error": true
+        },
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "pattern": "confirm-*",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/confirm",
+            "merge-multiple": false
+          },
+          "continue-on-error": true
+        },
+        {
+          "name": "Audit, plot and summarize",
+          "run": "python \"$STUDY/analysis.py\" summarize"
+        },
+        {
+          "name": "Archive complete or partial data and results in Git",
+          "run": "git config user.name 'github-actions[bot]'\ngit config user.email '41898282+github-actions[bot]@users.noreply.github.com'\ngit add -f \"$STUDY/results\"\ngit commit -m 'Archive Mini Speech Commands capped SGDM paired study (run ${{ github.run_id }})'\ngit push origin HEAD:\"$GITHUB_REF_NAME\""
+        },
+        {
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "speech-analysis",
+            "path": "experiments/mini_speech_commands_sgdm_20k/results/analysis/",
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Require complete audit",
+          "run": "python -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d[\"complete\"] and not d[\"audit_errors\"],d[\"audit_errors\"]' \"$STUDY/results/analysis/summary.json\""
+        }
+      ]
+    }
+  }
+}

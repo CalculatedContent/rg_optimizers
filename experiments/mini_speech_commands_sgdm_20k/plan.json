@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "study": "mini_speech_commands_sgdm_20k",
+  "dataset": {
+    "url": "https://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
+    "expected_clips": 8000,
+    "classes": [
+      "down",
+      "go",
+      "left",
+      "no",
+      "right",
+      "stop",
+      "up",
+      "yes"
+    ],
+    "split": "speaker-disjoint SHA256('mini-speech-commands-v1:'+speaker) first 8 hex digits modulo 1000: <800 train, <900 validation, otherwise test",
+    "feature": "32 mel bands x 32 time bins; train-only feature normalization"
+  },
+  "model": [
+    1024,
+    128,
+    128,
+    128,
+    8
+  ],
+  "optimizer": "sgdm",
+  "batch_size": 128,
+  "grad_clip": 1,
+  "dampening": 0,
+  "nesterov": false,
+  "max_updates": 20000,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "dropout_rates": [
+    0,
+    0.3690073279296028
+  ],
+  "development_seeds": [
+    3358,
+    3359
+  ],
+  "confirmation_seeds": [
+    3360,
+    3361,
+    3362,
+    3363,
+    3364
+  ],
+  "cases": [
+    {
+      "id": "sgdm_00",
+      "lr": 0.01,
+      "momentum": 0.9,
+      "dropout_index": 0,
+      "dropout": 0,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_01",
+      "lr": 0.01,
+      "momentum": 0.9,
+      "dropout_index": 1,
+      "dropout": 0.3690073279296028,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_02",
+      "lr": 0.01,
+      "momentum": 0.99,
+      "dropout_index": 0,
+      "dropout": 0,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_03",
+      "lr": 0.01,
+      "momentum": 0.99,
+      "dropout_index": 1,
+      "dropout": 0.3690073279296028,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_04",
+      "lr": 0.03,
+      "momentum": 0.9,
+      "dropout_index": 0,
+      "dropout": 0,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_05",
+      "lr": 0.03,
+      "momentum": 0.9,
+      "dropout_index": 1,
+      "dropout": 0.3690073279296028,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_06",
+      "lr": 0.03,
+      "momentum": 0.99,
+      "dropout_index": 0,
+      "dropout": 0,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_07",
+      "lr": 0.03,
+      "momentum": 0.99,
+      "dropout_index": 1,
+      "dropout": 0.3690073279296028,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_08",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "dropout_index": 0,
+      "dropout": 0,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_09",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "dropout_index": 1,
+      "dropout": 0.3690073279296028,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_10",
+      "lr": 0.1,
+      "momentum": 0.99,
+      "dropout_index": 0,
+      "dropout": 0,
+      "weight_decay": 0
+    },
+    {
+      "id": "sgdm_11",
+      "lr": 0.1,
+      "momentum": 0.99,
+      "dropout_index": 1,
+      "dropout": 0.3690073279296028,
+      "weight_decay": 0
+    }
+  ],
+  "selection": "minimum equal-weight fixed-20k validation cross entropy across both dropout rates and both development seeds for each matched LR/momentum pair; tie by LR then momentum; no test or alpha",
+  "mask_reps": 20,
+  "primary_average": "FC1-FC3, sqrt(num_pl_spikes)/(D+0.02); secondary all four layers using small-N FC4",
+  "max_parallel_grid": 12,
+  "max_parallel_confirmation": 10,
+  "job_timeout_minutes": 45,
+  "source_dropout_study": "https://github.com/CalculatedContent/rg_optimizers/blob/f09758902997320e9397317bd45a88d7fc3869cd/california_housing_sgdm_20k/dropout_correction/README.md"
+}
