@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "dataset": "MAGIC Gamma Telescope",
+  "source": "https://archive.ics.uci.edu/static/public/159/magic%2Bgamma%2Btelescope.zip",
+  "doi": "10.24432/C52C8B",
+  "license": "CC BY 4.0",
+  "rows": 19020,
+  "features": [
+    "fLength",
+    "fWidth",
+    "fSize",
+    "fConc",
+    "fConc1",
+    "fAsym",
+    "fM3Long",
+    "fM3Trans",
+    "fAlpha",
+    "fDist"
+  ],
+  "labels": {
+    "g": 1,
+    "h": 0
+  },
+  "split": {
+    "protocol": "StratifiedGroupKFold 5-fold, groups defined by identical 10-feature vectors; fold 0 test, fold 1 validation, folds 2-4 training; no fold selection",
+    "seed": 20261126
+  },
+  "architecture": [
+    10,
+    784,
+    784,
+    2
+  ],
+  "primary_matrix": "fc2",
+  "preprocessing": "train-only z-score numerical features; no target rescaling or oversampling",
+  "dropout": 0,
+  "dev_seeds": [
+    3470
+  ],
+  "confirmation_seeds": [
+    3472,
+    3473,
+    3474,
+    3475,
+    3476
+  ],
+  "grid": [
+    {
+      "id": "g00",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "g01",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0.0001
+    },
+    {
+      "id": "g02",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0.001
+    },
+    {
+      "id": "g03",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.003,
+      "momentum": 0.9,
+      "weight_decay": 0.01
+    },
+    {
+      "id": "g10",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.006,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "g11",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.006,
+      "momentum": 0.9,
+      "weight_decay": 0.0001
+    },
+    {
+      "id": "g12",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.006,
+      "momentum": 0.9,
+      "weight_decay": 0.001
+    },
+    {
+      "id": "g13",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.006,
+      "momentum": 0.9,
+      "weight_decay": 0.01
+    },
+    {
+      "id": "g20",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.012,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "g21",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.012,
+      "momentum": 0.9,
+      "weight_decay": 0.0001
+    },
+    {
+      "id": "g22",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.012,
+      "momentum": 0.9,
+      "weight_decay": 0.001
+    },
+    {
+      "id": "g23",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.012,
+      "momentum": 0.9,
+      "weight_decay": 0.01
+    },
+    {
+      "id": "g30",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.024,
+      "momentum": 0.9,
+      "weight_decay": 0
+    },
+    {
+      "id": "g31",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.024,
+      "momentum": 0.9,
+      "weight_decay": 0.0001
+    },
+    {
+      "id": "g32",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.024,
+      "momentum": 0.9,
+      "weight_decay": 0.001
+    },
+    {
+      "id": "g33",
+      "track": "sgdm",
+      "optimizer": "sgdm",
+      "lr": 0.024,
+      "momentum": 0.9,
+      "weight_decay": 0.01
+    }
+  ],
+  "cap": 20000,
+  "batch_size": 256,
+  "clip": 1,
+  "checkpoints": [
+    0,
+    2000,
+    5000,
+    10000,
+    15000,
+    20000
+  ],
+  "max_parallel": 5,
+  "job_timeout_minutes": 45,
+  "development_runs": 16,
+  "confirmation_runs": 5,
+  "max_primary_updates": 400000,
+  "selection": "maximum fixed-20k validation accuracy, then minimum validation CE, then case ID; never alpha/test",
+  "test_protocol": "exploratory: original test already inspected; refit selected config on outer_train, test only at 20000; reuse baseline confirmation if selected",
+  "reference": {
+    "paper": "Gorishniy et al., TabM, ICLR 2025",
+    "url": "https://openreview.net/attachment?id=Sd4wYYOhmY&name=pdf",
+    "mlp_accuracy": 0.8539,
+    "xgb_accuracy": 0.855,
+    "catboost_accuracy": 0.8586,
+    "tabr_accuracy": 0.8682,
+    "comparability": "different published split/preprocessing/tuning; context only; no claim of exact reproduction"
+  },
+  "roc_fpr": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "primary_archive": "09dbaa4e095ff21fc8b1e130798d247b75c15913",
+  "primary_plan_sha256": "7a91ecde85613937a054e9feccc108760ac98e4f724da398806892b16a3a4915",
+  "primary_prepared_sha256": "c42ba2691997b884dae5d738bcb2b5bb5a5b07fbca0f0c83afae12ce76812d73",
+  "reuse": {
+    "grid": "s0-3470",
+    "confirm": "sgdm_wd0",
+    "case": "g00"
+  }
+}
