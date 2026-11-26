@@ -1,0 +1,219 @@
+{
+  "training_updates": 0,
+  "training_started": false,
+  "p": 0.3690073279296028,
+  "q": 0.6309926720703972,
+  "half_channel_probability": 0.20564952818645776,
+  "repetitions": 20,
+  "audit_errors": [],
+  "weight_audit": [
+    {
+      "seed": 3340,
+      "weight_hash": "d3138eaadc3b4d1bad10af982c3a91af7aefb71f80fbe787f35f442d65c306ba",
+      "baseline_alpha": 1.6897789487862167
+    },
+    {
+      "seed": 3341,
+      "weight_hash": "d139c6ebcb84ffecf27b598b988002266f9afc55fcac3e40210c815d74288924",
+      "baseline_alpha": 1.6885459704551802
+    },
+    {
+      "seed": 3342,
+      "weight_hash": "8e0cf92a5c9270eb8f2842a3deb8288a6df658106749249599d1d1678939107f",
+      "baseline_alpha": 1.6943960354482193
+    },
+    {
+      "seed": 3343,
+      "weight_hash": "ea276b1eb9e106ee5f01e283d996bfcacfbb9779b5a439fc80096f85aef480aa",
+      "baseline_alpha": 1.6855780961349294
+    },
+    {
+      "seed": 3344,
+      "weight_hash": "ab08d4c322398a6a763523fbd85f2f90fcbc4590fbe7865b52c7167aceec4088",
+      "baseline_alpha": 1.69530149579146
+    }
+  ],
+  "confirmation": {
+    "entry_mask_p": {
+      "mean_alpha": 2.126282786366842,
+      "sd_seed_means": 0.01148625060612444,
+      "seed_means": [
+        2.122275911828084,
+        2.1188122732934995,
+        2.1295805009521325,
+        2.1160278719953474,
+        2.1447173737651464
+      ],
+      "mean_D": 0.014687149126262776,
+      "mean_tail": 153.98,
+      "mean_rank": 784,
+      "mean_participation_rank": 37.99366483928523,
+      "n": 100
+    },
+    "entry_mask_sqrt_q": {
+      "mean_alpha": 2.0029591439084284,
+      "sd_seed_means": 0.006730923483314921,
+      "seed_means": [
+        2.001454971643849,
+        1.995452970673565,
+        2.0034787630311675,
+        2.000635643736773,
+        2.0137733704567884
+      ],
+      "mean_D": 0.023962388843872418,
+      "mean_tail": 230.55,
+      "mean_rank": 784,
+      "mean_participation_rank": 25.697442788801837,
+      "n": 100
+    },
+    "exact_expected_gram_p": {
+      "mean_alpha": 2.1234729108156407,
+      "sd_seed_means": 0.14991828416627379,
+      "seed_means": [
+        2.3847151859423437,
+        2.0035883280912383,
+        2.0605323856435653,
+        2.0731739607973103,
+        2.0953546936037464
+      ],
+      "mean_D": 0.043084649915494565,
+      "mean_tail": 216.6,
+      "mean_rank": 784,
+      "mean_participation_rank": 40.593602269057946,
+      "n": 5
+    },
+    "fractional_expected_gram_sqrt_q": {
+      "mean_alpha": 2.1512702692567687,
+      "sd_seed_means": 0.015534824263725506,
+      "seed_means": [
+        2.149565581602362,
+        2.174847268962499,
+        2.1336881829755137,
+        2.142484019122902,
+        2.1557662936205673
+      ],
+      "mean_D": 0.04628315669142302,
+      "mean_tail": 626.8,
+      "mean_rank": 784,
+      "mean_participation_rank": 26.413399047068673,
+      "n": 5
+    },
+    "independent_replacement_sqrt_q": {
+      "mean_alpha": 2.2123619225999214,
+      "sd_seed_means": 0.006112804519097462,
+      "seed_means": [
+        2.2137103131998117,
+        2.20502811364494,
+        2.2122683692379086,
+        2.2092623163205207,
+        2.2215405005964257
+      ],
+      "mean_D": 0.025188083700631102,
+      "mean_tail": 198.69,
+      "mean_rank": 784,
+      "mean_participation_rank": 38.79222794000831,
+      "n": 100
+    },
+    "input_neuron_dropout_p": {
+      "mean_alpha": 1.7466803856620907,
+      "sd_seed_means": 0.04099265745188573,
+      "seed_means": [
+        1.714319312925893,
+        1.7867888998424897,
+        1.7352173664436532,
+        1.7928515830886866,
+        1.7042247660097307
+      ],
+      "mean_D": 0.055148315271995964,
+      "mean_tail": 152.24,
+      "mean_rank": 495.06,
+      "mean_participation_rank": 16.613746131752567,
+      "n": 100
+    },
+    "original": {
+      "mean_alpha": 1.6907201093232012,
+      "sd_seed_means": 0.00407904699195516,
+      "seed_means": [
+        1.6897789487862167,
+        1.6885459704551802,
+        1.6943960354482193,
+        1.6855780961349294,
+        1.69530149579146
+      ],
+      "mean_D": 0.05935308013507332,
+      "mean_tail": 86,
+      "mean_rank": 784,
+      "mean_participation_rank": 17.00135409082724,
+      "n": 5
+    },
+    "output_neuron_dropout_p": {
+      "mean_alpha": 1.7464576631267312,
+      "sd_seed_means": 0.032352638948064075,
+      "seed_means": [
+        1.7278725972726032,
+        1.7845266777367925,
+        1.744080564584661,
+        1.771371727332813,
+        1.704436748706786
+      ],
+      "mean_D": 0.05461673289540955,
+      "mean_tail": 153.05,
+      "mean_rank": 492.28,
+      "mean_participation_rank": 16.535516855941964,
+      "n": 100
+    },
+    "two_sided_neuron_dropout_p_per_side": {
+      "mean_alpha": 1.7843910931535898,
+      "sd_seed_means": 0.0134038140569032,
+      "seed_means": [
+        1.7943034824506854,
+        1.7899791336062643,
+        1.7819888981294012,
+        1.793615606476421,
+        1.762068345105177
+      ],
+      "mean_D": 0.048407674921614144,
+      "mean_tail": 196.65,
+      "mean_rank": 485.64,
+      "mean_participation_rank": 16.16302730828324,
+      "n": 100
+    },
+    "variance_matched_noise_p": {
+      "mean_alpha": 2.2619481688200285,
+      "sd_seed_means": 0.005734122996611483,
+      "seed_means": [
+        2.2559810050941893,
+        2.258693666376871,
+        2.2616083485959733,
+        2.2622850764958207,
+        2.271172747537287
+      ],
+      "mean_D": 0.03147663958312672,
+      "mean_tail": 209.91,
+      "mean_rank": 784,
+      "mean_participation_rank": 39.386170926257805,
+      "n": 100
+    }
+  },
+  "development": {
+    "isotropic_full_p": {
+      "n": 30,
+      "mean_absolute_paired_error": 0.518239685870223,
+      "n_controls_near_2": 12,
+      "mean_absolute_paired_error_near_2": 0.3100138231032387
+    },
+    "isotropic_half_channel": {
+      "n": 30,
+      "mean_absolute_paired_error": 0.47435882515871763,
+      "n_controls_near_2": 12,
+      "mean_absolute_paired_error_near_2": 0.24469614643120563
+    },
+    "original": {
+      "n": 30,
+      "mean_absolute_paired_error": 0.43823769784291455,
+      "n_controls_near_2": 12,
+      "mean_absolute_paired_error_near_2": 0.1593963589005546
+    }
+  },
+  "limitations": "One nonzero training dropout rate; half channel is a hypothesis, not implied by single activation dropout; spectrum-only development controls cannot assess elementwise or neuron masking."
+}
