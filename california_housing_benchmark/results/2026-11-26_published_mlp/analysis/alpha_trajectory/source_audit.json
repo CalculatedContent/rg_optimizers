@@ -1,0 +1,284 @@
+{
+  "workflow_run_id": "45753214421",
+  "launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+  "archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+  "n_runs": 15,
+  "seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "optimizers": [
+    "sgdm",
+    "adamw",
+    "modified_adamw"
+  ],
+  "steps": [
+    0,
+    500,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000,
+    4500,
+    5000,
+    5500,
+    6000,
+    6500,
+    7000,
+    7500,
+    8000,
+    8500,
+    9000,
+    9500,
+    10000,
+    10500,
+    11000,
+    11500,
+    12000,
+    12500,
+    13000,
+    13500,
+    14000,
+    14500,
+    15000,
+    15500,
+    16000,
+    16500,
+    17000,
+    17500,
+    18000,
+    18500,
+    19000,
+    19500,
+    20000
+  ],
+  "n_seed_step_values_recalculated": 615,
+  "n_statistics_rows_checked": 123,
+  "n_numeric_comparisons": 738,
+  "maximum_absolute_difference": 8.881784197001252e-16,
+  "official_summary_input_sha256": "0f23d8b1234214b416ac7c725cf66f60923178f79be2f572323e9f400a5a5fef",
+  "complete": true,
+  "errors": [],
+  "aggregation": "ordinary fitted alpha; weights sqrt(num_pl_spikes)/(D+0.02); no extra size weight",
+  "scope": "one eligible 784x784 matrix; model mean equals its alpha; no layer dispersion",
+  "uncertainty": "equal-weight five-seed means, sample SD, pointwise 95% Student-t (df=4); no simultaneous-band claim",
+  "plotting": "all measured 500-update points 0..20000; straight connecting segments; no smoothing, synthesis, extrapolation, or best-checkpoint substitution",
+  "sources": [
+    {
+      "seed": 2340,
+      "optimizer": "sgdm",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/sgdm/result.json",
+      "original_git_blob_sha": "0a5abcc63accdde16df49ec05e4cd2388e3c449f",
+      "original_result_sha256": "31ac2fdfa3b6792f84209a0eac0d772b6519eca0e625fcdfce5e3a3a5c0083e6",
+      "local_input_sha256": "f3583053c0f5f927c1d9ba125c9e66a236e2620cb0fbb625a05ef89c1defbb16",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2341,
+      "optimizer": "sgdm",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/sgdm/result.json",
+      "original_git_blob_sha": "5c67884e5af1abf2fabcdc91d28dfc60be372e22",
+      "original_result_sha256": "2544e3f75e54ffb354b844ab0b27ed7023d42d2b67dc66aadd56921e693aab12",
+      "local_input_sha256": "fa21b264575fab6ca16cfa5e34543401ecbbc1ee3dca6977cce3aaa7568e9e1c",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2342,
+      "optimizer": "sgdm",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/sgdm/result.json",
+      "original_git_blob_sha": "f32e2f582ec271632dd69f0b200ef0b3c9e24098",
+      "original_result_sha256": "519cf7680262802013c06897f221a7b29e3e2dfcd2c3e471c0985ef9a9386877",
+      "local_input_sha256": "9138e1197a76c26f6a83b38c0774fbf1a4c11bc4802e7fe1244ce1a4d0455ca4",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2343,
+      "optimizer": "sgdm",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/sgdm/result.json",
+      "original_git_blob_sha": "b4c60681453ee3a3a2e1b438f741d5bf633875d9",
+      "original_result_sha256": "d3b04b228569b6fbcbaf75e10c2a61e90526d61f5e6563ed4f901070fe0f54af",
+      "local_input_sha256": "8e7963f998e8a87fec7a1d2cb1210ad4a152358b42696b69d73a72b5adc4e6e1",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2344,
+      "optimizer": "sgdm",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/sgdm/result.json",
+      "original_git_blob_sha": "52e1bad23e9cabaaab905d8a2f8c563a612ee5b4",
+      "original_result_sha256": "403ece3cc9d1e224e673d7d2739f35e89e1bf2e7662ed3a80de9663c7936b7cb",
+      "local_input_sha256": "b7e672fb7014eb1f8f96065f6a6ec09053dc29001c9824f483aa6c4e8aa49cdd",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2340,
+      "optimizer": "adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/adamw/result.json",
+      "original_git_blob_sha": "2eb3e847554fcc7358f527f5576256516649ca79",
+      "original_result_sha256": "5432c4982bbc0c6c4d6b6dde9c93df77923329b128098217de47f7d2b4ad473c",
+      "local_input_sha256": "b75dec96988291d02cb24aa937125bd2a7431c21e323e016facb7dff874979e7",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2341,
+      "optimizer": "adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/adamw/result.json",
+      "original_git_blob_sha": "c4d1e9b499219e38c6d04197a3649fefe9306805",
+      "original_result_sha256": "bbad409f03850b2ee77285f355aa18901fe39dea60944612a9a86967b8d2851c",
+      "local_input_sha256": "e52bf996a909f9d85aaa504a67d9c96a41256173a06e456c850c655e54daecd6",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2342,
+      "optimizer": "adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/adamw/result.json",
+      "original_git_blob_sha": "6198c294122b819d66948e5a2cbddd800eada1a8",
+      "original_result_sha256": "cfd53d0070b1ea4b7d765b5db7d514606f4581e0c15e9077c833daffe793157e",
+      "local_input_sha256": "b5053ee96e8a1a224e31918c56c69b06f71cfa693d048a624c4db618249cf76c",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2343,
+      "optimizer": "adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/adamw/result.json",
+      "original_git_blob_sha": "1bc0f4f7476c41ab5c87cdcb46d7d1f0c2dbeb70",
+      "original_result_sha256": "34b2dfab539c12ae3734058f59b782f292df006389144ebe7d786d52d27f9177",
+      "local_input_sha256": "66974676342fe5fbcb3fc7500b457df325a7d8ea8b9d2750d972efc6201c88fd",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2344,
+      "optimizer": "adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/adamw/result.json",
+      "original_git_blob_sha": "7986abc2ddc23ac4130f297f375973084ee0e6b2",
+      "original_result_sha256": "41c128a723793d753fda1f385974cc37f98e0a2fce73d6b30f0bfdcd5fb26a88",
+      "local_input_sha256": "74f052ddbfd1c5fc04c83191a26552957b3ef381b28c061c57483f110a221bbb",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2340,
+      "optimizer": "modified_adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2340/modified_adamw/result.json",
+      "original_git_blob_sha": "50570c5829c06aed287d137fadcc488a8638c50d",
+      "original_result_sha256": "db4bb72570308baa7c0301c653df2a0cf4838bb04892dc026f60d302bf053e9c",
+      "local_input_sha256": "f6ee062f2c37293776a35f5387854e05e0bea1490cae61b658a2c74318f0def9",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2341,
+      "optimizer": "modified_adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2341/modified_adamw/result.json",
+      "original_git_blob_sha": "99d639557d7870af1c3824af78d3786cd363bc31",
+      "original_result_sha256": "4dbc273bf22eebcfd92e0c35269384a37d53e673b0ab77bfa8f49b984d104f8a",
+      "local_input_sha256": "876e3cd69afede11816e3d0d4e5849b7717ea9f182a86c2e7c5610816f9477f3",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2342,
+      "optimizer": "modified_adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2342/modified_adamw/result.json",
+      "original_git_blob_sha": "4131cde04de2209d4fb8286697d5b19a9cd288bc",
+      "original_result_sha256": "67e437ee3aa49f54cac8a897ceed9c8cbb2faee10fe273b62675fa39ff688f14",
+      "local_input_sha256": "e0a51c9838ee5f2146b721e12d41eabe073a31c53fd8e60a57999da713020396",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2343,
+      "optimizer": "modified_adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2343/modified_adamw/result.json",
+      "original_git_blob_sha": "8ea3c4600ec91083ea91f6ed3c555b3b6a09ab9b",
+      "original_result_sha256": "8189c0fd0c476f4212d19b100b829a0ebb24a98fa82e735df4a586d880a194d1",
+      "local_input_sha256": "65a3e7d0e6242aeb120749b6e9a1d3a53f12efbf9b74fa9b975d98829a45b6d8",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    },
+    {
+      "seed": 2344,
+      "optimizer": "modified_adamw",
+      "source_url": "https://github.com/CalculatedContent/rg_optimizers/blob/84b0219dc87c7caaefdc7245e455e53c300b8dfc/california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/result.json",
+      "repository_path": "california_housing_benchmark/results/2026-11-26_published_mlp/runs/seed_2344/modified_adamw/result.json",
+      "original_git_blob_sha": "e336c4ed18b576f896a0b0dc6d595df92ca01e36",
+      "original_result_sha256": "877e4546be20f77dbf1c35832aeacab6dfa2500e429e3c910f2a806b8c685fcc",
+      "local_input_sha256": "bb3e1985cb54c33d0a0c39f595a8e877f1e25cfd768eddc8443e9fd166b08a9e",
+      "input_is_audited_projection": true,
+      "omitted_fields": [
+        "spectral.matrices[*].eigenvalues",
+        "spectral.matrices[*].ww_output"
+      ]
+    }
+  ]
+}
