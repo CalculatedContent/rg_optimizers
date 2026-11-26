@@ -1,0 +1,1056 @@
+{
+  "complete_five_seeds": true,
+  "executions": [
+    {
+      "cohort": "sgdm_grid_selected",
+      "execution": {
+        "base_source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "base_source_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "cpu": "AMD EPYC 7763 64-Core Processor",
+        "deterministic_algorithms": true,
+        "git_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-sgdm-long-search-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45765869826",
+          "GITHUB_SHA": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+          "GITHUB_WORKFLOW": "California Housing SGDM grid at 20,000 updates",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.376.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006629",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "d2b1afaca24dccea673b91bef20fcaef75943b5fe77e6ef024164166c4692507",
+        "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "long_train.py": "93d8c691bb78b7c8d7d98c9606a93c806299141436e3303846619494f94938e5",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 3340
+    },
+    {
+      "cohort": "sgdm_grid_selected",
+      "execution": {
+        "base_source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "base_source_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "cpu": "AMD EPYC 7763 64-Core Processor",
+        "deterministic_algorithms": true,
+        "git_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-sgdm-long-search-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45765869826",
+          "GITHUB_SHA": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+          "GITHUB_WORKFLOW": "California Housing SGDM grid at 20,000 updates",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.376.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006628",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "d2b1afaca24dccea673b91bef20fcaef75943b5fe77e6ef024164166c4692507",
+        "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "long_train.py": "93d8c691bb78b7c8d7d98c9606a93c806299141436e3303846619494f94938e5",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 3341
+    },
+    {
+      "cohort": "sgdm_grid_selected",
+      "execution": {
+        "base_source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "base_source_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "deterministic_algorithms": true,
+        "git_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-sgdm-long-search-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45765869826",
+          "GITHUB_SHA": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+          "GITHUB_WORKFLOW": "California Housing SGDM grid at 20,000 updates",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.376.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006627",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "d2b1afaca24dccea673b91bef20fcaef75943b5fe77e6ef024164166c4692507",
+        "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "long_train.py": "93d8c691bb78b7c8d7d98c9606a93c806299141436e3303846619494f94938e5",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 3342
+    },
+    {
+      "cohort": "sgdm_grid_selected",
+      "execution": {
+        "base_source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "base_source_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "cpu": "AMD EPYC 9V45 96-Core Processor",
+        "deterministic_algorithms": true,
+        "git_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-sgdm-long-search-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45765869826",
+          "GITHUB_SHA": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+          "GITHUB_WORKFLOW": "California Housing SGDM grid at 20,000 updates",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.376.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006630",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "d2b1afaca24dccea673b91bef20fcaef75943b5fe77e6ef024164166c4692507",
+        "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "long_train.py": "93d8c691bb78b7c8d7d98c9606a93c806299141436e3303846619494f94938e5",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 3343
+    },
+    {
+      "cohort": "sgdm_grid_selected",
+      "execution": {
+        "base_source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "base_source_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "cpu": "AMD EPYC 7763 64-Core Processor",
+        "deterministic_algorithms": true,
+        "git_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-sgdm-long-search-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45765869826",
+          "GITHUB_SHA": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+          "GITHUB_WORKFLOW": "California Housing SGDM grid at 20,000 updates",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261122.23.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006626",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1020-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "d2b1afaca24dccea673b91bef20fcaef75943b5fe77e6ef024164166c4692507",
+        "source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "long_train.py": "93d8c691bb78b7c8d7d98c9606a93c806299141436e3303846619494f94938e5",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 3344
+    },
+    {
+      "cohort": "original_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006545",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2340
+    },
+    {
+      "cohort": "original_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006546",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2341
+    },
+    {
+      "cohort": "original_adamw",
+      "execution": {
+        "cpu": "AMD EPYC 9V45 96-Core Processor",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.376.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006544",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2342
+    },
+    {
+      "cohort": "original_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006541",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2343
+    },
+    {
+      "cohort": "original_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006539",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2344
+    },
+    {
+      "cohort": "original_modified_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006538",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2340
+    },
+    {
+      "cohort": "original_modified_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006550",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2341
+    },
+    {
+      "cohort": "original_modified_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006548",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2342
+    },
+    {
+      "cohort": "original_modified_adamw",
+      "execution": {
+        "cpu": "AMD EPYC 9V74 80-Core Processor",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.376.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006549",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2343
+    },
+    {
+      "cohort": "original_modified_adamw",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006542",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2344
+    },
+    {
+      "cohort": "original_sgdm",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006543",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2340
+    },
+    {
+      "cohort": "original_sgdm",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006537",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2341
+    },
+    {
+      "cohort": "original_sgdm",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006540",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2342
+    },
+    {
+      "cohort": "original_sgdm",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261122.23.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006547",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1018-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2343
+    },
+    {
+      "cohort": "original_sgdm",
+      "execution": {
+        "cpu": "Intel(R) Xeon(R) 6975P-C",
+        "deterministic_algorithms": true,
+        "git_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+        "github": {
+          "GITHUB_JOB": "confirmation",
+          "GITHUB_REF": "refs/heads/california-housing-published-benchmark-20261126",
+          "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+          "GITHUB_RUN_ATTEMPT": "1",
+          "GITHUB_RUN_ID": "45753214421",
+          "GITHUB_SHA": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+          "GITHUB_WORKFLOW": "California Housing published MLP benchmark",
+          "ImageOS": "ubuntu24",
+          "ImageVersion": "20261116.133.1",
+          "RUNNER_ARCH": "X64",
+          "RUNNER_NAME": "GitHub Actions 1000006536",
+          "RUNNER_OS": "Linux"
+        },
+        "packages": {
+          "delu": "0.0.26",
+          "numpy": "2.3.1",
+          "powerlaw": "2.0.0",
+          "scikit-learn": "1.7.0",
+          "scipy": "1.16.0",
+          "tabm": "0.0.3",
+          "torch": "2.7.1+cpu",
+          "weightwatcher": "0.7.7"
+        },
+        "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+        "precision": "float32",
+        "python": "3.12.9",
+        "source_bundle_sha256": "463d91ef88da6f0e313673a712d5910702633c846e5a8be90e41c685b150b111",
+        "source_sha256": {
+          "data.py": "f9bd19bf6cb07551c23099e46959fe0b12a5f488910fb73d12bcfec2a0d0ac46",
+          "optimizer.py": "dc93c4264479886eb3d719cb22cbbb229956ee037e5151ae2c36482f2b89ad2d",
+          "spectral.py": "737e99be6fd600f388582d449648b13c945243a9f3032f685e9e12736a41242c",
+          "train.py": "fa83694f5389a3b44926152e6839cb81bafb47803decc088646d0f1ac78d272d"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "seed": 2344
+    }
+  ],
+  "identity": {
+    "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+    "github_run_id": "45765869826",
+    "launch_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+    "orchestration_source_manifest_sha256": "57b74b11afecb2408f49bbe521c0e582420d3c567ac91a66824733cbc30f171f",
+    "plan_file_sha256": "5fb270e84173e9d8a5855b175911e5848eb5b958fd02d29317e3096d933ab47b",
+    "source_inventory_sha256": "65e7b7bd524289cb083862fa9270b9e1a801289fdc2aea33cf179c1c61b9aebc",
+    "source_manifest_sha256": "57b74b11afecb2408f49bbe521c0e582420d3c567ac91a66824733cbc30f171f",
+    "training_source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+  },
+  "n_completed": 5
+}

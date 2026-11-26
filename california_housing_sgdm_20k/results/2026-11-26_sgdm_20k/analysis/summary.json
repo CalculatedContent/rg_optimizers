@@ -1,0 +1,613 @@
+{
+  "additional_development_updates": 0,
+  "analysis_max_step": 20000,
+  "audit_errors": [],
+  "complete_five_seeds": true,
+  "complete_grid": true,
+  "confirmation_seeds": [
+    3340,
+    3341,
+    3342,
+    3343,
+    3344
+  ],
+  "fit_failures": [],
+  "horizon": 20000,
+  "identity": {
+    "data_manifest_sha256": "3ec27779f784aaf7ac1110b92fb4af792291b68b2daf0c259b5c0539d0537a8e",
+    "github_run_id": "45765869826",
+    "launch_commit": "5c5ee09f4d1fd10dcc1ed139256e97de04c6419c",
+    "orchestration_source_manifest_sha256": "57b74b11afecb2408f49bbe521c0e582420d3c567ac91a66824733cbc30f171f",
+    "plan_file_sha256": "5fb270e84173e9d8a5855b175911e5848eb5b958fd02d29317e3096d933ab47b",
+    "source_inventory_sha256": "65e7b7bd524289cb083862fa9270b9e1a801289fdc2aea33cf179c1c61b9aebc",
+    "source_manifest_sha256": "57b74b11afecb2408f49bbe521c0e582420d3c567ac91a66824733cbc30f171f",
+    "training_source_manifest_sha256": "72c3aaf260b8b06bca40d6dcf61486b09791283f3d65dea4402dc3b085c7908d"
+  },
+  "independent_seed_contrasts_new_minus_control": {
+    "original_adamw": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.0235940119831063,
+        "ci95_high": 0.03623091096310639,
+        "ci95_low": -0.01095711300310621,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.36046264907127,
+        "mean_difference": 0.012636898980000089,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_mae": {
+        "ci95_half_width": 0.005496894619565754,
+        "ci95_high": 0.015450500748258371,
+        "ci95_low": 0.004456711509126862,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.179606507209646,
+        "mean_difference": 0.009953606128692616,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_mse": {
+        "ci95_half_width": 0.0026506041270070385,
+        "ci95_high": 0.013610312817650343,
+        "ci95_low": 0.008309104563636267,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 5.491244991416011,
+        "mean_difference": 0.010959708690643305,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_r2": {
+        "ci95_half_width": 0.002032719618754333,
+        "ci95_high": -0.006372274392170871,
+        "ci95_low": -0.010437713629679537,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 5.491297468503838,
+        "mean_difference": -0.008404994010925204,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.002752939705815265,
+        "ci95_high": 0.014022157250279015,
+        "ci95_low": 0.008516277838648485,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 5.428439549187097,
+        "mean_difference": 0.01126921754446375,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.0023382983664145852,
+        "ci95_high": 0.05938889722021662,
+        "ci95_low": 0.054712300487387455,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.860567101831716,
+        "mean_difference": 0.05705059885380204,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.0020013867674436286,
+        "ci95_high": 0.010817278530237255,
+        "ci95_low": 0.006814504995349998,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.913395968158409,
+        "mean_difference": 0.008815891762793626,
+        "n_left": 5,
+        "n_right": 5
+      }
+    },
+    "original_modified_adamw": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.005220632307211366,
+        "ci95_high": 0.08315443900721153,
+        "ci95_low": 0.07271317439278879,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.089145666326922,
+        "mean_difference": 0.07793380670000016,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_mae": {
+        "ci95_half_width": 0.003868049956995334,
+        "ci95_high": 0.010154855825144115,
+        "ci95_low": 0.0024187559111534477,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.187097272831359,
+        "mean_difference": 0.0062868058681487815,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_mse": {
+        "ci95_half_width": 0.0020005834614396333,
+        "ci95_high": 0.01008167391172651,
+        "ci95_low": 0.006080506988847243,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 6.518578837323973,
+        "mean_difference": 0.008081090450286876,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_r2": {
+        "ci95_half_width": 0.0015342402621246528,
+        "ci95_high": -0.004663128836538655,
+        "ci95_low": -0.007731609360787961,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 6.518619464745174,
+        "mean_difference": -0.006197369098663308,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.0020630079878034683,
+        "ci95_high": 0.010345859921343637,
+        "ci95_low": 0.006219843945736702,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 6.4500437577583645,
+        "mean_difference": 0.00828285193354017,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.0023586540087979996,
+        "ci95_high": 0.030587978483188748,
+        "ci95_low": 0.02587067046559275,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.901475671622557,
+        "mean_difference": 0.02822932447439075,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.0021456805862614618,
+        "ci95_high": 0.009629905333341677,
+        "ci95_low": 0.005338544160818753,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 7.656799620476598,
+        "mean_difference": 0.007484224747080215,
+        "n_left": 5,
+        "n_right": 5
+      }
+    },
+    "original_sgdm": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.009462058242986952,
+        "ci95_high": -0.5776343193370128,
+        "ci95_low": -0.5965584358229867,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 6.098529949018594,
+        "mean_difference": -0.5870963775799998,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_mae": {
+        "ci95_half_width": 0.010360883906593876,
+        "ci95_high": -0.007692403361091083,
+        "ci95_low": -0.028414171174278836,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.98731180275941,
+        "mean_difference": -0.01805328726768496,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_mse": {
+        "ci95_half_width": 0.005835738107218291,
+        "ci95_high": -0.011852184608922463,
+        "ci95_low": -0.023523660823359042,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.322435792995809,
+        "mean_difference": -0.017687922716140753,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_r2": {
+        "ci95_half_width": 0.004475408056946815,
+        "ci95_high": 0.018040209273072393,
+        "ci95_low": 0.009089393159178762,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.322441308020711,
+        "mean_difference": 0.013564801216125577,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.0057300031818249214,
+        "ci95_high": -0.011910623199511923,
+        "ci95_low": -0.023370629563161764,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.344442322870805,
+        "mean_difference": -0.017640626381336844,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.008344477185137226,
+        "ci95_high": 0.0671568052248194,
+        "ci95_low": 0.05046785085454494,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.4978893975979215,
+        "mean_difference": 0.05881232803968217,
+        "n_left": 5,
+        "n_right": 5
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.006323705615669063,
+        "ci95_high": -0.013511563583593532,
+        "ci95_low": -0.02615897481493166,
+        "ci_method": "independent-seed 95% Welch Student-t; not an equivalence test",
+        "degrees_of_freedom": 4.50290184848281,
+        "mean_difference": -0.019835269199262595,
+        "n_left": 5,
+        "n_right": 5
+      }
+    }
+  },
+  "interpretation": {
+    "data_usage": "Development data never evaluate test. Use all32prespecifiedsettings. No test or spectralvalue selects parameters.",
+    "grid_plot": "Fixed20k validation RMSE and alpha from identical weights; include all64 performance observations. Failed spectralfits keep performance and alpha=null; do not substitute another statistic.",
+    "primary": "Fixed20,000-update confirmation results, five fresh seeds3340\u20133344. The original three optimizer controls at20k remain historical independent-seed comparisons. Tuning and possibly dropout differ; do not claim an optimizer-only causal effect.",
+    "supplementary": "Validation-selected checkpoints within0..20k; report separately from the fixed20k primary.",
+    "uncertainty": "Equal-weight seed means, sample SD, and95%Student-t confidence intervals across five confirmation seeds. Development has two seeds; report individualvalues and means as calibration evidence."
+  },
+  "n_completed": 5,
+  "n_development_records": 64,
+  "n_valid_confirmation_alpha": 5,
+  "primary_estimand": "fixed_20000_updates",
+  "schema_version": 1,
+  "selected": {
+    "dampening": 0,
+    "dropout": 0.3690073279296028,
+    "lr": 0.01,
+    "momentum": 0.9,
+    "nesterov": false,
+    "optimizer": "sgdm",
+    "weight_decay": 0.001
+  },
+  "selected_candidate_id": "sgdm_11",
+  "statistics": {
+    "original_adamw": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.02383611394731706,
+        "ci95_high": 1.7019193242873172,
+        "ci95_low": 1.654247096392683,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 1.67808321034,
+        "n": 5,
+        "sample_sd": 0.01919691154917852
+      },
+      "test_mae": {
+        "ci95_half_width": 0.005305927094668549,
+        "ci95_high": 0.33035748511239926,
+        "ci95_low": 0.3197456309230622,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.3250515580177307,
+        "n": 5,
+        "sample_sd": 0.004273239058508811
+      },
+      "test_mse": {
+        "ci95_half_width": 0.002691513476921676,
+        "ci95_high": 0.23384474533612884,
+        "ci95_low": 0.2284617183822855,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.23115323185920716,
+        "n": 5,
+        "sample_sd": 0.002167666519135057
+      },
+      "test_r2": {
+        "ci95_half_width": 0.0020640915210944286,
+        "ci95_high": 0.8247932141597968,
+        "ci95_low": 0.8206650311176079,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.8227291226387023,
+        "n": 5,
+        "sample_sd": 0.001662359160030744
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.0027969852431519943,
+        "ci95_high": 0.4835767398671316,
+        "ci95_low": 0.4779827693808277,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.48077975462397965,
+        "n": 5,
+        "sample_sd": 0.0022526104060343285
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.0018477134199923403,
+        "ci95_high": 0.3871659780315,
+        "ci95_low": 0.3834705511915153,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.38531826461150764,
+        "n": 5,
+        "sample_sd": 0.0014880945430207411
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.001787402217477924,
+        "ci95_high": 0.48340115634051456,
+        "ci95_low": 0.4798263519055587,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.48161375412303664,
+        "n": 5,
+        "sample_sd": 0.0014395216580843457
+      }
+    },
+    "original_modified_adamw": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.0034806204135779035,
+        "ci95_high": 1.616266923033578,
+        "ci95_low": 1.609305682206422,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 1.61278630262,
+        "n": 5,
+        "sample_sd": 0.0028031902500298693
+      },
+      "test_mae": {
+        "ci95_half_width": 0.0026301067729996254,
+        "ci95_high": 0.3313484650512742,
+        "ci95_low": 0.32608825150527493,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.32871835827827456,
+        "n": 5,
+        "sample_sd": 0.002118211349289685
+      },
+      "test_mse": {
+        "ci95_half_width": 0.0019882897029775744,
+        "ci95_high": 0.23602013980254116,
+        "ci95_low": 0.23204356039658602,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.2340318500995636,
+        "n": 5,
+        "sample_sd": 0.0016013105847104386
+      },
+      "test_r2": {
+        "ci95_half_width": 0.0015248101727131256,
+        "ci95_high": 0.8220463078991536,
+        "ci95_low": 0.8189966875537273,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.8205214977264405,
+        "n": 5,
+        "sample_sd": 0.0012280376775995504
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.0020548565851401866,
+        "ci95_high": 0.48582097682004344,
+        "ci95_low": 0.481711263649763,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.48376612023490323,
+        "n": 5,
+        "sample_sd": 0.0016549216117345855
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.00188852709230288,
+        "ci95_high": 0.4160280660832218,
+        "ci95_low": 0.41225101189861607,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.41413953899091893,
+        "n": 5,
+        "sample_sd": 0.0015209646853213815
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.001995173675579437,
+        "ci95_high": 0.4849405948143295,
+        "ci95_low": 0.4809502474631706,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.48294542113875005,
+        "n": 5,
+        "sample_sd": 0.0016068547356335716
+      }
+    },
+    "original_sgdm": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.009514303204488159,
+        "ci95_high": 2.287330790104488,
+        "ci95_low": 2.268302183695512,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 2.2778164869,
+        "n": 5,
+        "sample_sd": 0.007662542538280787
+      },
+      "test_mae": {
+        "ci95_half_width": 0.01054089833996848,
+        "ci95_high": 0.36359934975407676,
+        "ci95_low": 0.34251755307413984,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.3530584514141083,
+        "n": 5,
+        "sample_sd": 0.00848933234370756
+      },
+      "test_mse": {
+        "ci95_half_width": 0.005890711618445366,
+        "ci95_high": 0.26569157488443657,
+        "ci95_low": 0.2539101516475459,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.2598008632659912,
+        "n": 5,
+        "sample_sd": 0.004744207472365367
+      },
+      "test_r2": {
+        "ci95_half_width": 0.004517567622129923,
+        "ci95_high": 0.8052768950337815,
+        "ci95_low": 0.7962417597895216,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.8007593274116516,
+        "n": 5,
+        "sample_sd": 0.0036383173134319677
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.005786806360747571,
+        "ci95_high": 0.5154764049105278,
+        "ci95_low": 0.5039027921890327,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.5096895985497802,
+        "n": 5,
+        "sample_sd": 0.004660525205787526
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.008451901030167285,
+        "ci95_high": 0.3920084364557948,
+        "ci95_low": 0.3751046343954602,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.3835565354256275,
+        "n": 5,
+        "sample_sd": 0.006806914787248477
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.006405640237565216,
+        "ci95_high": 0.516670555322658,
+        "ci95_low": 0.5038592748475277,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.5102649150850929,
+        "n": 5,
+        "sample_sd": 0.005158915976328406
+      }
+    },
+    "sgdm_grid_selected": {
+      "confidence_tail_alpha": {
+        "ci95_half_width": 0.005064805791646091,
+        "ci95_high": 1.6957849151116462,
+        "ci95_low": 1.6856553035283541,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 1.6907201093200002,
+        "n": 5,
+        "sample_sd": 0.004079046987730184
+      },
+      "test_mae": {
+        "ci95_half_width": 0.0037320322998627333,
+        "ci95_high": 0.3387371964462861,
+        "ci95_low": 0.3312731318465606,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.33500516414642334,
+        "n": 5,
+        "sample_sd": 0.0030056700566833045
+      },
+      "test_mse": {
+        "ci95_half_width": 0.0011835810396484722,
+        "ci95_high": 0.24329652158949894,
+        "ci95_low": 0.240929359510202,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.24211294054985047,
+        "n": 5,
+        "sample_sd": 0.0009532216778135477
+      },
+      "test_r2": {
+        "ci95_half_width": 0.0009076922459894243,
+        "ci95_high": 0.8152318208737666,
+        "ci95_low": 0.8134164363817877,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.8143241286277771,
+        "n": 5,
+        "sample_sd": 0.0007310288832586939
+      },
+      "test_rmse": {
+        "ci95_half_width": 0.00120186551377689,
+        "ci95_high": 0.4932508376822203,
+        "ci95_low": 0.4908471066546665,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.4920489721684434,
+        "n": 5,
+        "sample_sd": 0.0009679474604365995
+      },
+      "train_rmse": {
+        "ci95_half_width": 0.002112622316677203,
+        "ci95_high": 0.4444814857819869,
+        "ci95_low": 0.4402562411486325,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.4423688634653097,
+        "n": 5,
+        "sample_sd": 0.0017014444485250392
+      },
+      "validation_rmse": {
+        "ci95_half_width": 0.0016092458706717125,
+        "ci95_high": 0.492038891756502,
+        "ci95_low": 0.48882040001515853,
+        "ci_method": "two-sided 95% Student-t across seeds",
+        "complete_expected_seeds": true,
+        "degrees_of_freedom": 4,
+        "expected_n": 5,
+        "mean": 0.49042964588583027,
+        "n": 5,
+        "sample_sd": 0.0012960397281387738
+      }
+    }
+  },
+  "uncertainty": "Means weight seeds equally. Sample SD and two-sided95%Student-t CI describe seed uncertainty, not layer dispersion. Any incomplete alpha statistic explicitly reports its valid n."
+}
