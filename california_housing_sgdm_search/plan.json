@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "experiment_id": "2026-11-26_sgdm_long_search",
+  "hypothesis": "The initial SGDM performance deficit may reflect limited hyperparameter search and insufficient training. Test longer training separately from new settings.",
+  "model": {
+    "n_blocks": 2,
+    "d_block": 784,
+    "dropout": 0.3690073279296028
+  },
+  "development_updates": 50000,
+  "total_updates": 100000,
+  "batch_size": 256,
+  "grad_clip": 1,
+  "eval_every": 5000,
+  "checkpoint_updates": [
+    2000,
+    20000,
+    50000,
+    100000
+  ],
+  "schedule": "constant learning rate; no early stopping; best validation checkpoint within the explicitly declared window",
+  "development_seeds": [
+    3338,
+    3339
+  ],
+  "confirmation_seeds": [
+    3340,
+    3341,
+    3342,
+    3343,
+    3344
+  ],
+  "continuation_seeds": [
+    2340,
+    2341,
+    2342,
+    2343,
+    2344
+  ],
+  "selection": "Select the candidate with the lowest equal-weight mean of minimum validation RMSE through 50,000 updates over both development seeds. Evaluate every candidate; ties use the fixed candidate ID.",
+  "grid": {
+    "lr": [
+      0.003,
+      0.01,
+      0.03,
+      0.1
+    ],
+    "momentum": [
+      0.9,
+      0.99
+    ],
+    "weight_decay": [
+      0,
+      0.001
+    ],
+    "dropout": [
+      0,
+      0.3690073279296028
+    ]
+  },
+  "continuation_config": {
+    "optimizer": "sgdm",
+    "lr": 0.03,
+    "momentum": 0.9,
+    "weight_decay": 0,
+    "dampening": 0,
+    "nesterov": false,
+    "dropout": 0.3690073279296028
+  },
+  "comparison_policy": {
+    "continuation_primary": "Paired same-seed fixed 20,000 versus 100,000 updates with unchanged SGDM settings. Start from the retained full 20,000-update checkpoint without replaying earlier updates.",
+    "continuation_selected": "Optional minimum-validation model only in the continued window [20,000,100,000]. Do not claim the best model among earlier weights that were not retained.",
+    "fresh_tuned_primary": "Best validation checkpoint through 100,000 updates for five fresh seeds, with hyperparameters frozen from development.",
+    "reference": "Original native AdamW at 20,000 updates is context. The 100,000-update SGDM comparison has unequal budget and tuning, and may change dropout. Independent Welch intervals do not establish an optimizer-only causal effect.",
+    "uncertainty": "Equal-weight seed means, sample SD, and two-sided 95% Student-t confidence intervals across five seeds, conditional on the fixed data split."
+  },
+  "spectral": {
+    "minimum_matrix_dimension": 64,
+    "weight": "sqrt(num_pl_spikes)/(D+0.02)",
+    "eligible_matrices": 1,
+    "note": "The 784x784 hidden matrix is the sole eligible matrix. The weighted average equals its ordinary fitted alpha; no layer dispersion is defined."
+  },
+  "candidates": [
+    {
+      "id": "sgdm_00",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_01",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_02",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_03",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_04",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_05",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_06",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_07",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.003,
+        "momentum": 0.99,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_08",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_09",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_10",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0
+      }
+    },
+    {
+      "id": "sgdm_11",
+      "config": {
+        "optimizer": "sgdm",
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 0.001,
+        "dampening": 0,
+        "nesterov": false,
+        "dropout": 0.3690073279296028
+      }
+    },
+    {
+      "id": "sgdm_12",
+      "config":…4213 tokens truncated…ore reusing its
+    # prepared archive. Recover those arrays without refitting anything.
+    if recover_raw is None:
+        from california_housing_benchmark.data import ensure_raw_data
+        recover_raw = ensure_raw_data
+    recover_raw(data_dir)
+    for name, expected in manifest["raw_file_sha256"].items():
+        if Path(name).name != name or sha256(data_dir / "raw" / name) != expected:
+            raise ValueError(f"Original raw array changed: {name}")
+    original_source = PACKAGE.parent / "california_housing_benchmark" / "data.py"
+    if sha256(original_source) != manifest["preparation_source_sha256"]:
+        raise ValueError("Original preprocessing source differs from the parent data manifest")
+
+    tasks = []
+    for seed in seeds:
+        row = parent["seeds"][str(seed)]
+        if row["seed"] != seed:
+            raise ValueError("Manifest row has a different seed")
+        checkpoint = continuation["checkpoints"][str(seed)]
+        if (checkpoint["sha256"] != row["checkpoint_sha256"]
+                or checkpoint["git_blob_sha"] != row["checkpoint_git_blob_sha"]
+                or checkpoint["repository_path"] != row["checkpoint_repository_path"]):
+            raise ValueError("Plan and parent checkpoint identities disagree")
+        directory = root / "parent" / f"seed_{seed}"
+        for filename, path_key, sha_key, blob_key, size in (
+            ("result.json", "result_repository_path", "result_sha256", "result_git_blob_sha", None),
+            ("checkpoint20k.pt", "checkpoint_repository_path", "checkpoint_sha256",
+             "checkpoint_git_blob_sha", row["checkpoint_bytes"]),
+            ("native_adamw_result.json", "native_adamw_result_repository_path",
+             "native_adamw_result_sha256", "native_adamw_result_git_blob_sha", None),
+        ):
+            tasks.append((REPOSITORY, parent["archive_commit"], row[path_key],
+                          directory / filename, row[sha_key], row[blob_key], size))
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(executor.map(lambda args: downloader(*args), tasks))
+
+    for seed in seeds:
+        for name, optimizer in (("result.json", "sgdm"), ("native_adamw_result.json", "adamw")):
+            result = json.loads((root / "parent" / f"seed_{seed}" / name).read_text())
+            github = result["execution"]["github"]
+            if (result["seed"] != seed or result["optimizer"] != optimizer
+                    or result["status"] != "complete" or result["completed_updates"] < 20000
+                    or result["data_manifest_sha256"] != parent["data_manifest_sha256"]
+                    or str(github["GITHUB_RUN_ID"]) != str(parent["github_run_id"])
+                    or github["GITHUB_SHA"] != parent["launch_commit"]):
+                raise ValueError(f"Parent result provenance differs: {seed}/{optimizer}")
+
+    provenance = {
+        "schema_version": 1, "complete": True,
+        "github_run_id": os.environ.get("GITHUB_RUN_ID"),
+        "launch_commit": os.environ.get("GITHUB_SHA"),
+        "plan_file_sha256": sha256(plan_path),
+        "source_manifest_sha256": sha256(source_manifest_path),
+        "parent_manifest_sha256": sha256(parent_manifest_path),
+        "data_manifest_sha256": parent["data_manifest_sha256"],
+        "prepared_npz_sha256": manifest["prepared_npz_sha256"],
+        "parent_archive_commit": parent["archive_commit"],
+        "parent_seeds": seeds,
+        "preprocessing": "Restored exact parent prepared bytes; no split or transform was refitted.",
+    }
+    write_immutable(cohort_path, (json.dumps(provenance, indent=2, sort_keys=True) + "\n").encode())
+    print(json.dumps(provenance, indent=2), flush=True)
+    return provenance
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", required=True)
+    parser.add_argument("--plan")
+    parser.add_argument("--parent-manifest")
+    parser.add_argument("--source-manifest")
+    args = parser.parse_args()
+    prepare(args.root, args.plan, args.parent_manifest, args.source_manifest)
+
+
+if __name__ == "__main__":
+    main()

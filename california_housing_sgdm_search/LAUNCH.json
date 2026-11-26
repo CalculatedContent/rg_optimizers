@@ -1,0 +1,14 @@
+{
+  "experiment_id": "2026-11-26_sgdm_long_search",
+  "authorized_design": "Finite full 32-setting SGDM grid over two development seeds, five unchanged-checkpoint continuations and five fresh confirmations.",
+  "parent_archive_commit": "84b0219dc87c7caaefdc7245e455e53c300b8dfc",
+  "parent_launch_commit": "67a0bf203ab0f6b34565e37b4f510f123f669876",
+  "training_updates": {
+    "development": 50000,
+    "final": 100000
+  },
+  "maximum_simultaneous_training_jobs": 20,
+  "maximum_job_minutes": 90,
+  "automatic_repeat_search": false,
+  "archive": "Results and retained checkpoints in this repository; lightweight seven-day Actions artifacts."
+}
