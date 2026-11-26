@@ -1,0 +1,141 @@
+{
+  "status": "dry_run_no_training",
+  "grid": [
+    {
+      "case": "s0",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "s0",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "s1",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "s1",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "s2",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "s2",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "s3",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "s3",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "s4",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "s4",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "s5",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "s5",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "a6",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "a6",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "a7",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "a7",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "a8",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "a8",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "a9",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "a9",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "a10",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "a10",
+      "seed": 3371,
+      "updates": 20000
+    },
+    {
+      "case": "a11",
+      "seed": 3370,
+      "updates": 20000
+    },
+    {
+      "case": "a11",
+      "seed": 3371,
+      "updates": 20000
+    }
+  ],
+  "confirmation": {
+    "tracks": [
+      "sgdm_wd0",
+      "adamw_wd0",
+      "adamw_wd001"
+    ],
+    "seeds": [
+      3372,
+      3373,
+      3374,
+      3375,
+      3376
+    ],
+    "updates": 20000
+  },
+  "optional_dropout_not_launched": 15
+}

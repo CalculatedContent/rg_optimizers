@@ -1,0 +1,42 @@
+{
+  "source_commit": "6eb4497628d12b0f300f4b4f6bdc386bebad565c",
+  "source_files": {
+    "data.txt": {
+      "sha256": "daebd20c408dfc5c4979604f240e891be162c3a5d00d662380aa669044a1fb31",
+      "git_blob_sha": "f374a576bd2e873ab500f0a76f6965ebf1faec39"
+    },
+    "index_features.txt": {
+      "sha256": "e169bdf59fac30d230f7d21be511d04dc8cc61e5edb1d8255758bc220ba3d4c7",
+      "git_blob_sha": "bc856dafab0941942ccea4202bfa3a5b02bf4371"
+    },
+    "index_target.txt": {
+      "sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+      "git_blob_sha": "b8626c4cff2849624fb67f87cd0ad72b163671ad"
+    },
+    "index_train_0.txt": {
+      "sha256": "11db86b904ee546292ac81a2e02be5011f526c49d9c62d61f0578db0172c7c71",
+      "git_blob_sha": "5b5e224c726048b1785b968dfe1bf6d1f56c24a2"
+    },
+    "index_test_0.txt": {
+      "sha256": "12275c4b408fe4a27a7272f72d1a0fad33f9dd91907d07ca4dcdc9563d13e397",
+      "git_blob_sha": "90c88720da5c39cb57f7da21d68887c09c7970a3"
+    },
+    "n_splits.txt": {
+      "sha256": "5378796307535df3ec8d8b15a2e2dc5641419c3d3060cfe32238c0fa973f7aa3",
+      "git_blob_sha": "209e3ef4b6247ce746048d5711befda46206d235"
+    }
+  },
+  "prepared_sha256": "294f040f570b2a3d045fa5e562f2058cad33a3cfa72257319cd8b6a2a9c3c18b",
+  "n_rows": 9568,
+  "features": 4,
+  "outer_train": 8611,
+  "inner_train": 6889,
+  "inner_val": 1722,
+  "outer_test": 957,
+  "outer_test_full_row_overlap": 11,
+  "outer_test_feature_overlap": 11,
+  "unique_full_rows": 9527,
+  "outer_fold": 0,
+  "inner_split_seed": 20261126,
+  "preprocessing": "Fit normalization only on actual training subset per phase, inside trainer."
+}
