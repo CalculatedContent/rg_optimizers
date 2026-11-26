@@ -1,0 +1,365 @@
+{
+  "completed_updates": 2000,
+  "config": {
+    "optimizer": "sgdm",
+    "peak_lr": 0.03,
+    "reference_lr_ratio": null
+  },
+  "data_manifest_sha256": "9f0bef4a9edeebfd6d7ac44ed46801cedd5ac980d9fd08106e7b396f3ddc0688",
+  "elapsed_seconds": 1.8719450339999923,
+  "execution": {
+    "cpu": "Intel(R) Xeon(R) 6975P-C",
+    "deterministic_algorithms": true,
+    "git_commit": "e30e7389f68b040bb8298e4fcdcc972ee8f36167",
+    "github": {
+      "GITHUB_JOB": "prepare",
+      "GITHUB_REF": "refs/heads/california-housing-three-optimizers-20261126",
+      "GITHUB_REPOSITORY": "CalculatedContent/rg_optimizers",
+      "GITHUB_RUN_ATTEMPT": "1",
+      "GITHUB_RUN_ID": "45744352135",
+      "GITHUB_SHA": "e30e7389f68b040bb8298e4fcdcc972ee8f36167",
+      "GITHUB_WORKFLOW": "California Housing three optimizers",
+      "ImageOS": "ubuntu24",
+      "ImageVersion": "20261116.133.1",
+      "RUNNER_ARCH": "X64",
+      "RUNNER_NAME": "GitHub Actions 1000006514",
+      "RUNNER_OS": "Linux"
+    },
+    "packages": {
+      "numpy": "1.26.4",
+      "powerlaw": "2.0.0",
+      "scikit-learn": "1.5.2",
+      "scipy": "1.13.1",
+      "torch": "2.6.0+cpu",
+      "weightwatcher": "0.7.7"
+    },
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "precision": "float32",
+    "python": "3.12.14",
+    "source_bundle_sha256": "5606f73d14ec81a2444c97827238cf37d801072424b83f888dd8afdea8e1e837",
+    "source_sha256": {
+      "data.py": "febf6356c217639e2960ed8abec35fb50efed73a0be6cefa84a9946cb495e542",
+      "optimizer.py": "cbb973e86b5873011d468197f224853151f9b341ed1e4c2df61e7bd8bc764f59",
+      "spectral.py": "0c8b4d14e81b06545a0352ba810d0e899e849c253cc5a55cbbd11b643810cbd3",
+      "train.py": "782e8ba05ddffc6510fac0379d48376e9e5541ae5f927eb9cac78d4a23a6d350"
+    },
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "torch_num_interop_threads": 1,
+    "torch_num_threads": 1
+  },
+  "final_weights_sha256": "89cb11e25b7397c435d017e61be87d278c7715630a8ff72b25623119114a8042",
+  "history": [
+    {
+      "elapsed_seconds": 1.416999992898127e-06,
+      "optimizer_diagnostics": {
+        "available": false,
+        "reason": "initialization; no optimizer update yet"
+      },
+      "spectral": null,
+      "step": 0,
+      "test": null,
+      "train": {
+        "mae": 0.9069606309178271,
+        "mse": 1.3372678804692815,
+        "rmse": 1.1564029922433103,
+        "standardized_mse": 1.0027746857613646
+      },
+      "validation": {
+        "mae": 0.8988240762280018,
+        "mse": 1.315868496021293,
+        "rmse": 1.1471131138738206,
+        "standardized_mse": 0.986727965084225
+      }
+    },
+    {
+      "elapsed_seconds": 0.45037232499998936,
+      "optimizer_diagnostics": {
+        "available": true,
+        "matrices": {
+          "fc1.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999690027,
+            "finite": true,
+            "momentum_reference_lr": 0.02997309251997516,
+            "momentum_reference_update_norm": 0.022282633916532516,
+            "own_momentum_buffer_norm": 0.7434212502991661,
+            "realized_update_norm": 0.022282632412812538
+          },
+          "fc2.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999772134,
+            "finite": true,
+            "momentum_reference_lr": 0.02997309251997516,
+            "momentum_reference_update_norm": 0.026268437109949107,
+            "own_momentum_buffer_norm": 0.8764006280780958,
+            "realized_update_norm": 0.026268437431634376
+          },
+          "fc3.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999162357,
+            "finite": true,
+            "momentum_reference_lr": 0.02997309251997516,
+            "momentum_reference_update_norm": 0.01320328742880228,
+            "own_momentum_buffer_norm": 0.44050467665300563,
+            "realized_update_norm": 0.013203287926933824
+          },
+          "fc4.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999998181783,
+            "finite": true,
+            "momentum_reference_lr": 0.02997309251997516,
+            "momentum_reference_update_norm": 0.008416050608688348,
+            "own_momentum_buffer_norm": 0.2807868625194275,
+            "realized_update_norm": 0.008416052710662343
+          },
+          "fc5.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999904037,
+            "finite": true,
+            "momentum_reference_lr": 0.02997309251997516,
+            "momentum_reference_update_norm": 0.007110311945885333,
+            "own_momentum_buffer_norm": 0.23722316745083152,
+            "realized_update_norm": 0.007110308316775919
+          }
+        },
+        "preclip_global_gradient_norm": 1.2436858415603638,
+        "reference_history": "this run's own clipped gradients",
+        "reference_lr_definition": "current LR; multiplied by reference_lr_ratio only for modified AdamW"
+      },
+      "spectral": null,
+      "step": 500,
+      "test": null,
+      "train": {
+        "mae": 0.412340801667252,
+        "mse": 0.32406051673773595,
+        "rmse": 0.569263134883804,
+        "standardized_mse": 0.24300268492830077
+      },
+      "validation": {
+        "mae": 0.4107039153326072,
+        "mse": 0.3307764176648999,
+        "rmse": 0.5751316524630686,
+        "standardized_mse": 0.24803872506606564
+      }
+    },
+    {
+      "elapsed_seconds": 0.913372000999999,
+      "optimizer_diagnostics": {
+        "available": true,
+        "matrices": {
+          "fc1.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999273542,
+            "finite": true,
+            "momentum_reference_lr": 0.02986396468770752,
+            "momentum_reference_update_norm": 0.015195776694889992,
+            "own_momentum_buffer_norm": 0.5088331992685758,
+            "realized_update_norm": 0.015195781323608708
+          },
+          "fc2.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999500455,
+            "finite": true,
+            "momentum_reference_lr": 0.02986396468770752,
+            "momentum_reference_update_norm": 0.01881444045960178,
+            "own_momentum_buffer_norm": 0.6300047785465706,
+            "realized_update_norm": 0.0188144391814878
+          },
+          "fc3.weight": {
+            "cosine_with_own_sgdm_direction": 0.999999999877583,
+            "finite": true,
+            "momentum_reference_lr": 0.02986396468770752,
+            "momentum_reference_update_norm": 0.01107089622742614,
+            "own_momentum_buffer_norm": 0.3707108665308293,
+            "realized_update_norm": 0.011070896798228815
+          },
+          "fc4.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999997318441,
+            "finite": true,
+            "momentum_reference_lr": 0.02986396468770752,
+            "momentum_reference_update_norm": 0.006872068283631827,
+            "own_momentum_buffer_norm": 0.23011238981475488,
+            "realized_update_norm": 0.006872070151994783
+          },
+          "fc5.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999721757,
+            "finite": true,
+            "momentum_reference_lr": 0.02986396468770752,
+            "momentum_reference_update_norm": 0.004487146219749509,
+            "own_momentum_buffer_norm": 0.15025286383346448,
+            "realized_update_norm": 0.00448714111156524
+          }
+        },
+        "preclip_global_gradient_norm": 0.7438761591911316,
+        "reference_history": "this run's own clipped gradients",
+        "reference_lr_definition": "current LR; multiplied by reference_lr_ratio only for modified AdamW"
+      },
+      "spectral": null,
+      "step": 1000,
+      "test": null,
+      "train": {
+        "mae": 0.38253631435582786,
+        "mse": 0.2926006067818568,
+        "rmse": 0.5409256943258074,
+        "standardized_mse": 0.21941189484674758
+      },
+      "validation": {
+        "mae": 0.38278056756042483,
+        "mse": 0.2977705527110821,
+        "rmse": 0.5456835646334623,
+        "standardized_mse": 0.22328867240904113
+      }
+    },
+    {
+      "elapsed_seconds": 1.384773428999992,
+      "optimizer_diagnostics": {
+        "available": true,
+        "matrices": {
+          "fc1.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999285915,
+            "finite": true,
+            "momentum_reference_lr": 0.029671613846432944,
+            "momentum_reference_update_norm": 0.015469066622364185,
+            "own_momentum_buffer_norm": 0.5213422735421532,
+            "realized_update_norm": 0.015469066168890742
+          },
+          "fc2.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999522604,
+            "finite": true,
+            "momentum_reference_lr": 0.029671613846432944,
+            "momentum_reference_update_norm": 0.01993959874547331,
+            "own_momentum_buffer_norm": 0.6720092425262675,
+            "realized_update_norm": 0.019939597753528444
+          },
+          "fc3.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999998285372,
+            "finite": true,
+            "momentum_reference_lr": 0.029671613846432944,
+            "momentum_reference_update_norm": 0.009415275242241818,
+            "own_momentum_buffer_norm": 0.31731591314753177,
+            "realized_update_norm": 0.009415272673850275
+          },
+          "fc4.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999994931257,
+            "finite": true,
+            "momentum_reference_lr": 0.029671613846432944,
+            "momentum_reference_update_norm": 0.005073002441389866,
+            "own_momentum_buffer_norm": 0.17097157126826557,
+            "realized_update_norm": 0.005073001220352503
+          },
+          "fc5.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999998962837,
+            "finite": true,
+            "momentum_reference_lr": 0.029671613846432944,
+            "momentum_reference_update_norm": 0.0027070703773456,
+            "own_momentum_buffer_norm": 0.0912343491444783,
+            "realized_update_norm": 0.002707066537644892
+          }
+        },
+        "preclip_global_gradient_norm": 0.7801756858825684,
+        "reference_history": "this run's own clipped gradients",
+        "reference_lr_definition": "current LR; multiplied by reference_lr_ratio only for modified AdamW"
+      },
+      "spectral": null,
+      "step": 1500,
+      "test": null,
+      "train": {
+        "mae": 0.36422556301727765,
+        "mse": 0.2780470342086293,
+        "rmse": 0.5273016539028009,
+        "standardized_mse": 0.20849863644873287
+      },
+      "validation": {
+        "mae": 0.36571612875934345,
+        "mse": 0.29545680873241,
+        "rmse": 0.5435593884134556,
+        "standardized_mse": 0.22155367276554438
+      }
+    },
+    {
+      "elapsed_seconds": 1.8467404769999973,
+      "optimizer_diagnostics": {
+        "available": true,
+        "matrices": {
+          "fc1.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999606114,
+            "finite": true,
+            "momentum_reference_lr": 0.02939723784545513,
+            "momentum_reference_update_norm": 0.021823380266522814,
+            "own_momentum_buffer_norm": 0.7423615912913653,
+            "realized_update_norm": 0.02182337450170179
+          },
+          "fc2.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999597988,
+            "finite": true,
+            "momentum_reference_lr": 0.02939723784545513,
+            "momentum_reference_update_norm": 0.022443604120780905,
+            "own_momentum_buffer_norm": 0.7634596229336128,
+            "realized_update_norm": 0.022443604307732505
+          },
+          "fc3.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999151653,
+            "finite": true,
+            "momentum_reference_lr": 0.02939723784545513,
+            "momentum_reference_update_norm": 0.013814290615861976,
+            "own_momentum_buffer_norm": 0.46991797965800014,
+            "realized_update_norm": 0.013814289453194774
+          },
+          "fc4.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999361394,
+            "finite": true,
+            "momentum_reference_lr": 0.02939723784545513,
+            "momentum_reference_update_norm": 0.014630273741433579,
+            "own_momentum_buffer_norm": 0.4976751155447568,
+            "realized_update_norm": 0.014630274106418121
+          },
+          "fc5.weight": {
+            "cosine_with_own_sgdm_direction": 0.9999999999958157,
+            "finite": true,
+            "momentum_reference_lr": 0.02939723784545513,
+            "momentum_reference_update_norm": 0.010623467846369668,
+            "own_momentum_buffer_norm": 0.3613763953681137,
+            "realized_update_norm": 0.010623474423184029
+          }
+        },
+        "preclip_global_gradient_norm": 1.4798760414123535,
+        "reference_history": "this run's own clipped gradients",
+        "reference_lr_definition": "current LR; multiplied by reference_lr_ratio only for modified AdamW"
+      },
+      "spectral": null,
+      "step": 2000,
+      "test": null,
+      "train": {
+        "mae": 0.36853863993184177,
+        "mse": 0.30632281233383996,
+        "rmse": 0.5534643731387233,
+        "standardized_mse": 0.22970174017532174
+      },
+      "validation": {
+        "mae": 0.3747260211170201,
+        "mse": 0.3401907073224093,
+        "rmse": 0.5832586967396279,
+        "standardized_mse": 0.25509819780381127
+      }
+    }
+  ],
+  "initialization_sha256": "9a4d42244cfb1af74b1107b0752bd3853b4677e47ceae37615c528276364e377",
+  "metrics_unit": {
+    "mae": "100000 USD",
+    "mse": "(100000 USD)^2",
+    "rmse": "100000 USD",
+    "standardized_mse": "standardized target squared"
+  },
+  "minibatch_hash_method": "SHA256(previous 32-byte digest || int64 sampled indices), starting 32 zero bytes",
+  "minibatch_rng_sha256": "394f1a66790853749e40fcc623bcd7a5e2971a9c171cb805e838a2601d83db43",
+  "minibatch_sha256": "f90d22812ba67d183d816a772e3eb72d0101ebfe29753be049824754770325d2",
+  "numerical_runtime_sha256": "87f56f477bda5c471834e0523b16e4c3fbda719cf73f2f7f9e630f5c4d6d028f",
+  "optimizer": "sgdm",
+  "parameter_count": 50817,
+  "phase": "calibration",
+  "plan_sha256": "7765561609ab8179d48a88ca3ea86e9a466697d3a6cc3fd0bdbb2420722d8338",
+  "resume_executions": [],
+  "sampler_seed": 1001339,
+  "schema_version": 1,
+  "seed": 1339,
+  "source_bundle_sha256": "5606f73d14ec81a2444c97827238cf37d801072424b83f888dd8afdea8e1e837",
+  "status": "complete"
+}

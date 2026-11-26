@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "experiment_id": "california_housing_three_optimizers_20261126",
+  "architecture": {
+    "widths": [
+      8,
+      128,
+      128,
+      128,
+      128,
+      1
+    ],
+    "activation": "ReLU",
+    "bias": true,
+    "dropout": 0.0,
+    "initialization": "PyTorch Linear.reset_parameters defaults",
+    "parameter_count": 50817
+  },
+  "dataset": "sklearn California Housing",
+  "split_seed": 20261126,
+  "split_counts": {
+    "train": 16512,
+    "validation": 2064,
+    "test": 2064
+  },
+  "normalization": "feature and target means/stds fitted on training rows only",
+  "development_seed": 1339,
+  "confirmation_seeds": [
+    1340,
+    1341,
+    1342,
+    1343,
+    1344
+  ],
+  "optimizers": [
+    "sgdm",
+    "adamw",
+    "modified_adamw"
+  ],
+  "batch_size": 128,
+  "minibatch_sampling": "with replacement; dedicated torch.Generator seed=seed+1000000",
+  "total_updates": 20000,
+  "warmup_updates": 100,
+  "minimum_lr_ratio": 0.1,
+  "schedule": "linear warmup for updates 1..100; cosine to 10 percent peak at update 20000",
+  "eval_every": 500,
+  "checkpoint_updates": [
+    2000,
+    20000
+  ],
+  "grad_clip": 1.0,
+  "momentum": 0.9,
+  "betas": [
+    0.9,
+    0.99
+  ],
+  "eps": 1e-08,
+  "weight_decay": 0.0,
+  "dtype": "float32",
+  "device": "cpu",
+  "threads": 1,
+  "graft_targets": [
+    "fc1.weight",
+    "fc2.weight",
+    "fc3.weight",
+    "fc4.weight",
+    "fc5.weight"
+  ],
+  "graft_reference": "same-run clipped gradient history, buffer=m/(1-beta1); zero dampening, no Nesterov; biases remain native AdamW",
+  "spectral_targets": [
+    "fc2.weight",
+    "fc3.weight",
+    "fc4.weight"
+  ],
+  "spectral_eligibility": "all unique 2D weight matrices with min(shape)>=64; biases excluded",
+  "spectral_average": "ordinary fitted alpha; weights sqrt(num_pl_spikes)/(D+0.02); no matrix-size multiplier; require all three eligible fits valid",
+  "confidence_interval": "equal-weight seed means; sample SD; two-sided 95% Student-t interval across five seeds",
+  "calibration": {
+    "updates": 2000,
+    "schedule_horizon": 20000,
+    "selection_metric": "full validation RMSE at update 2000; no test or alpha selection",
+    "tie_break": "smaller candidate learning rate",
+    "candidates": {
+      "sgdm": [
+        {
+          "optimizer": "sgdm",
+          "peak_lr": 0.003,
+          "reference_lr_ratio": null
+        },
+        {
+          "optimizer": "sgdm",
+          "peak_lr": 0.01,
+          "reference_lr_ratio": null
+        },
+        {
+          "optimizer": "sgdm",
+          "peak_lr": 0.03,
+          "reference_lr_ratio": null
+        }
+      ],
+      "adamw": [
+        {
+          "optimizer": "adamw",
+          "peak_lr": 0.0003,
+          "reference_lr_ratio": null
+        },
+        {
+          "optimizer": "adamw",
+          "peak_lr": 0.001,
+          "reference_lr_ratio": null
+        },
+        {
+          "optimizer": "adamw",
+          "peak_lr": 0.003,
+          "reference_lr_ratio": null
+        }
+      ],
+      "modified_adamw": [
+        {
+          "optimizer": "modified_adamw",
+          "peak_lr": 0.001,
+          "reference_lr_ratio": 3.0
+        },
+        {
+          "optimizer": "modified_adamw",
+          "peak_lr": 0.001,
+          "reference_lr_ratio": 10.0
+        },
+        {
+          "optimizer": "modified_adamw",
+          "peak_lr": 0.001,
+          "reference_lr_ratio": 30.0
+        }
+      ]
+    }
+  }
+}

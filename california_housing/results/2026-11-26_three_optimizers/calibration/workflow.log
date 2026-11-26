@@ -1,0 +1,73 @@
+Calibration sgdm candidate 0: {'optimizer': 'sgdm', 'peak_lr': 0.003, 'reference_lr_ratio': None}
+calibration sgdm seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration sgdm seed=1339 step=500 train_RMSE=0.630048 val_RMSE=0.622660 alpha=n/a
+calibration sgdm seed=1339 step=1000 train_RMSE=0.591648 val_RMSE=0.593805 alpha=n/a
+calibration sgdm seed=1339 step=1500 train_RMSE=0.567156 val_RMSE=0.570496 alpha=n/a
+calibration sgdm seed=1339 step=2000 train_RMSE=0.570138 val_RMSE=0.577599 alpha=n/a
+Calibration sgdm candidate 1: {'optimizer': 'sgdm', 'peak_lr': 0.01, 'reference_lr_ratio': None}
+calibration sgdm seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration sgdm seed=1339 step=500 train_RMSE=0.583647 val_RMSE=0.590805 alpha=n/a
+calibration sgdm seed=1339 step=1000 train_RMSE=0.551089 val_RMSE=0.562204 alpha=n/a
+calibration sgdm seed=1339 step=1500 train_RMSE=0.533636 val_RMSE=0.544947 alpha=n/a
+calibration sgdm seed=1339 step=2000 train_RMSE=0.560302 val_RMSE=0.579299 alpha=n/a
+Calibration sgdm candidate 2: {'optimizer': 'sgdm', 'peak_lr': 0.03, 'reference_lr_ratio': None}
+calibration sgdm seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration sgdm seed=1339 step=500 train_RMSE=0.569263 val_RMSE=0.575132 alpha=n/a
+calibration sgdm seed=1339 step=1000 train_RMSE=0.540926 val_RMSE=0.545684 alpha=n/a
+calibration sgdm seed=1339 step=1500 train_RMSE=0.527302 val_RMSE=0.543559 alpha=n/a
+calibration sgdm seed=1339 step=2000 train_RMSE=0.553464 val_RMSE=0.583259 alpha=n/a
+Calibration adamw candidate 0: {'optimizer': 'adamw', 'peak_lr': 0.0003, 'reference_lr_ratio': None}
+calibration adamw seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration adamw seed=1339 step=500 train_RMSE=0.583779 val_RMSE=0.589446 alpha=n/a
+calibration adamw seed=1339 step=1000 train_RMSE=0.545581 val_RMSE=0.554642 alpha=n/a
+calibration adamw seed=1339 step=1500 train_RMSE=0.528162 val_RMSE=0.535640 alpha=n/a
+calibration adamw seed=1339 step=2000 train_RMSE=0.534448 val_RMSE=0.553812 alpha=n/a
+Calibration adamw candidate 1: {'optimizer': 'adamw', 'peak_lr': 0.001, 'reference_lr_ratio': None}
+calibration adamw seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration adamw seed=1339 step=500 train_RMSE=0.564441 val_RMSE=0.574066 alpha=n/a
+calibration adamw seed=1339 step=1000 train_RMSE=0.534125 val_RMSE=0.544266 alpha=n/a
+calibration adamw seed=1339 step=1500 train_RMSE=0.537028 val_RMSE=0.546654 alpha=n/a
+calibration adamw seed=1339 step=2000 train_RMSE=0.522735 val_RMSE=0.558653 alpha=n/a
+Calibration adamw candidate 2: {'optimizer': 'adamw', 'peak_lr': 0.003, 'reference_lr_ratio': None}
+calibration adamw seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration adamw seed=1339 step=500 train_RMSE=0.562930 val_RMSE=0.572778 alpha=n/a
+calibration adamw seed=1339 step=1000 train_RMSE=0.527794 val_RMSE=0.536847 alpha=n/a
+calibration adamw seed=1339 step=1500 train_RMSE=0.528862 val_RMSE=0.546545 alpha=n/a
+calibration adamw seed=1339 step=2000 train_RMSE=0.492353 val_RMSE=0.531320 alpha=n/a
+Calibration modified_adamw candidate 0: {'optimizer': 'modified_adamw', 'peak_lr': 0.001, 'reference_lr_ratio': 3.0}
+calibration modified_adamw seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration modified_adamw seed=1339 step=500 train_RMSE=0.613266 val_RMSE=0.613283 alpha=n/a
+calibration modified_adamw seed=1339 step=1000 train_RMSE=0.581862 val_RMSE=0.584538 alpha=n/a
+calibration modified_adamw seed=1339 step=1500 train_RMSE=0.554351 val_RMSE=0.559392 alpha=n/a
+calibration modified_adamw seed=1339 step=2000 train_RMSE=0.556149 val_RMSE=0.564524 alpha=n/a
+Calibration modified_adamw candidate 1: {'optimizer': 'modified_adamw', 'peak_lr': 0.001, 'reference_lr_ratio': 10.0}
+calibration modified_adamw seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration modified_adamw seed=1339 step=500 train_RMSE=0.574689 val_RMSE=0.584705 alpha=n/a
+calibration modified_adamw seed=1339 step=1000 train_RMSE=0.539417 val_RMSE=0.551888 alpha=n/a
+calibration modified_adamw seed=1339 step=1500 train_RMSE=0.543023 val_RMSE=0.549802 alpha=n/a
+calibration modified_adamw seed=1339 step=2000 train_RMSE=0.532090 val_RMSE=0.555278 alpha=n/a
+Calibration modified_adamw candidate 2: {'optimizer': 'modified_adamw', 'peak_lr': 0.001, 'reference_lr_ratio': 30.0}
+calibration modified_adamw seed=1339 step=0 train_RMSE=1.156403 val_RMSE=1.147113 alpha=n/a
+calibration modified_adamw seed=1339 step=500 train_RMSE=0.573817 val_RMSE=0.581353 alpha=n/a
+calibration modified_adamw seed=1339 step=1000 train_RMSE=0.530022 val_RMSE=0.544050 alpha=n/a
+calibration modified_adamw seed=1339 step=1500 train_RMSE=0.535475 val_RMSE=0.546830 alpha=n/a
+calibration modified_adamw seed=1339 step=2000 train_RMSE=0.508741 val_RMSE=0.542651 alpha=n/a
+{
+  "frozen_selection": {
+    "sgdm": {
+      "optimizer": "sgdm",
+      "peak_lr": 0.003,
+      "reference_lr_ratio": null
+    },
+    "adamw": {
+      "optimizer": "adamw",
+      "peak_lr": 0.003,
+      "reference_lr_ratio": null
+    },
+    "modified_adamw": {
+      "optimizer": "modified_adamw",
+      "peak_lr": 0.001,
+      "reference_lr_ratio": 30.0
+    }
+  }
+}
