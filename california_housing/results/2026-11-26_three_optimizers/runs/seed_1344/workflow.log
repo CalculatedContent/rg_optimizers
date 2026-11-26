@@ -1,0 +1,44 @@
+Confirmation seed=1344 optimizer=sgdm
+PyTorch is available but CUDA is not. Defaulting to SciPy for SVD
+Import error , reetting to svd accurate methods
+confirmation sgdm seed=1344 step=0 train_RMSE=1.159889 val_RMSE=1.161072 alpha=8.181309
+confirmation sgdm seed=1344 step=500 train_RMSE=0.654002 val_RMSE=0.623625 alpha=6.358833
+confirmation sgdm seed=1344 step=1000 train_RMSE=0.589624 val_RMSE=0.584256 alpha=5.731900
+confirmation sgdm seed=1344 step=1500 train_RMSE=0.568253 val_RMSE=0.575403 alpha=5.420198
+confirmation sgdm seed=1344 step=2000 train_RMSE=0.546476 val_RMSE=0.559366 alpha=5.223382
+confirmation sgdm seed=1344 step=2500 train_RMSE=0.539485 val_RMSE=0.552970 alpha=5.197934
+confirmation sgdm seed=1344 step=3000 train_RMSE=0.529469 val_RMSE=0.547403 alpha=5.075322
+confirmation sgdm seed=1344 step=3500 train_RMSE=0.522925 val_RMSE=0.540906 alpha=4.921885
+confirmation sgdm seed=1344 step=4000 train_RMSE=0.518355 val_RMSE=0.537903 alpha=4.761975
+confirmation sgdm seed=1344 step=4500 train_RMSE=0.513659 val_RMSE=0.530992 alpha=4.706877
+confirmation sgdm seed=1344 step=5000 train_RMSE=0.526512 val_RMSE=0.553733 alpha=4.780215
+confirmation sgdm seed=1344 step=5500 train_RMSE=0.509321 val_RMSE=0.527707 alpha=4.740735
+confirmation sgdm seed=1344 step=6000 train_RMSE=0.518911 val_RMSE=0.546404 alpha=4.594553
+confirmation sgdm seed=1344 step=6500 train_RMSE=0.500440 val_RMSE=0.524226 alpha=4.546195
+confirmation sgdm seed=1344 step=7000 train_RMSE=0.497256 val_RMSE=0.525335 alpha=4.532055
+confirmation sgdm seed=1344 step=7500 train_RMSE=0.496645 val_RMSE=0.521974 alpha=4.508923
+confirmation sgdm seed=1344 step=8000 train_RMSE=0.499222 val_RMSE=0.527055 alpha=4.443919
+confirmation sgdm seed=1344 step=8500 train_RMSE=0.492281 val_RMSE=0.522511 alpha=4.449456
+confirmation sgdm seed=1344 step=9000 train_RMSE=0.492632 val_RMSE=0.519662 alpha=4.437432
+confirmation sgdm seed=1344 step=9500 train_RMSE=0.487969 val_RMSE=0.518112 alpha=4.423806
+confirmation sgdm seed=1344 step=10000 train_RMSE=0.499087 val_RMSE=0.534901 alpha=4.385966
+confirmation sgdm seed=1344 step=10500 train_RMSE=0.490651 val_RMSE=0.524366 alpha=4.377278
+confirmation sgdm seed=1344 step=11000 train_RMSE=0.482187 val_RMSE=0.516921 alpha=4.373727
+confirmation sgdm seed=1344 step=11500 train_RMSE=0.496983 val_RMSE=0.528380 alpha=4.356914
+confirmation sgdm seed=1344 step=12000 train_RMSE=0.483323 val_RMSE=0.521599 alpha=4.351872
+confirmation sgdm seed=1344 step=12500 train_RMSE=0.479204 val_RMSE=0.517194 alpha=4.341611
+confirmation sgdm seed=1344 step=13000 train_RMSE=0.479303 val_RMSE=0.513889 alpha=4.264316
+confirmation sgdm seed=1344 step=13500 train_RMSE=0.482351 val_RMSE=0.517181 alpha=4.257232
+confirmation sgdm seed=1344 step=14000 train_RMSE=0.480800 val_RMSE=0.518343 alpha=4.254179
+confirmation sgdm seed=1344 step=14500 train_RMSE=0.480198 val_RMSE=0.520734 alpha=4.248456
+confirmation sgdm seed=1344 step=15000 train_RMSE=0.477821 val_RMSE=0.518308 alpha=4.287993
+confirmation sgdm seed=1344 step=15500 train_RMSE=0.474005 val_RMSE=0.516195 alpha=4.286206
+confirmation sgdm seed=1344 step=16000 train_RMSE=0.474270 val_RMSE=0.516562 alpha=4.282882
+confirmation sgdm seed=1344 step=16500 train_RMSE=0.476359 val_RMSE=0.519646 alpha=4.280804
+confirmation sgdm seed=1344 step=17000 train_RMSE=0.471731 val_RMSE=0.515061 alpha=4.279810
+confirmation sgdm seed=1344 step=17500 train_RMSE=0.470926 val_RMSE=0.515660 alpha=4.277398
+confirmation sgdm seed=1344 step=18000 train_RMSE=0.470227 val_RMSE=0.514551 alpha=4.275635
+confirmation sgdm seed=1344 step=18500 train_RMSE=0.470581 val_RMSE=0.514667 alpha=4.273953
+confirmation sgdm seed=1344 step=19000 train_RMSE=0.469529 val_RMSE=0.514707 alpha=4.273046
+confirmation sgdm seed=1344 step=19500 train_RMSE=0.469020 val_RMSE=0.513562 alpha=4.273375
+confirmation sgdm seed=1344 step=20000 train_RMSE=0.469420 val_RMSE=0.514298 alpha=4.271151
