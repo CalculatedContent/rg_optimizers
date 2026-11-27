@@ -1,0 +1,28 @@
+{
+  "sgdm_wd0": {
+    "best_accuracy": "s0",
+    "best_ce": "es1",
+    "pareto_frontier": [
+      "s0",
+      "es1",
+      "es2",
+      "es4"
+    ]
+  },
+  "adamw_wd0": {
+    "best_accuracy": "ea1",
+    "best_ce": "ea0",
+    "pareto_frontier": [
+      "ea0",
+      "ea1"
+    ]
+  },
+  "adamw_wd001": {
+    "best_accuracy": "ea4",
+    "best_ce": "ea3",
+    "pareto_frontier": [
+      "ea3",
+      "ea4"
+    ]
+  }
+}
